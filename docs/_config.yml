@@ -1,0 +1,24 @@
+title: CCX Notification Service
+description: CCX Notification Service
+baseurl: "/ccx-notification-service"
+url: "https://redhatinsights.github.io"
+
+heading_anchors: true
+search_enabled: false
+
+aux_links:
+  "Github repository":
+    - "https://github.com/RedHatInsights/ccx-notification-service"
+
+footer_content: "Copyright &copy; 2021 Red Hat, Inc.</a>"
+
+# Build settings
+markdown: kramdown
+remote_theme: pmarsceill/just-the-docs
+plugins:
+  - jekyll-remote-theme
+
+exclude:
+  - Gemfile
+  - Gemfile.lock
+  - vendor/
