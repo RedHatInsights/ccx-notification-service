@@ -14,8 +14,16 @@
 
 package main
 
-import "fmt"
+import (
+	"os"
+
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+)
 
 func main() {
-	fmt.Println("vim-go")
+	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+
+	log.Info().Msg("Started")
+	log.Info().Msg("Finished")
 }
