@@ -80,3 +80,12 @@ type ErrorKeyMetadata struct {
 type MissingMandatoryFile struct {
 	FileName string
 }
+
+// CliFlags represents structure holding all command line arguments/flags.
+type CliFlags struct {
+	instantReports    bool
+	weeklyReports     bool
+	showVersion       bool
+	showAuthors       bool
+	showConfiguration bool
+}
