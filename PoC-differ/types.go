@@ -14,6 +14,38 @@
 
 package main
 
+import "time"
+
+// Timestamp represents any timestamp in a form gathered from database
+// TODO: need to be improved
+type Timestamp time.Time
+
+// OrgID represents organization ID
+type OrgID uint32
+
+// ClusterName represents name of cluster in format c8590f31-e97e-4b85-b506-c45ce1911a12
+type ClusterName string
+
+// ClusterReport represents cluster report
+type ClusterReport string
+
+// DBDriver type for db driver enum
+type DBDriver int
+
+const (
+	// DBDriverSQLite3 shows that db driver is sqlite
+	DBDriverSQLite3 DBDriver = iota
+	// DBDriverPostgres shows that db driver is postgres
+	DBDriverPostgres
+	// DBDriverGeneral general sql(used for mock now)
+	DBDriverGeneral
+)
+
+type ClusterEntry struct {
+	orgID       OrgID
+	clusterName ClusterName
+}
+
 // RuleContent wraps all the content available for a rule into a single structure.
 type RuleContent struct {
 	Summary    string                         `json:"summary"`
