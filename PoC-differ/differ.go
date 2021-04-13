@@ -15,9 +15,12 @@
 package main
 
 import (
+	"flag"
+	"fmt"
+	"os"
+
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"os"
 )
 
 const contentDirectory = "content"
@@ -32,18 +35,60 @@ const (
 const (
 	// ExitStatusOK means that the tool finished with success
 	ExitStatusOK = iota
+	// ExitStatusConfiguration is an error code related to program configuration
+	ExitStatusConfiguration
 	// ExitStatusError is a general error code
 	ExitStatusError
 	// ExitStatusStorageError is returned in case of any consumer-related error
 	ExitStatusStorageError
 )
 
+// Messages
+const (
+	versionMessage = "Notification writer version 1.0"
+	authorsMessage = "Pavel Tisnovsky, Red Hat Inc."
+)
+
+// showVersion function displays version information.
+func showVersion() {
+	fmt.Println(versionMessage)
+}
+
+// showAuthors function displays information about authors.
+func showAuthors() {
+	fmt.Println(authorsMessage)
+}
+
 // main function is entry point to the differ
 func main() {
+	var cliFlags CliFlags
+
+	// define and parse all command line options
+	flag.BoolVar(&cliFlags.instantReports, "instant-reports", false, "create instant reports")
+	flag.BoolVar(&cliFlags.weeklyReports, "weekly-reports", false, "create weekly reports")
+	flag.Parse()
+
+	switch {
+	case cliFlags.showVersion:
+		showVersion()
+		os.Exit(ExitStatusOK)
+	case cliFlags.showAuthors:
+		showAuthors()
+		os.Exit(ExitStatusOK)
+	default:
+	}
+
+	// check if report type is specified on command line
+	if !cliFlags.instantReports && !cliFlags.weeklyReports {
+		log.Error().Msg("Type of report needs to be specified on command line")
+		os.Exit(ExitStatusConfiguration)
+	}
+
 	// config has exactly the same structure as *.toml file
 	config, err := LoadConfiguration(configFileEnvVariableName, defaultConfigFileName)
 	if err != nil {
 		log.Err(err).Msg("Load configuration")
+		os.Exit(ExitStatusConfiguration)
 	}
 
 	if config.Logging.Debug {
