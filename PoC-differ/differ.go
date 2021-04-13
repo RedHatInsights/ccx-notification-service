@@ -28,6 +28,16 @@ const (
 	defaultConfigFileName     = "config"
 )
 
+// Exit codes
+const (
+	// ExitStatusOK means that the tool finished with success
+	ExitStatusOK = iota
+	// ExitStatusError is a general error code
+	ExitStatusError
+	// ExitStatusStorageError is returned in case of any consumer-related error
+	ExitStatusStorageError
+)
+
 // main function is entry point to the differ
 func main() {
 	// config has exactly the same structure as *.toml file
@@ -65,5 +75,35 @@ func main() {
 			log.Error().Int("#", i+1).Str("Error", rule).Msg("Invalid rule")
 		}
 	}
+
+	// prepare the storage
+	storageConfiguration := GetStorageConfiguration(config)
+	storage, err := NewStorage(storageConfiguration)
+	if err != nil {
+		log.Err(err).Msg("Operation failed")
+		os.Exit(ExitStatusStorageError)
+	}
+
+	clusters, err := storage.ReadClusterList()
+	if err != nil {
+		log.Err(err).Msg("Operation failed")
+		os.Exit(ExitStatusStorageError)
+	}
+
+	for i, cluster := range clusters {
+		log.Info().
+			Int("#", i).
+			Int("org id", int(cluster.orgID)).
+			Str("cluster", string(cluster.clusterName)).
+			Msg("cluster entry")
+	}
+
+	report, _, err := storage.ReadReportForCluster(1, "5d5892d3-1f74-4ccf-91af-548dfc9767aa")
+	if err != nil {
+		log.Err(err).Msg("Operation failed")
+		os.Exit(ExitStatusStorageError)
+	}
+	log.Info().Str("report", string(report)).Msg("report")
+
 	log.Info().Msg("Finished")
 }
