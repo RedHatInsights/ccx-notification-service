@@ -1,0 +1,1 @@
+./ns --instant-reports

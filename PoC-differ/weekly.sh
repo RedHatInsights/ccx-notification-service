@@ -1,0 +1,1 @@
+./ns --weekly-reports
