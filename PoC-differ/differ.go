@@ -15,6 +15,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -47,6 +48,7 @@ const (
 const (
 	versionMessage = "Notification writer version 1.0"
 	authorsMessage = "Pavel Tisnovsky, Red Hat Inc."
+	separator      = "------------------------------------------------------------"
 )
 
 // showVersion function displays version information.
@@ -57,6 +59,26 @@ func showVersion() {
 // showAuthors function displays information about authors.
 func showAuthors() {
 	fmt.Println(authorsMessage)
+}
+
+func readRuleContent(contentDirectory string) (map[string]RuleContent, []string) {
+	// map used to store rule content
+	contentMap := make(map[string]RuleContent)
+
+	// map used to store invalid rules
+	invalidRules := make([]string, 0)
+
+	err := parseRulesInDirectory(contentDirectory, &contentMap, &invalidRules)
+	if err != nil {
+		log.Error().Err(err).Msg("parseRulesInDirectory")
+		os.Exit(1)
+	}
+	log.Info().
+		Int("parsed rules", len(contentMap)).
+		Int("invalid rules", len(invalidRules)).
+		Msg("Done")
+
+	return contentMap, invalidRules
 }
 
 // main function is entry point to the differ
@@ -97,22 +119,9 @@ func main() {
 
 	log.Info().Msg("Started")
 
+	log.Info().Msg(separator)
 	log.Info().Msg("Parsing rule content")
-
-	// map used to store rule content
-	contentMap := make(map[string]RuleContent)
-
-	invalidRules := make([]string, 0)
-
-	err = parseRulesInDirectory(contentDirectory, &contentMap, &invalidRules)
-	if err != nil {
-		log.Error().Err(err).Msg("parseRulesInDirectory")
-		os.Exit(1)
-	}
-	log.Info().
-		Int("parsed rules", len(contentMap)).
-		Int("invalid rules", len(invalidRules)).
-		Msg("Done")
+	_, invalidRules := readRuleContent(contentDirectory)
 
 	if len(invalidRules) > 0 {
 		log.Error().Msg("List of invalid rules")
