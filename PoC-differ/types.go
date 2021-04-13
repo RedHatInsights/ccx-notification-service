@@ -89,3 +89,21 @@ type CliFlags struct {
 	showAuthors       bool
 	showConfiguration bool
 }
+
+// Report represents report send in a message consumed from any broker
+type Report struct {
+	Reports []ReportItem `json:"reports"`
+}
+
+// RuleID represents type for rule id
+type RuleID string
+
+// ErrorKey represents type for error key
+type ErrorKey string
+
+// ReportItem represents a single (hit) rule of the string encoded report
+type ReportItem struct {
+	Type     string   `json:"type"`
+	Module   RuleID   `json:"component"`
+	ErrorKey ErrorKey `json:"key"`
+}

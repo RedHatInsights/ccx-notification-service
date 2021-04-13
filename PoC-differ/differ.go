@@ -15,6 +15,7 @@
 package main
 
 import (
+	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
@@ -47,6 +48,7 @@ const (
 const (
 	versionMessage = "Notification writer version 1.0"
 	authorsMessage = "Pavel Tisnovsky, Red Hat Inc."
+	separator      = "------------------------------------------------------------"
 )
 
 // showVersion function displays version information.
@@ -57,6 +59,34 @@ func showVersion() {
 // showAuthors function displays information about authors.
 func showAuthors() {
 	fmt.Println(authorsMessage)
+}
+
+func readRuleContent(contentDirectory string) (map[string]RuleContent, []string) {
+	// map used to store rule content
+	contentMap := make(map[string]RuleContent)
+
+	// map used to store invalid rules
+	invalidRules := make([]string, 0)
+
+	err := parseRulesInDirectory(contentDirectory, &contentMap, &invalidRules)
+	if err != nil {
+		log.Error().Err(err).Msg("parseRulesInDirectory")
+		os.Exit(1)
+	}
+	log.Info().
+		Int("parsed rules", len(contentMap)).
+		Int("invalid rules", len(invalidRules)).
+		Msg("Done")
+
+	return contentMap, invalidRules
+}
+
+func printInvalidRules(invalidRules []string) {
+	log.Info().Msg(separator)
+	log.Error().Msg("List of invalid rules")
+	for i, rule := range invalidRules {
+		log.Error().Int("#", i+1).Str("Error", rule).Msg("Invalid rule")
+	}
 }
 
 // main function is entry point to the differ
@@ -97,29 +127,16 @@ func main() {
 
 	log.Info().Msg("Started")
 
+	log.Info().Msg(separator)
 	log.Info().Msg("Parsing rule content")
-
-	// map used to store rule content
-	contentMap := make(map[string]RuleContent)
-
-	invalidRules := make([]string, 0)
-
-	err = parseRulesInDirectory(contentDirectory, &contentMap, &invalidRules)
-	if err != nil {
-		log.Error().Err(err).Msg("parseRulesInDirectory")
-		os.Exit(1)
-	}
-	log.Info().
-		Int("parsed rules", len(contentMap)).
-		Int("invalid rules", len(invalidRules)).
-		Msg("Done")
+	_, invalidRules := readRuleContent(contentDirectory)
 
 	if len(invalidRules) > 0 {
-		log.Error().Msg("List of invalid rules")
-		for i, rule := range invalidRules {
-			log.Error().Int("#", i+1).Str("Error", rule).Msg("Invalid rule")
-		}
+		printInvalidRules(invalidRules)
 	}
+
+	log.Info().Msg(separator)
+	log.Info().Msg("Read cluster list")
 
 	// prepare the storage
 	storageConfiguration := GetStorageConfiguration(config)
@@ -142,13 +159,40 @@ func main() {
 			Str("cluster", string(cluster.clusterName)).
 			Msg("cluster entry")
 	}
+	log.Info().Int("clusters", len(clusters)).Msg("Done")
 
-	report, _, err := storage.ReadReportForCluster(1, "5d5892d3-1f74-4ccf-91af-548dfc9767aa")
-	if err != nil {
-		log.Err(err).Msg("Operation failed")
-		os.Exit(ExitStatusStorageError)
+	log.Info().Msg(separator)
+	log.Info().Msg("Checking new issues for all new reports")
+
+	for i, cluster := range clusters {
+		log.Info().
+			Int("#", i).
+			Int("org id", int(cluster.orgID)).
+			Str("cluster", string(cluster.clusterName)).
+			Msg("cluster entry")
+
+		report, _, err := storage.ReadReportForCluster(cluster.orgID, cluster.clusterName)
+		if err != nil {
+			log.Err(err).Msg("Operation failed")
+			os.Exit(ExitStatusStorageError)
+		}
+
+		var deserialized Report
+		err = json.Unmarshal([]byte(report), &deserialized)
+		if err != nil {
+			log.Err(err).Msg("Deserialization error")
+			os.Exit(ExitStatusStorageError)
+		}
+
+		for i, r := range deserialized.Reports {
+			log.Info().
+				Int("#", i).
+				Str("type", r.Type).
+				Str("module", string(r.Module)).
+				Str("error key", string(r.ErrorKey)).
+				Msg("Report")
+		}
 	}
-	log.Info().Str("report", string(report)).Msg("report")
 
 	log.Info().Msg("Finished")
 }
