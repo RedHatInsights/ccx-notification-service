@@ -22,9 +22,23 @@ import (
 
 const contentDirectory = "content"
 
+// Configuration-related constants
+const (
+	configFileEnvVariableName = "NOTIFICATION_DIFFER_CONFIG_FILE"
+	defaultConfigFileName     = "config"
+)
+
 // main function is entry point to the differ
 func main() {
-	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	// config has exactly the same structure as *.toml file
+	config, err := LoadConfiguration(configFileEnvVariableName, defaultConfigFileName)
+	if err != nil {
+		log.Err(err).Msg("Load configuration")
+	}
+
+	if config.Logging.Debug {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
 
 	log.Info().Msg("Started")
 
@@ -35,7 +49,7 @@ func main() {
 
 	invalidRules := make([]string, 0)
 
-	err := parseRulesInDirectory(contentDirectory, &contentMap, &invalidRules)
+	err = parseRulesInDirectory(contentDirectory, &contentMap, &invalidRules)
 	if err != nil {
 		log.Error().Err(err).Msg("parseRulesInDirectory")
 		os.Exit(1)
