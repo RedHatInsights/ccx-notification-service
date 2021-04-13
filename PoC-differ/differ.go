@@ -81,6 +81,14 @@ func readRuleContent(contentDirectory string) (map[string]RuleContent, []string)
 	return contentMap, invalidRules
 }
 
+func printInvalidRules(invalidRules []string) {
+	log.Info().Msg(separator)
+	log.Error().Msg("List of invalid rules")
+	for i, rule := range invalidRules {
+		log.Error().Int("#", i+1).Str("Error", rule).Msg("Invalid rule")
+	}
+}
+
 // main function is entry point to the differ
 func main() {
 	var cliFlags CliFlags
@@ -124,11 +132,11 @@ func main() {
 	_, invalidRules := readRuleContent(contentDirectory)
 
 	if len(invalidRules) > 0 {
-		log.Error().Msg("List of invalid rules")
-		for i, rule := range invalidRules {
-			log.Error().Int("#", i+1).Str("Error", rule).Msg("Invalid rule")
-		}
+		printInvalidRules(invalidRules)
 	}
+
+	log.Info().Msg(separator)
+	log.Info().Msg("Read cluster list")
 
 	// prepare the storage
 	storageConfiguration := GetStorageConfiguration(config)
@@ -151,13 +159,40 @@ func main() {
 			Str("cluster", string(cluster.clusterName)).
 			Msg("cluster entry")
 	}
+	log.Info().Int("clusters", len(clusters)).Msg("Done")
 
-	report, _, err := storage.ReadReportForCluster(1, "5d5892d3-1f74-4ccf-91af-548dfc9767aa")
-	if err != nil {
-		log.Err(err).Msg("Operation failed")
-		os.Exit(ExitStatusStorageError)
+	log.Info().Msg(separator)
+	log.Info().Msg("Checking new issues for all new reports")
+
+	for i, cluster := range clusters {
+		log.Info().
+			Int("#", i).
+			Int("org id", int(cluster.orgID)).
+			Str("cluster", string(cluster.clusterName)).
+			Msg("cluster entry")
+
+		report, _, err := storage.ReadReportForCluster(cluster.orgID, cluster.clusterName)
+		if err != nil {
+			log.Err(err).Msg("Operation failed")
+			os.Exit(ExitStatusStorageError)
+		}
+
+		var deserialized Report
+		err = json.Unmarshal([]byte(report), &deserialized)
+		if err != nil {
+			log.Err(err).Msg("Deserialization error")
+			os.Exit(ExitStatusStorageError)
+		}
+
+		for i, r := range deserialized.Reports {
+			log.Info().
+				Int("#", i).
+				Str("type", r.Type).
+				Str("module", string(r.Module)).
+				Str("error key", string(r.ErrorKey)).
+				Msg("Report")
+		}
 	}
-	log.Info().Str("report", string(report)).Msg("report")
 
 	log.Info().Msg("Finished")
 }
