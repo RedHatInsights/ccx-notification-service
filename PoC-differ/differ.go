@@ -81,6 +81,19 @@ func readRuleContent(contentDirectory string) (map[string]RuleContent, []string)
 	return contentMap, invalidRules
 }
 
+func readImpact(contentDirectory string) GlobalRuleConfig {
+	impact, err := parseGlobalContentConfig(contentDirectory + "/config.yaml")
+	if err != nil {
+		log.Error().Err(err).Msg("parsing impact")
+		os.Exit(ExitStatusConfiguration)
+	}
+	log.Info().
+		Int("parsed impact factors", len(impact.Impact)).
+		Msg("Done")
+
+	return impact
+}
+
 func printInvalidRules(invalidRules []string) {
 	log.Info().Msg(separator)
 	log.Error().Msg("List of invalid rules")
