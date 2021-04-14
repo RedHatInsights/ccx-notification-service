@@ -107,3 +107,9 @@ type ReportItem struct {
 	Module   RuleID   `json:"component"`
 	ErrorKey ErrorKey `json:"key"`
 }
+
+// GlobalRuleConfig represents the file that contains
+// metadata globally applicable to any/all rule content.
+type GlobalRuleConfig struct {
+	Impact map[string]int `yaml:"impact" json:"impact"`
+}

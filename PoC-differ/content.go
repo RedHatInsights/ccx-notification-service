@@ -183,6 +183,19 @@ func parseRuleContent(ruleDirPath string) (RuleContent, error) {
 	return *ruleContent, err
 }
 
+// parseGlobalContentConfig reads the configuration file used to store
+// metadata used by all rule content, such as impact dictionary.
+func parseGlobalContentConfig(configPath string) (GlobalRuleConfig, error) {
+	configBytes, err := ioutil.ReadFile(filepath.Clean(configPath))
+	if err != nil {
+		return GlobalRuleConfig{}, err
+	}
+
+	conf := GlobalRuleConfig{}
+	err = yaml.Unmarshal(configBytes, &conf)
+	return conf, err
+}
+
 // parseRulesInDirectory function finds all rules and their content in the
 // specified directory and stores the content in the newly allocated map.
 func parseRulesInDirectory(dirPath string, contentMap *map[string]RuleContent, invalidRules *[]string) error {
