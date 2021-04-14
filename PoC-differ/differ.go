@@ -102,6 +102,39 @@ func printInvalidRules(invalidRules []string) {
 	}
 }
 
+func calculateTotalRisk(impact, likelihood int) int {
+	return (impact + likelihood) / 2
+}
+
+// ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report
+// ->
+// cluster_wide_proxy_auth_check
+func moduleToRuleName(module string) string {
+	result := strings.TrimSuffix(module, ".report")
+	result = strings.TrimPrefix(result, "ccx_rules_ocp.")
+	result = strings.TrimPrefix(result, "external.")
+	result = strings.TrimPrefix(result, "rules.")
+	result = strings.TrimPrefix(result, "bug_rules.")
+	result = strings.TrimPrefix(result, "ocs.")
+
+	return result
+}
+
+func findRuleByNameAndErrorKey(ruleContent map[string]RuleContent, impacts GlobalRuleConfig, ruleName string, errorKey string) (int, int, int) {
+	rc := ruleContent[ruleName]
+	ek := rc.ErrorKeys
+	val := ek[errorKey]
+	likelihood := val.Metadata.Likelihood
+	impact := impacts.Impact[val.Metadata.Impact]
+	totalRisk := calculateTotalRisk(likelihood, impact)
+	return val.Metadata.Likelihood, impact, totalRisk
+}
+
+func waitForEnter() {
+	fmt.Println("\n... demo mode ... Press 'Enter' to continue...")
+	bufio.NewReader(os.Stdin).ReadBytes('\n')
+}
+
 // main function is entry point to the differ
 func main() {
 	var cliFlags CliFlags
@@ -139,13 +172,21 @@ func main() {
 	}
 
 	log.Info().Msg("Started")
+	waitForEnter()
+
+	log.Info().Msg(separator)
+	log.Info().Msg("Parsing impact from global content configuration")
+	impacts := readImpact(contentDirectory)
+	waitForEnter()
 
 	log.Info().Msg(separator)
 	log.Info().Msg("Parsing rule content")
-	_, invalidRules := readRuleContent(contentDirectory)
+	ruleContent, invalidRules := readRuleContent(contentDirectory)
+	waitForEnter()
 
 	if len(invalidRules) > 0 {
 		printInvalidRules(invalidRules)
+		waitForEnter()
 	}
 
 	log.Info().Msg(separator)
@@ -173,9 +214,11 @@ func main() {
 			Msg("cluster entry")
 	}
 	log.Info().Int("clusters", len(clusters)).Msg("Done")
+	waitForEnter()
 
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
+	waitForEnter()
 
 	for i, cluster := range clusters {
 		log.Info().
@@ -198,12 +241,22 @@ func main() {
 		}
 
 		for i, r := range deserialized.Reports {
+			ruleName := moduleToRuleName(string(r.Module))
+			errorKey := string(r.ErrorKey)
+			likelihood, impact, totalRisk := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
+
 			log.Info().
 				Int("#", i).
 				Str("type", r.Type).
-				Str("module", string(r.Module)).
-				Str("error key", string(r.ErrorKey)).
+				Str("rule", ruleName).
+				Str("error key", errorKey).
+				Int("likelihood", likelihood).
+				Int("impact", impact).
+				Int("totalRisk", totalRisk).
 				Msg("Report")
+			if totalRisk >= 2 {
+				log.Warn().Int("totalRisk", totalRisk).Msg("Report with high impact detected")
+			}
 		}
 	}
 
