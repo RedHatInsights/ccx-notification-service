@@ -1,0 +1,22 @@
+[kafka_broker]
+address = "localhost:29092"
+topic = "ccx_test_notifications"
+timeout = "20s"
+
+[storage]
+db_driver = "sqlite3"
+sqlite_datasource = ":memory:"
+pg_username = "user"
+pg_password = "password"
+pg_host = "localhost"
+pg_port = 5432
+pg_db_name = "notifications"
+pg_params = ""
+log_sql_queries = true
+
+[logging]
+debug = true
+log_level = ""
+
+[dependencies]
+content_endpoint = ":8081"
