@@ -15,13 +15,15 @@
 package main
 
 import (
+	"bufio"
+	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"encoding/json"
 	"flag"
 	"fmt"
-	"os"
-
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
+	"os"
+	"strings"
 )
 
 const contentDirectory = "content"
@@ -161,7 +163,7 @@ func main() {
 	}
 
 	// config has exactly the same structure as *.toml file
-	config, err := LoadConfiguration(configFileEnvVariableName, defaultConfigFileName)
+	config, err := conf.LoadConfiguration(configFileEnvVariableName, defaultConfigFileName)
 	if err != nil {
 		log.Err(err).Msg("Load configuration")
 		os.Exit(ExitStatusConfiguration)
@@ -193,7 +195,7 @@ func main() {
 	log.Info().Msg("Read cluster list")
 
 	// prepare the storage
-	storageConfiguration := GetStorageConfiguration(config)
+	storageConfiguration := conf.GetStorageConfiguration(config)
 	storage, err := NewStorage(storageConfiguration)
 	if err != nil {
 		log.Err(err).Msg("Operation failed")
