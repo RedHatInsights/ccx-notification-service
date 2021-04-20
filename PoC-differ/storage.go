@@ -58,6 +58,11 @@ type DBStorage struct {
 // exists on the storage while attempting to write a report for a cluster.
 var ErrOldReport = errors.New("More recent report already exists in storage")
 
+// error messages
+const (
+	unableToCloseDBRowsHandle = "Unable to close DB rows handle"
+)
+
 // NewStorage function creates and initializes a new instance of Storage interface
 func NewStorage(configuration StorageConfiguration) (*DBStorage, error) {
 	driverType, driverName, dataSource, err := initAndGetDriver(configuration)
@@ -142,7 +147,7 @@ func (storage DBStorage) ReadClusterList() ([]ClusterEntry, error) {
 	defer func() {
 		err := rows.Close()
 		if err != nil {
-			log.Error().Err(err).Msg("Unable to close the DB rows handle")
+			log.Error().Err(err).Msg(unableToCloseDBRowsHandle)
 		}
 	}()
 
@@ -154,7 +159,7 @@ func (storage DBStorage) ReadClusterList() ([]ClusterEntry, error) {
 
 		if err := rows.Scan(&orgID, &clusterName); err != nil {
 			if closeErr := rows.Close(); closeErr != nil {
-				log.Error().Err(closeErr).Msg("Unable to close the DB rows handle")
+				log.Error().Err(closeErr).Msg(unableToCloseDBRowsHandle)
 			}
 			return clusterList, err
 		}

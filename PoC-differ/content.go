@@ -25,6 +25,11 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// Logging messages
+const (
+	directoryAttribute = "directory"
+)
+
 func (err MissingMandatoryFile) Error() string {
 	return fmt.Sprintf("Missing required file: %s", err.FileName)
 }
@@ -216,7 +221,7 @@ func parseRulesInDirectory(dirPath string, contentMap *map[string]RuleContent, i
 			// should never directly contain any rule content and because the name
 			// of the directory is much easier to access here without an extra call.
 			if pluginYaml, err := os.Stat(path.Join(subdirPath, "plugin.yaml")); err == nil && os.FileMode.IsRegular(pluginYaml.Mode()) {
-				log.Info().Str("directory", subdirPath).Msg("plugin.yaml found")
+				log.Info().Str(directoryAttribute, subdirPath).Msg("plugin.yaml found")
 
 				// let's accumulate error report with context (in which subdir it occured)
 				ruleContent, err := parseRuleContent(subdirPath)
@@ -239,7 +244,7 @@ func parseRulesInDirectory(dirPath string, contentMap *map[string]RuleContent, i
 				(*contentMap)[name] = ruleContent
 			} else {
 				// Otherwise, descend into the sub-directory and see if there is any rule content.
-				log.Info().Str("directory", subdirPath).Msg("descending into sub-directory")
+				log.Info().Str(directoryAttribute, subdirPath).Msg("descending into sub-directory")
 				if err := parseRulesInDirectory(subdirPath, contentMap, invalidRules); err != nil {
 					return err
 				}
