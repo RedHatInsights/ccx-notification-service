@@ -15,6 +15,7 @@
 package types
 
 import (
+	"fmt"
 	"time"
 )
 
@@ -82,6 +83,10 @@ type ErrorKeyMetadata struct {
 // MissingMandatoryFile is an error raised while parsing, when a mandatory file is missing
 type MissingMandatoryFile struct {
 	FileName string
+}
+
+func (err MissingMandatoryFile) Error() string {
+	return fmt.Sprintf("Missing required file: %s", err.FileName)
 }
 
 // CliFlags represents structure holding all command line arguments/flags.
