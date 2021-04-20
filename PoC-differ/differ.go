@@ -46,9 +46,14 @@ const (
 
 // Messages
 const (
-	versionMessage = "Notification writer version 1.0"
-	authorsMessage = "Pavel Tisnovsky, Red Hat Inc."
-	separator      = "------------------------------------------------------------"
+	versionMessage          = "Notification writer version 1.0"
+	authorsMessage          = "Pavel Tisnovsky, Red Hat Inc."
+	separator               = "------------------------------------------------------------"
+	operationFailedMessage  = "Operation failed"
+	clusterEntryMessage     = "cluster entry"
+	organizationIDAttribute = "org id"
+	clusterAttribute        = "cluster"
+	totalRiskAttribute      = "totalRisk"
 )
 
 // showVersion function displays version information.
@@ -76,7 +81,7 @@ func readRuleContent(contentDirectory string) (map[string]RuleContent, []string)
 	log.Info().
 		Int("parsed rules", len(contentMap)).
 		Int("invalid rules", len(invalidRules)).
-		Msg("Done")
+		Msg("Parsing rules: done")
 
 	return contentMap, invalidRules
 }
@@ -89,7 +94,7 @@ func readImpact(contentDirectory string) GlobalRuleConfig {
 	}
 	log.Info().
 		Int("parsed impact factors", len(impact.Impact)).
-		Msg("Done")
+		Msg("Read impact: done")
 
 	return impact
 }
@@ -171,7 +176,7 @@ func main() {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
-	log.Info().Msg("Started")
+	log.Info().Msg("Differ started")
 	waitForEnter()
 
 	log.Info().Msg(separator)
@@ -196,24 +201,24 @@ func main() {
 	storageConfiguration := GetStorageConfiguration(config)
 	storage, err := NewStorage(storageConfiguration)
 	if err != nil {
-		log.Err(err).Msg("Operation failed")
+		log.Err(err).Msg(operationFailedMessage)
 		os.Exit(ExitStatusStorageError)
 	}
 
 	clusters, err := storage.ReadClusterList()
 	if err != nil {
-		log.Err(err).Msg("Operation failed")
+		log.Err(err).Msg(operationFailedMessage)
 		os.Exit(ExitStatusStorageError)
 	}
 
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
-			Int("org id", int(cluster.orgID)).
-			Str("cluster", string(cluster.clusterName)).
-			Msg("cluster entry")
+			Int(organizationIDAttribute, int(cluster.orgID)).
+			Str(clusterAttribute, string(cluster.clusterName)).
+			Msg(clusterEntryMessage)
 	}
-	log.Info().Int("clusters", len(clusters)).Msg("Done")
+	log.Info().Int("clusters", len(clusters)).Msg("Read cluster list: done")
 	waitForEnter()
 
 	log.Info().Msg(separator)
@@ -223,13 +228,13 @@ func main() {
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
-			Int("org id", int(cluster.orgID)).
-			Str("cluster", string(cluster.clusterName)).
-			Msg("cluster entry")
+			Int(organizationIDAttribute, int(cluster.orgID)).
+			Str(clusterAttribute, string(cluster.clusterName)).
+			Msg(clusterEntryMessage)
 
 		report, _, err := storage.ReadReportForCluster(cluster.orgID, cluster.clusterName)
 		if err != nil {
-			log.Err(err).Msg("Operation failed")
+			log.Err(err).Msg(operationFailedMessage)
 			os.Exit(ExitStatusStorageError)
 		}
 
@@ -252,13 +257,13 @@ func main() {
 				Str("error key", errorKey).
 				Int("likelihood", likelihood).
 				Int("impact", impact).
-				Int("totalRisk", totalRisk).
+				Int(totalRiskAttribute, totalRisk).
 				Msg("Report")
 			if totalRisk >= 2 {
-				log.Warn().Int("totalRisk", totalRisk).Msg("Report with high impact detected")
+				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
 			}
 		}
 	}
 
-	log.Info().Msg("Finished")
+	log.Info().Msg("Differ finished")
 }
