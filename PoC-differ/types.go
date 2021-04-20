@@ -113,3 +113,29 @@ type ReportItem struct {
 type GlobalRuleConfig struct {
 	Impact map[string]int `yaml:"impact" json:"impact"`
 }
+
+// EventType represents the allowed event types in notification messages
+type EventType int
+
+// Event types as enum
+const (
+	LOW int = iota
+	MODERATE
+	IMPORTANT
+	CRITICAL
+)
+
+// Event types string representation
+const (
+	eventTypeLow       = "Low"
+	eventTypeModerate  = "Moderate"
+	eventTypeImportant = "Important"
+	eventTypeCritical  = "Critical"
+)
+
+// String function to get event type string representation from the corresponding enum
+func (e EventType) String() string {
+	return [...]string{
+		eventTypeLow, eventTypeModerate, eventTypeImportant, eventTypeCritical,
+	}[e]
+}

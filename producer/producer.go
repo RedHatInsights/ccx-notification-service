@@ -21,7 +21,6 @@ package producer
 import (
 	"encoding/json"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
-
 	"github.com/Shopify/sarama"
 	"github.com/rs/zerolog/log"
 )

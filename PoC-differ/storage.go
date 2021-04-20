@@ -33,6 +33,7 @@ import (
 	_ "github.com/lib/pq"           // PostgreSQL database driver
 	_ "github.com/mattn/go-sqlite3" // SQLite database driver
 
+	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/rs/zerolog/log"
 )
 
@@ -64,7 +65,7 @@ const (
 )
 
 // NewStorage function creates and initializes a new instance of Storage interface
-func NewStorage(configuration StorageConfiguration) (*DBStorage, error) {
+func NewStorage(configuration conf.StorageConfiguration) (*DBStorage, error) {
 	driverType, driverName, dataSource, err := initAndGetDriver(configuration)
 	if err != nil {
 		return nil, err
@@ -94,7 +95,7 @@ func NewFromConnection(connection *sql.DB, dbDriverType DBDriver) *DBStorage {
 
 // initAndGetDriver initializes driver(with logs if logSQLQueries is true),
 // checks if it's supported and returns driver type, driver name, dataSource and error
-func initAndGetDriver(configuration StorageConfiguration) (driverType DBDriver, driverName string, dataSource string, err error) {
+func initAndGetDriver(configuration conf.StorageConfiguration) (driverType DBDriver, driverName string, dataSource string, err error) {
 	//var driver sql_driver.Driver
 	driverName = configuration.Driver
 
