@@ -49,6 +49,8 @@ const (
 	ExitStatusStorageError
 	// ExitStatusKafkaBrokerError is for kafka broker connection establishment errors
 	ExitStatusKafkaBrokerError
+	// ExitStatusKafkaProducerError is for kafka event production failures
+	ExitStatusKafkaProducerError
 	// ExitStatusKafkaConnectionNotClosedError is raised when connection cannot be closed
 	ExitStatusKafkaConnectionNotClosedError
 )
@@ -204,13 +206,23 @@ func processClusters(ruleContent map[string]RuleContent, impacts GlobalRuleConfi
 			if totalRisk >= 2 {
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
 				// TODO: Decide actual content of notification message's payload.
-				notifier.ProduceMessage(generateNotificationMessage(ruleName, totalRisk, string(cluster.orgID), 0))
+				notification := generateNotificationMessage(ruleName, totalRisk, string(cluster.orgID), 0)
+				_, _, err = notifier.ProduceMessage(notification)
+				if err != nil {
+					log.Error().
+						Str("Error:", err.Error()).
+						Msg("Couldn't produce kafka event.")
+					os.Exit(ExitStatusKafkaProducerError)
+				}
 			}
 		}
 
 		err = notifier.Close()
 		if err != nil {
 			// TODO: Can this be handled somehow?
+			log.Error().
+				Str("Error:", err.Error()).
+				Msg("Couldn't close Kafka connection.")
 			os.Exit(ExitStatusKafkaConnectionNotClosedError)
 		}
 	}
@@ -229,6 +241,9 @@ func printClusters(clusters []ClusterEntry) {
 func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) (notifier *producer.KafkaProducer) {
 	notifier, err := producer.New(brokerConfig)
 	if err != nil {
+		log.Error().
+			Str("Error:", err.Error()).
+			Msg("Couldn't initialize Kafka producer with the provided config.")
 		os.Exit(ExitStatusKafkaBrokerError)
 	}
 	return
