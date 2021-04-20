@@ -15,10 +15,12 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
 	"os"
+	"strings"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -137,7 +139,63 @@ func findRuleByNameAndErrorKey(ruleContent map[string]RuleContent, impacts Globa
 
 func waitForEnter() {
 	fmt.Println("\n... demo mode ... Press 'Enter' to continue...")
-	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	_, err := bufio.NewReader(os.Stdin).ReadBytes('\n')
+	if err != nil {
+		log.Error().Err(err)
+	}
+}
+
+func processClusters(ruleContent map[string]RuleContent, impacts GlobalRuleConfig, storage *DBStorage, clusters []ClusterEntry) {
+	for i, cluster := range clusters {
+		log.Info().
+			Int("#", i).
+			Int(organizationIDAttribute, int(cluster.orgID)).
+			Str(clusterAttribute, string(cluster.clusterName)).
+			Msg(clusterEntryMessage)
+
+		report, _, err := storage.ReadReportForCluster(cluster.orgID, cluster.clusterName)
+		if err != nil {
+			log.Err(err).Msg(operationFailedMessage)
+			os.Exit(ExitStatusStorageError)
+		}
+
+		var deserialized Report
+		err = json.Unmarshal([]byte(report), &deserialized)
+		if err != nil {
+			log.Err(err).Msg("Deserialization error")
+			os.Exit(ExitStatusStorageError)
+		}
+
+		for i, r := range deserialized.Reports {
+			ruleName := moduleToRuleName(string(r.Module))
+			errorKey := string(r.ErrorKey)
+			likelihood, impact, totalRisk := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
+
+			log.Info().
+				Int("#", i).
+				Str("type", r.Type).
+				Str("rule", ruleName).
+				Str("error key", errorKey).
+				Int("likelihood", likelihood).
+				Int("impact", impact).
+				Int(totalRiskAttribute, totalRisk).
+				Msg("Report")
+			if totalRisk >= 2 {
+				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
+			}
+		}
+	}
+
+}
+
+func printClusters(clusters []ClusterEntry) {
+	for i, cluster := range clusters {
+		log.Info().
+			Int("#", i).
+			Int(organizationIDAttribute, int(cluster.orgID)).
+			Str(clusterAttribute, string(cluster.clusterName)).
+			Msg(clusterEntryMessage)
+	}
 }
 
 // main function is entry point to the differ
@@ -211,13 +269,7 @@ func main() {
 		os.Exit(ExitStatusStorageError)
 	}
 
-	for i, cluster := range clusters {
-		log.Info().
-			Int("#", i).
-			Int(organizationIDAttribute, int(cluster.orgID)).
-			Str(clusterAttribute, string(cluster.clusterName)).
-			Msg(clusterEntryMessage)
-	}
+	printClusters(clusters)
 	log.Info().Int("clusters", len(clusters)).Msg("Read cluster list: done")
 	waitForEnter()
 
@@ -225,45 +277,7 @@ func main() {
 	log.Info().Msg("Checking new issues for all new reports")
 	waitForEnter()
 
-	for i, cluster := range clusters {
-		log.Info().
-			Int("#", i).
-			Int(organizationIDAttribute, int(cluster.orgID)).
-			Str(clusterAttribute, string(cluster.clusterName)).
-			Msg(clusterEntryMessage)
-
-		report, _, err := storage.ReadReportForCluster(cluster.orgID, cluster.clusterName)
-		if err != nil {
-			log.Err(err).Msg(operationFailedMessage)
-			os.Exit(ExitStatusStorageError)
-		}
-
-		var deserialized Report
-		err = json.Unmarshal([]byte(report), &deserialized)
-		if err != nil {
-			log.Err(err).Msg("Deserialization error")
-			os.Exit(ExitStatusStorageError)
-		}
-
-		for i, r := range deserialized.Reports {
-			ruleName := moduleToRuleName(string(r.Module))
-			errorKey := string(r.ErrorKey)
-			likelihood, impact, totalRisk := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
-
-			log.Info().
-				Int("#", i).
-				Str("type", r.Type).
-				Str("rule", ruleName).
-				Str("error key", errorKey).
-				Int("likelihood", likelihood).
-				Int("impact", impact).
-				Int(totalRiskAttribute, totalRisk).
-				Msg("Report")
-			if totalRisk >= 2 {
-				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-			}
-		}
-	}
+	processClusters(ruleContent, impacts, storage, clusters)
 
 	log.Info().Msg("Differ finished")
 }
