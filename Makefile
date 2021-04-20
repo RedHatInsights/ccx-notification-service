@@ -73,6 +73,9 @@ test: ${BINARY} ## Run the unit tests
 cover: test
 	@go tool cover -html=coverage.out
 
+coverage:
+	@go tool cover -func=coverage.out
+
 license: install_addlicense
 	addlicense -c "Red Hat, Inc" -l "apache" -v ./
 
