@@ -27,6 +27,7 @@ jobs:
         - ./govet.sh
         - ./golint.sh
         - ./goerrcheck.sh
+        - ./goconst.sh
         - ./gosec.sh
         - ./ineffassign.sh
     - stage: unit tests
