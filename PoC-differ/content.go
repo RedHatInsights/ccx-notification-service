@@ -16,6 +16,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/RedHatInsights/ccx-notification-service/types"
 	"io/ioutil"
 	"os"
 	"path"
@@ -30,7 +31,7 @@ const (
 	directoryAttribute = "directory"
 )
 
-func (err MissingMandatoryFile) Error() string {
+func (err types.MissingMandatoryFile) Error() string {
 	return fmt.Sprintf("Missing required file: %s", err.FileName)
 }
 
@@ -55,11 +56,11 @@ func readFilesIntoFileContent(baseDir string, filelist []string) (map[string][]b
 
 // createErrorContents takes a mapping of files into contents and perform
 // some checks about it
-func createErrorContents(contentRead map[string][]byte) (*RuleErrorKeyContent, error) {
-	errorContent := RuleErrorKeyContent{}
+func createErrorContents(contentRead map[string][]byte) (*types.RuleErrorKeyContent, error) {
+	errorContent := types.RuleErrorKeyContent{}
 
 	if contentRead["generic.md"] == nil {
-		return nil, &MissingMandatoryFile{FileName: "generic.md"}
+		return nil, &types.MissingMandatoryFile{FileName: "generic.md"}
 	}
 
 	errorContent.Generic = string(contentRead["generic.md"])
@@ -73,7 +74,7 @@ func createErrorContents(contentRead map[string][]byte) (*RuleErrorKeyContent, e
 	}
 
 	if contentRead["metadata.yaml"] == nil {
-		return nil, &MissingMandatoryFile{FileName: "metadata.yaml"}
+		return nil, &types.MissingMandatoryFile{FileName: "metadata.yaml"}
 	}
 
 	if err := yaml.Unmarshal(contentRead["metadata.yaml"], &errorContent.Metadata); err != nil {
@@ -87,13 +88,13 @@ func createErrorContents(contentRead map[string][]byte) (*RuleErrorKeyContent, e
 // and parses all subdirectories as error key contents.  This implicitly checks
 // that the directory exists, so it is not necessary to ever check that
 // elsewhere.
-func parseErrorContents(ruleDirPath string) (map[string]RuleErrorKeyContent, error) {
+func parseErrorContents(ruleDirPath string) (map[string]types.RuleErrorKeyContent, error) {
 	entries, err := ioutil.ReadDir(ruleDirPath)
 	if err != nil {
 		return nil, err
 	}
 
-	errorContents := map[string]RuleErrorKeyContent{}
+	errorContents := map[string]types.RuleErrorKeyContent{}
 
 	for _, e := range entries {
 		if e.IsDir() {
@@ -121,11 +122,11 @@ func parseErrorContents(ruleDirPath string) (map[string]RuleErrorKeyContent, err
 }
 
 // createRuleContent
-func createRuleContent(contentRead map[string][]byte, errorKeys map[string]RuleErrorKeyContent) (*RuleContent, error) {
-	ruleContent := RuleContent{ErrorKeys: errorKeys}
+func createRuleContent(contentRead map[string][]byte, errorKeys map[string]types.RuleErrorKeyContent) (*types.RuleContent, error) {
+	ruleContent := types.RuleContent{ErrorKeys: errorKeys}
 
 	if contentRead["summary.md"] == nil {
-		return nil, &MissingMandatoryFile{FileName: "summary.md"}
+		return nil, &types.MissingMandatoryFile{FileName: "summary.md"}
 	}
 
 	ruleContent.Summary = string(contentRead["summary.md"])
@@ -140,19 +141,19 @@ func createRuleContent(contentRead map[string][]byte, errorKeys map[string]RuleE
 	}
 
 	if contentRead["resolution.md"] == nil {
-		return nil, &MissingMandatoryFile{FileName: "resolution.md"}
+		return nil, &types.MissingMandatoryFile{FileName: "resolution.md"}
 	}
 
 	ruleContent.Resolution = string(contentRead["resolution.md"])
 
 	if contentRead["more_info.md"] == nil {
-		return nil, &MissingMandatoryFile{FileName: "more_info.md"}
+		return nil, &types.MissingMandatoryFile{FileName: "more_info.md"}
 	}
 
 	ruleContent.MoreInfo = string(contentRead["more_info.md"])
 
 	if contentRead["plugin.yaml"] == nil {
-		return nil, &MissingMandatoryFile{FileName: "plugin.yaml"}
+		return nil, &types.MissingMandatoryFile{FileName: "plugin.yaml"}
 	}
 
 	return &ruleContent, nil
@@ -160,11 +161,11 @@ func createRuleContent(contentRead map[string][]byte, errorKeys map[string]RuleE
 
 // parseRuleContent function attempts to parse all available rule content from
 // the specified directory.
-func parseRuleContent(ruleDirPath string) (RuleContent, error) {
+func parseRuleContent(ruleDirPath string) (types.RuleContent, error) {
 	errorContents, err := parseErrorContents(ruleDirPath)
 
 	if err != nil {
-		return RuleContent{}, err
+		return types.RuleContent{}, err
 	}
 
 	contentFiles := []string{
@@ -177,33 +178,33 @@ func parseRuleContent(ruleDirPath string) (RuleContent, error) {
 
 	readContent, err := readFilesIntoFileContent(ruleDirPath, contentFiles)
 	if err != nil {
-		return RuleContent{}, err
+		return types.RuleContent{}, err
 	}
 
 	ruleContent, err := createRuleContent(readContent, errorContents)
 
 	if err != nil {
-		return RuleContent{}, err
+		return types.RuleContent{}, err
 	}
 	return *ruleContent, err
 }
 
 // parseGlobalContentConfig reads the configuration file used to store
 // metadata used by all rule content, such as impact dictionary.
-func parseGlobalContentConfig(configPath string) (GlobalRuleConfig, error) {
+func parseGlobalContentConfig(configPath string) (types.GlobalRuleConfig, error) {
 	configBytes, err := ioutil.ReadFile(filepath.Clean(configPath))
 	if err != nil {
-		return GlobalRuleConfig{}, err
+		return types.GlobalRuleConfig{}, err
 	}
 
-	conf := GlobalRuleConfig{}
+	conf := types.GlobalRuleConfig{}
 	err = yaml.Unmarshal(configBytes, &conf)
 	return conf, err
 }
 
 // parseRulesInDirectory function finds all rules and their content in the
 // specified directory and stores the content in the newly allocated map.
-func parseRulesInDirectory(dirPath string, contentMap *map[string]RuleContent, invalidRules *[]string) error {
+func parseRulesInDirectory(dirPath string, contentMap *map[string]types.RuleContent, invalidRules *[]string) error {
 	// read the whole content of specified directory
 	entries, err := ioutil.ReadDir(dirPath)
 	if err != nil {
@@ -258,14 +259,14 @@ func parseRulesInDirectory(dirPath string, contentMap *map[string]RuleContent, i
 // checkRequiredFields function checks if all the required fields in the
 // RuleContent are ok and valid. At the moment only checks for Reason field is
 // being performed.
-func checkRequiredFields(rule RuleContent) error {
+func checkRequiredFields(rule types.RuleContent) error {
 	if rule.HasReason {
 		return nil
 	}
 
 	for _, errorKeyContent := range rule.ErrorKeys {
 		if !errorKeyContent.HasReason {
-			return &MissingMandatoryFile{FileName: "reason.md"}
+			return &types.MissingMandatoryFile{FileName: "reason.md"}
 		}
 	}
 

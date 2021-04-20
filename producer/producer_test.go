@@ -19,6 +19,7 @@ package producer
 import (
 	"errors"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
+	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
 	"github.com/Shopify/sarama"
 	"github.com/Shopify/sarama/mocks"
@@ -102,7 +103,7 @@ func TestProducerSendEmptyNotificationMessage(t *testing.T) {
 		Producer:      mockProducer,
 	}
 
-	_, _, err := kafkaProducer.ProduceMessage(NotificationMessage{})
+	_, _, err := kafkaProducer.ProduceMessage(types.NotificationMessage{})
 	assert.NoError(t, err, "Couldn't produce message with given broker configuration")
 	helpers.FailOnError(t, kafkaProducer.Close())
 }
@@ -116,7 +117,7 @@ func TestProducerSendNotificationMessageNoEvents(t *testing.T) {
 		Producer:      mockProducer,
 	}
 
-	msg := NotificationMessage{
+	msg := types.NotificationMessage{
 		Bundle:      "openshift",
 		Application: "advisor",
 		EventType:   "critical",
@@ -140,7 +141,7 @@ func TestProducerSendNotificationMessageSingleEvent(t *testing.T) {
 		Producer:      mockProducer,
 	}
 
-	events := []Event{
+	events := []types.Event{
 		{
 			Metadata: nil,
 			Payload: map[string]interface{}{
@@ -151,7 +152,7 @@ func TestProducerSendNotificationMessageSingleEvent(t *testing.T) {
 		},
 	}
 
-	msg := NotificationMessage{
+	msg := types.NotificationMessage{
 		Bundle:      "openshift",
 		Application: "advisor",
 		EventType:   "critical",
@@ -175,7 +176,7 @@ func TestProducerSendNotificationMessageMultipleEvents(t *testing.T) {
 		Producer:      mockProducer,
 	}
 
-	events := []Event{
+	events := []types.Event{
 		{
 			Metadata: nil,
 			Payload: map[string]interface{}{
@@ -195,7 +196,7 @@ func TestProducerSendNotificationMessageMultipleEvents(t *testing.T) {
 		},
 	}
 
-	msg := NotificationMessage{
+	msg := types.NotificationMessage{
 		Bundle:      "openshift",
 		Application: "advisor",
 		EventType:   "critical",
@@ -221,7 +222,7 @@ func TestProducerSendNotificationMessageEventContentNotValidJson(t *testing.T) {
 		Producer:      mockProducer,
 	}
 
-	events := []Event{
+	events := []types.Event{
 		{
 			Metadata: nil,
 			Payload: map[string]interface{}{
@@ -242,7 +243,7 @@ func TestProducerSendNotificationMessageEventContentNotValidJson(t *testing.T) {
 		},
 	}
 
-	msg := NotificationMessage{
+	msg := types.NotificationMessage{
 		Bundle:      "openshift",
 		Application: "advisor",
 		EventType:   "critical",
@@ -266,7 +267,7 @@ func TestProducerSend(t *testing.T) {
 		Producer:  producer   ,
 	}
 
-	events := []Event{
+	events := []types.Event{
 		{
 			Metadata: nil,
 			Payload: map[string]interface{}{
@@ -286,7 +287,7 @@ func TestProducerSend(t *testing.T) {
 		},
 	}
 
-	msg := NotificationMessage{
+	msg := types.NotificationMessage{
 		Bundle:      "openshift",
 		Application: "advisor",
 		EventType:   "critical",

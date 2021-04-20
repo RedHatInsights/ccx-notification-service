@@ -21,6 +21,7 @@ package producer
 import (
 	"encoding/json"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
+	"github.com/RedHatInsights/ccx-notification-service/types"
 
 	"github.com/Shopify/sarama"
 	"github.com/rs/zerolog/log"
@@ -40,37 +41,6 @@ type KafkaProducer struct {
 	Producer      sarama.SyncProducer
 }
 
-// EventMetadata represents the metadata of the sent payload.
-// It is expected to be an empty struct as of today
-type EventMetadata map[string]interface{}
-
-// EventPayload is a JSON string containing all the data required
-// by the app to compose the various messages (Email, webhook, ...).
-type EventPayload map[string]interface{}
-
-// Event is a structure containing the payload and its metadata.
-type Event struct {
-	Metadata EventMetadata `json:"metadata"`
-	Payload  EventPayload  `json:"payload"`
-}
-
-// NotificationContext represents the extra information
-// that is common to all the events that are sent in
-// this message as a JSON string (escaped)
-type NotificationContext map[string]interface{}
-
-// NotificationMessage represents content of messages
-// sent to the notification platform topic in Kafka.
-type NotificationMessage struct {
-	Bundle      string              `json:"bundle"`
-	Application string              `json:"application"`
-	EventType   string              `json:"event_type"`
-	Timestamp   string              `json:"timestamp"`
-	AccountID   string              `json:"account_id"`
-	Events      []Event             `json:"events"`
-	Context     NotificationContext `json:"context"`
-}
-
 // New constructs new implementation of Producer interface
 func New(brokerCfg conf.KafkaConfiguration) (*KafkaProducer, error) {
 	producer, err := sarama.NewSyncProducer([]string{brokerCfg.Address}, nil)
@@ -88,7 +58,7 @@ func New(brokerCfg conf.KafkaConfiguration) (*KafkaProducer, error) {
 // ProduceMessage produces message to selected topic. That function returns
 // partition ID and offset of new message or an error value in case of any
 // problem on broker side.
-func (producer *KafkaProducer) ProduceMessage(msg NotificationMessage) (partitionID int32, offset int64, err error) {
+func (producer *KafkaProducer) ProduceMessage(msg types.NotificationMessage) (partitionID int32, offset int64, err error) {
 	jsonBytes, err := json.Marshal(msg)
 	if err != nil {
 		return 0, 0, err
