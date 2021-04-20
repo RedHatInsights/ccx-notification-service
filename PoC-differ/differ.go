@@ -139,7 +139,10 @@ func findRuleByNameAndErrorKey(ruleContent map[string]RuleContent, impacts Globa
 
 func waitForEnter() {
 	fmt.Println("\n... demo mode ... Press 'Enter' to continue...")
-	bufio.NewReader(os.Stdin).ReadBytes('\n')
+	_, err := bufio.NewReader(os.Stdin).ReadBytes('\n')
+	if err != nil {
+		log.Error().Err(err)
+	}
 }
 
 func processClusters(ruleContent map[string]RuleContent, impacts GlobalRuleConfig, storage *DBStorage, clusters []ClusterEntry) {
