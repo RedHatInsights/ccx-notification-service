@@ -88,7 +88,7 @@ func New(brokerCfg conf.KafkaConfiguration) (*KafkaProducer, error) {
 // ProduceMessage produces message to selected topic. That function returns
 // partition ID and offset of new message or an error value in case of any
 // problem on broker side.
-func (producer *KafkaProducer) ProduceMessage(msg NotificationMessage) (int32, int64, error) {
+func (producer *KafkaProducer) ProduceMessage(msg NotificationMessage) (partitionID int32, offset int64, err error) {
 	jsonBytes, err := json.Marshal(msg)
 	if err != nil {
 		return 0, 0, err
@@ -99,13 +99,13 @@ func (producer *KafkaProducer) ProduceMessage(msg NotificationMessage) (int32, i
 		Value: sarama.ByteEncoder(jsonBytes),
 	}
 
-	partition, offset, err := producer.Producer.SendMessage(producerMsg)
+	partitionID, offset, err = producer.Producer.SendMessage(producerMsg)
 	if err != nil {
 		log.Error().Err(err).Msg("failed to produce message to Kafka")
 	} else {
-		log.Info().Msgf("message sent to partition %d at offset %d\n", partition, offset)
+		log.Info().Msgf("message sent to partition %d at offset %d\n", partitionID, offset)
 	}
-	return partition, offset, err
+	return
 }
 
 // Close allow the Sarama producer to be gracefully closed
