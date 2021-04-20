@@ -25,9 +25,9 @@ package main
 // DataSource - specification of data source. The content of this parameter depends on the database used.
 
 import (
+	"database/sql"
 	"errors"
 	"fmt"
-	"database/sql"
 
 	_ "github.com/lib/pq"           // PostgreSQL database driver
 	_ "github.com/mattn/go-sqlite3" // SQLite database driver

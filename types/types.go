@@ -127,7 +127,7 @@ type EventType int
 
 // Event types as enum
 const (
-	InstantNotif int = iota
+	InstantNotif EventType = iota
 	WeeklyDigest
 )
 

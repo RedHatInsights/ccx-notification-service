@@ -43,6 +43,7 @@ type KafkaProducer struct {
 
 // New constructs new implementation of Producer interface
 func New(brokerCfg conf.KafkaConfiguration) (*KafkaProducer, error) {
+	//TODO: Think about a tolerant config for the producer
 	producer, err := sarama.NewSyncProducer([]string{brokerCfg.Address}, nil)
 	if err != nil {
 		log.Error().Err(err).Msg("unable to create a new Kafka producer")
