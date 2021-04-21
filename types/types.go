@@ -12,9 +12,11 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package types
 
-import "time"
+import (
+	"time"
+)
 
 // Timestamp represents any timestamp in a form gathered from database
 // TODO: need to be improved
@@ -41,6 +43,7 @@ const (
 	DBDriverGeneral
 )
 
+// ClusterEntry  represents the entries retrieved from the DB
 type ClusterEntry struct {
 	orgID       OrgID
 	clusterName ClusterName
@@ -112,4 +115,61 @@ type ReportItem struct {
 // metadata globally applicable to any/all rule content.
 type GlobalRuleConfig struct {
 	Impact map[string]int `yaml:"impact" json:"impact"`
+}
+
+// EventType represents the allowed event types in notification messages
+type EventType int
+
+// Event types as enum
+const (
+	LOW int = iota
+	MODERATE
+	IMPORTANT
+	CRITICAL
+)
+
+// Event types string representation
+const (
+	eventTypeLow       = "Low"
+	eventTypeModerate  = "Moderate"
+	eventTypeImportant = "Important"
+	eventTypeCritical  = "Critical"
+)
+
+// String function to get event type string representation from the corresponding enum
+func (e EventType) String() string {
+	return [...]string{
+		eventTypeLow, eventTypeModerate, eventTypeImportant, eventTypeCritical,
+	}[e]
+}
+
+// EventMetadata represents the metadata of the sent payload.
+// It is expected to be an empty struct as of today
+type EventMetadata map[string]interface{}
+
+// EventPayload is a JSON string containing all the data required
+// by the app to compose the various messages (Email, webhook, ...).
+type EventPayload map[string]interface{}
+
+// Event is a structure containing the payload and its metadata.
+type Event struct {
+	Metadata EventMetadata `json:"metadata"`
+	Payload  EventPayload  `json:"payload"`
+}
+
+// NotificationContext represents the extra information
+// that is common to all the events that are sent in
+// this message as a JSON string (escaped)
+type NotificationContext map[string]interface{}
+
+// NotificationMessage represents content of messages
+// sent to the notification platform topic in Kafka.
+type NotificationMessage struct {
+	Bundle      string              `json:"bundle"`
+	Application string              `json:"application"`
+	EventType   string              `json:"event_type"`
+	Timestamp   string              `json:"timestamp"`
+	AccountID   string              `json:"account_id"`
+	Events      []Event             `json:"events"`
+	Context     NotificationContext `json:"context"`
 }

@@ -19,6 +19,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/RedHatInsights/ccx-notification-service/conf"
+	"github.com/RedHatInsights/ccx-notification-service/types"
 	"os"
 	"strings"
 
@@ -68,9 +70,9 @@ func showAuthors() {
 	fmt.Println(authorsMessage)
 }
 
-func readRuleContent(contentDirectory string) (map[string]RuleContent, []string) {
+func readRuleContent(contentDirectory string) (map[string]types.RuleContent, []string) {
 	// map used to store rule content
-	contentMap := make(map[string]RuleContent)
+	contentMap := make(map[string]types.RuleContent)
 
 	// map used to store invalid rules
 	invalidRules := make([]string, 0)
@@ -88,7 +90,7 @@ func readRuleContent(contentDirectory string) (map[string]RuleContent, []string)
 	return contentMap, invalidRules
 }
 
-func readImpact(contentDirectory string) GlobalRuleConfig {
+func readImpact(contentDirectory string) types.GlobalRuleConfig {
 	impact, err := parseGlobalContentConfig(contentDirectory + "/config.yaml")
 	if err != nil {
 		log.Error().Err(err).Msg("parsing impact")
@@ -127,7 +129,7 @@ func moduleToRuleName(module string) string {
 	return result
 }
 
-func findRuleByNameAndErrorKey(ruleContent map[string]RuleContent, impacts GlobalRuleConfig, ruleName string, errorKey string) (int, int, int) {
+func findRuleByNameAndErrorKey(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, ruleName string, errorKey string) (int, int, int) {
 	rc := ruleContent[ruleName]
 	ek := rc.ErrorKeys
 	val := ek[errorKey]
@@ -145,7 +147,7 @@ func waitForEnter() {
 	}
 }
 
-func processClusters(ruleContent map[string]RuleContent, impacts GlobalRuleConfig, storage *DBStorage, clusters []ClusterEntry) {
+func processClusters(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, storage *DBStorage, clusters []types.ClusterEntry) {
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
@@ -159,7 +161,7 @@ func processClusters(ruleContent map[string]RuleContent, impacts GlobalRuleConfi
 			os.Exit(ExitStatusStorageError)
 		}
 
-		var deserialized Report
+		var deserialized types.Report
 		err = json.Unmarshal([]byte(report), &deserialized)
 		if err != nil {
 			log.Err(err).Msg("Deserialization error")
@@ -188,7 +190,7 @@ func processClusters(ruleContent map[string]RuleContent, impacts GlobalRuleConfi
 
 }
 
-func printClusters(clusters []ClusterEntry) {
+func printClusters(clusters []types.ClusterEntry) {
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
@@ -200,7 +202,7 @@ func printClusters(clusters []ClusterEntry) {
 
 // main function is entry point to the differ
 func main() {
-	var cliFlags CliFlags
+	var cliFlags types.CliFlags
 
 	// define and parse all command line options
 	flag.BoolVar(&cliFlags.instantReports, "instant-reports", false, "create instant reports")

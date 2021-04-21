@@ -27,6 +27,7 @@ package main
 import (
 	"errors"
 	"fmt"
+	"github.com/RedHatInsights/ccx-notification-service/types"
 
 	"database/sql"
 
@@ -40,9 +41,9 @@ import (
 type Storage interface {
 	Close() error
 	ReadReportForCluster(
-		orgID OrgID, clusterName ClusterName) (ClusterReport, Timestamp, error,
+		orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error,
 	)
-	ReadClusterList() ([]ClusterEntry, error)
+	ReadClusterList() ([]types.ClusterEntry, error)
 }
 
 // DBStorage is an implementation of Storage interface that use selected SQL like database
@@ -51,7 +52,7 @@ type Storage interface {
 // SQLQueriesLog is log for sql queries, default is nil which means nothing is logged
 type DBStorage struct {
 	connection   *sql.DB
-	dbDriverType DBDriver
+	dbDriverType types.DBDriver
 }
 
 // ErrOldReport is an error returned if a more recent already
@@ -85,7 +86,7 @@ func NewStorage(configuration StorageConfiguration) (*DBStorage, error) {
 }
 
 // NewFromConnection function creates and initializes a new instance of Storage interface from prepared connection
-func NewFromConnection(connection *sql.DB, dbDriverType DBDriver) *DBStorage {
+func NewFromConnection(connection *sql.DB, dbDriverType types.DBDriver) *DBStorage {
 	return &DBStorage{
 		connection:   connection,
 		dbDriverType: dbDriverType,
@@ -94,17 +95,17 @@ func NewFromConnection(connection *sql.DB, dbDriverType DBDriver) *DBStorage {
 
 // initAndGetDriver initializes driver(with logs if logSQLQueries is true),
 // checks if it's supported and returns driver type, driver name, dataSource and error
-func initAndGetDriver(configuration StorageConfiguration) (driverType DBDriver, driverName string, dataSource string, err error) {
+func initAndGetDriver(configuration StorageConfiguration) (driverType types.DBDriver, driverName string, dataSource string, err error) {
 	//var driver sql_driver.Driver
 	driverName = configuration.Driver
 
 	switch driverName {
 	case "sqlite3":
-		driverType = DBDriverSQLite3
+		driverType = types.DBDriverSQLite3
 		//driver = &sqlite3.SQLiteDriver{}
 		// dataSource = configuration.SQLiteDataSource
 	case "postgres":
-		driverType = DBDriverPostgres
+		driverType = types.DBDriverPostgres
 		//driver = &pq.Driver{}
 		dataSource = fmt.Sprintf(
 			"postgresql://%v:%v@%v:%v/%v?%v",
@@ -136,8 +137,8 @@ func (storage DBStorage) Close() error {
 	return nil
 }
 
-func (storage DBStorage) ReadClusterList() ([]ClusterEntry, error) {
-	var clusterList = make([]ClusterEntry, 0)
+func (storage DBStorage) ReadClusterList() ([]types.ClusterEntry, error) {
+	var clusterList = make([]types.ClusterEntry, 0)
 
 	rows, err := storage.connection.Query("SELECT org_id, cluster FROM new_reports ORDER BY updated_at")
 	if err != nil {
@@ -153,8 +154,8 @@ func (storage DBStorage) ReadClusterList() ([]ClusterEntry, error) {
 
 	for rows.Next() {
 		var (
-			clusterName ClusterName
-			orgID       OrgID
+			clusterName types.ClusterName
+			orgID       types.OrgID
 		)
 
 		if err := rows.Scan(&orgID, &clusterName); err != nil {
@@ -163,7 +164,7 @@ func (storage DBStorage) ReadClusterList() ([]ClusterEntry, error) {
 			}
 			return clusterList, err
 		}
-		clusterList = append(clusterList, ClusterEntry{orgID, clusterName})
+		clusterList = append(clusterList, types.ClusterEntry{orgID, clusterName})
 	}
 
 	return clusterList, nil
@@ -171,10 +172,10 @@ func (storage DBStorage) ReadClusterList() ([]ClusterEntry, error) {
 
 // ReadReportForCluster reads result (health status) for selected cluster
 func (storage DBStorage) ReadReportForCluster(
-	orgID OrgID, clusterName ClusterName,
-) (ClusterReport, Timestamp, error) {
-	var updatedAt Timestamp
-	var report ClusterReport
+	orgID types.OrgID, clusterName types.ClusterName,
+) (types.ClusterReport, types.Timestamp, error) {
+	var updatedAt types.Timestamp
+	var report types.ClusterReport
 
 	err := storage.connection.QueryRow(
 		"SELECT report, updated_at FROM new_reports WHERE org_id = $1 AND cluster = $2;", orgID, clusterName,
