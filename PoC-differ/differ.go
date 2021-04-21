@@ -19,7 +19,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"os"
 	"strings"
@@ -151,11 +150,11 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
-			Int(organizationIDAttribute, int(cluster.orgID)).
-			Str(clusterAttribute, string(cluster.clusterName)).
+			Int(organizationIDAttribute, int(cluster.OrgID)).
+			Str(clusterAttribute, string(cluster.ClusterName)).
 			Msg(clusterEntryMessage)
 
-		report, _, err := storage.ReadReportForCluster(cluster.orgID, cluster.clusterName)
+		report, _, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
 		if err != nil {
 			log.Err(err).Msg(operationFailedMessage)
 			os.Exit(ExitStatusStorageError)
@@ -194,8 +193,8 @@ func printClusters(clusters []types.ClusterEntry) {
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
-			Int(organizationIDAttribute, int(cluster.orgID)).
-			Str(clusterAttribute, string(cluster.clusterName)).
+			Int(organizationIDAttribute, int(cluster.OrgID)).
+			Str(clusterAttribute, string(cluster.ClusterName)).
 			Msg(clusterEntryMessage)
 	}
 }
@@ -205,22 +204,22 @@ func main() {
 	var cliFlags types.CliFlags
 
 	// define and parse all command line options
-	flag.BoolVar(&cliFlags.instantReports, "instant-reports", false, "create instant reports")
-	flag.BoolVar(&cliFlags.weeklyReports, "weekly-reports", false, "create weekly reports")
+	flag.BoolVar(&cliFlags.InstantReports, "instant-reports", false, "create instant reports")
+	flag.BoolVar(&cliFlags.WeeklyReports, "weekly-reports", false, "create weekly reports")
 	flag.Parse()
 
 	switch {
-	case cliFlags.showVersion:
+	case cliFlags.ShowVersion:
 		showVersion()
 		os.Exit(ExitStatusOK)
-	case cliFlags.showAuthors:
+	case cliFlags.ShowAuthors:
 		showAuthors()
 		os.Exit(ExitStatusOK)
 	default:
 	}
 
 	// check if report type is specified on command line
-	if !cliFlags.instantReports && !cliFlags.weeklyReports {
+	if !cliFlags.InstantReports && !cliFlags.WeeklyReports {
 		log.Error().Msg("Type of report needs to be specified on command line")
 		os.Exit(ExitStatusConfiguration)
 	}
