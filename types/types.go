@@ -45,8 +45,8 @@ const (
 
 // ClusterEntry  represents the entries retrieved from the DB
 type ClusterEntry struct {
-	orgID       OrgID
-	clusterName ClusterName
+	OrgID       OrgID
+	ClusterName ClusterName
 }
 
 // RuleContent wraps all the content available for a rule into a single structure.
@@ -86,11 +86,11 @@ type MissingMandatoryFile struct {
 
 // CliFlags represents structure holding all command line arguments/flags.
 type CliFlags struct {
-	instantReports    bool
-	weeklyReports     bool
-	showVersion       bool
-	showAuthors       bool
-	showConfiguration bool
+	InstantReports    bool
+	WeeklyReports     bool
+	ShowVersion       bool
+	ShowAuthors       bool
+	ShowConfiguration bool
 }
 
 // Report represents report send in a message consumed from any broker
@@ -122,25 +122,19 @@ type EventType int
 
 // Event types as enum
 const (
-	LOW int = iota
-	MODERATE
-	IMPORTANT
-	CRITICAL
+	InstantNotif int = iota
+	WeeklyDigest
 )
 
 // Event types string representation
 const (
-	eventTypeLow       = "Low"
-	eventTypeModerate  = "Moderate"
-	eventTypeImportant = "Important"
-	eventTypeCritical  = "Critical"
+	eventTypeInstant = "Instant notification"
+	eventTypeWeekly  = "Weekly digest"
 )
 
-// String function to get event type string representation from the corresponding enum
+// String function returns string representation of given event type
 func (e EventType) String() string {
-	return [...]string{
-		eventTypeLow, eventTypeModerate, eventTypeImportant, eventTypeCritical,
-	}[e]
+	return [...]string{eventTypeInstant, eventTypeWeekly}[e]
 }
 
 // EventMetadata represents the metadata of the sent payload.
