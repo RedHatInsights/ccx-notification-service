@@ -1,0 +1,8 @@
+[logging]
+debug = true
+log_level = ""
+
+[kafka_broker]
+address = "platform-mq-ci-kafka-bootstrap.platform-mq-ci.svc:9092"
+topic = "platform.notifications.ingress"
+timeout = "20s"
