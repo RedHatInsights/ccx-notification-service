@@ -22,7 +22,10 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"os"
 	"strings"
+	"time"
 
+	"github.com/RedHatInsights/ccx-notification-service/conf"
+	"github.com/RedHatInsights/ccx-notification-service/producer"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -45,6 +48,12 @@ const (
 	ExitStatusError
 	// ExitStatusStorageError is returned in case of any consumer-related error
 	ExitStatusStorageError
+	// ExitStatusKafkaBrokerError is for kafka broker connection establishment errors
+	ExitStatusKafkaBrokerError
+	// ExitStatusKafkaProducerError is for kafka event production failures
+	ExitStatusKafkaProducerError
+	// ExitStatusKafkaConnectionNotClosedError is raised when connection cannot be closed
+	ExitStatusKafkaConnectionNotClosedError
 )
 
 // Messages
@@ -57,6 +66,13 @@ const (
 	organizationIDAttribute = "org id"
 	clusterAttribute        = "cluster"
 	totalRiskAttribute      = "totalRisk"
+	errorKey                = "Error:"
+)
+
+// Notification-related constants
+const (
+	defaultNotificationBundleName      = "Openshift"
+	defaultNotificationApplicationName = "Advisor"
 )
 
 // showVersion function displays version information.
@@ -146,7 +162,7 @@ func waitForEnter() {
 	}
 }
 
-func processClusters(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, storage *DBStorage, clusters []types.ClusterEntry) {
+func processClusters(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, storage *DBStorage, clusters []types.ClusterEntry, kafkaConfig conf.KafkaConfiguration) {
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
@@ -167,6 +183,14 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 			os.Exit(ExitStatusStorageError)
 		}
 
+		log.Info().Msg(separator)
+		log.Info().Msg("Preparing Kafka producer")
+
+		notifier := setupNotificationProducer(kafkaConfig)
+		log.Info().Msg("Kafka producer ready")
+
+		waitForEnter()
+
 		for i, r := range deserialized.Reports {
 			ruleName := moduleToRuleName(string(r.Module))
 			errorKey := string(r.ErrorKey)
@@ -183,10 +207,27 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 				Msg("Report")
 			if totalRisk >= 2 {
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
+				// TODO: Decide actual content of notification message's payload.
+				notification := generateNotificationMessage(ruleName, totalRisk, string(cluster.OrgID), types.InstantNotif)
+				_, _, err = notifier.ProduceMessage(notification)
+				if err != nil {
+					log.Error().
+						Str(errorKey, err.Error()).
+						Msg("Couldn't produce kafka event.")
+					os.Exit(ExitStatusKafkaProducerError)
+				}
 			}
 		}
-	}
 
+		err = notifier.Close()
+		if err != nil {
+			// TODO: Can this be handled somehow?
+			log.Error().
+				Str(errorKey, err.Error()).
+				Msg("Couldn't close Kafka connection.")
+			os.Exit(ExitStatusKafkaConnectionNotClosedError)
+		}
+	}
 }
 
 func printClusters(clusters []types.ClusterEntry) {
@@ -199,6 +240,59 @@ func printClusters(clusters []types.ClusterEntry) {
 	}
 }
 
+func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) (notifier *producer.KafkaProducer) {
+	notifier, err := producer.New(brokerConfig)
+	if err != nil {
+		log.Error().
+			Str(errorKey, err.Error()).
+			Msg("Couldn't initialize Kafka producer with the provided config.")
+		os.Exit(ExitStatusKafkaBrokerError)
+	}
+	return
+}
+
+func generateNotificationMessage(ruleName string, totalRisk int, accountID string, eventType types.EventType) (notification types.NotificationMessage) {
+	//TODO: Discuss actual payload content
+	events := []types.Event{
+		{
+			Metadata: nil,
+			Payload: map[string]interface{}{
+				//TODO: Define payload's keys and add them as constants
+				"rule_id":    ruleName,
+				"total_risk": totalRisk,
+			},
+		},
+	}
+	notification = types.NotificationMessage{
+		Bundle:      defaultNotificationBundleName,
+		Application: defaultNotificationApplicationName,
+		EventType:   eventType.String(),
+		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
+		AccountID:   accountID,
+		Events:      events,
+		Context:     nil,
+	}
+	return
+}
+
+func checkArgs(args *types.CliFlags) {
+	switch {
+	case args.ShowVersion:
+		showVersion()
+		os.Exit(ExitStatusOK)
+	case args.ShowAuthors:
+		showAuthors()
+		os.Exit(ExitStatusOK)
+	default:
+	}
+
+	// check if report type is specified on command line
+	if !args.InstantReports && !args.WeeklyReports {
+		log.Error().Msg("Type of report needs to be specified on command line")
+		os.Exit(ExitStatusConfiguration)
+	}
+}
+
 // main function is entry point to the differ
 func main() {
 	var cliFlags types.CliFlags
@@ -207,25 +301,10 @@ func main() {
 	flag.BoolVar(&cliFlags.InstantReports, "instant-reports", false, "create instant reports")
 	flag.BoolVar(&cliFlags.WeeklyReports, "weekly-reports", false, "create weekly reports")
 	flag.Parse()
-
-	switch {
-	case cliFlags.ShowVersion:
-		showVersion()
-		os.Exit(ExitStatusOK)
-	case cliFlags.ShowAuthors:
-		showAuthors()
-		os.Exit(ExitStatusOK)
-	default:
-	}
-
-	// check if report type is specified on command line
-	if !cliFlags.InstantReports && !cliFlags.WeeklyReports {
-		log.Error().Msg("Type of report needs to be specified on command line")
-		os.Exit(ExitStatusConfiguration)
-	}
+	checkArgs(&cliFlags)
 
 	// config has exactly the same structure as *.toml file
-	config, err := LoadConfiguration(configFileEnvVariableName, defaultConfigFileName)
+	config, err := conf.LoadConfiguration(configFileEnvVariableName, defaultConfigFileName)
 	if err != nil {
 		log.Err(err).Msg("Load configuration")
 		os.Exit(ExitStatusConfiguration)
@@ -257,7 +336,7 @@ func main() {
 	log.Info().Msg("Read cluster list")
 
 	// prepare the storage
-	storageConfiguration := GetStorageConfiguration(config)
+	storageConfiguration := conf.GetStorageConfiguration(config)
 	storage, err := NewStorage(storageConfiguration)
 	if err != nil {
 		log.Err(err).Msg(operationFailedMessage)
@@ -278,7 +357,7 @@ func main() {
 	log.Info().Msg("Checking new issues for all new reports")
 	waitForEnter()
 
-	processClusters(ruleContent, impacts, storage, clusters)
+	processClusters(ruleContent, impacts, storage, clusters, conf.GetKafkaBrokerConfiguration(config))
 
 	log.Info().Msg("Differ finished")
 }

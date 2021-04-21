@@ -1,3 +1,9 @@
+# Config file for local development.
+# Feel free to push changes as long as
+# they can be used by any developer
+# and are reviewed by at least one
+# codeowner.
+
 [storage]
 db_driver = "postgres"
 pg_username = "postgres"

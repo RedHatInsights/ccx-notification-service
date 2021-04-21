@@ -16,12 +16,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/RedHatInsights/ccx-notification-service/types"
 	"io/ioutil"
 	"os"
 	"path"
 	"path/filepath"
 
+	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/go-yaml/yaml"
 	"github.com/rs/zerolog/log"
 )
@@ -30,10 +30,6 @@ import (
 const (
 	directoryAttribute = "directory"
 )
-
-func (err types.MissingMandatoryFile) Error() string {
-	return fmt.Sprintf("Missing required file: %s", err.FileName)
-}
 
 // readFilesIntoByteArrayPointers reads the contents of the specified files
 // in the base directory and saves them via the specified byte slice pointers.
