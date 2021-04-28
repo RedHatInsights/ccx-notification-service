@@ -75,6 +75,8 @@ const (
 const (
 	defaultNotificationBundleName      = "openshift"
 	defaultNotificationApplicationName = "advisor"
+	defaultNotificationAccountID       = "901578"
+	defaultClusterURL                  = "ci.cloud.redhat.com/"
 )
 
 // showVersion function displays version information.
@@ -166,31 +168,36 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 			os.Exit(ExitStatusStorageError)
 		}
 
-		for i, r := range deserialized.Reports {
-			ruleName := moduleToRuleName(string(r.Module))
-			errorKey := string(r.ErrorKey)
-			likelihood, impact, totalRisk := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
+		if len(deserialized.Reports) != 0 {
+			notificationMsg := generateNotificationMessage(defaultNotificationAccountID, types.InstantNotif, string(cluster.ClusterName))
 
-			log.Info().
-				Int("#", i).
-				Str("type", r.Type).
-				Str("rule", ruleName).
-				Str("error key", errorKey).
-				Int("likelihood", likelihood).
-				Int("impact", impact).
-				Int(totalRiskAttribute, totalRisk).
-				Msg("Report")
-			if totalRisk >= 3 {
-				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-				// TODO: Decide actual content of notification message's payload.
-				notification := generateNotificationMessage(ruleName, totalRisk, string(cluster.OrgID), types.InstantNotif)
-				_, _, err = notifier.ProduceMessage(notification)
-				if err != nil {
-					log.Error().
-						Str(errorKey, err.Error()).
-						Msg("Couldn't produce kafka event.")
-					os.Exit(ExitStatusKafkaProducerError)
+			for i, r := range deserialized.Reports {
+				ruleName := moduleToRuleName(string(r.Module))
+
+				errorKey := string(r.ErrorKey)
+				likelihood, impact, totalRisk := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
+
+				log.Info().
+					Int("#", i).
+					Str("type", r.Type).
+					Str("rule", ruleName).
+					Str("error key", errorKey).
+					Int("likelihood", likelihood).
+					Int("impact", impact).
+					Int(totalRiskAttribute, totalRisk).
+					Msg("Report")
+				if totalRisk >= 3 {
+					log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
+					appendEventToNotificationMessage(&notificationMsg, ruleName, totalRisk)
 				}
+			}
+
+			_, _, err = notifier.ProduceMessage(notificationMsg)
+			if err != nil {
+				log.Error().
+					Str(errorKey, err.Error()).
+					Msg("Couldn't produce kafka event.")
+				os.Exit(ExitStatusKafkaProducerError)
 			}
 		}
 	}
@@ -225,18 +232,14 @@ func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) (notifier *
 	return
 }
 
-func generateNotificationMessage(ruleName string, totalRisk int, accountID string, eventType types.EventType) (notification types.NotificationMessage) {
+func generateNotificationMessage(accountID string, eventType types.EventType, clusterID string) (notification types.NotificationMessage) {
 	//TODO: Discuss actual payload content
-	events := []types.Event{
-		{
-			Metadata: nil,
-			Payload: map[string]interface{}{
-				//TODO: Define payload's keys and add them as constants
-				"rule_id":    ruleName,
-				"total_risk": totalRisk,
-			},
-		},
+	events := []types.Event{}
+	context := types.NotificationContext{
+		types.DisplayName: clusterID,
+		types.HostURL: defaultClusterURL+clusterID,
 	}
+
 	notification = types.NotificationMessage{
 		Bundle:      defaultNotificationBundleName,
 		Application: defaultNotificationApplicationName,
@@ -244,9 +247,24 @@ func generateNotificationMessage(ruleName string, totalRisk int, accountID strin
 		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
 		AccountID:   accountID,
 		Events:      events,
-		Context:     nil,
+		Context:     context,
 	}
 	return
+}
+
+func appendEventToNotificationMessage(notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) () {
+	//TODO: Discuss actual payload content
+	event := types.Event{
+			Metadata: nil,
+			Payload: map[string]interface{}{
+				//TODO: Define payload's keys and add them as constants
+				"rule_description":    ruleName,
+				"rule_url":    defaultClusterURL+ruleName,
+				"total_risk": totalRisk,
+				"publish_date": publishDate,
+			},
+	}
+	notification.Events = append(notification.Events, event)
 }
 
 func checkArgs(args *types.CliFlags) {

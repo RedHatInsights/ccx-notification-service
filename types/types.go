@@ -148,6 +148,13 @@ func (e EventType) String() string {
 	return [...]string{eventTypeInstant, eventTypeWeekly}[e]
 }
 
+// Constants for notification context's expected fields
+const (
+	DisplayName = "display_name"
+	HostURL     = "host_url"
+)
+
+
 // EventMetadata represents the metadata of the sent payload.
 // It is expected to be an empty struct as of today
 type EventMetadata map[string]interface{}
@@ -178,3 +185,4 @@ type NotificationMessage struct {
 	Events      []Event             `json:"events"`
 	Context     NotificationContext `json:"context"`
 }
+
