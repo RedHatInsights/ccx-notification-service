@@ -180,7 +180,7 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 				Int("impact", impact).
 				Int(totalRiskAttribute, totalRisk).
 				Msg("Report")
-			if totalRisk >= 2 {
+			if totalRisk >= 3 {
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
 				// TODO: Decide actual content of notification message's payload.
 				notification := generateNotificationMessage(ruleName, totalRisk, string(cluster.OrgID), types.InstantNotif)
