@@ -139,8 +139,8 @@ const (
 
 // Event types string representation
 const (
-	eventTypeInstant = "Instant notification"
-	eventTypeWeekly  = "Weekly digest"
+	eventTypeInstant = "new-recommendation"
+	eventTypeWeekly  = "weekly-digest"
 )
 
 // String function returns string representation of given event type

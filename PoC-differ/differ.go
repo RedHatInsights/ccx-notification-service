@@ -73,8 +73,8 @@ const (
 
 // Notification-related constants
 const (
-	defaultNotificationBundleName      = "Openshift"
-	defaultNotificationApplicationName = "Advisor"
+	defaultNotificationBundleName      = "openshift"
+	defaultNotificationApplicationName = "advisor"
 )
 
 // showVersion function displays version information.
