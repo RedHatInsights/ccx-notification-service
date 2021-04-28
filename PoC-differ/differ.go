@@ -137,6 +137,15 @@ func waitForEnter() {
 }
 
 func processClusters(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, storage *DBStorage, clusters []types.ClusterEntry, kafkaConfig conf.KafkaConfiguration) {
+
+	log.Info().Msg(separator)
+	log.Info().Msg("Preparing Kafka producer")
+
+	notifier := setupNotificationProducer(kafkaConfig)
+	log.Info().Msg("Kafka producer ready")
+
+	waitForEnter()
+
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
@@ -156,14 +165,6 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 			log.Err(err).Msg("Deserialization error")
 			os.Exit(ExitStatusStorageError)
 		}
-
-		log.Info().Msg(separator)
-		log.Info().Msg("Preparing Kafka producer")
-
-		notifier := setupNotificationProducer(kafkaConfig)
-		log.Info().Msg("Kafka producer ready")
-
-		waitForEnter()
 
 		for i, r := range deserialized.Reports {
 			ruleName := moduleToRuleName(string(r.Module))
@@ -192,15 +193,14 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 				}
 			}
 		}
-
-		err = notifier.Close()
-		if err != nil {
-			// TODO: Can this be handled somehow?
-			log.Error().
-				Str(errorKey, err.Error()).
-				Msg("Couldn't close Kafka connection.")
-			os.Exit(ExitStatusKafkaConnectionNotClosedError)
-		}
+	}
+	err := notifier.Close()
+	if err != nil {
+		// TODO: Can this be handled somehow?
+		log.Error().
+			Str(errorKey, err.Error()).
+			Msg("Couldn't close Kafka connection.")
+		os.Exit(ExitStatusKafkaConnectionNotClosedError)
 	}
 }
 
