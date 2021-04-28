@@ -148,25 +148,18 @@ func (e EventType) String() string {
 	return [...]string{eventTypeInstant, eventTypeWeekly}[e]
 }
 
-// Constants for notification context's expected fields
-const (
-	DisplayName = "display_name"
-	HostURL     = "host_url"
-)
-
-
 // EventMetadata represents the metadata of the sent payload.
 // It is expected to be an empty struct as of today
 type EventMetadata map[string]interface{}
 
 // EventPayload is a JSON string containing all the data required
 // by the app to compose the various messages (Email, webhook, ...).
-type EventPayload map[string]interface{}
+type EventPayload map[string]string
 
 // Event is a structure containing the payload and its metadata.
 type Event struct {
 	Metadata EventMetadata `json:"metadata"`
-	Payload  EventPayload  `json:"payload"`
+	Payload  string        `json:"payload"`
 }
 
 // NotificationContext represents the extra information
@@ -177,12 +170,11 @@ type NotificationContext map[string]interface{}
 // NotificationMessage represents content of messages
 // sent to the notification platform topic in Kafka.
 type NotificationMessage struct {
-	Bundle      string              `json:"bundle"`
-	Application string              `json:"application"`
-	EventType   string              `json:"event_type"`
-	Timestamp   string              `json:"timestamp"`
-	AccountID   string              `json:"account_id"`
-	Events      []Event             `json:"events"`
-	Context     NotificationContext `json:"context"`
+	Bundle      string  `json:"bundle"`
+	Application string  `json:"application"`
+	EventType   string  `json:"event_type"`
+	Timestamp   string  `json:"timestamp"`
+	AccountID   string  `json:"account_id"`
+	Events      []Event `json:"events"`
+	Context     string  `json:"context"`
 }
-

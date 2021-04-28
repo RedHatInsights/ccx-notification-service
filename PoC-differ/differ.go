@@ -68,17 +68,31 @@ const (
 	organizationIDAttribute = "org id"
 	clusterAttribute        = "cluster"
 	totalRiskAttribute      = "totalRisk"
-	errorKey                = "Error:"
+	errorStr                = "Error:"
+	invalidJsonContent      = "The provided content cannot be encoded as JSON."
 )
 
-// Notification-related constants
+// Constants for notification message top level fields
 const (
-	defaultNotificationBundleName      = "openshift"
-	defaultNotificationApplicationName = "advisor"
-	defaultNotificationAccountID       = "901578"
-	defaultClusterURL                  = "ci.cloud.redhat.com/"
+	notificationBundleName        = "openshift"
+	notificationApplicationName   = "advisor"
+	defaultNotificationAccountID  = "6089719" //TODO: Remove this
+	defaultNotificationClusterURL = "ci.cloud.redhat.com/" //TODO: Get correct URL from a working OCM UI and set it in config file (or env, better)
 )
 
+// Constants for notification event expected fields
+const (
+	//PAYLOAD FIELDS
+	notificationPayloadRuleDescription = "rule_description"
+	notificationPayloadRuleURL         = "rule_url"
+	notificationPayloadTotalRisk       = "total_risk"
+	notificationPayloadPublishDate     = "publish_date"
+)
+// Constants for notification context expected fields
+const (
+	notificationContextDisplayName = "display_name"
+	notificationContextHostURL     = "host_url"
+)
 // showVersion function displays version information.
 func showVersion() {
 	fmt.Println(versionMessage)
@@ -188,14 +202,16 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 					Msg("Report")
 				if totalRisk >= 3 {
 					log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-					appendEventToNotificationMessage(&notificationMsg, ruleName, totalRisk)
+					//TODO: Time must be in the report
+					reportedAt := time.Now().Add(-2*time.Hour).UTC().Format(time.RFC3339Nano)
+					appendEventToNotificationMessage(&notificationMsg, ruleName, totalRisk, reportedAt)
 				}
 			}
 
 			_, _, err = notifier.ProduceMessage(notificationMsg)
 			if err != nil {
 				log.Error().
-					Str(errorKey, err.Error()).
+					Str(errorStr, err.Error()).
 					Msg("Couldn't produce kafka event.")
 				os.Exit(ExitStatusKafkaProducerError)
 			}
@@ -205,7 +221,7 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 	if err != nil {
 		// TODO: Can this be handled somehow?
 		log.Error().
-			Str(errorKey, err.Error()).
+			Str(errorStr, err.Error()).
 			Msg("Couldn't close Kafka connection.")
 		os.Exit(ExitStatusKafkaConnectionNotClosedError)
 	}
@@ -225,7 +241,7 @@ func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) (notifier *
 	notifier, err := producer.New(brokerConfig)
 	if err != nil {
 		log.Error().
-			Str(errorKey, err.Error()).
+			Str(errorStr, err.Error()).
 			Msg("Couldn't initialize Kafka producer with the provided config.")
 		os.Exit(ExitStatusKafkaBrokerError)
 	}
@@ -236,33 +252,44 @@ func generateNotificationMessage(accountID string, eventType types.EventType, cl
 	//TODO: Discuss actual payload content
 	events := []types.Event{}
 	context := types.NotificationContext{
-		types.DisplayName: clusterID,
-		types.HostURL: defaultClusterURL+clusterID,
+		notificationContextDisplayName : clusterID,
+		notificationContextHostURL     : defaultNotificationClusterURL + clusterID,
 	}
 
 	notification = types.NotificationMessage{
-		Bundle:      defaultNotificationBundleName,
-		Application: defaultNotificationApplicationName,
+		Bundle:      notificationBundleName,
+		Application: notificationApplicationName,
 		EventType:   eventType.String(),
-		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
+		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		AccountID:   accountID,
 		Events:      events,
-		Context:     context,
+		Context:     toJsonEscapedString(context),
 	}
 	return
 }
 
+func toJsonEscapedString(i interface{}) string {
+	b, err := json.Marshal(i)
+	if err != nil {
+		log.Err(err).Msg(invalidJsonContent)
+	}
+	s := string(b)
+	return s
+}
+
 func appendEventToNotificationMessage(notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) () {
 	//TODO: Discuss actual payload content
+	payload := types.EventPayload{
+		notificationPayloadRuleDescription : ruleName,
+		notificationPayloadRuleURL         : defaultNotificationClusterURL + ruleName,
+		notificationPayloadTotalRisk       : string(totalRisk),
+		notificationPayloadPublishDate     : publishDate,
+	}
 	event := types.Event{
-			Metadata: nil,
-			Payload: map[string]interface{}{
-				//TODO: Define payload's keys and add them as constants
-				"rule_description":    ruleName,
-				"rule_url":    defaultClusterURL+ruleName,
-				"total_risk": totalRisk,
-				"publish_date": publishDate,
-			},
+			//The insights Notifications backend expects this field to be an empty object in the received JSON
+			Metadata: types.EventMetadata{},
+			//The insights Notifications backend expects to receive the payload as a string with all its fields as escaped strings
+			Payload: toJsonEscapedString(payload),
 	}
 	notification.Events = append(notification.Events, event)
 }
