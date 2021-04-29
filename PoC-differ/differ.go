@@ -171,7 +171,7 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 			Str(clusterAttribute, string(cluster.ClusterName)).
 			Msg(clusterEntryMessage)
 
-		report, _, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
+		report, reportedAt, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
 		if err != nil {
 			log.Err(err).Msg(operationFailedMessage)
 			os.Exit(ExitStatusStorageError)
@@ -180,16 +180,14 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 		var deserialized types.Report
 		err = json.Unmarshal([]byte(report), &deserialized)
 		if err != nil {
-			log.Err(err).Msg("Deserialization error")
+			log.Err(err).Msg("Deserialization error - Couldn't create report object")
 			os.Exit(ExitStatusStorageError)
 		}
 
 		if len(deserialized.Reports) != 0 {
 			notificationMsg := generateNotificationMessage(defaultNotificationAccountID, types.InstantNotif, string(cluster.ClusterName))
-
 			for i, r := range deserialized.Reports {
 				ruleName := moduleToRuleName(string(r.Module))
-
 				errorKey := string(r.ErrorKey)
 				likelihood, impact, totalRisk := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
 
@@ -204,9 +202,7 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 					Msg("Report")
 				if totalRisk >= 3 {
 					log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-					//TODO: Actual time must be in the report
-					reportedAt := time.Now().Add(-2 * time.Hour).UTC().Format(time.RFC3339Nano)
-					appendEventToNotificationMessage(&notificationMsg, ruleName, totalRisk, reportedAt)
+					appendEventToNotificationMessage(&notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
 				}
 			}
 
