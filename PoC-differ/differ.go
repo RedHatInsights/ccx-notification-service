@@ -76,8 +76,9 @@ const (
 const (
 	notificationBundleName        = "openshift"
 	notificationApplicationName   = "advisor"
-	defaultNotificationAccountID  = "6089719"              //TODO: Replace this with getting acount ID for given customer
-	defaultNotificationClusterURL = "ci.cloud.redhat.com/" //TODO: Get correct URL from a working OCM UI and set it in config file (or env, better)
+	defaultNotificationAccountID  = "6089719"          //TODO: Replace this with getting account ID for affected cluster
+	defaultNotificationClusterURL = "localhost:12345/" //TODO: Get correct URL from a working OCM UI and set it in config file (or env, better)
+	defaultInsightsTab            = "#insights"        //TODO: Use value from configq
 )
 
 // Constants for notification event expected fields
@@ -206,12 +207,14 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 				}
 			}
 
-			_, _, err = notifier.ProduceMessage(notificationMsg)
-			if err != nil {
-				log.Error().
-					Str(errorStr, err.Error()).
-					Msg("Couldn't produce kafka event.")
-				os.Exit(ExitStatusKafkaProducerError)
+			if len(notificationMsg.Events) > 0 {
+				_, _, err = notifier.ProduceMessage(notificationMsg)
+				if err != nil {
+					log.Error().
+						Str(errorStr, err.Error()).
+						Msg("Couldn't produce kafka event.")
+					os.Exit(ExitStatusKafkaProducerError)
+				}
 			}
 		}
 	}
@@ -278,7 +281,7 @@ func appendEventToNotificationMessage(notification *types.NotificationMessage, r
 	//TODO: Discuss actual payload content
 	payload := types.EventPayload{
 		notificationPayloadRuleDescription: ruleName,
-		notificationPayloadRuleURL:         defaultNotificationClusterURL + ruleName,
+		notificationPayloadRuleURL:         defaultNotificationClusterURL + ruleName + defaultInsightsTab,
 		notificationPayloadTotalRisk:       string(totalRisk),
 		notificationPayloadPublishDate:     publishDate,
 	}
