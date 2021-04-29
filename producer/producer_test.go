@@ -124,7 +124,7 @@ func TestProducerSendNotificationMessageNoEvents(t *testing.T) {
 		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
 		AccountID:   "000000",
 		Events:      nil,
-		Context:     nil,
+		Context:     "{}",
 	}
 
 	_, _, err := kafkaProducer.ProduceMessage(msg)
@@ -143,12 +143,8 @@ func TestProducerSendNotificationMessageSingleEvent(t *testing.T) {
 
 	events := []types.Event{
 		{
-			Metadata: nil,
-			Payload: map[string]interface{}{
-				"rule_id":       "a unique ID",
-				"what happened": "something baaad happened",
-				"error_code":    3,
-			},
+			Metadata: types.EventMetadata{},
+			Payload:  "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\"}",
 		},
 	}
 
@@ -159,7 +155,7 @@ func TestProducerSendNotificationMessageSingleEvent(t *testing.T) {
 		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
 		AccountID:   "000001",
 		Events:      events,
-		Context:     nil,
+		Context:     "{}",
 	}
 
 	_, _, err := kafkaProducer.ProduceMessage(msg)
@@ -178,21 +174,12 @@ func TestProducerSendNotificationMessageMultipleEvents(t *testing.T) {
 
 	events := []types.Event{
 		{
-			Metadata: nil,
-			Payload: map[string]interface{}{
-				"rule_id":       "a unique ID",
-				"what happened": "something baaad happened",
-				"error_code":    3,
-			},
+			Metadata: types.EventMetadata{},
+			Payload:  "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\"}",
 		},
 		{
-			Metadata: nil,
-			Payload: map[string]interface{}{
-				"rule_id":          "another unique ID",
-				"what happened":    "something less terrible happened",
-				"error_code":       4,
-				"more_random_data": "why not...",
-			},
+			Metadata: types.EventMetadata{},
+			Payload:  "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\", \"more_random_data\": \"why not...\"}",
 		},
 	}
 
@@ -203,7 +190,7 @@ func TestProducerSendNotificationMessageMultipleEvents(t *testing.T) {
 		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
 		AccountID:   "000001",
 		Events:      events,
-		Context:     nil,
+		Context:     "{}",
 	}
 
 	_, _, err := kafkaProducer.ProduceMessage(msg)
@@ -224,22 +211,14 @@ func TestProducerSendNotificationMessageEventContentNotValidJson(t *testing.T) {
 
 	events := []types.Event{
 		{
-			Metadata: nil,
-			Payload: map[string]interface{}{
-				"rule_id":       "a unique ID",
-				"what happened": "something baaad happened",
-				"error_code":    3,
-			},
+			Metadata: types.EventMetadata{},
+			Payload:  "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\"}",
 		},
 		{
 			Metadata: map[string]interface{}{
 				"foo": make(chan int), //A value that cannot be represented in JSON
 			},
-			Payload: map[string]interface{}{
-				"rule_id":       "a unique ID",
-				"what happened": "something baaad happened",
-				"error_code":    3,
-			},
+			Payload: "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\", \"more_random_data\": \"why not...\"}",
 		},
 	}
 
@@ -250,7 +229,7 @@ func TestProducerSendNotificationMessageEventContentNotValidJson(t *testing.T) {
 		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
 		AccountID:   "000001",
 		Events:      events,
-		Context:     nil,
+		Context:     "{}",
 	}
 
 	_, _, err := kafkaProducer.ProduceMessage(msg)

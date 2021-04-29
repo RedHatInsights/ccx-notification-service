@@ -76,7 +76,7 @@ const (
 const (
 	notificationBundleName        = "openshift"
 	notificationApplicationName   = "advisor"
-	defaultNotificationAccountID  = "6089719" //TODO: Remove this
+	defaultNotificationAccountID  = "6089719"              //TODO: Replace this with getting acount ID for given customer
 	defaultNotificationClusterURL = "ci.cloud.redhat.com/" //TODO: Get correct URL from a working OCM UI and set it in config file (or env, better)
 )
 
@@ -88,11 +88,13 @@ const (
 	notificationPayloadTotalRisk       = "total_risk"
 	notificationPayloadPublishDate     = "publish_date"
 )
+
 // Constants for notification context expected fields
 const (
 	notificationContextDisplayName = "display_name"
 	notificationContextHostURL     = "host_url"
 )
+
 // showVersion function displays version information.
 func showVersion() {
 	fmt.Println(versionMessage)
@@ -202,8 +204,8 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 					Msg("Report")
 				if totalRisk >= 3 {
 					log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-					//TODO: Time must be in the report
-					reportedAt := time.Now().Add(-2*time.Hour).UTC().Format(time.RFC3339Nano)
+					//TODO: Actual time must be in the report
+					reportedAt := time.Now().Add(-2 * time.Hour).UTC().Format(time.RFC3339Nano)
 					appendEventToNotificationMessage(&notificationMsg, ruleName, totalRisk, reportedAt)
 				}
 			}
@@ -219,7 +221,6 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 	}
 	err := notifier.Close()
 	if err != nil {
-		// TODO: Can this be handled somehow?
 		log.Error().
 			Str(errorStr, err.Error()).
 			Msg("Couldn't close Kafka connection.")
@@ -252,8 +253,8 @@ func generateNotificationMessage(accountID string, eventType types.EventType, cl
 	//TODO: Discuss actual payload content
 	events := []types.Event{}
 	context := types.NotificationContext{
-		notificationContextDisplayName : clusterID,
-		notificationContextHostURL     : defaultNotificationClusterURL + clusterID,
+		notificationContextDisplayName: clusterID,
+		notificationContextHostURL:     defaultNotificationClusterURL + clusterID,
 	}
 
 	notification = types.NotificationMessage{
@@ -277,19 +278,19 @@ func toJsonEscapedString(i interface{}) string {
 	return s
 }
 
-func appendEventToNotificationMessage(notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) () {
+func appendEventToNotificationMessage(notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) {
 	//TODO: Discuss actual payload content
 	payload := types.EventPayload{
-		notificationPayloadRuleDescription : ruleName,
-		notificationPayloadRuleURL         : defaultNotificationClusterURL + ruleName,
-		notificationPayloadTotalRisk       : string(totalRisk),
-		notificationPayloadPublishDate     : publishDate,
+		notificationPayloadRuleDescription: ruleName,
+		notificationPayloadRuleURL:         defaultNotificationClusterURL + ruleName,
+		notificationPayloadTotalRisk:       string(totalRisk),
+		notificationPayloadPublishDate:     publishDate,
 	}
 	event := types.Event{
-			//The insights Notifications backend expects this field to be an empty object in the received JSON
-			Metadata: types.EventMetadata{},
-			//The insights Notifications backend expects to receive the payload as a string with all its fields as escaped strings
-			Payload: toJsonEscapedString(payload),
+		//The insights Notifications backend expects this field to be an empty object in the received JSON
+		Metadata: types.EventMetadata{},
+		//The insights Notifications backend expects to receive the payload as a string with all its fields as escaped strings
+		Payload: toJsonEscapedString(payload),
 	}
 	notification.Events = append(notification.Events, event)
 }
