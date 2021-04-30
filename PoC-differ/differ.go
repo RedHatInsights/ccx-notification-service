@@ -74,11 +74,9 @@ const (
 
 // Constants for notification message top level fields
 const (
-	notificationBundleName        = "openshift"
-	notificationApplicationName   = "advisor"
-	defaultNotificationAccountID  = "6089719"          //TODO: Replace this with getting account ID for affected cluster
-	defaultNotificationClusterURL = "localhost:12345/" //TODO: Get correct URL from a working OCM UI and set it in config file (or env, better)
-	defaultInsightsTab            = "#insights"        //TODO: Use value from configq
+	notificationBundleName       = "openshift"
+	notificationApplicationName  = "advisor"
+	defaultNotificationAccountID = "6089719" //TODO: Replace this with getting account ID for affected cluster
 )
 
 // Constants for notification event expected fields
@@ -94,6 +92,10 @@ const (
 const (
 	notificationContextDisplayName = "display_name"
 	notificationContextHostURL     = "host_url"
+)
+
+var (
+	notificationType types.EventType
 )
 
 // showVersion function displays version information.
@@ -155,12 +157,12 @@ func waitForEnter() {
 	}
 }
 
-func processClusters(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, storage *DBStorage, clusters []types.ClusterEntry, kafkaConfig conf.KafkaConfiguration) {
+func processClusters(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, storage *DBStorage, clusters []types.ClusterEntry, config conf.ConfigStruct) {
 
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
 
-	notifier := setupNotificationProducer(kafkaConfig)
+	notifier := setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
 	log.Info().Msg("Kafka producer ready")
 
 	waitForEnter()
@@ -190,7 +192,9 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 			continue
 		}
 
-		notificationMsg := generateNotificationMessage(defaultNotificationAccountID, types.InstantNotif, string(cluster.ClusterName))
+		notificationConfig := conf.GetNotificationsConfiguration(config)
+		notificationMsg := generateNotificationMessage(notificationConfig.ClusterDetailsUri, defaultNotificationAccountID, notificationType, string(cluster.ClusterName))
+
 		for i, r := range deserialized.Reports {
 			ruleName := moduleToRuleName(string(r.Module))
 			errorKey := string(r.ErrorKey)
@@ -207,7 +211,7 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 				Msg("Report")
 			if totalRisk >= 3 {
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-				appendEventToNotificationMessage(&notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
+				appendEventToNotificationMessage(notificationConfig.RuleDetailsUri, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
 			}
 		}
 
@@ -251,12 +255,11 @@ func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) (notifier *
 	return
 }
 
-func generateNotificationMessage(accountID string, eventType types.EventType, clusterID string) (notification types.NotificationMessage) {
-	//TODO: Discuss actual payload content
+func generateNotificationMessage(clusterURI string, accountID string, eventType types.EventType, clusterID string) (notification types.NotificationMessage) {
 	events := []types.Event{}
 	context := types.NotificationContext{
 		notificationContextDisplayName: clusterID,
-		notificationContextHostURL:     defaultNotificationClusterURL + clusterID,
+		notificationContextHostURL:     strings.Replace(clusterURI, "{cluster}", clusterID, 1),
 	}
 
 	notification = types.NotificationMessage{
@@ -280,11 +283,10 @@ func toJsonEscapedString(i interface{}) string {
 	return s
 }
 
-func appendEventToNotificationMessage(notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) {
-	//TODO: Discuss actual payload content
+func appendEventToNotificationMessage(ruleURI string, notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) {
 	payload := types.EventPayload{
 		notificationPayloadRuleDescription: ruleName,
-		notificationPayloadRuleURL:         defaultNotificationClusterURL + ruleName + defaultInsightsTab,
+		notificationPayloadRuleURL:         strings.Replace(ruleURI, "{rule}", ruleName, 1),
 		notificationPayloadTotalRisk:       string(totalRisk),
 		notificationPayloadPublishDate:     publishDate,
 	}
@@ -312,6 +314,12 @@ func checkArgs(args *types.CliFlags) {
 	if !args.InstantReports && !args.WeeklyReports {
 		log.Error().Msg("Type of report needs to be specified on command line")
 		os.Exit(ExitStatusConfiguration)
+	}
+
+	if args.InstantReports {
+		notificationType = types.InstantNotif
+	} else {
+		notificationType = types.WeeklyDigest
 	}
 }
 
@@ -377,7 +385,7 @@ func main() {
 	log.Info().Msg("Checking new issues for all new reports")
 	waitForEnter()
 
-	processClusters(ruleContent, impacts, storage, clusters, conf.GetKafkaBrokerConfiguration(config))
+	processClusters(ruleContent, impacts, storage, clusters, config)
 
 	log.Info().Msg("Differ finished")
 }

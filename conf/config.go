@@ -61,10 +61,11 @@ import (
 // ConfigStruct is a structure holding the whole notification service
 // configuration
 type ConfigStruct struct {
-	Logging      LoggingConfiguration      `mapstructure:"logging" toml:"logging"`
-	Storage      StorageConfiguration      `mapstructure:"storage" toml:"storage"`
-	Kafka        KafkaConfiguration        `mapstructure:"kafka_broker" toml:"kafka_broker"`
-	Dependencies DependenciesConfiguration `mapstructure:"dependencies" toml:"dependencies"`
+	Logging       LoggingConfiguration       `mapstructure:"logging" toml:"logging"`
+	Storage       StorageConfiguration       `mapstructure:"storage" toml:"storage"`
+	Kafka         KafkaConfiguration         `mapstructure:"kafka_broker" toml:"kafka_broker"`
+	Dependencies  DependenciesConfiguration  `mapstructure:"dependencies" toml:"dependencies"`
+	Notifications NotificationsConfiguration `mapstructure:"notifications" toml:"notifications"`
 }
 
 // LoggingConfiguration represents configuration for logging in general
@@ -104,8 +105,14 @@ type DependenciesConfiguration struct {
 // KafkaConfiguration represents configuration of Kafka brokers and topics
 type KafkaConfiguration struct {
 	Address string        `mapstructure:"address" toml:"address"`
-	Topic   string        `mapstructure:"topic" toml:"topic"`
+	Topic   string        `mapstructure:"topic"   toml:"topic"`
 	Timeout time.Duration `mapstructure:"timeout" toml:"timeout"`
+}
+
+// NotificationsConfiguration represents the configuration specific to the content of notifications
+type NotificationsConfiguration struct {
+	ClusterDetailsURI string `mapstructure:"cluster_details_uri" toml:"cluster_details_uri"`
+	RuleDetailsURI    string `mapstructure:"rule_details_uri"    toml:"rule_details_uri"`
 }
 
 // LoadConfiguration loads configuration from defaultConfigFile, file set in
@@ -168,4 +175,9 @@ func GetKafkaBrokerConfiguration(config ConfigStruct) KafkaConfiguration {
 // GetDependenciesConfiguration returns dependencies configuration
 func GetDependenciesConfiguration(config ConfigStruct) DependenciesConfiguration {
 	return config.Dependencies
+}
+
+// GetNotificationsConfiguration returns configuration related with notification content
+func GetNotificationsConfiguration(config ConfigStruct) NotificationsConfiguration {
+	return config.Notifications
 }
