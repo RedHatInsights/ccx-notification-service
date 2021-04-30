@@ -185,36 +185,39 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 			os.Exit(ExitStatusStorageError)
 		}
 
-		if len(deserialized.Reports) != 0 {
-			notificationMsg := generateNotificationMessage(defaultNotificationAccountID, types.InstantNotif, string(cluster.ClusterName))
-			for i, r := range deserialized.Reports {
-				ruleName := moduleToRuleName(string(r.Module))
-				errorKey := string(r.ErrorKey)
-				likelihood, impact, totalRisk := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
+		if len(deserialized.Reports) == 0 {
+			log.Info().Msgf("No reports in notification database for cluster %s", cluster.ClusterName)
+			continue
+		}
 
-				log.Info().
-					Int("#", i).
-					Str("type", r.Type).
-					Str("rule", ruleName).
-					Str("error key", errorKey).
-					Int("likelihood", likelihood).
-					Int("impact", impact).
-					Int(totalRiskAttribute, totalRisk).
-					Msg("Report")
-				if totalRisk >= 3 {
-					log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-					appendEventToNotificationMessage(&notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
-				}
+		notificationMsg := generateNotificationMessage(defaultNotificationAccountID, types.InstantNotif, string(cluster.ClusterName))
+		for i, r := range deserialized.Reports {
+			ruleName := moduleToRuleName(string(r.Module))
+			errorKey := string(r.ErrorKey)
+			likelihood, impact, totalRisk := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
+
+			log.Info().
+				Int("#", i).
+				Str("type", r.Type).
+				Str("rule", ruleName).
+				Str("error key", errorKey).
+				Int("likelihood", likelihood).
+				Int("impact", impact).
+				Int(totalRiskAttribute, totalRisk).
+				Msg("Report")
+			if totalRisk >= 3 {
+				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
+				appendEventToNotificationMessage(&notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
 			}
+		}
 
-			if len(notificationMsg.Events) > 0 {
-				_, _, err = notifier.ProduceMessage(notificationMsg)
-				if err != nil {
-					log.Error().
-						Str(errorStr, err.Error()).
-						Msg("Couldn't produce kafka event.")
-					os.Exit(ExitStatusKafkaProducerError)
-				}
+		if len(notificationMsg.Events) > 0 {
+			_, _, err = notifier.ProduceMessage(notificationMsg)
+			if err != nil {
+				log.Error().
+					Str(errorStr, err.Error()).
+					Msg("Couldn't produce kafka event.")
+				os.Exit(ExitStatusKafkaProducerError)
 			}
 		}
 	}
