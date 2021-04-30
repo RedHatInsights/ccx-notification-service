@@ -15,20 +15,20 @@
 package main
 
 import (
-	"fmt"
+	"bytes"
+	"encoding/gob"
 	"io/ioutil"
+	"net/http"
 	"os"
 	"path"
 	"path/filepath"
+	"strings"
+	"time"
 
+	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/go-yaml/yaml"
 	"github.com/rs/zerolog/log"
-)
-
-// Logging messages
-const (
-	directoryAttribute = "directory"
 )
 
 // readFilesIntoByteArrayPointers reads the contents of the specified files
@@ -117,74 +117,6 @@ func parseErrorContents(ruleDirPath string) (map[string]types.RuleErrorKeyConten
 	return errorContents, nil
 }
 
-// createRuleContent
-func createRuleContent(contentRead map[string][]byte, errorKeys map[string]types.RuleErrorKeyContent) (*types.RuleContent, error) {
-	ruleContent := types.RuleContent{ErrorKeys: errorKeys}
-
-	if contentRead["summary.md"] == nil {
-		return nil, &types.MissingMandatoryFile{FileName: "summary.md"}
-	}
-
-	ruleContent.Summary = string(contentRead["summary.md"])
-
-	if contentRead["reason.md"] == nil {
-		// check error keys for a reason
-		ruleContent.Reason = ""
-		ruleContent.HasReason = false
-	} else {
-		ruleContent.Reason = string(contentRead["reason.md"])
-		ruleContent.HasReason = true
-	}
-
-	if contentRead["resolution.md"] == nil {
-		return nil, &types.MissingMandatoryFile{FileName: "resolution.md"}
-	}
-
-	ruleContent.Resolution = string(contentRead["resolution.md"])
-
-	if contentRead["more_info.md"] == nil {
-		return nil, &types.MissingMandatoryFile{FileName: "more_info.md"}
-	}
-
-	ruleContent.MoreInfo = string(contentRead["more_info.md"])
-
-	if contentRead["plugin.yaml"] == nil {
-		return nil, &types.MissingMandatoryFile{FileName: "plugin.yaml"}
-	}
-
-	return &ruleContent, nil
-}
-
-// parseRuleContent function attempts to parse all available rule content from
-// the specified directory.
-func parseRuleContent(ruleDirPath string) (types.RuleContent, error) {
-	errorContents, err := parseErrorContents(ruleDirPath)
-
-	if err != nil {
-		return types.RuleContent{}, err
-	}
-
-	contentFiles := []string{
-		"summary.md",
-		"reason.md",
-		"resolution.md",
-		"more_info.md",
-		"plugin.yaml",
-	}
-
-	readContent, err := readFilesIntoFileContent(ruleDirPath, contentFiles)
-	if err != nil {
-		return types.RuleContent{}, err
-	}
-
-	ruleContent, err := createRuleContent(readContent, errorContents)
-
-	if err != nil {
-		return types.RuleContent{}, err
-	}
-	return *ruleContent, err
-}
-
 // parseGlobalContentConfig reads the configuration file used to store
 // metadata used by all rule content, such as impact dictionary.
 func parseGlobalContentConfig(configPath string) (types.GlobalRuleConfig, error) {
@@ -196,60 +128,6 @@ func parseGlobalContentConfig(configPath string) (types.GlobalRuleConfig, error)
 	conf := types.GlobalRuleConfig{}
 	err = yaml.Unmarshal(configBytes, &conf)
 	return conf, err
-}
-
-// parseRulesInDirectory function finds all rules and their content in the
-// specified directory and stores the content in the newly allocated map.
-func parseRulesInDirectory(dirPath string, contentMap *map[string]types.RuleContent, invalidRules *[]string) error {
-	// read the whole content of specified directory
-	entries, err := ioutil.ReadDir(dirPath)
-	if err != nil {
-		return err
-	}
-
-	for _, e := range entries {
-		if e.IsDir() {
-			name := e.Name()
-			subdirPath := path.Join(dirPath, name)
-
-			// Check if this directory directly contains a rule content.
-			// This check is done for the subdirectories instead of the top directory
-			// upon which this function is called because the very top level directory
-			// should never directly contain any rule content and because the name
-			// of the directory is much easier to access here without an extra call.
-			if pluginYaml, err := os.Stat(path.Join(subdirPath, "plugin.yaml")); err == nil && os.FileMode.IsRegular(pluginYaml.Mode()) {
-				log.Info().Str(directoryAttribute, subdirPath).Msg("plugin.yaml found")
-
-				// let's accumulate error report with context (in which subdir it occured)
-				ruleContent, err := parseRuleContent(subdirPath)
-				if err != nil {
-					log.Error().Err(err).Msgf("Error trying to parse rule in dir %v", subdirPath)
-					message := fmt.Sprintf("Directory: %s, Error: %v", subdirPath, err)
-					*invalidRules = append(*invalidRules, message)
-					continue
-				}
-
-				err = checkRequiredFields(ruleContent)
-
-				if err != nil {
-					// create an appropriate error and return
-					log.Error().Err(err).Msgf("Some file in dir %s is missing: %s", subdirPath, err.Error())
-					return err
-				}
-
-				// TODO: Add name uniqueness check.
-				(*contentMap)[name] = ruleContent
-			} else {
-				// Otherwise, descend into the sub-directory and see if there is any rule content.
-				log.Info().Str(directoryAttribute, subdirPath).Msg("descending into sub-directory")
-				if err := parseRulesInDirectory(subdirPath, contentMap, invalidRules); err != nil {
-					return err
-				}
-			}
-		}
-	}
-
-	return nil
 }
 
 // checkRequiredFields function checks if all the required fields in the
@@ -267,4 +145,52 @@ func checkRequiredFields(rule types.RuleContent) error {
 	}
 
 	return nil
+}
+
+// fetchAllRulesContent fetches the parsed rules provided by the content-service
+func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.RulesMap, err error) {
+	contentUrl := config.ContentServiceServer + config.ContentServiceEndpoint
+	if !strings.HasPrefix(config.ContentServiceServer, "http") {
+		//if no protocol is specified in given URL, assume it is not needed to use https
+		contentUrl = "http://" + contentUrl
+	}
+	log.Info().Msgf("Fetching rules content from ", contentUrl)
+
+	client := &http.Client{
+		Timeout: time.Second * 10,
+	}
+	req, err := http.NewRequest("GET", contentUrl, nil)
+	if err != nil {
+		log.Error().Msgf("Got error while setting up HTTP request -  %s", err.Error())
+		return nil, err
+	}
+
+	response, err := client.Do(req)
+	if err != nil {
+		log.Error().Msgf("Got error while making the HTTP request - %s", err.Error())
+		return nil, err
+	}
+
+	defer response.Body.Close()
+
+	// Read body from response
+	body, err := ioutil.ReadAll(response.Body)
+	if err != nil {
+		log.Error().Msgf("Got error while reading the response's body - %s", err.Error())
+		return nil, err
+	}
+
+	var receivedContent types.RuleContentDirectory
+
+	err = gob.NewDecoder(bytes.NewReader(body)).Decode(&receivedContent)
+	if err != nil {
+		log.Error().Err(err).Msg("Error trying to decode rules content from received answer")
+		os.Exit(ExitStatusFetchContentError)
+	}
+
+	rules = receivedContent.Rules
+
+	log.Info().Msgf("Got %d rules from content service", len(rules))
+
+	return
 }

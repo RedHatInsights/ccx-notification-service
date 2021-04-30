@@ -1,19 +1,26 @@
-# Config file for local development.
-# Feel free to push changes as long as
-# they can be used by any developer
-# and are reviewed by at least one
-# codeowner.
+[logging]
+debug = true
+log_level = "info"
+
+[kafka_broker]
+address = "" #provide in deployment env or as secret
+topic = "" #provide in deployment env or as secret
+timeout = "60s"
 
 [storage]
 db_driver = "postgres"
-pg_username = "postgres"
-pg_password = "postgres"
-pg_host = "localhost"
-pg_port = 5432
-pg_db_name = "notification"
+pg_username = "" #provide in deployment env or as secret
+pg_password = "" #provide in deployment env or as secret
+pg_host = "" #provide in deployment env or as secret
+pg_port =  #provide in deployment env or as secret
+pg_db_name = "" #provide in deployment env or as secret
 pg_params = "sslmode=disable"
 log_sql_queries = true
 
-[logging]
-debug = true
-log_level = ""
+[dependencies]
+content_server = "" #provide in deployment env or as secret
+content_endpoint = "" #provide in deployment env or as secret
+
+[notification]
+cluster_url = "" #provide in deployment env or as secret
+cluster_insights_tab = "#insights"
