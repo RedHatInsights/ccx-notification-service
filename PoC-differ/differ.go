@@ -183,7 +183,7 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 			continue
 		}
 
-		notificationMsg := generateNotificationMessage(notificationConfig.ClusterDetailsUri, defaultNotificationAccountID, notificationType, string(cluster.ClusterName))
+		notificationMsg := generateNotificationMessage(notificationConfig.ClusterDetailsURI, defaultNotificationAccountID, notificationType, string(cluster.ClusterName))
 
 		for i, r := range deserialized.Reports {
 			ruleName := moduleToRuleName(string(r.Module))
@@ -201,7 +201,7 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 				Msg("Report")
 			if totalRisk >= 3 {
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-				appendEventToNotificationMessage(notificationConfig.RuleDetailsUri, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
+				appendEventToNotificationMessage(notificationConfig.RuleDetailsURI, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
 			}
 		}
 
@@ -265,7 +265,7 @@ func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, 
 				Msg("Report")
 			if totalRisk >= 3 {
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-				appendEventToNotificationMessage(notificationConfig.RuleDetailsUri, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
+				appendEventToNotificationMessage(notificationConfig.RuleDetailsURI, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
 			}
 		}
 
@@ -452,6 +452,9 @@ func main() {
 	log.Info().Msg("Getting rule content from content service")
 
 	ruleContent, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
+	if err != nil {
+		os.Exit(ExitStatusFetchContentError)
+	}
 
 	waitForEnter()
 
