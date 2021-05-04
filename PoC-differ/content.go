@@ -20,31 +20,16 @@ import (
 	"io/ioutil"
 	"net/http"
 	"os"
-	"path/filepath"
 	"strings"
 	"time"
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
-	"github.com/go-yaml/yaml"
 	"github.com/rs/zerolog/log"
 )
 
-// parseGlobalContentConfig reads the configuration file used to store
-// metadata used by all rule content, such as impact dictionary.
-func parseGlobalContentConfig(configPath string) (types.GlobalRuleConfig, error) {
-	configBytes, err := ioutil.ReadFile(filepath.Clean(configPath))
-	if err != nil {
-		return types.GlobalRuleConfig{}, err
-	}
-
-	conf := types.GlobalRuleConfig{}
-	err = yaml.Unmarshal(configBytes, &conf)
-	return conf, err
-}
-
 // fetchAllRulesContent fetches the parsed rules provided by the content-service
-func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.RulesMap, err error) {
+func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.RulesMap, impacts types.Impacts, err error) {
 	contentUrl := config.ContentServiceServer + config.ContentServiceEndpoint
 	if !strings.HasPrefix(config.ContentServiceServer, "http") {
 		//if no protocol is specified in given URL, assume it is not needed to use https
@@ -58,13 +43,13 @@ func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.Ru
 	req, err := http.NewRequest("GET", contentUrl, nil)
 	if err != nil {
 		log.Error().Msgf("Got error while setting up HTTP request -  %s", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
 	response, err := client.Do(req)
 	if err != nil {
 		log.Error().Msgf("Got error while making the HTTP request - %s", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
 	defer response.Body.Close()
@@ -73,7 +58,7 @@ func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.Ru
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Error().Msgf("Got error while reading the response's body - %s", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
 	var receivedContent types.RuleContentDirectory
@@ -85,8 +70,10 @@ func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.Ru
 	}
 
 	rules = receivedContent.Rules
+	impacts = receivedContent.Config.Impact
 
-	log.Info().Msgf("Got %d rules from content service", len(rules))
+	log.Info().Msgf("Retrieved %d rules from content service", len(rules))
+	log.Info().Msgf("Retrieved %d impact factors from content service", len(impacts))
 
 	return
 }

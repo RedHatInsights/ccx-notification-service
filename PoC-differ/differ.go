@@ -30,8 +30,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const contentDirectory = "content"
-
 // Configuration-related constants
 const (
 	configFileEnvVariableName = "NOTIFICATION_DIFFER_CONFIG_FILE"
@@ -108,19 +106,6 @@ func showAuthors() {
 	fmt.Println(authorsMessage)
 }
 
-func readImpact(contentDirectory string) types.GlobalRuleConfig {
-	impact, err := parseGlobalContentConfig(contentDirectory + "/config.yaml")
-	if err != nil {
-		log.Error().Err(err).Msg("parsing impact")
-		os.Exit(ExitStatusConfiguration)
-	}
-	log.Info().
-		Int("parsed impact factors", len(impact.Impact)).
-		Msg("Read impact: done")
-
-	return impact
-}
-
 func calculateTotalRisk(impact, likelihood int) int {
 	return (impact + likelihood) / 2
 }
@@ -139,12 +124,12 @@ func moduleToRuleName(module string) string {
 	return result
 }
 
-func findRuleByNameAndErrorKey(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, ruleName string, errorKey string) (int, int, int) {
+func findRuleByNameAndErrorKey(ruleContent map[string]types.RuleContent, impacts types.Impacts, ruleName string, errorKey string) (int, int, int) {
 	rc := ruleContent[ruleName]
 	ek := rc.ErrorKeys
 	val := ek[errorKey]
 	likelihood := val.Metadata.Likelihood
-	impact := impacts.Impact[val.Metadata.Impact]
+	impact := impacts[val.Metadata.Impact]
 	totalRisk := calculateTotalRisk(likelihood, impact)
 	return val.Metadata.Likelihood, impact, totalRisk
 }
@@ -157,7 +142,7 @@ func waitForEnter() {
 	}
 }
 
-func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, storage *DBStorage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration, notifier *producer.KafkaProducer) {
+func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration, notifier *producer.KafkaProducer) {
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
@@ -221,7 +206,7 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 	}
 }
 
-func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, storage *DBStorage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration, notifier *producer.KafkaProducer) {
+func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration, notifier *producer.KafkaProducer) {
 	//TODO: Define context values for weekly report
 	notificationMsg := generateWeeklyNotificationMessage(defaultNotificationAccountID, notificationType)
 	for i, cluster := range clusters {
@@ -286,7 +271,7 @@ func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, 
 	}
 }
 
-func processClusters(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, storage *DBStorage, clusters []types.ClusterEntry, config conf.ConfigStruct) {
+func processClusters(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, config conf.ConfigStruct) {
 
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
@@ -443,15 +428,10 @@ func main() {
 	waitForEnter()
 
 	log.Info().Msg(separator)
-	log.Info().Msg("Parsing impact from global content configuration")
-	impacts := readImpact(contentDirectory)
-	waitForEnter()
 
-	log.Info().Msg(separator)
+	log.Info().Msg("Getting rule content and impacts from content service")
 
-	log.Info().Msg("Getting rule content from content service")
-
-	ruleContent, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
+	ruleContent, impacts, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
 	if err != nil {
 		os.Exit(ExitStatusFetchContentError)
 	}

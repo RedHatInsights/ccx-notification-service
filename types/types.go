@@ -122,10 +122,13 @@ type ReportItem struct {
 	ErrorKey ErrorKey `json:"key"`
 }
 
+// Impacts represents the impacts parsed from the global config file
+type Impacts map[string]int
+
 // GlobalRuleConfig represents the file that contains
 // metadata globally applicable to any/all rule content.
 type GlobalRuleConfig struct {
-	Impact map[string]int `yaml:"impact" json:"impact"`
+	Impact Impacts `yaml:"impact" json:"impact"`
 }
 
 // EventType represents the allowed event types in notification messages
