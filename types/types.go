@@ -68,6 +68,12 @@ type RuleErrorKeyContent struct {
 	HasReason bool
 }
 
+// RuleContentDirectory contains content for all available rules in a directory.
+type RuleContentDirectory struct {
+	Config GlobalRuleConfig
+	Rules  map[string]RuleContent
+}
+
 // ErrorKeyMetadata is a Go representation of the `metadata.yaml`
 // file inside of an error key content directory.
 type ErrorKeyMetadata struct {

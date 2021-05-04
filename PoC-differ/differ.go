@@ -19,13 +19,13 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/RedHatInsights/ccx-notification-service/types"
 	"os"
 	"strings"
 	"time"
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/producer"
+	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -48,6 +48,8 @@ const (
 	ExitStatusError
 	// ExitStatusStorageError is returned in case of any consumer-related error
 	ExitStatusStorageError
+	// ExitStatusFetchContentError is returned in case content cannot be fetch correctly
+	ExitStatusFetchContentError
 	// ExitStatusKafkaBrokerError is for kafka broker connection establishment errors
 	ExitStatusKafkaBrokerError
 	// ExitStatusKafkaProducerError is for kafka event production failures
@@ -85,26 +87,6 @@ func showAuthors() {
 	fmt.Println(authorsMessage)
 }
 
-func readRuleContent(contentDirectory string) (map[string]types.RuleContent, []string) {
-	// map used to store rule content
-	contentMap := make(map[string]types.RuleContent)
-
-	// map used to store invalid rules
-	invalidRules := make([]string, 0)
-
-	err := parseRulesInDirectory(contentDirectory, &contentMap, &invalidRules)
-	if err != nil {
-		log.Error().Err(err).Msg("parseRulesInDirectory")
-		os.Exit(1)
-	}
-	log.Info().
-		Int("parsed rules", len(contentMap)).
-		Int("invalid rules", len(invalidRules)).
-		Msg("Parsing rules: done")
-
-	return contentMap, invalidRules
-}
-
 func readImpact(contentDirectory string) types.GlobalRuleConfig {
 	impact, err := parseGlobalContentConfig(contentDirectory + "/config.yaml")
 	if err != nil {
@@ -116,14 +98,6 @@ func readImpact(contentDirectory string) types.GlobalRuleConfig {
 		Msg("Read impact: done")
 
 	return impact
-}
-
-func printInvalidRules(invalidRules []string) {
-	log.Info().Msg(separator)
-	log.Error().Msg("List of invalid rules")
-	for i, rule := range invalidRules {
-		log.Error().Int("#", i+1).Str("Error", rule).Msg("Invalid rule")
-	}
 }
 
 func calculateTotalRisk(impact, likelihood int) int {
@@ -323,14 +297,12 @@ func main() {
 	waitForEnter()
 
 	log.Info().Msg(separator)
-	log.Info().Msg("Parsing rule content")
-	ruleContent, invalidRules := readRuleContent(contentDirectory)
-	waitForEnter()
 
-	if len(invalidRules) > 0 {
-		printInvalidRules(invalidRules)
-		waitForEnter()
-	}
+	log.Info().Msg("Getting rule content from content service")
+
+	ruleContent, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
+
+	waitForEnter()
 
 	log.Info().Msg(separator)
 	log.Info().Msg("Read cluster list")
