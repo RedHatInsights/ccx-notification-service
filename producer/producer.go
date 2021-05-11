@@ -61,7 +61,9 @@ func New(brokerCfg conf.KafkaConfiguration) (*KafkaProducer, error) {
 // problem on broker side.
 func (producer *KafkaProducer) ProduceMessage(msg types.NotificationMessage) (partitionID int32, offset int64, err error) {
 	jsonBytes, err := json.Marshal(msg)
+
 	if err != nil {
+		log.Error().Err(err).Msg("Couldn't turn notification message into valid JSON")
 		return 0, 0, err
 	}
 

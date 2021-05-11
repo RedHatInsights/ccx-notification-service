@@ -3,6 +3,20 @@ debug = true
 log_level = ""
 
 [kafka_broker]
-address = "platform-mq-kafka-bootstrap.platform-mq-prod.svc.cluster.local:9092"
-topic = "platform.notifications.ingress"
+address = ""
+topic = ""
 timeout = "20s"
+
+[storage]
+db_driver = "postgres"
+pg_username = ""
+pg_password = ""
+pg_host = ""
+pg_port =
+pg_db_name = ""
+pg_params = ""
+log_sql_queries = true
+
+[notification]
+cluster_url = ""
+cluster_insights_tab = "#insights"

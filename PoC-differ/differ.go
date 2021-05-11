@@ -30,8 +30,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-const contentDirectory = "content"
-
 // Configuration-related constants
 const (
 	configFileEnvVariableName = "NOTIFICATION_DIFFER_CONFIG_FILE"
@@ -68,13 +66,34 @@ const (
 	organizationIDAttribute = "org id"
 	clusterAttribute        = "cluster"
 	totalRiskAttribute      = "totalRisk"
-	errorKey                = "Error:"
+	errorStr                = "Error:"
+	invalidJsonContent      = "The provided content cannot be encoded as JSON."
 )
 
-// Notification-related constants
+// Constants for notification message top level fields
 const (
-	defaultNotificationBundleName      = "Openshift"
-	defaultNotificationApplicationName = "Advisor"
+	notificationBundleName       = "openshift"
+	notificationApplicationName  = "advisor"
+	defaultNotificationAccountID = "6089719" //TODO: Replace this with getting account ID for affected cluster
+)
+
+// Constants for notification event expected fields
+const (
+	//PAYLOAD FIELDS
+	notificationPayloadRuleDescription = "rule_description"
+	notificationPayloadRuleURL         = "rule_url"
+	notificationPayloadTotalRisk       = "total_risk"
+	notificationPayloadPublishDate     = "publish_date"
+)
+
+// Constants for notification context expected fields
+const (
+	notificationContextDisplayName = "display_name"
+	notificationContextHostURL     = "host_url"
+)
+
+var (
+	notificationType types.EventType
 )
 
 // showVersion function displays version information.
@@ -85,19 +104,6 @@ func showVersion() {
 // showAuthors function displays information about authors.
 func showAuthors() {
 	fmt.Println(authorsMessage)
-}
-
-func readImpact(contentDirectory string) types.GlobalRuleConfig {
-	impact, err := parseGlobalContentConfig(contentDirectory + "/config.yaml")
-	if err != nil {
-		log.Error().Err(err).Msg("parsing impact")
-		os.Exit(ExitStatusConfiguration)
-	}
-	log.Info().
-		Int("parsed impact factors", len(impact.Impact)).
-		Msg("Read impact: done")
-
-	return impact
 }
 
 func calculateTotalRisk(impact, likelihood int) int {
@@ -118,12 +124,12 @@ func moduleToRuleName(module string) string {
 	return result
 }
 
-func findRuleByNameAndErrorKey(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, ruleName string, errorKey string) (int, int, int) {
+func findRuleByNameAndErrorKey(ruleContent map[string]types.RuleContent, impacts types.Impacts, ruleName string, errorKey string) (int, int, int) {
 	rc := ruleContent[ruleName]
 	ek := rc.ErrorKeys
 	val := ek[errorKey]
 	likelihood := val.Metadata.Likelihood
-	impact := impacts.Impact[val.Metadata.Impact]
+	impact := impacts[val.Metadata.Impact]
 	totalRisk := calculateTotalRisk(likelihood, impact)
 	return val.Metadata.Likelihood, impact, totalRisk
 }
@@ -136,7 +142,7 @@ func waitForEnter() {
 	}
 }
 
-func processClusters(ruleContent map[string]types.RuleContent, impacts types.GlobalRuleConfig, storage *DBStorage, clusters []types.ClusterEntry, kafkaConfig conf.KafkaConfiguration) {
+func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration, notifier *producer.KafkaProducer) {
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
@@ -144,7 +150,7 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 			Str(clusterAttribute, string(cluster.ClusterName)).
 			Msg(clusterEntryMessage)
 
-		report, _, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
+		report, reportedAt, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
 		if err != nil {
 			log.Err(err).Msg(operationFailedMessage)
 			os.Exit(ExitStatusStorageError)
@@ -153,17 +159,16 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 		var deserialized types.Report
 		err = json.Unmarshal([]byte(report), &deserialized)
 		if err != nil {
-			log.Err(err).Msg("Deserialization error")
+			log.Err(err).Msg("Deserialization error - Couldn't create report object")
 			os.Exit(ExitStatusStorageError)
 		}
 
-		log.Info().Msg(separator)
-		log.Info().Msg("Preparing Kafka producer")
+		if len(deserialized.Reports) == 0 {
+			log.Info().Msgf("No reports in notification database for cluster %s", cluster.ClusterName)
+			continue
+		}
 
-		notifier := setupNotificationProducer(kafkaConfig)
-		log.Info().Msg("Kafka producer ready")
-
-		waitForEnter()
+		notificationMsg := generateNotificationMessage(notificationConfig.ClusterDetailsURI, defaultNotificationAccountID, notificationType, string(cluster.ClusterName))
 
 		for i, r := range deserialized.Reports {
 			ruleName := moduleToRuleName(string(r.Module))
@@ -179,28 +184,117 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Glo
 				Int("impact", impact).
 				Int(totalRiskAttribute, totalRisk).
 				Msg("Report")
-			if totalRisk >= 2 {
+			if totalRisk >= 3 {
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-				// TODO: Decide actual content of notification message's payload.
-				notification := generateNotificationMessage(ruleName, totalRisk, string(cluster.OrgID), types.InstantNotif)
-				_, _, err = notifier.ProduceMessage(notification)
-				if err != nil {
-					log.Error().
-						Str(errorKey, err.Error()).
-						Msg("Couldn't produce kafka event.")
-					os.Exit(ExitStatusKafkaProducerError)
-				}
+				appendEventToNotificationMessage(notificationConfig.RuleDetailsURI, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
 			}
 		}
 
-		err = notifier.Close()
-		if err != nil {
-			// TODO: Can this be handled somehow?
-			log.Error().
-				Str(errorKey, err.Error()).
-				Msg("Couldn't close Kafka connection.")
-			os.Exit(ExitStatusKafkaConnectionNotClosedError)
+		if len(notificationMsg.Events) == 0 {
+			log.Info().Msgf("No new issues to notify for cluster %s", string(cluster.ClusterName))
+			continue
 		}
+
+		log.Info().Msgf("Producing instant notification for cluster %s with %d events", string(cluster.ClusterName), len(notificationMsg.Events))
+		_, _, err = notifier.ProduceMessage(notificationMsg)
+		if err != nil {
+			log.Error().
+				Str(errorStr, err.Error()).
+				Msg("Couldn't produce kafka event.")
+			os.Exit(ExitStatusKafkaProducerError)
+		}
+	}
+}
+
+func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration, notifier *producer.KafkaProducer) {
+	//TODO: Define context values for weekly report
+	notificationMsg := generateWeeklyNotificationMessage(defaultNotificationAccountID, notificationType)
+	for i, cluster := range clusters {
+		log.Info().
+			Int("#", i).
+			Int(organizationIDAttribute, int(cluster.OrgID)).
+			Str(clusterAttribute, string(cluster.ClusterName)).
+			Msg(clusterEntryMessage)
+
+		report, reportedAt, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
+		if err != nil {
+			log.Err(err).Msg(operationFailedMessage)
+			os.Exit(ExitStatusStorageError)
+		}
+
+		var deserialized types.Report
+		err = json.Unmarshal([]byte(report), &deserialized)
+		if err != nil {
+			log.Err(err).Msg("Deserialization error - Couldn't create report object")
+			os.Exit(ExitStatusStorageError)
+		}
+
+		if len(deserialized.Reports) == 0 {
+			log.Info().Msgf("No reports in notification database for cluster %s", cluster.ClusterName)
+			continue
+		}
+
+		for i, r := range deserialized.Reports {
+			ruleName := moduleToRuleName(string(r.Module))
+			errorKey := string(r.ErrorKey)
+			likelihood, impact, totalRisk := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
+
+			log.Info().
+				Int("#", i).
+				Str("type", r.Type).
+				Str("rule", ruleName).
+				Str("error key", errorKey).
+				Int("likelihood", likelihood).
+				Int("impact", impact).
+				Int(totalRiskAttribute, totalRisk).
+				Msg("Report")
+			if totalRisk >= 3 {
+				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
+				appendEventToNotificationMessage(notificationConfig.RuleDetailsURI, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
+			}
+		}
+
+	}
+
+	if len(notificationMsg.Events) == 0 {
+		log.Info().Msg("No new issues to notify")
+		return
+	}
+
+	log.Info().Msgf("Producing weekly notification with %d events.", len(notificationMsg.Events))
+	_, _, err := notifier.ProduceMessage(notificationMsg)
+	if err != nil {
+		log.Error().
+			Str(errorStr, err.Error()).
+			Msg("Couldn't produce kafka event.")
+		os.Exit(ExitStatusKafkaProducerError)
+	}
+}
+
+func processClusters(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, config conf.ConfigStruct) {
+
+	log.Info().Msg(separator)
+	log.Info().Msg("Preparing Kafka producer")
+
+	notifier := setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
+	log.Info().Msg("Kafka producer ready")
+
+	waitForEnter()
+
+	notificationConfig := conf.GetNotificationsConfiguration(config)
+
+	if notificationType == types.InstantNotif {
+		processReportsByCluster(ruleContent, impacts, storage, clusters, notificationConfig, notifier)
+	} else if notificationType == types.WeeklyDigest {
+		processAllReportsFromCurrentWeek(ruleContent, impacts, storage, clusters, notificationConfig, notifier)
+	}
+
+	err := notifier.Close()
+	if err != nil {
+		log.Error().
+			Str(errorStr, err.Error()).
+			Msg("Couldn't close Kafka connection.")
+		os.Exit(ExitStatusKafkaConnectionNotClosedError)
 	}
 }
 
@@ -218,35 +312,71 @@ func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) (notifier *
 	notifier, err := producer.New(brokerConfig)
 	if err != nil {
 		log.Error().
-			Str(errorKey, err.Error()).
+			Str(errorStr, err.Error()).
 			Msg("Couldn't initialize Kafka producer with the provided config.")
 		os.Exit(ExitStatusKafkaBrokerError)
 	}
 	return
 }
 
-func generateNotificationMessage(ruleName string, totalRisk int, accountID string, eventType types.EventType) (notification types.NotificationMessage) {
-	//TODO: Discuss actual payload content
-	events := []types.Event{
-		{
-			Metadata: nil,
-			Payload: map[string]interface{}{
-				//TODO: Define payload's keys and add them as constants
-				"rule_id":    ruleName,
-				"total_risk": totalRisk,
-			},
-		},
+func generateNotificationMessage(clusterURI string, accountID string, eventType types.EventType, clusterID string) (notification types.NotificationMessage) {
+	events := []types.Event{}
+	context := types.NotificationContext{
+		notificationContextDisplayName: clusterID,
+		notificationContextHostURL:     strings.Replace(clusterURI, "{cluster}", clusterID, 1),
 	}
+
 	notification = types.NotificationMessage{
-		Bundle:      defaultNotificationBundleName,
-		Application: defaultNotificationApplicationName,
+		Bundle:      notificationBundleName,
+		Application: notificationApplicationName,
 		EventType:   eventType.String(),
-		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
+		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		AccountID:   accountID,
 		Events:      events,
-		Context:     nil,
+		Context:     toJsonEscapedString(context),
 	}
 	return
+}
+
+func generateWeeklyNotificationMessage(accountID string, eventType types.EventType) (notification types.NotificationMessage) {
+	events := []types.Event{}
+	context := types.NotificationContext{}
+
+	notification = types.NotificationMessage{
+		Bundle:      notificationBundleName,
+		Application: notificationApplicationName,
+		EventType:   eventType.String(),
+		Timestamp:   time.Now().UTC().Format(time.RFC3339),
+		AccountID:   accountID,
+		Events:      events,
+		Context:     toJsonEscapedString(context),
+	}
+	return
+}
+
+func toJsonEscapedString(i interface{}) string {
+	b, err := json.Marshal(i)
+	if err != nil {
+		log.Err(err).Msg(invalidJsonContent)
+	}
+	s := string(b)
+	return s
+}
+
+func appendEventToNotificationMessage(ruleURI string, notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) {
+	payload := types.EventPayload{
+		notificationPayloadRuleDescription: ruleName,
+		notificationPayloadRuleURL:         strings.Replace(ruleURI, "{rule}", ruleName, 1),
+		notificationPayloadTotalRisk:       string(totalRisk),
+		notificationPayloadPublishDate:     publishDate,
+	}
+	event := types.Event{
+		//The insights Notifications backend expects this field to be an empty object in the received JSON
+		Metadata: types.EventMetadata{},
+		//The insights Notifications backend expects to receive the payload as a string with all its fields as escaped strings
+		Payload: toJsonEscapedString(payload),
+	}
+	notification.Events = append(notification.Events, event)
 }
 
 func checkArgs(args *types.CliFlags) {
@@ -264,6 +394,12 @@ func checkArgs(args *types.CliFlags) {
 	if !args.InstantReports && !args.WeeklyReports {
 		log.Error().Msg("Type of report needs to be specified on command line")
 		os.Exit(ExitStatusConfiguration)
+	}
+
+	if args.InstantReports {
+		notificationType = types.InstantNotif
+	} else {
+		notificationType = types.WeeklyDigest
 	}
 }
 
@@ -292,15 +428,13 @@ func main() {
 	waitForEnter()
 
 	log.Info().Msg(separator)
-	log.Info().Msg("Parsing impact from global content configuration")
-	impacts := readImpact(contentDirectory)
-	waitForEnter()
 
-	log.Info().Msg(separator)
+	log.Info().Msg("Getting rule content and impacts from content service")
 
-	log.Info().Msg("Getting rule content from content service")
-
-	ruleContent, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
+	ruleContent, impacts, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
+	if err != nil {
+		os.Exit(ExitStatusFetchContentError)
+	}
 
 	waitForEnter()
 
@@ -329,7 +463,7 @@ func main() {
 	log.Info().Msg("Checking new issues for all new reports")
 	waitForEnter()
 
-	processClusters(ruleContent, impacts, storage, clusters, conf.GetKafkaBrokerConfiguration(config))
+	processClusters(ruleContent, impacts, storage, clusters, config)
 
 	log.Info().Msg("Differ finished")
 }

@@ -122,10 +122,13 @@ type ReportItem struct {
 	ErrorKey ErrorKey `json:"key"`
 }
 
+// Impacts represents the impacts parsed from the global config file
+type Impacts map[string]int
+
 // GlobalRuleConfig represents the file that contains
 // metadata globally applicable to any/all rule content.
 type GlobalRuleConfig struct {
-	Impact map[string]int `yaml:"impact" json:"impact"`
+	Impact Impacts `yaml:"impact" json:"impact"`
 }
 
 // EventType represents the allowed event types in notification messages
@@ -139,8 +142,8 @@ const (
 
 // Event types string representation
 const (
-	eventTypeInstant = "Instant notification"
-	eventTypeWeekly  = "Weekly digest"
+	eventTypeInstant = "new-recommendation"
+	eventTypeWeekly  = "weekly-digest"
 )
 
 // String function returns string representation of given event type
@@ -154,12 +157,12 @@ type EventMetadata map[string]interface{}
 
 // EventPayload is a JSON string containing all the data required
 // by the app to compose the various messages (Email, webhook, ...).
-type EventPayload map[string]interface{}
+type EventPayload map[string]string
 
 // Event is a structure containing the payload and its metadata.
 type Event struct {
 	Metadata EventMetadata `json:"metadata"`
-	Payload  EventPayload  `json:"payload"`
+	Payload  string        `json:"payload"`
 }
 
 // NotificationContext represents the extra information
@@ -170,11 +173,11 @@ type NotificationContext map[string]interface{}
 // NotificationMessage represents content of messages
 // sent to the notification platform topic in Kafka.
 type NotificationMessage struct {
-	Bundle      string              `json:"bundle"`
-	Application string              `json:"application"`
-	EventType   string              `json:"event_type"`
-	Timestamp   string              `json:"timestamp"`
-	AccountID   string              `json:"account_id"`
-	Events      []Event             `json:"events"`
-	Context     NotificationContext `json:"context"`
+	Bundle      string  `json:"bundle"`
+	Application string  `json:"application"`
+	EventType   string  `json:"event_type"`
+	Timestamp   string  `json:"timestamp"`
+	AccountID   string  `json:"account_id"`
+	Events      []Event `json:"events"`
+	Context     string  `json:"context"`
 }
