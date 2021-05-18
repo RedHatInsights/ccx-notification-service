@@ -80,11 +80,16 @@ const (
 
 // Constants for notification event expected fields
 const (
-	//PAYLOAD FIELDS
+	//INSTANT NOTIFICATION PAYLOAD FIELDS
 	notificationPayloadRuleDescription = "rule_description"
 	notificationPayloadRuleURL         = "rule_url"
 	notificationPayloadTotalRisk       = "total_risk"
 	notificationPayloadPublishDate     = "publish_date"
+	//WEEKLY NOTIFICATION PAYLOAD FIELDS
+	notificationPayloadTotalClusters        = "rule_description"
+	notificationPayloadTotalRecommendations = "total_recommendations"
+	notificationPayloadTotalPrioritized     = "total_prioritized"
+	notificationPayloadTotalIncidents       = "total_incidents"
 )
 
 // Constants for notification context expected fields
@@ -209,20 +214,20 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 	}
 }
 
-func getNotificationMessageForCurrentAccount(insightsAdvisorURL string, notificationsByAccount map[types.AccountNumber]types.NotificationMessage, accountNumber types.AccountNumber) (notificationMsg types.NotificationMessage) {
+func getNotificationDigestForCurrentAccount(insightsAdvisorURL string, notificationsByAccount map[types.AccountNumber]types.Digest, accountNumber types.AccountNumber) (digest types.Digest) {
 	if _, ok := notificationsByAccount[accountNumber]; !ok {
-		log.Info().Msgf("Creating notification message for account ", accountNumber)
-		notificationMsg = generateWeeklyNotificationMessage(insightsAdvisorURL, string(accountNumber))
+		log.Info().Msgf("Creating notification digest for account ", accountNumber)
+		digest = types.Digest{}
 	} else {
-		log.Info().Msgf("Modifying notification message for account ", accountNumber)
-		notificationMsg = notificationsByAccount[accountNumber]
+		log.Info().Msgf("Modifying notification digest for account ", accountNumber)
+		digest = notificationsByAccount[accountNumber]
 	}
 	return
 }
 
 func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration, notifier *producer.KafkaProducer) {
-	notificationMsg := types.NotificationMessage{}
-	notificationsByAccount := map[types.AccountNumber]types.NotificationMessage{}
+	digestByAccount := map[types.AccountNumber]types.Digest{}
+	digest := types.Digest{}
 
 	for i, cluster := range clusters {
 		log.Info().
@@ -232,9 +237,10 @@ func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, 
 			Str(clusterAttribute, string(cluster.ClusterName)).
 			Msg(clusterEntryMessage)
 
-		notificationMsg = getNotificationMessageForCurrentAccount(notificationConfig.InsightsAdvisorURL, notificationsByAccount, cluster.AccountNumber)
+		digest = getNotificationDigestForCurrentAccount(notificationConfig.InsightsAdvisorURL, digestByAccount, cluster.AccountNumber)
+		digest.ClustersAffected++
 
-		report, reportedAt, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
+		report, _, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
 		if err != nil {
 			log.Err(err).Msg(operationFailedMessage)
 			os.Exit(ExitStatusStorageError)
@@ -247,10 +253,12 @@ func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, 
 			os.Exit(ExitStatusStorageError)
 		}
 
-		if len(deserialized.Reports) == 0 {
+		numReports := len(deserialized.Reports)
+		if numReports == 0 {
 			log.Info().Msgf("No reports in notification database for cluster %s", cluster.ClusterName)
 			continue
 		}
+		digest.Recommendations += numReports
 
 		for i, r := range deserialized.Reports {
 			ruleName := moduleToRuleName(string(r.Module))
@@ -266,22 +274,29 @@ func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, 
 				Int("impact", impact).
 				Int(totalRiskAttribute, totalRisk).
 				Msg("Report")
-			if totalRisk >= 3 {
-				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected. Adding to weekly digest")
-				appendEventToNotificationMessage(notificationConfig.RuleDetailsURI, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
+			if totalRisk > 3 {
+				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Critical report detected. Adding to weekly digest")
+				digest.PrioritizedNotifications++
 			}
 		}
-		notificationsByAccount[cluster.AccountNumber] = notificationMsg
+		digestByAccount[cluster.AccountNumber] = digest
 	}
 
-	for account, notificationMsg := range notificationsByAccount {
-		if len(notificationMsg.Events) == 0 {
+	for account, digest := range digestByAccount {
+		if digest.Recommendations == 0 {
 			log.Info().Msgf("No issues to notify to account %d", account)
 			continue
 		}
 
-		log.Info().Msgf("Producing weekly notification for account %d with %d events.", account, len(notificationMsg.Events))
-		_, _, err := notifier.ProduceMessage(notificationMsg)
+		log.Info().
+			Int("account number", int(account)).
+			Int("total recommendations", digest.Recommendations).
+			Int("clusters affected", digest.ClustersAffected).
+			Int("prioritized notifications", digest.PrioritizedNotifications).
+			Msg("Producing weekly notification for ")
+
+		notification := generateWeeklyNotificationMessage(notificationConfig.InsightsAdvisorURL, string(account), digest)
+		_, _, err := notifier.ProduceMessage(notification)
 		if err != nil {
 			log.Error().
 				Str(errorStr, err.Error()).
@@ -359,10 +374,25 @@ func generateNotificationMessage(clusterURI string, accountID string, clusterID 
 	return
 }
 
-func generateWeeklyNotificationMessage(advisorURI string, accountID string) (notification types.NotificationMessage) {
-	events := []types.Event{}
+func generateWeeklyNotificationMessage(advisorURI string, accountID string, digest types.Digest) (notification types.NotificationMessage) {
 	context := types.NotificationContext{
 		notificationContextAdvisorURL: advisorURI,
+	}
+
+	payload := types.EventPayload{
+		notificationPayloadTotalClusters       : string(digest.ClustersAffected),
+		notificationPayloadTotalRecommendations: string(digest.Recommendations),
+		notificationPayloadTotalIncidents:       string(digest.Incidents),
+		notificationPayloadTotalPrioritized:     string(digest.PrioritizedNotifications),
+	}
+
+	events := []types.Event{
+		{
+			//The insights Notifications backend expects this field to be an empty object in the received JSON
+			Metadata: types.EventMetadata{},
+			//The insights Notifications backend expects to receive the payload as a string with all its fields as escaped strings
+			Payload: toJsonEscapedString(payload),
+		},
 	}
 
 	notification = types.NotificationMessage{
@@ -473,7 +503,7 @@ func main() {
 	}
 
 	//TODO: Set notificationConfig global variables here to avoid passing so much parameters
-	
+
 	clusters, err := storage.ReadClusterList()
 	if err != nil {
 		log.Err(err).Msg(operationFailedMessage)

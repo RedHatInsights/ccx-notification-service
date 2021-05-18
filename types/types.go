@@ -169,6 +169,14 @@ type Event struct {
 	Payload  string        `json:"payload"`
 }
 
+// Digest is a structure containing the counters for weekly digest
+type Digest struct {
+	ClustersAffected         int
+	PrioritizedNotifications int
+	Recommendations          int
+	Incidents                int // We don't have this info, AFAIK
+}
+
 // NotificationContext represents the extra information
 // that is common to all the events that are sent in
 // this message as a JSON string (escaped)
