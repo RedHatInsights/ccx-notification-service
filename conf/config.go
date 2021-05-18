@@ -111,8 +111,9 @@ type KafkaConfiguration struct {
 
 // NotificationsConfiguration represents the configuration specific to the content of notifications
 type NotificationsConfiguration struct {
-	ClusterDetailsURI string `mapstructure:"cluster_details_uri" toml:"cluster_details_uri"`
-	RuleDetailsURI    string `mapstructure:"rule_details_uri"    toml:"rule_details_uri"`
+	InsightsAdvisorURL string `mapstructure:"insights_advisor_url" toml:"insights_advisor_url"`
+	ClusterDetailsURI  string `mapstructure:"cluster_details_uri" toml:"cluster_details_uri"`
+	RuleDetailsURI     string `mapstructure:"rule_details_uri"    toml:"rule_details_uri"`
 }
 
 // LoadConfiguration loads configuration from defaultConfigFile, file set in

@@ -91,6 +91,7 @@ const (
 const (
 	notificationContextDisplayName = "display_name"
 	notificationContextHostURL     = "host_url"
+	notificationContextAdvisorURL  = "advisor_url"
 )
 
 var (
@@ -208,10 +209,10 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 	}
 }
 
-func getNotificationMessageForCurrentAccount(notificationsByAccount map[types.AccountNumber]types.NotificationMessage, accountNumber types.AccountNumber) (notificationMsg types.NotificationMessage) {
+func getNotificationMessageForCurrentAccount(insightsAdvisorURL string, notificationsByAccount map[types.AccountNumber]types.NotificationMessage, accountNumber types.AccountNumber) (notificationMsg types.NotificationMessage) {
 	if _, ok := notificationsByAccount[accountNumber]; !ok {
 		log.Info().Msgf("Creating notification message for account ", accountNumber)
-		notificationMsg = generateWeeklyNotificationMessage(string(accountNumber))
+		notificationMsg = generateWeeklyNotificationMessage(insightsAdvisorURL, string(accountNumber))
 	} else {
 		log.Info().Msgf("Modifying notification message for account ", accountNumber)
 		notificationMsg = notificationsByAccount[accountNumber]
@@ -231,7 +232,7 @@ func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, 
 			Str(clusterAttribute, string(cluster.ClusterName)).
 			Msg(clusterEntryMessage)
 
-		notificationMsg = getNotificationMessageForCurrentAccount(notificationsByAccount, cluster.AccountNumber)
+		notificationMsg = getNotificationMessageForCurrentAccount(notificationConfig.InsightsAdvisorURL, notificationsByAccount, cluster.AccountNumber)
 
 		report, reportedAt, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
 		if err != nil {
@@ -358,9 +359,11 @@ func generateNotificationMessage(clusterURI string, accountID string, clusterID 
 	return
 }
 
-func generateWeeklyNotificationMessage(accountID string) (notification types.NotificationMessage) {
+func generateWeeklyNotificationMessage(advisorURI string, accountID string) (notification types.NotificationMessage) {
 	events := []types.Event{}
-	context := types.NotificationContext{}
+	context := types.NotificationContext{
+		notificationContextAdvisorURL: advisorURI,
+	}
 
 	notification = types.NotificationMessage{
 		Bundle:      notificationBundleName,
@@ -469,6 +472,8 @@ func main() {
 		os.Exit(ExitStatusStorageError)
 	}
 
+	//TODO: Set notificationConfig global variables here to avoid passing so much parameters
+	
 	clusters, err := storage.ReadClusterList()
 	if err != nil {
 		log.Err(err).Msg(operationFailedMessage)
