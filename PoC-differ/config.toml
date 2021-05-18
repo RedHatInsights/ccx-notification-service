@@ -22,5 +22,6 @@ content_server = "" #provide in deployment env or as secret
 content_endpoint = "" #provide in deployment env or as secret
 
 [notification]
+insights_advisor_url = "" #provide in deployment env or as secret
 cluster_details_uri = "" #provide in deployment env or as secret
 rule_details_uri = "" #provide in deployment env or as secret

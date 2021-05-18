@@ -380,7 +380,7 @@ func generateWeeklyNotificationMessage(advisorURI string, accountID string, dige
 	}
 
 	payload := types.EventPayload{
-		notificationPayloadTotalClusters       : string(digest.ClustersAffected),
+		notificationPayloadTotalClusters:        string(digest.ClustersAffected),
 		notificationPayloadTotalRecommendations: string(digest.Recommendations),
 		notificationPayloadTotalIncidents:       string(digest.Incidents),
 		notificationPayloadTotalPrioritized:     string(digest.PrioritizedNotifications),
