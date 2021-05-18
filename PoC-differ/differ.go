@@ -170,7 +170,7 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 			continue
 		}
 
-		notificationMsg := generateNotificationMessage(notificationConfig.ClusterDetailsURI, string(cluster.AccountNumber), notificationType, string(cluster.ClusterName))
+		notificationMsg := generateNotificationMessage(notificationConfig.ClusterDetailsURI, string(cluster.AccountNumber), string(cluster.ClusterName))
 
 		for i, r := range deserialized.Reports {
 			ruleName := moduleToRuleName(string(r.Module))
@@ -211,7 +211,7 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 func getNotificationMessageForCurrentAccount(notificationsByAccount map[types.AccountNumber]types.NotificationMessage, accountNumber types.AccountNumber) (notificationMsg types.NotificationMessage) {
 	if _, ok := notificationsByAccount[accountNumber]; !ok {
 		log.Info().Msgf("Creating notification message for account ", accountNumber)
-		notificationMsg = generateWeeklyNotificationMessage(string(accountNumber), notificationType)
+		notificationMsg = generateWeeklyNotificationMessage(string(accountNumber))
 	} else {
 		log.Info().Msgf("Modifying notification message for account ", accountNumber)
 		notificationMsg = notificationsByAccount[accountNumber]
@@ -220,8 +220,6 @@ func getNotificationMessageForCurrentAccount(notificationsByAccount map[types.Ac
 }
 
 func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration, notifier *producer.KafkaProducer) {
-	//TODO: Define context values for weekly report
-	//Idea: Generate one notification message per account number
 	notificationMsg := types.NotificationMessage{}
 	notificationsByAccount := map[types.AccountNumber]types.NotificationMessage{}
 
@@ -341,7 +339,7 @@ func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) (notifier *
 	return
 }
 
-func generateNotificationMessage(clusterURI string, accountID string, eventType types.EventType, clusterID string) (notification types.NotificationMessage) {
+func generateNotificationMessage(clusterURI string, accountID string, clusterID string) (notification types.NotificationMessage) {
 	events := []types.Event{}
 	context := types.NotificationContext{
 		notificationContextDisplayName: clusterID,
@@ -351,7 +349,7 @@ func generateNotificationMessage(clusterURI string, accountID string, eventType 
 	notification = types.NotificationMessage{
 		Bundle:      notificationBundleName,
 		Application: notificationApplicationName,
-		EventType:   eventType.String(),
+		EventType:   notificationType.String(),
 		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		AccountID:   accountID,
 		Events:      events,
@@ -360,14 +358,14 @@ func generateNotificationMessage(clusterURI string, accountID string, eventType 
 	return
 }
 
-func generateWeeklyNotificationMessage(accountID string, eventType types.EventType) (notification types.NotificationMessage) {
+func generateWeeklyNotificationMessage(accountID string) (notification types.NotificationMessage) {
 	events := []types.Event{}
 	context := types.NotificationContext{}
 
 	notification = types.NotificationMessage{
 		Bundle:      notificationBundleName,
 		Application: notificationApplicationName,
-		EventType:   eventType.String(),
+		EventType:   notificationType.String(),
 		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		AccountID:   accountID,
 		Events:      events,
