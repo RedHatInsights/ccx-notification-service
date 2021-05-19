@@ -86,7 +86,7 @@ const (
 	notificationPayloadTotalRisk       = "total_risk"
 	notificationPayloadPublishDate     = "publish_date"
 	//WEEKLY NOTIFICATION PAYLOAD FIELDS
-	notificationPayloadTotalClusters        = "rule_description"
+	notificationPayloadTotalClusters        = "total_clusters"
 	notificationPayloadTotalRecommendations = "total_recommendations"
 	notificationPayloadTotalPrioritized     = "total_prioritized"
 	notificationPayloadTotalIncidents       = "total_incidents"
