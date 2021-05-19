@@ -88,7 +88,8 @@ const (
 	//WEEKLY NOTIFICATION PAYLOAD FIELDS
 	notificationPayloadTotalClusters        = "total_clusters"
 	notificationPayloadTotalRecommendations = "total_recommendations"
-	notificationPayloadTotalPrioritized     = "total_prioritized"
+	notificationPayloadTotalCritical        = "total_critical"
+	notificationPayloadTotalImportant       = "total_important"
 	notificationPayloadTotalIncidents       = "total_incidents"
 )
 
@@ -225,6 +226,17 @@ func getNotificationDigestForCurrentAccount(insightsAdvisorURL string, notificat
 	return
 }
 
+func updateDigestNotificationCounters(digest *types.Digest, totalRisk int) {
+	if totalRisk == 3 {
+		log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Important report detected. Adding to weekly digest")
+		digest.ImportantNotifications++
+	}
+	if totalRisk == 4 {
+		log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Critical report detected. Adding to weekly digest")
+		digest.CriticalNotifications++
+	}
+}
+
 func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration, notifier *producer.KafkaProducer) {
 	digestByAccount := map[types.AccountNumber]types.Digest{}
 	digest := types.Digest{}
@@ -274,10 +286,7 @@ func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, 
 				Int("impact", impact).
 				Int(totalRiskAttribute, totalRisk).
 				Msg("Report")
-			if totalRisk > 3 {
-				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Critical report detected. Adding to weekly digest")
-				digest.PrioritizedNotifications++
-			}
+			updateDigestNotificationCounters(&digest, totalRisk)
 		}
 		digestByAccount[cluster.AccountNumber] = digest
 	}
@@ -292,7 +301,8 @@ func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, 
 			Int("account number", int(account)).
 			Int("total recommendations", digest.Recommendations).
 			Int("clusters affected", digest.ClustersAffected).
-			Int("prioritized notifications", digest.PrioritizedNotifications).
+			Int("critical notifications", digest.CriticalNotifications).
+			Int("important notifications", digest.ImportantNotifications).
 			Msg("Producing weekly notification for ")
 
 		notification := generateWeeklyNotificationMessage(notificationConfig.InsightsAdvisorURL, string(account), digest)
@@ -383,7 +393,8 @@ func generateWeeklyNotificationMessage(advisorURI string, accountID string, dige
 		notificationPayloadTotalClusters:        string(digest.ClustersAffected),
 		notificationPayloadTotalRecommendations: string(digest.Recommendations),
 		notificationPayloadTotalIncidents:       string(digest.Incidents),
-		notificationPayloadTotalPrioritized:     string(digest.PrioritizedNotifications),
+		notificationPayloadTotalCritical:        string(digest.CriticalNotifications),
+		notificationPayloadTotalImportant:       string(digest.ImportantNotifications),
 	}
 
 	events := []types.Event{

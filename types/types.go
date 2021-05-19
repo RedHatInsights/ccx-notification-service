@@ -171,10 +171,11 @@ type Event struct {
 
 // Digest is a structure containing the counters for weekly digest
 type Digest struct {
-	ClustersAffected         int
-	PrioritizedNotifications int
-	Recommendations          int
-	Incidents                int // We don't have this info, AFAIK
+	ClustersAffected       int
+	CriticalNotifications  int
+	ImportantNotifications int
+	Recommendations        int
+	Incidents              int // We don't have this info, AFAIK
 }
 
 // NotificationContext represents the extra information
