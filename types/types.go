@@ -26,6 +26,9 @@ type Timestamp time.Time
 // OrgID represents organization ID
 type OrgID uint32
 
+// AccountNumber represents account number for a given report
+type AccountNumber uint32
+
 // ClusterName represents name of cluster in format c8590f31-e97e-4b85-b506-c45ce1911a12
 type ClusterName string
 
@@ -46,8 +49,9 @@ const (
 
 // ClusterEntry  represents the entries retrieved from the DB
 type ClusterEntry struct {
-	OrgID       OrgID
-	ClusterName ClusterName
+	OrgID         OrgID
+	AccountNumber AccountNumber
+	ClusterName   ClusterName
 }
 
 // RuleContent wraps all the content available for a rule into a single structure.
@@ -163,6 +167,15 @@ type EventPayload map[string]string
 type Event struct {
 	Metadata EventMetadata `json:"metadata"`
 	Payload  string        `json:"payload"`
+}
+
+// Digest is a structure containing the counters for weekly digest
+type Digest struct {
+	ClustersAffected       int
+	CriticalNotifications  int
+	ImportantNotifications int
+	Recommendations        int
+	Incidents              int // We don't have this info, AFAIK
 }
 
 // NotificationContext represents the extra information
