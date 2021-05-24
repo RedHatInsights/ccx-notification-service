@@ -140,7 +140,7 @@ func (storage DBStorage) Close() error {
 func (storage DBStorage) ReadClusterList() ([]types.ClusterEntry, error) {
 	var clusterList = make([]types.ClusterEntry, 0)
 
-	rows, err := storage.connection.Query("SELECT org_id, account_number, cluster FROM new_reports ORDER BY updated_at")
+	rows, err := storage.connection.Query("SELECT org_id, account_number, cluster, kafka_offset, updated_at FROM new_reports ORDER BY updated_at")
 	if err != nil {
 		return clusterList, err
 	}
@@ -157,15 +157,17 @@ func (storage DBStorage) ReadClusterList() ([]types.ClusterEntry, error) {
 			clusterName   types.ClusterName
 			orgID         types.OrgID
 			accountNumber types.AccountNumber
+			kafkaOffset   types.KafkaOffset
+			updatedAt     types.Timestamp
 		)
 
-		if err := rows.Scan(&orgID, &accountNumber, &clusterName); err != nil {
+		if err := rows.Scan(&orgID, &accountNumber, &clusterName, &kafkaOffset, &updatedAt); err != nil {
 			if closeErr := rows.Close(); closeErr != nil {
 				log.Error().Err(closeErr).Msg(unableToCloseDBRowsHandle)
 			}
 			return clusterList, err
 		}
-		clusterList = append(clusterList, types.ClusterEntry{orgID, accountNumber, clusterName})
+		clusterList = append(clusterList, types.ClusterEntry{orgID, accountNumber, clusterName, kafkaOffset, updatedAt})
 	}
 
 	return clusterList, nil
