@@ -23,13 +23,17 @@ import (
 // TODO: need to be improved
 type Timestamp time.Time
 
-// OrgID represents organization ID
+// KafkaOffset is a data type representing offset in Kafka topic.
+type KafkaOffset int64
+
+// OrgID data type represents organization ID.
 type OrgID uint32
 
-// AccountNumber represents account number for a given report
+// AccountNumber represents account number for a given report.
 type AccountNumber uint32
 
-// ClusterName represents name of cluster in format c8590f31-e97e-4b85-b506-c45ce1911a12
+// ClusterName date type represents name of cluster in format
+// c8590f31-e97e-4b85-b506-c45ce1911a12 (ie. in UUID format).
 type ClusterName string
 
 // ClusterReport represents cluster report
@@ -52,6 +56,8 @@ type ClusterEntry struct {
 	OrgID         OrgID
 	AccountNumber AccountNumber
 	ClusterName   ClusterName
+	KafkaOffset   KafkaOffset
+	UpdatedAt     Timestamp
 }
 
 // RuleContent wraps all the content available for a rule into a single structure.
