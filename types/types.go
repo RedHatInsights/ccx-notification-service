@@ -42,6 +42,9 @@ type ClusterReport string
 // DBDriver type for db driver enum
 type DBDriver int
 
+// NotificationTypeID represents ID value (a key) in `notifiation_types` table.
+type NotificationTypeID int
+
 const (
 	// DBDriverSQLite3 shows that db driver is sqlite
 	DBDriverSQLite3 DBDriver = iota
@@ -51,13 +54,21 @@ const (
 	DBDriverGeneral
 )
 
-// ClusterEntry  represents the entries retrieved from the DB
+// ClusterEntry represents the entries retrieved from the DB
 type ClusterEntry struct {
 	OrgID         OrgID
 	AccountNumber AccountNumber
 	ClusterName   ClusterName
 	KafkaOffset   KafkaOffset
 	UpdatedAt     Timestamp
+}
+
+// NotificationType represents one record from `notifiation_types` table.
+type NotificationType struct {
+	ID        NotificationTypeID
+	Value     string
+	Frequency string
+	Comment   string
 }
 
 // RuleContent wraps all the content available for a rule into a single structure.
