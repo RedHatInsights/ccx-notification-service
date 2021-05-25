@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package differ
 
 import (
 	"bufio"
@@ -492,8 +492,8 @@ func checkArgs(args *types.CliFlags) {
 	}
 }
 
-// main function is entry point to the differ
-func main() {
+// Init function is entry point to the differ
+func Init() {
 	var cliFlags types.CliFlags
 
 	// define and parse all command line options

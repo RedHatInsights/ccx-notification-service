@@ -1,20 +1,28 @@
+[logging]
+debug = true
+log_level = "info"
+
+[kafka_broker]
+address = "" #provide in deployment env or as secret
+topic = "" #provide in deployment env or as secret
+timeout = "60s"
+
 [storage]
 db_driver = "postgres"
-pg_username = "postgres"
-pg_password = "postgres"
-pg_host = "localhost"
-pg_port = 5432
-pg_db_name = "notification"
+pg_username = "" #provide in deployment env or as secret
+pg_password = "" #provide in deployment env or as secret
+pg_host = "" #provide in deployment env or as secret
+pg_port = 0 #provide in deployment env or as secret
+pg_db_name = "" #provide in deployment env or as secret
 pg_params = "sslmode=disable"
 log_sql_queries = true
 
-[logging]
-debug = true
-log_level = ""
-
-[kafka_broker]
-address = "localhost:9092"
-topic = "test_notification_topic"
-
 [dependencies]
-content_endpoint = "localhost:8080"
+content_server = "" #provide in deployment env or as secret
+content_endpoint = "" #provide in deployment env or as secret
+
+[notification]
+insights_advisor_url = "" #provide in deployment env or as secret
+cluster_details_uri = "" #provide in deployment env or as secret
+rule_details_uri = "" #provide in deployment env or as secret
+

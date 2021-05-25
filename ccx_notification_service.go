@@ -15,15 +15,20 @@
 package main
 
 import (
+	"github.com/RedHatInsights/ccx-notification-service/differ"
 	"os"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
 
+
 func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 
 	log.Info().Msg("Started")
+
+	differ.Init()
+
 	log.Info().Msg("Finished")
 }

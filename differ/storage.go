@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package differ
 
 // This source file contains an implementation of interface between Go code and
 // (almost any) SQL database like PostgreSQL, SQLite, or MariaDB.
