@@ -52,13 +52,16 @@ func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.Ru
 		return nil, nil, err
 	}
 
-	defer response.Body.Close()
-
 	// Read body from response
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Error().Msgf("Got error while reading the response's body - %s", err.Error())
 		return nil, nil, err
+	}
+
+	err = response.Body.Close()
+	if err != nil {
+		log.Error().Msgf("Got error while closing the response body - %s", err.Error())
 	}
 
 	var receivedContent types.RuleContentDirectory
