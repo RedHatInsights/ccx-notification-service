@@ -68,7 +68,7 @@ const (
 	clusterAttribute            = "cluster"
 	totalRiskAttribute          = "totalRisk"
 	errorStr                    = "Error:"
-	invalidJsonContent          = "The provided content cannot be encoded as JSON."
+	invalidJSONContent          = "The provided content cannot be encoded as JSON."
 	contextToEscapedStringError = "Notification message will not be generated as context couldn't be converted to escaped string."
 )
 
@@ -372,7 +372,7 @@ func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) (notifier *
 // generateInstantNotificationMessage function generates a notification message with no events for a given account+cluster
 func generateInstantNotificationMessage(clusterURI string, accountID string, clusterID string) (notification types.NotificationMessage) {
 	events := []types.Event{}
-	context := toJsonEscapedString(types.NotificationContext{
+	context := toJSONEscapedString(types.NotificationContext{
 		notificationContextDisplayName: clusterID,
 		notificationContextHostURL:     strings.Replace(clusterURI, "{cluster}", clusterID, 1),
 	})
@@ -395,7 +395,7 @@ func generateInstantNotificationMessage(clusterURI string, accountID string, clu
 
 // generateWeeklyNotificationMessage function generates a notification message with one event based on the provided digest
 func generateWeeklyNotificationMessage(advisorURI string, accountID string, digest types.Digest) (notification types.NotificationMessage) {
-	context := toJsonEscapedString(types.NotificationContext{
+	context := toJSONEscapedString(types.NotificationContext{
 		notificationContextAdvisorURL: advisorURI,
 	})
 	if context == "" {
@@ -403,7 +403,7 @@ func generateWeeklyNotificationMessage(advisorURI string, accountID string, dige
 		return
 	}
 
-	payload := toJsonEscapedString(types.EventPayload{
+	payload := toJSONEscapedString(types.EventPayload{
 		notificationPayloadTotalClusters:        fmt.Sprint(digest.ClustersAffected),
 		notificationPayloadTotalRecommendations: fmt.Sprint(digest.Recommendations),
 		notificationPayloadTotalIncidents:       fmt.Sprint(digest.Incidents),
@@ -438,7 +438,7 @@ func generateWeeklyNotificationMessage(advisorURI string, accountID string, dige
 
 // appendEventToNotificationMessage function adds a new event to the given notification message after constructing the payload string
 func appendEventToNotificationMessage(ruleURI string, notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) {
-	payload := toJsonEscapedString(types.EventPayload{
+	payload := toJSONEscapedString(types.EventPayload{
 		notificationPayloadRuleDescription: ruleName,
 		notificationPayloadRuleURL:         strings.Replace(ruleURI, "{rule}", ruleName, 1),
 		notificationPayloadTotalRisk:       fmt.Sprint(totalRisk),
@@ -457,11 +457,11 @@ func appendEventToNotificationMessage(ruleURI string, notification *types.Notifi
 	notification.Events = append(notification.Events, event)
 }
 
-// toJsonEscapedString function turns any valid JSON to a string-escaped string
-func toJsonEscapedString(i interface{}) string {
+// toJSONEscapedString function turns any valid JSON to a string-escaped string
+func toJSONEscapedString(i interface{}) string {
 	b, err := json.Marshal(i)
 	if err != nil {
-		log.Err(err).Msg(invalidJsonContent)
+		log.Err(err).Msg(invalidJSONContent)
 	}
 	s := string(b)
 	return s

@@ -110,11 +110,11 @@ func TestArgsParsingWeeklyReportsFlags(t *testing.T) {
 }
 
 //---------------------------------------------------------------------------------------
-func TestToJsonEscapedStringValidJson(t *testing.T) {
+func TestToJSONEscapedStringValidJSON(t *testing.T) {
 	type testStruct struct {
 		Name         string
 		Items        []string
-		Id           int64
+		ID           int64
 		privateField string // An unexported field is not encoded, so our method would not include it in output.
 		Created      time.Time
 	}
@@ -122,30 +122,30 @@ func TestToJsonEscapedStringValidJson(t *testing.T) {
 	tested := testStruct{
 		Name:         "Random Name",
 		Items:        []string{"Apple", "Dell", "Orange", "Piña"},
-		Id:           999,
+		ID:           999,
 		privateField: "a random field that nobody can see cuz I don't wanna",
 		Created:      time.Date(2021, time.Month(5), 25, 15, 15, 15, 15, time.Local),
 	}
 
-	expectedEscapedJsonString := "{\"Name\":\"Random Name\",\"Items\":[\"Apple\",\"Dell\",\"Orange\",\"Piña\"],\"Id\":999,\"Created\":\"2021-05-25T15:15:15.000000015+02:00\"}"
+	expectedEscapedJSONString := "{\"Name\":\"Random Name\",\"Items\":[\"Apple\",\"Dell\",\"Orange\",\"Piña\"],\"ID\":999,\"Created\":\"2021-05-25T15:15:15.000000015+02:00\"}"
 
-	assert.Equal(t, expectedEscapedJsonString, toJsonEscapedString(tested))
+	assert.Equal(t, expectedEscapedJSONString, toJSONEscapedString(tested))
 }
 
-func TestToJsonEscapedStringInvalidJson(t *testing.T) {
+func TestToJSONEscapedStringInvalidJSON(t *testing.T) {
 	type testStruct struct {
-		Id           int64
+		ID           int64
 		InvalidField chan int //A value that cannot be represented in JSON
 	}
 
 	tested := testStruct{
-		Id:           999,
+		ID:           999,
 		InvalidField: make(chan int),
 	}
 
-	expectedEscapedJsonString := ""
+	expectedEscapedJSONString := ""
 
-	assert.Equal(t, expectedEscapedJsonString, toJsonEscapedString(tested))
+	assert.Equal(t, expectedEscapedJSONString, toJSONEscapedString(tested))
 }
 
 //---------------------------------------------------------------------------------------

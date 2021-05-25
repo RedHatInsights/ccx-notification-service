@@ -219,6 +219,7 @@ func (storage DBStorage) ReadStates() ([]types.State, error) {
 	return states, nil
 }
 
+// ReadClusterList method creates list of clusters from all the rows in new_reports table.
 func (storage DBStorage) ReadClusterList() ([]types.ClusterEntry, error) {
 	var clusterList = make([]types.ClusterEntry, 0)
 
