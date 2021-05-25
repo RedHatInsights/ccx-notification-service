@@ -58,24 +58,24 @@ const (
 
 // Messages
 const (
-	versionMessage          = "Notification writer version 1.0"
-	authorsMessage          = "Pavel Tisnovsky, Red Hat Inc."
-	separator               = "------------------------------------------------------------"
-	operationFailedMessage  = "Operation failed"
-	clusterEntryMessage     = "cluster entry"
-	organizationIDAttribute = "org id"
-	AccountNumberAttribute  = "account number"
-	clusterAttribute        = "cluster"
-	totalRiskAttribute      = "totalRisk"
-	errorStr                = "Error:"
-	invalidJsonContent      = "The provided content cannot be encoded as JSON."
+	versionMessage              = "Notification writer version 1.0"
+	authorsMessage              = "Pavel Tisnovsky, Red Hat Inc."
+	separator                   = "------------------------------------------------------------"
+	operationFailedMessage      = "Operation failed"
+	clusterEntryMessage         = "cluster entry"
+	organizationIDAttribute     = "org id"
+	AccountNumberAttribute      = "account number"
+	clusterAttribute            = "cluster"
+	totalRiskAttribute          = "totalRisk"
+	errorStr                    = "Error:"
+	invalidJsonContent          = "The provided content cannot be encoded as JSON."
+	contextToEscapedStringError = "Notification message will not be generated as context couldn't be converted to escaped string."
 )
 
 // Constants for notification message top level fields
 const (
-	notificationBundleName       = "openshift"
-	notificationApplicationName  = "advisor"
-	defaultNotificationAccountID = "6089719" //TODO: Replace this with getting account ID for affected cluster
+	notificationBundleName      = "openshift"
+	notificationApplicationName = "advisor"
 )
 
 // Constants for notification event expected fields
@@ -177,7 +177,7 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 			continue
 		}
 
-		notificationMsg := generateNotificationMessage(notificationConfig.ClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), string(cluster.ClusterName))
+		notificationMsg := generateInstantNotificationMessage(notificationConfig.ClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), string(cluster.ClusterName))
 
 		for i, r := range deserialized.Reports {
 			ruleName := moduleToRuleName(string(r.Module))
@@ -215,7 +215,8 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 	}
 }
 
-func getNotificationDigestForCurrentAccount(insightsAdvisorURL string, notificationsByAccount map[types.AccountNumber]types.Digest, accountNumber types.AccountNumber) (digest types.Digest) {
+// getNotificationDigestForCurrentAccount function returns new digest object if none has been previously created for given account
+func getNotificationDigestForCurrentAccount(notificationsByAccount map[types.AccountNumber]types.Digest, accountNumber types.AccountNumber) (digest types.Digest) {
 	if _, ok := notificationsByAccount[accountNumber]; !ok {
 		log.Info().Msgf("Creating notification digest for account %d", accountNumber)
 		digest = types.Digest{}
@@ -226,17 +227,18 @@ func getNotificationDigestForCurrentAccount(insightsAdvisorURL string, notificat
 	return
 }
 
+// updateDigestNotificationCounters function increments number of important or critical notification detected in a given weekly digest
 func updateDigestNotificationCounters(digest *types.Digest, totalRisk int) {
 	if totalRisk == 3 {
 		log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Important report detected. Adding to weekly digest")
 		digest.ImportantNotifications++
-	}
-	if totalRisk == 4 {
+	} else if totalRisk == 4 {
 		log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Critical report detected. Adding to weekly digest")
 		digest.CriticalNotifications++
 	}
 }
 
+// processAllReportsFromCurrentWeek function creates weekly digest with for all the clusters corresponding to each user account
 func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration, notifier *producer.KafkaProducer) {
 	digestByAccount := map[types.AccountNumber]types.Digest{}
 	digest := types.Digest{}
@@ -249,7 +251,7 @@ func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, 
 			Str(clusterAttribute, string(cluster.ClusterName)).
 			Msg(clusterEntryMessage)
 
-		digest = getNotificationDigestForCurrentAccount(notificationConfig.InsightsAdvisorURL, digestByAccount, cluster.AccountNumber)
+		digest = getNotificationDigestForCurrentAccount(digestByAccount, cluster.AccountNumber)
 		digest.ClustersAffected++
 
 		report, _, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
@@ -316,8 +318,8 @@ func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, 
 	}
 }
 
+// processClusters function creates desired notification messages for all the clusters obtained from the database
 func processClusters(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, config conf.ConfigStruct) {
-
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
 
@@ -343,6 +345,7 @@ func processClusters(ruleContent map[string]types.RuleContent, impacts types.Imp
 	}
 }
 
+// printClusters function displays information of all clusters in the given list
 func printClusters(clusters []types.ClusterEntry) {
 	for i, cluster := range clusters {
 		log.Info().
@@ -354,6 +357,7 @@ func printClusters(clusters []types.ClusterEntry) {
 	}
 }
 
+// setupNotificationProducer function creates a kafka producer using the provided configuration
 func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) (notifier *producer.KafkaProducer) {
 	notifier, err := producer.New(brokerConfig)
 	if err != nil {
@@ -365,36 +369,50 @@ func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) (notifier *
 	return
 }
 
-func generateNotificationMessage(clusterURI string, accountID string, clusterID string) (notification types.NotificationMessage) {
+// generateInstantNotificationMessage function generates a notification message with no events for a given account+cluster
+func generateInstantNotificationMessage(clusterURI string, accountID string, clusterID string) (notification types.NotificationMessage) {
 	events := []types.Event{}
-	context := types.NotificationContext{
+	context := toJsonEscapedString(types.NotificationContext{
 		notificationContextDisplayName: clusterID,
 		notificationContextHostURL:     strings.Replace(clusterURI, "{cluster}", clusterID, 1),
+	})
+	if context == "" {
+		log.Error().Msg(contextToEscapedStringError)
+		return
 	}
 
 	notification = types.NotificationMessage{
 		Bundle:      notificationBundleName,
 		Application: notificationApplicationName,
-		EventType:   notificationType.String(),
+		EventType:   types.InstantNotif.String(),
 		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		AccountID:   accountID,
 		Events:      events,
-		Context:     toJsonEscapedString(context),
+		Context:     context,
 	}
 	return
 }
 
+// generateWeeklyNotificationMessage function generates a notification message with one event based on the provided digest
 func generateWeeklyNotificationMessage(advisorURI string, accountID string, digest types.Digest) (notification types.NotificationMessage) {
-	context := types.NotificationContext{
+	context := toJsonEscapedString(types.NotificationContext{
 		notificationContextAdvisorURL: advisorURI,
+	})
+	if context == "" {
+		log.Error().Msg(contextToEscapedStringError)
+		return
 	}
 
-	payload := types.EventPayload{
+	payload := toJsonEscapedString(types.EventPayload{
 		notificationPayloadTotalClusters:        fmt.Sprint(digest.ClustersAffected),
 		notificationPayloadTotalRecommendations: fmt.Sprint(digest.Recommendations),
 		notificationPayloadTotalIncidents:       fmt.Sprint(digest.Incidents),
 		notificationPayloadTotalCritical:        fmt.Sprint(digest.CriticalNotifications),
 		notificationPayloadTotalImportant:       fmt.Sprint(digest.ImportantNotifications),
+	})
+	if payload == "" {
+		log.Error().Msg("Notification message will not be generated as payload couldn't be converted to escaped string.")
+		return
 	}
 
 	events := []types.Event{
@@ -402,22 +420,44 @@ func generateWeeklyNotificationMessage(advisorURI string, accountID string, dige
 			//The insights Notifications backend expects this field to be an empty object in the received JSON
 			Metadata: types.EventMetadata{},
 			//The insights Notifications backend expects to receive the payload as a string with all its fields as escaped strings
-			Payload: toJsonEscapedString(payload),
+			Payload: payload,
 		},
 	}
 
 	notification = types.NotificationMessage{
 		Bundle:      notificationBundleName,
 		Application: notificationApplicationName,
-		EventType:   notificationType.String(),
+		EventType:   types.WeeklyDigest.String(),
 		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		AccountID:   accountID,
 		Events:      events,
-		Context:     toJsonEscapedString(context),
+		Context:     context,
 	}
 	return
 }
 
+// appendEventToNotificationMessage function adds a new event to the given notification message after constructing the payload string
+func appendEventToNotificationMessage(ruleURI string, notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) {
+	payload := toJsonEscapedString(types.EventPayload{
+		notificationPayloadRuleDescription: ruleName,
+		notificationPayloadRuleURL:         strings.Replace(ruleURI, "{rule}", ruleName, 1),
+		notificationPayloadTotalRisk:       fmt.Sprint(totalRisk),
+		notificationPayloadPublishDate:     publishDate,
+	})
+	if payload == "" {
+		log.Error().Msg(contextToEscapedStringError)
+		return
+	}
+	event := types.Event{
+		//The insights Notifications backend expects this field to be an empty object in the received JSON
+		Metadata: types.EventMetadata{},
+		//The insights Notifications backend expects to receive the payload as a string with all its fields as escaped strings
+		Payload: payload,
+	}
+	notification.Events = append(notification.Events, event)
+}
+
+// toJsonEscapedString function turns any valid JSON to a string-escaped string
 func toJsonEscapedString(i interface{}) string {
 	b, err := json.Marshal(i)
 	if err != nil {
@@ -427,22 +467,7 @@ func toJsonEscapedString(i interface{}) string {
 	return s
 }
 
-func appendEventToNotificationMessage(ruleURI string, notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) {
-	payload := types.EventPayload{
-		notificationPayloadRuleDescription: ruleName,
-		notificationPayloadRuleURL:         strings.Replace(ruleURI, "{rule}", ruleName, 1),
-		notificationPayloadTotalRisk:       fmt.Sprint(totalRisk),
-		notificationPayloadPublishDate:     publishDate,
-	}
-	event := types.Event{
-		//The insights Notifications backend expects this field to be an empty object in the received JSON
-		Metadata: types.EventMetadata{},
-		//The insights Notifications backend expects to receive the payload as a string with all its fields as escaped strings
-		Payload: toJsonEscapedString(payload),
-	}
-	notification.Events = append(notification.Events, event)
-}
-
+// checkArgs function handles command line options passed to the process
 func checkArgs(args *types.CliFlags) {
 	switch {
 	case args.ShowVersion:
@@ -474,6 +499,8 @@ func main() {
 	// define and parse all command line options
 	flag.BoolVar(&cliFlags.InstantReports, "instant-reports", false, "create instant reports")
 	flag.BoolVar(&cliFlags.WeeklyReports, "weekly-reports", false, "create weekly reports")
+	flag.BoolVar(&cliFlags.ShowVersion, "show-version", false, "show version and exit")
+	flag.BoolVar(&cliFlags.ShowAuthors, "show-authors", false, "show authors and exit")
 	flag.Parse()
 	checkArgs(&cliFlags)
 
