@@ -116,7 +116,6 @@ func TestToJSONEscapedStringValidJSON(t *testing.T) {
 		Items        []string
 		ID           int64
 		privateField string // An unexported field is not encoded, so our method would not include it in output.
-		Created      time.Time
 	}
 
 	tested := testStruct{
@@ -124,10 +123,9 @@ func TestToJSONEscapedStringValidJSON(t *testing.T) {
 		Items:        []string{"Apple", "Dell", "Orange", "Piña"},
 		ID:           999,
 		privateField: "a random field that nobody can see cuz I don't wanna",
-		Created:      time.Date(2021, time.Month(5), 25, 15, 15, 15, 15, time.Local),
 	}
 
-	expectedEscapedJSONString := "{\"Name\":\"Random Name\",\"Items\":[\"Apple\",\"Dell\",\"Orange\",\"Piña\"],\"ID\":999,\"Created\":\"2021-05-25T15:15:15.000000015+02:00\"}"
+	expectedEscapedJSONString := "{\"Name\":\"Random Name\",\"Items\":[\"Apple\",\"Dell\",\"Orange\",\"Piña\"],\"ID\":999}"
 
 	assert.Equal(t, expectedEscapedJSONString, toJSONEscapedString(tested))
 }
