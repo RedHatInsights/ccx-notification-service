@@ -35,7 +35,7 @@ func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.Ru
 		//if no protocol is specified in given URL, assume it is not needed to use https
 		contentUrl = "http://" + contentUrl
 	}
-	log.Info().Msgf("Fetching rules content from ", contentUrl)
+	log.Info().Msgf("Fetching rules content from %s", contentUrl)
 
 	client := &http.Client{
 		Timeout: time.Second * 10,

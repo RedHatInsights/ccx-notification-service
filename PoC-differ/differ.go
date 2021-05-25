@@ -177,7 +177,7 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 			continue
 		}
 
-		notificationMsg := generateNotificationMessage(notificationConfig.ClusterDetailsURI, string(cluster.AccountNumber), string(cluster.ClusterName))
+		notificationMsg := generateNotificationMessage(notificationConfig.ClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), string(cluster.ClusterName))
 
 		for i, r := range deserialized.Reports {
 			ruleName := moduleToRuleName(string(r.Module))
@@ -217,10 +217,10 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 
 func getNotificationDigestForCurrentAccount(insightsAdvisorURL string, notificationsByAccount map[types.AccountNumber]types.Digest, accountNumber types.AccountNumber) (digest types.Digest) {
 	if _, ok := notificationsByAccount[accountNumber]; !ok {
-		log.Info().Msgf("Creating notification digest for account ", accountNumber)
+		log.Info().Msgf("Creating notification digest for account %d", accountNumber)
 		digest = types.Digest{}
 	} else {
-		log.Info().Msgf("Modifying notification digest for account ", accountNumber)
+		log.Info().Msgf("Modifying notification digest for account %d", accountNumber)
 		digest = notificationsByAccount[accountNumber]
 	}
 	return
@@ -305,7 +305,7 @@ func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, 
 			Int("important notifications", digest.ImportantNotifications).
 			Msg("Producing weekly notification for ")
 
-		notification := generateWeeklyNotificationMessage(notificationConfig.InsightsAdvisorURL, string(account), digest)
+		notification := generateWeeklyNotificationMessage(notificationConfig.InsightsAdvisorURL, fmt.Sprint(account), digest)
 		_, _, err := notifier.ProduceMessage(notification)
 		if err != nil {
 			log.Error().
@@ -390,11 +390,11 @@ func generateWeeklyNotificationMessage(advisorURI string, accountID string, dige
 	}
 
 	payload := types.EventPayload{
-		notificationPayloadTotalClusters:        string(digest.ClustersAffected),
-		notificationPayloadTotalRecommendations: string(digest.Recommendations),
-		notificationPayloadTotalIncidents:       string(digest.Incidents),
-		notificationPayloadTotalCritical:        string(digest.CriticalNotifications),
-		notificationPayloadTotalImportant:       string(digest.ImportantNotifications),
+		notificationPayloadTotalClusters:        fmt.Sprint(digest.ClustersAffected),
+		notificationPayloadTotalRecommendations: fmt.Sprint(digest.Recommendations),
+		notificationPayloadTotalIncidents:       fmt.Sprint(digest.Incidents),
+		notificationPayloadTotalCritical:        fmt.Sprint(digest.CriticalNotifications),
+		notificationPayloadTotalImportant:       fmt.Sprint(digest.ImportantNotifications),
 	}
 
 	events := []types.Event{
@@ -431,7 +431,7 @@ func appendEventToNotificationMessage(ruleURI string, notification *types.Notifi
 	payload := types.EventPayload{
 		notificationPayloadRuleDescription: ruleName,
 		notificationPayloadRuleURL:         strings.Replace(ruleURI, "{rule}", ruleName, 1),
-		notificationPayloadTotalRisk:       string(totalRisk),
+		notificationPayloadTotalRisk:       fmt.Sprint(totalRisk),
 		notificationPayloadPublishDate:     publishDate,
 	}
 	event := types.Event{

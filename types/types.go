@@ -99,10 +99,13 @@ type RuleErrorKeyContent struct {
 	HasReason bool
 }
 
+// RulesMap contains a map of RuleContent objects accesible indexed by rule names
+type RulesMap map[string]RuleContent
+
 // RuleContentDirectory contains content for all available rules in a directory.
 type RuleContentDirectory struct {
 	Config GlobalRuleConfig
-	Rules  map[string]RuleContent
+	Rules  RulesMap
 }
 
 // ErrorKeyMetadata is a Go representation of the `metadata.yaml`
