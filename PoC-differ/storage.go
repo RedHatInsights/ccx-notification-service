@@ -50,6 +50,10 @@ type Storage interface {
 		orgID types.OrgID, clusterName types.ClusterName,
 		updatedAt types.Timestamp) (types.ClusterReport, error,
 	)
+	ReadReportForClusterAtOffset(
+		orgID types.OrgID, clusterName types.ClusterName,
+		offset types.KafkaOffset) (types.ClusterReport, error,
+	)
 }
 
 // DBStorage is an implementation of Storage interface that use selected SQL like database
@@ -268,6 +272,30 @@ func (storage DBStorage) ReadReportForClusterAtTime(
 	err := storage.connection.QueryRow(
 		"SELECT report FROM new_reports WHERE org_id = $1 AND cluster = $2 AND updated_at = $3;",
 		orgID, clusterName, timestamp,
+	).Scan(&report)
+
+	if err != nil {
+		return report, err
+	}
+
+	return report, nil
+}
+
+// ReadReportForClusterAtOffset reads result (health status) for selected cluster
+// and given Kafka offset. It is possible that there are more reports stored for a
+// cluster, so it is needed to specify Kafka offset to select just one such
+// report.
+//
+// See also: ReadReportForClusterAtTime
+func (storage DBStorage) ReadReportForClusterAtOffset(
+	orgID types.OrgID, clusterName types.ClusterName,
+	kafkaOffset types.KafkaOffset,
+) (types.ClusterReport, error) {
+	var report types.ClusterReport
+
+	err := storage.connection.QueryRow(
+		"SELECT report FROM new_reports WHERE org_id = $1 AND cluster = $2 AND kafka_offset = $3;",
+		orgID, clusterName, kafkaOffset,
 	).Scan(&report)
 
 	if err != nil {
