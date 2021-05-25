@@ -177,7 +177,7 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 			continue
 		}
 
-		notificationMsg := generateNotificationMessage(notificationConfig.ClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), fmt.Sprint(cluster.ClusterName))
+		notificationMsg := generateNotificationMessage(notificationConfig.ClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), string(cluster.ClusterName))
 
 		for i, r := range deserialized.Reports {
 			ruleName := moduleToRuleName(string(r.Module))
