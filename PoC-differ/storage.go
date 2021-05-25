@@ -45,6 +45,7 @@ type Storage interface {
 	)
 	ReadClusterList() ([]types.ClusterEntry, error)
 	ReadNotificationTypes() ([]types.NotificationType, error)
+	ReadStates() ([]types.State, error)
 }
 
 // DBStorage is an implementation of Storage interface that use selected SQL like database
@@ -172,6 +173,41 @@ func (storage DBStorage) ReadNotificationTypes() ([]types.NotificationType, erro
 	}
 
 	return notificationTypes, nil
+}
+
+// ReadStates method reads all possible notification states from the database.
+func (storage DBStorage) ReadStates() ([]types.State, error) {
+	var states = make([]types.State, 0)
+
+	rows, err := storage.connection.Query("SELECT id, value, comment FROM states ORDER BY id")
+	if err != nil {
+		return states, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			log.Error().Err(err).Msg(unableToCloseDBRowsHandle)
+		}
+	}()
+
+	for rows.Next() {
+		var (
+			id      types.StateID
+			value   string
+			comment string
+		)
+
+		if err := rows.Scan(&id, &value, &comment); err != nil {
+			if closeErr := rows.Close(); closeErr != nil {
+				log.Error().Err(closeErr).Msg(unableToCloseDBRowsHandle)
+			}
+			return states, err
+		}
+		states = append(states, types.State{id, value, comment})
+	}
+
+	return states, nil
 }
 
 func (storage DBStorage) ReadClusterList() ([]types.ClusterEntry, error) {
