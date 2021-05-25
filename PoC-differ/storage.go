@@ -46,6 +46,10 @@ type Storage interface {
 	ReadClusterList() ([]types.ClusterEntry, error)
 	ReadNotificationTypes() ([]types.NotificationType, error)
 	ReadStates() ([]types.State, error)
+	ReadReportForClusterAtTime(
+		orgID types.OrgID, clusterName types.ClusterName,
+		updatedAt types.Timestamp) (types.ClusterReport, error,
+	)
 }
 
 // DBStorage is an implementation of Storage interface that use selected SQL like database
@@ -244,6 +248,33 @@ func (storage DBStorage) ReadClusterList() ([]types.ClusterEntry, error) {
 	}
 
 	return clusterList, nil
+}
+
+// ReadReportForClusterAtTime reads result (health status) for selected cluster
+// and given timestamp. It is possible that there are more reports stored for a
+// cluster, so it is needed to specify timestamp to select just one such
+// report.
+//
+// See also: ReadReportForClusterAtOffset
+func (storage DBStorage) ReadReportForClusterAtTime(
+	orgID types.OrgID, clusterName types.ClusterName,
+	updatedAt types.Timestamp,
+) (types.ClusterReport, error) {
+	var report types.ClusterReport
+
+	// explicit conversion is needed there - SQL library issue
+	timestamp := time.Time(updatedAt)
+
+	err := storage.connection.QueryRow(
+		"SELECT report FROM new_reports WHERE org_id = $1 AND cluster = $2 AND updated_at = $3;",
+		orgID, clusterName, timestamp,
+	).Scan(&report)
+
+	if err != nil {
+		return report, err
+	}
+
+	return report, nil
 }
 
 // ReadReportForCluster reads result (health status) for selected cluster
