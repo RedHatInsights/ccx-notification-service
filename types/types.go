@@ -42,8 +42,11 @@ type ClusterReport string
 // DBDriver type for db driver enum
 type DBDriver int
 
-// NotificationTypeID represents ID value (a key) in `notifiation_types` table.
+// NotificationTypeID represents ID value in `notifiation_types` table.
 type NotificationTypeID int
+
+// StateID represents ID value in `states` table.
+type StateID int
 
 const (
 	// DBDriverSQLite3 shows that db driver is sqlite
@@ -69,6 +72,13 @@ type NotificationType struct {
 	Value     string
 	Frequency string
 	Comment   string
+}
+
+// State represents one record from `states` table.
+type State struct {
+	ID      StateID
+	Value   string
+	Comment string
 }
 
 // RuleContent wraps all the content available for a rule into a single structure.
