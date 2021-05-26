@@ -492,8 +492,8 @@ func checkArgs(args *types.CliFlags) {
 	}
 }
 
-// Init function is entry point to the differ
-func Init() {
+// Run function is entry point to the differ
+func Run() {
 	var cliFlags types.CliFlags
 
 	// define and parse all command line options
