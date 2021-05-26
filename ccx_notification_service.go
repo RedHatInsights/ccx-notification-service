@@ -27,7 +27,7 @@ func main() {
 
 	log.Info().Msg("Started")
 
-	differ.Init()
+	differ.Run()
 
 	log.Info().Msg("Finished")
 }
