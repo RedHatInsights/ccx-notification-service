@@ -34,6 +34,9 @@ import (
 const (
 	configFileEnvVariableName = "NOTIFICATION_SERVICE_CONFIG_FILE"
 	defaultConfigFileName     = "config"
+
+	// TODO: make this configurable via config file
+	totalRiskThreshold = 3
 )
 
 // Exit codes
@@ -193,7 +196,7 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 				Int("impact", impact).
 				Int(totalRiskAttribute, totalRisk).
 				Msg("Report")
-			if totalRisk >= 3 {
+			if totalRisk >= totalRiskThreshold {
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
 				appendEventToNotificationMessage(notificationConfig.RuleDetailsURI, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
 			}
