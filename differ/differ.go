@@ -32,7 +32,7 @@ import (
 
 // Configuration-related constants
 const (
-	configFileEnvVariableName = "NOTIFICATION_DIFFER_CONFIG_FILE"
+	configFileEnvVariableName = "NOTIFICATION_SERVICE_CONFIG_FILE"
 	defaultConfigFileName     = "config"
 )
 
