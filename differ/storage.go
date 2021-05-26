@@ -26,7 +26,6 @@ package differ
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"time"
 
@@ -65,10 +64,6 @@ type DBStorage struct {
 	connection   *sql.DB
 	dbDriverType types.DBDriver
 }
-
-// ErrOldReport is an error returned if a more recent already
-// exists on the storage while attempting to write a report for a cluster.
-var ErrOldReport = errors.New("More recent report already exists in storage")
 
 // error messages
 const (
