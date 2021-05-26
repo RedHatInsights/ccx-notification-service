@@ -54,6 +54,13 @@ type Storage interface {
 		orgID types.OrgID, clusterName types.ClusterName,
 		offset types.KafkaOffset) (types.ClusterReport, error,
 	)
+	WriteReportForCluster(
+		clusterEntry types.ClusterEntry,
+		notificationTypeID types.NotificationTypeID,
+		stateID types.StateID,
+		report types.ClusterReport,
+		notifiedAt types.Timestamp,
+		errorLog string) error
 	WriteReport(
 		orgID types.OrgID,
 		accountNumber types.AccountNumber,
@@ -364,4 +371,24 @@ func (storage DBStorage) WriteReport(
 		report, time.Time(updatedAt), time.Time(notifiedAt), errorLog)
 
 	return err
+}
+
+// WriteReportForCluster methods write a report (with given state and
+// notification type) into the database table `reported`. Data for several
+// columns are passed via ClusterEntry structure (as returned by
+// ReadReportForClusterAtTime and ReadReportForClusterAtOffset methods).
+//
+// See also: WriteReportForCluster
+func (storage DBStorage) WriteReportForCluster(
+	clusterEntry types.ClusterEntry,
+	notificationTypeID types.NotificationTypeID,
+	stateID types.StateID,
+	report types.ClusterReport,
+	notifiedAt types.Timestamp,
+	errorLog string) error {
+
+	return storage.WriteReport(clusterEntry.OrgID,
+		clusterEntry.AccountNumber, clusterEntry.ClusterName,
+		notificationTypeID, stateID, report, clusterEntry.UpdatedAt,
+		notifiedAt, errorLog)
 }
