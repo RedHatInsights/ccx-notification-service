@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package differ
 
 // This source file contains an implementation of interface between Go code and
 // (almost any) SQL database like PostgreSQL, SQLite, or MariaDB.
@@ -178,7 +178,8 @@ func (storage DBStorage) ReadNotificationTypes() ([]types.NotificationType, erro
 			}
 			return notificationTypes, err
 		}
-		notificationTypes = append(notificationTypes, types.NotificationType{id, value, frequency, comment})
+		notificationTypes = append(notificationTypes, types.NotificationType{
+			ID: id, Value: value, Frequency: frequency, Comment: comment})
 	}
 
 	return notificationTypes, nil
@@ -213,12 +214,14 @@ func (storage DBStorage) ReadStates() ([]types.State, error) {
 			}
 			return states, err
 		}
-		states = append(states, types.State{id, value, comment})
+		states = append(states, types.State{
+			ID: id, Value: value, Comment: comment})
 	}
 
 	return states, nil
 }
 
+// ReadClusterList method creates list of clusters from all the rows in new_reports table.
 func (storage DBStorage) ReadClusterList() ([]types.ClusterEntry, error) {
 	var clusterList = make([]types.ClusterEntry, 0)
 
@@ -249,7 +252,12 @@ func (storage DBStorage) ReadClusterList() ([]types.ClusterEntry, error) {
 			}
 			return clusterList, err
 		}
-		clusterList = append(clusterList, types.ClusterEntry{orgID, accountNumber, clusterName, kafkaOffset, updatedAt})
+		clusterList = append(clusterList, types.ClusterEntry{
+			OrgID:         orgID,
+			AccountNumber: accountNumber,
+			ClusterName:   clusterName,
+			KafkaOffset:   kafkaOffset,
+			UpdatedAt:     updatedAt})
 	}
 
 	return clusterList, nil

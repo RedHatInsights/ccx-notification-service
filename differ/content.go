@@ -12,7 +12,7 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-package main
+package differ
 
 import (
 	"bytes"
@@ -30,17 +30,17 @@ import (
 
 // fetchAllRulesContent fetches the parsed rules provided by the content-service
 func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.RulesMap, impacts types.Impacts, err error) {
-	contentUrl := config.ContentServiceServer + config.ContentServiceEndpoint
+	contentURL := config.ContentServiceServer + config.ContentServiceEndpoint
 	if !strings.HasPrefix(config.ContentServiceServer, "http") {
 		//if no protocol is specified in given URL, assume it is not needed to use https
-		contentUrl = "http://" + contentUrl
+		contentURL = "http://" + contentURL
 	}
-	log.Info().Msgf("Fetching rules content from %s", contentUrl)
+	log.Info().Msgf("Fetching rules content from %s", contentURL)
 
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
-	req, err := http.NewRequest("GET", contentUrl, nil)
+	req, err := http.NewRequest("GET", contentURL, nil)
 	if err != nil {
 		log.Error().Msgf("Got error while setting up HTTP request -  %s", err.Error())
 		return nil, nil, err
@@ -52,13 +52,16 @@ func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.Ru
 		return nil, nil, err
 	}
 
-	defer response.Body.Close()
-
 	// Read body from response
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Error().Msgf("Got error while reading the response's body - %s", err.Error())
 		return nil, nil, err
+	}
+
+	err = response.Body.Close()
+	if err != nil {
+		log.Error().Msgf("Got error while closing the response body - %s", err.Error())
 	}
 
 	var receivedContent types.RuleContentDirectory
