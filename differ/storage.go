@@ -26,7 +26,6 @@ package differ
 
 import (
 	"database/sql"
-	"errors"
 	"fmt"
 	"time"
 
@@ -55,6 +54,23 @@ type Storage interface {
 		orgID types.OrgID, clusterName types.ClusterName,
 		offset types.KafkaOffset) (types.ClusterReport, error,
 	)
+	WriteReportForCluster(
+		clusterEntry types.ClusterEntry,
+		notificationTypeID types.NotificationTypeID,
+		stateID types.StateID,
+		report types.ClusterReport,
+		notifiedAt types.Timestamp,
+		errorLog string) error
+	WriteReport(
+		orgID types.OrgID,
+		accountNumber types.AccountNumber,
+		clusterName types.ClusterName,
+		notificationTypeID types.NotificationTypeID,
+		stateID types.StateID,
+		report types.ClusterReport,
+		updatedAt types.Timestamp,
+		notifiedAt types.Timestamp,
+		errorLog string) error
 }
 
 // DBStorage is an implementation of Storage interface that use selected SQL like database
@@ -65,10 +81,6 @@ type DBStorage struct {
 	connection   *sql.DB
 	dbDriverType types.DBDriver
 }
-
-// ErrOldReport is an error returned if a more recent already
-// exists on the storage while attempting to write a report for a cluster.
-var ErrOldReport = errors.New("More recent report already exists in storage")
 
 // error messages
 const (
@@ -330,4 +342,53 @@ func (storage DBStorage) ReadReportForCluster(
 	}
 
 	return report, updatedAt, nil
+}
+
+// WriteReport methods write a report (with given state and notification type)
+// into the database table `reported`. Data for all columns are passed
+// explicitly.
+//
+// See also: WriteReportForCluster
+func (storage DBStorage) WriteReport(
+	orgID types.OrgID,
+	accountNumber types.AccountNumber,
+	clusterName types.ClusterName,
+	notificationTypeID types.NotificationTypeID,
+	stateID types.StateID,
+	report types.ClusterReport,
+	updatedAt types.Timestamp,
+	notifiedAt types.Timestamp,
+	errorLog string) error {
+
+	const insertStatement = `
+            INSERT INTO reported
+            (org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log)
+            VALUES
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+        `
+	_, err := storage.connection.Exec(insertStatement, orgID,
+		accountNumber, clusterName, notificationTypeID, stateID,
+		report, time.Time(updatedAt), time.Time(notifiedAt), errorLog)
+
+	return err
+}
+
+// WriteReportForCluster methods write a report (with given state and
+// notification type) into the database table `reported`. Data for several
+// columns are passed via ClusterEntry structure (as returned by
+// ReadReportForClusterAtTime and ReadReportForClusterAtOffset methods).
+//
+// See also: WriteReportForCluster
+func (storage DBStorage) WriteReportForCluster(
+	clusterEntry types.ClusterEntry,
+	notificationTypeID types.NotificationTypeID,
+	stateID types.StateID,
+	report types.ClusterReport,
+	notifiedAt types.Timestamp,
+	errorLog string) error {
+
+	return storage.WriteReport(clusterEntry.OrgID,
+		clusterEntry.AccountNumber, clusterEntry.ClusterName,
+		notificationTypeID, stateID, report, clusterEntry.UpdatedAt,
+		notifiedAt, errorLog)
 }
