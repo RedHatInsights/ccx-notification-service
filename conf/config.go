@@ -26,7 +26,7 @@ package conf
 //
 
 // Default name of configuration file is config.toml
-// It can be changed via environment variable NOTIFICATION_WRITER_CONFIG_FILE
+// It can be changed via environment variable NOTIFICATION_SERVICE_CONFIG_FILE
 
 // An example of configuration file that can be used in devel environment:
 //
