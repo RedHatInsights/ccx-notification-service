@@ -54,6 +54,8 @@ type Storage interface {
 		orgID types.OrgID, clusterName types.ClusterName,
 		offset types.KafkaOffset) (types.ClusterReport, error,
 	)
+	WriteNotificationRecord(
+		notificationRecord types.NotificationRecord) error
 	WriteNotificationRecordForCluster(
 		clusterEntry types.ClusterEntry,
 		notificationTypeID types.NotificationTypeID,
@@ -344,11 +346,26 @@ func (storage DBStorage) ReadReportForCluster(
 	return report, updatedAt, nil
 }
 
+// WriteNotificationRecord method writes a report (with given state and
+// notification type) into the database table `reported`. Data for several
+// columns are passed via NotificationRecord structure.
+//
+// See also: WriteNotificationRecordForCluster, WriteNotificationRecordImpl
+func (storage DBStorage) WriteNotificationRecord(
+	notificationRecord types.NotificationRecord) error {
+
+	return storage.WriteNotificationRecordImpl(notificationRecord.OrgID,
+		notificationRecord.AccountNumber, notificationRecord.ClusterName,
+		notificationRecord.NotificationTypeID, notificationRecord.StateID,
+		notificationRecord.Report, notificationRecord.UpdatedAt,
+		notificationRecord.NotifiedAt, notificationRecord.ErrorLog)
+}
+
 // WriteNotificationRecordImpl method writes a report (with given state and
 // notification type) into the database table `reported`. Data for all columns
 // are passed explicitly.
 //
-// See also: WriteNotificationRecordForCluster
+// See also: WriteNotificationRecord, WriteNotificationRecordForCluster
 func (storage DBStorage) WriteNotificationRecordImpl(
 	orgID types.OrgID,
 	accountNumber types.AccountNumber,
@@ -378,7 +395,7 @@ func (storage DBStorage) WriteNotificationRecordImpl(
 // columns are passed via ClusterEntry structure (as returned by
 // ReadReportForClusterAtTime and ReadReportForClusterAtOffset methods).
 //
-// See also: WriteNotificationRecordImpl
+// See also: WriteNotificationRecord, WriteNotificationRecordImpl
 func (storage DBStorage) WriteNotificationRecordForCluster(
 	clusterEntry types.ClusterEntry,
 	notificationTypeID types.NotificationTypeID,
