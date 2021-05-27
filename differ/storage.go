@@ -54,14 +54,19 @@ type Storage interface {
 		orgID types.OrgID, clusterName types.ClusterName,
 		offset types.KafkaOffset) (types.ClusterReport, error,
 	)
-	WriteReportForCluster(
+	ReadLastNNotificationRecords(
+		clusterEntry types.ClusterEntry,
+		numberOfRecords int) ([]types.NotificationRecord, error)
+	WriteNotificationRecord(
+		notificationRecord types.NotificationRecord) error
+	WriteNotificationRecordForCluster(
 		clusterEntry types.ClusterEntry,
 		notificationTypeID types.NotificationTypeID,
 		stateID types.StateID,
 		report types.ClusterReport,
 		notifiedAt types.Timestamp,
 		errorLog string) error
-	WriteReport(
+	WriteNotificationRecordImpl(
 		orgID types.OrgID,
 		accountNumber types.AccountNumber,
 		clusterName types.ClusterName,
@@ -344,12 +349,27 @@ func (storage DBStorage) ReadReportForCluster(
 	return report, updatedAt, nil
 }
 
-// WriteReport methods write a report (with given state and notification type)
-// into the database table `reported`. Data for all columns are passed
-// explicitly.
+// WriteNotificationRecord method writes a report (with given state and
+// notification type) into the database table `reported`. Data for several
+// columns are passed via NotificationRecord structure.
 //
-// See also: WriteReportForCluster
-func (storage DBStorage) WriteReport(
+// See also: WriteNotificationRecordForCluster, WriteNotificationRecordImpl
+func (storage DBStorage) WriteNotificationRecord(
+	notificationRecord types.NotificationRecord) error {
+
+	return storage.WriteNotificationRecordImpl(notificationRecord.OrgID,
+		notificationRecord.AccountNumber, notificationRecord.ClusterName,
+		notificationRecord.NotificationTypeID, notificationRecord.StateID,
+		notificationRecord.Report, notificationRecord.UpdatedAt,
+		notificationRecord.NotifiedAt, notificationRecord.ErrorLog)
+}
+
+// WriteNotificationRecordImpl method writes a report (with given state and
+// notification type) into the database table `reported`. Data for all columns
+// are passed explicitly.
+//
+// See also: WriteNotificationRecord, WriteNotificationRecordForCluster
+func (storage DBStorage) WriteNotificationRecordImpl(
 	orgID types.OrgID,
 	accountNumber types.AccountNumber,
 	clusterName types.ClusterName,
@@ -373,13 +393,13 @@ func (storage DBStorage) WriteReport(
 	return err
 }
 
-// WriteReportForCluster methods write a report (with given state and
-// notification type) into the database table `reported`. Data for several
+// WriteNotificationRecordForCluster method writes a report (with given state
+// and notification type) into the database table `reported`. Data for several
 // columns are passed via ClusterEntry structure (as returned by
 // ReadReportForClusterAtTime and ReadReportForClusterAtOffset methods).
 //
-// See also: WriteReportForCluster
-func (storage DBStorage) WriteReportForCluster(
+// See also: WriteNotificationRecord, WriteNotificationRecordImpl
+func (storage DBStorage) WriteNotificationRecordForCluster(
 	clusterEntry types.ClusterEntry,
 	notificationTypeID types.NotificationTypeID,
 	stateID types.StateID,
@@ -387,8 +407,71 @@ func (storage DBStorage) WriteReportForCluster(
 	notifiedAt types.Timestamp,
 	errorLog string) error {
 
-	return storage.WriteReport(clusterEntry.OrgID,
+	return storage.WriteNotificationRecordImpl(clusterEntry.OrgID,
 		clusterEntry.AccountNumber, clusterEntry.ClusterName,
 		notificationTypeID, stateID, report, clusterEntry.UpdatedAt,
 		notifiedAt, errorLog)
+}
+
+// ReadLastNNotificationRecords method returns the last N notification records
+// for given org ID and cluster name.
+func (storage DBStorage) ReadLastNNotificationRecords(clusterEntry types.ClusterEntry,
+	numberOfRecords int) ([]types.NotificationRecord, error) {
+	var notificationRecords = make([]types.NotificationRecord, 0)
+
+	query := `
+                  select org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log
+		    from reported
+		   where org_id = $1 and cluster = $2
+		   order by notified_at desc
+		   limit $3;
+		   `
+
+	rows, err := storage.connection.Query(query, clusterEntry.OrgID, clusterEntry.ClusterName, numberOfRecords)
+	if err != nil {
+		return notificationRecords, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			log.Error().Err(err).Msg(unableToCloseDBRowsHandle)
+		}
+	}()
+
+	for rows.Next() {
+		var (
+			orgID              types.OrgID
+			accountNumber      types.AccountNumber
+			clusterName        types.ClusterName
+			updatedAt          types.Timestamp
+			notificationTypeID types.NotificationTypeID
+			stateID            types.StateID
+			report             types.ClusterReport
+			notifiedAt         types.Timestamp
+			errorLog           string
+		)
+
+		err := rows.Scan(&orgID, &accountNumber, &clusterName, &notificationTypeID,
+			&stateID, &report, &updatedAt, &notifiedAt, &errorLog)
+		if err != nil {
+			if closeErr := rows.Close(); closeErr != nil {
+				log.Error().Err(closeErr).Msg(unableToCloseDBRowsHandle)
+			}
+			return notificationRecords, err
+		}
+		notificationRecords = append(notificationRecords, types.NotificationRecord{
+			OrgID:              orgID,
+			AccountNumber:      accountNumber,
+			ClusterName:        clusterName,
+			UpdatedAt:          updatedAt,
+			NotificationTypeID: notificationTypeID,
+			StateID:            stateID,
+			Report:             report,
+			NotifiedAt:         notifiedAt,
+			ErrorLog:           errorLog,
+		})
+	}
+
+	return notificationRecords, nil
 }

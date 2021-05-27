@@ -224,3 +224,16 @@ type NotificationMessage struct {
 	Events      []Event `json:"events"`
 	Context     string  `json:"context"`
 }
+
+// NotificationRecord structure represents one record stored in `reported` table.
+type NotificationRecord struct {
+	OrgID              OrgID
+	AccountNumber      AccountNumber
+	ClusterName        ClusterName
+	UpdatedAt          Timestamp
+	NotificationTypeID NotificationTypeID
+	StateID            StateID
+	Report             ClusterReport
+	NotifiedAt         Timestamp
+	ErrorLog           string
+}
