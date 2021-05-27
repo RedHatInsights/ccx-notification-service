@@ -54,6 +54,9 @@ type Storage interface {
 		orgID types.OrgID, clusterName types.ClusterName,
 		offset types.KafkaOffset) (types.ClusterReport, error,
 	)
+	ReadLastNNotificationRecords(
+		clusterEntry types.ClusterEntry,
+		numberOfRecords int) ([]types.NotificationRecord, error)
 	WriteNotificationRecord(
 		notificationRecord types.NotificationRecord) error
 	WriteNotificationRecordForCluster(
@@ -408,4 +411,67 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 		clusterEntry.AccountNumber, clusterEntry.ClusterName,
 		notificationTypeID, stateID, report, clusterEntry.UpdatedAt,
 		notifiedAt, errorLog)
+}
+
+// ReadLastNNotificationRecords method returns the last N notification records
+// for given org ID and cluster name.
+func (storage DBStorage) ReadLastNNotificationRecords(clusterEntry types.ClusterEntry,
+	numberOfRecords int) ([]types.NotificationRecord, error) {
+	var notificationRecords = make([]types.NotificationRecord, 0)
+
+	query := `
+                  select org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log
+		    from reported
+		   where org_id = $1 and cluster = $2
+		   order by notified_at desc
+		   limit $3;
+		   `
+
+	rows, err := storage.connection.Query(query, clusterEntry.OrgID, clusterEntry.ClusterName, numberOfRecords)
+	if err != nil {
+		return notificationRecords, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			log.Error().Err(err).Msg(unableToCloseDBRowsHandle)
+		}
+	}()
+
+	for rows.Next() {
+		var (
+			orgID              types.OrgID
+			accountNumber      types.AccountNumber
+			clusterName        types.ClusterName
+			updatedAt          types.Timestamp
+			notificationTypeID types.NotificationTypeID
+			stateID            types.StateID
+			report             types.ClusterReport
+			notifiedAt         types.Timestamp
+			errorLog           string
+		)
+
+		err := rows.Scan(&orgID, &accountNumber, &clusterName, &notificationTypeID,
+			&stateID, &report, &updatedAt, &notifiedAt, &errorLog)
+		if err != nil {
+			if closeErr := rows.Close(); closeErr != nil {
+				log.Error().Err(closeErr).Msg(unableToCloseDBRowsHandle)
+			}
+			return notificationRecords, err
+		}
+		notificationRecords = append(notificationRecords, types.NotificationRecord{
+			OrgID:              orgID,
+			AccountNumber:      accountNumber,
+			ClusterName:        clusterName,
+			UpdatedAt:          updatedAt,
+			NotificationTypeID: notificationTypeID,
+			StateID:            stateID,
+			Report:             report,
+			NotifiedAt:         notifiedAt,
+			ErrorLog:           errorLog,
+		})
+	}
+
+	return notificationRecords, nil
 }
