@@ -61,7 +61,7 @@ type Storage interface {
 		report types.ClusterReport,
 		notifiedAt types.Timestamp,
 		errorLog string) error
-	WriteReport(
+	WriteNotificationRecordImpl(
 		orgID types.OrgID,
 		accountNumber types.AccountNumber,
 		clusterName types.ClusterName,
@@ -344,12 +344,12 @@ func (storage DBStorage) ReadReportForCluster(
 	return report, updatedAt, nil
 }
 
-// WriteReport methods write a report (with given state and notification type)
-// into the database table `reported`. Data for all columns are passed
-// explicitly.
+// WriteNotificationRecordImpl method writes a report (with given state and
+// notification type) into the database table `reported`. Data for all columns
+// are passed explicitly.
 //
-// See also: WriteReportForCluster
-func (storage DBStorage) WriteReport(
+// See also: WriteNotificationRecordForCluster
+func (storage DBStorage) WriteNotificationRecordImpl(
 	orgID types.OrgID,
 	accountNumber types.AccountNumber,
 	clusterName types.ClusterName,
@@ -378,7 +378,7 @@ func (storage DBStorage) WriteReport(
 // columns are passed via ClusterEntry structure (as returned by
 // ReadReportForClusterAtTime and ReadReportForClusterAtOffset methods).
 //
-// See also: WriteReportForCluster
+// See also: WriteNotificationRecordImpl
 func (storage DBStorage) WriteNotificationRecordForCluster(
 	clusterEntry types.ClusterEntry,
 	notificationTypeID types.NotificationTypeID,
@@ -387,7 +387,7 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 	notifiedAt types.Timestamp,
 	errorLog string) error {
 
-	return storage.WriteReport(clusterEntry.OrgID,
+	return storage.WriteNotificationRecordImpl(clusterEntry.OrgID,
 		clusterEntry.AccountNumber, clusterEntry.ClusterName,
 		notificationTypeID, stateID, report, clusterEntry.UpdatedAt,
 		notifiedAt, errorLog)
