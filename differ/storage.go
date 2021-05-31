@@ -331,16 +331,23 @@ func (storage DBStorage) ReadReportForClusterAtOffset(
 	return report, nil
 }
 
-// ReadReportForCluster reads result (health status) for selected cluster
+// ReadReportForCluster reads the latest result (health status) for selected
+// cluster
 func (storage DBStorage) ReadReportForCluster(
 	orgID types.OrgID, clusterName types.ClusterName,
 ) (types.ClusterReport, types.Timestamp, error) {
 	var updatedAt types.Timestamp
 	var report types.ClusterReport
 
-	err := storage.connection.QueryRow(
-		"SELECT report, updated_at FROM new_reports WHERE org_id = $1 AND cluster = $2;", orgID, clusterName,
-	).Scan(&report, &updatedAt)
+	// query to retrieve just the latest report for given cluster
+	query := `
+		SELECT report, updated_at
+		  FROM new_reports
+		 WHERE org_id = $1 AND cluster = $2
+		 ORDER BY updated_at DESC
+		 LIMIT 1
+                `
+	err := storage.connection.QueryRow(query, orgID, clusterName).Scan(&report, &updatedAt)
 
 	if err != nil {
 		return report, updatedAt, err
