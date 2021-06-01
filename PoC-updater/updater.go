@@ -98,14 +98,14 @@ func issuesEqual(issue1 types.ReportItem, issue2 types.ReportItem) bool {
 	if issue1.Type == issue2.Type &&
 		issue1.Module == issue2.Module &&
 		issue1.ErrorKey == issue2.ErrorKey &&
-		bytes.Compare(issue1.Details, issue2.Details) == 0 {
+		bytes.Equal(issue1.Details, issue2.Details) {
 		return true
 	}
 	return false
 }
 
 // Function CompareReports compare old OCP report with the newest one and
-// returns boolean flag indiciation that new report contain new issues and thus
+// returns boolean flag indicating that new report contain new issues and thus
 // user needs to be informed about them.
 func CompareReports(
 	oldReportAsString types.ClusterReport,
