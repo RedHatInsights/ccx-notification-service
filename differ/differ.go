@@ -105,6 +105,7 @@ const (
 
 var (
 	notificationType types.EventType
+	notifier         *producer.KafkaProducer
 )
 
 // showVersion function displays version information.
@@ -135,14 +136,14 @@ func moduleToRuleName(module string) string {
 	return result
 }
 
-func findRuleByNameAndErrorKey(ruleContent map[string]types.RuleContent, impacts types.Impacts, ruleName string, errorKey string) (int, int, int) {
+func findRuleByNameAndErrorKey(ruleContent types.RulesMap, impacts types.Impacts, ruleName string, errorKey string) (int, int, int) {
 	rc := ruleContent[ruleName]
 	ek := rc.ErrorKeys
 	val := ek[errorKey]
 	likelihood := val.Metadata.Likelihood
 	impact := impacts[val.Metadata.Impact]
 	totalRisk := calculateTotalRisk(likelihood, impact)
-	return val.Metadata.Likelihood, impact, totalRisk
+	return likelihood, impact, totalRisk
 }
 
 func waitForEnter() {
@@ -153,7 +154,7 @@ func waitForEnter() {
 	}
 }
 
-func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration, notifier *producer.KafkaProducer) {
+func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, storage Storage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration) {
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
@@ -169,6 +170,7 @@ func processReportsByCluster(ruleContent map[string]types.RuleContent, impacts t
 		}
 
 		var deserialized types.Report
+
 		err = json.Unmarshal([]byte(report), &deserialized)
 		if err != nil {
 			log.Err(err).Msg("Deserialization error - Couldn't create report object")
@@ -242,7 +244,7 @@ func updateDigestNotificationCounters(digest *types.Digest, totalRisk int) {
 }
 
 // processAllReportsFromCurrentWeek function creates weekly digest with for all the clusters corresponding to each user account
-func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration, notifier *producer.KafkaProducer) {
+func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, impacts types.Impacts, storage Storage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration) {
 	digestByAccount := map[types.AccountNumber]types.Digest{}
 	digest := types.Digest{}
 
@@ -322,21 +324,13 @@ func processAllReportsFromCurrentWeek(ruleContent map[string]types.RuleContent, 
 }
 
 // processClusters function creates desired notification messages for all the clusters obtained from the database
-func processClusters(ruleContent map[string]types.RuleContent, impacts types.Impacts, storage *DBStorage, clusters []types.ClusterEntry, config conf.ConfigStruct) {
-	log.Info().Msg(separator)
-	log.Info().Msg("Preparing Kafka producer")
-
-	notifier := setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
-	log.Info().Msg("Kafka producer ready")
-
-	waitForEnter()
-
+func processClusters(ruleContent types.RulesMap, impacts types.Impacts, storage Storage, clusters []types.ClusterEntry, config conf.ConfigStruct) {
 	notificationConfig := conf.GetNotificationsConfiguration(config)
 
 	if notificationType == types.InstantNotif {
-		processReportsByCluster(ruleContent, impacts, storage, clusters, notificationConfig, notifier)
+		processReportsByCluster(ruleContent, impacts, storage, clusters, notificationConfig)
 	} else if notificationType == types.WeeklyDigest {
-		processAllReportsFromCurrentWeek(ruleContent, impacts, storage, clusters, notificationConfig, notifier)
+		processAllReportsFromCurrentWeek(ruleContent, impacts, storage, clusters, notificationConfig)
 	}
 
 	err := notifier.Close()
@@ -361,15 +355,15 @@ func printClusters(clusters []types.ClusterEntry) {
 }
 
 // setupNotificationProducer function creates a kafka producer using the provided configuration
-func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) (notifier *producer.KafkaProducer) {
-	notifier, err := producer.New(brokerConfig)
+func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) {
+	producer, err := producer.New(brokerConfig)
 	if err != nil {
 		log.Error().
 			Str(errorStr, err.Error()).
 			Msg("Couldn't initialize Kafka producer with the provided config.")
 		os.Exit(ExitStatusKafkaBrokerError)
 	}
-	return
+	notifier = producer
 }
 
 // generateInstantNotificationMessage function generates a notification message with no events for a given account+cluster
@@ -559,6 +553,13 @@ func Run() {
 	log.Info().Msg("Checking new issues for all new reports")
 	waitForEnter()
 
+	log.Info().Msg(separator)
+	log.Info().Msg("Preparing Kafka producer")
+	setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
+	log.Info().Msg("Kafka producer ready")
+	waitForEnter()
+
+	log.Info().Msg(separator)
 	processClusters(ruleContent, impacts, storage, clusters, config)
 
 	log.Info().Msg("Differ finished")

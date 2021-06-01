@@ -33,7 +33,7 @@ import (
 var (
 	brokerCfg = conf.KafkaConfiguration{
 		Address: "localhost:9092",
-		Topic:   "test_haberdasher",
+		Topic:   "platform.notifications.ingress",
 		Timeout: time.Duration(30*10 ^ 9),
 	}
 	// Base UNIX time plus approximately 50 years (not long before year 2020).
@@ -45,10 +45,17 @@ func init() {
 }
 
 // Test Producer creation with a non accessible Kafka broker
+// This test assumes there is no local kafka instance currently running
 func TestNewProducerBadBroker(t *testing.T) {
 	const expectedErr = "kafka: client has run out of available brokers to talk to (Is your cluster reachable?)"
+	_, err := New(conf.KafkaConfiguration{
+		Address: "",
+		Topic:   "whatever",
+		Timeout: 0,
+	})
+	assert.EqualError(t, err, expectedErr)
 
-	_, err := New(brokerCfg)
+	_, err = New(brokerCfg)
 	assert.EqualError(t, err, expectedErr)
 }
 
@@ -237,7 +244,8 @@ func TestProducerSendNotificationMessageEventContentNotValidJson(t *testing.T) {
 	assert.EqualError(t, err, jsonParseErrorMessage)
 }
 
-/* This sends to real kafka broker, just to make sure =)
+/*
+// This sends to real kafka broker, just to make sure =)
 func TestProducerSend(t *testing.T) {
 
 	producer, err := sarama.NewSyncProducer([]string{brokerCfg.Address}, nil)
@@ -249,20 +257,11 @@ func TestProducerSend(t *testing.T) {
 	events := []types.Event{
 		{
 			Metadata: nil,
-			Payload: map[string]interface{}{
-				"rule_id":       "a unique ID",
-				"what happened": "something baaad happened",
-				"error_code":    3,
-			},
+			Payload: "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\"}",
 		},
 		{
 			Metadata: nil,
-			Payload: map[string]interface{}{
-				"rule_id":       "another unique ID",
-				"what happened": "something less terrible happened",
-				"error_code":    4,
-				"more_random_data": "why not...",
-			},
+			Payload: "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\"}",
 		},
 	}
 
@@ -273,7 +272,7 @@ func TestProducerSend(t *testing.T) {
 		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
 		AccountID:   "000001",
 		Events:      events,
-		Context:     nil,
+		Context:     "no_context",
 	}
 
 	_, _, err = kafkaProducer.ProduceMessage(msg)
