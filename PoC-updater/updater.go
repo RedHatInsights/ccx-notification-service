@@ -118,7 +118,7 @@ func CompareReports(
 		return false, err
 	}
 
-	// try to unarshal the newest report
+	// try to unmarshal the newest report
 	newReport, err := unmarshalReport(newReportAsString)
 	if err != nil {
 		log.Error().Err(err).Msg("Unmarshal new report")
