@@ -43,9 +43,9 @@ var (
 		Timeout: time.Duration(30*10 ^ 9),
 	}
 	// Base UNIX time plus approximately 50 years (not long before year 2020).
-	testTimestamp = time.Unix(50*365*24*60*60, 0)
+	testTimestamp   = time.Unix(50*365*24*60*60, 0)
 	testPartitionID = 0
-	testOffset = 0
+	testOffset      = 0
 )
 
 func init() {
@@ -60,11 +60,11 @@ func captureStdout(f func()) string {
 
 	f()
 
-	w.Close()
+	_ = w.Close()
 	os.Stdout = originalStdOutFile
 
 	var buf bytes.Buffer
-	io.Copy(&buf, r)
+	_, _ = io.Copy(&buf, r)
 	return buf.String()
 }
 
@@ -286,16 +286,16 @@ func TestTotalRiskCalculation(t *testing.T) {
 		expectedRisk int
 	}
 	testVals := []testStruct{
-		{0,0, 0},
-		{3,1, 2},
-		{1,0, 0},
-		{0,3, 1},
-		{2,2, 2},
-		{3,1, 2},
-		{2,3, 2},
-		{3,3, 3},
-		{4,3, 3},
-		{3,4, 3},
+		{0, 0, 0},
+		{3, 1, 2},
+		{1, 0, 0},
+		{0, 3, 1},
+		{2, 2, 2},
+		{3, 1, 2},
+		{2, 3, 2},
+		{3, 3, 3},
+		{4, 3, 3},
+		{3, 4, 3},
 	}
 	for _, item := range testVals {
 		assert.Equal(t, item.expectedRisk, calculateTotalRisk(item.impact, item.likelihood))
@@ -351,7 +351,7 @@ func TestSetupNotificationProducerInvalidBrokerConf(t *testing.T) {
 	cmd := exec.Command(os.Args[0], "-test.run=TestSetupNotificationProducerInvalidBrokerConf")
 	cmd.Env = append(os.Environ(), "SETUP_PRODUCER=1")
 	err := cmd.Run()
-	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != ExitStatusKafkaBrokerError{
+	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != ExitStatusKafkaBrokerError {
 		t.Fatalf(
 			"Should exit with status ExitStatusKafkaBrokerError(%d). Got status %d",
 			ExitStatusKafkaBrokerError,
@@ -376,7 +376,7 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 				SetCoordinator(sarama.CoordinatorGroup, "", mockBroker),
 			"OffsetFetchRequest": sarama.NewMockOffsetFetchResponse(t).
 				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
-	})
+		})
 
 	testConfig := conf.KafkaConfiguration{
 		Address: mockBroker.Addr(),
@@ -390,13 +390,15 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 	}
 
 	setupNotificationProducer(testConfig)
-	defer notifier.Close()
 
 	assert.Equal(t, kafkaProducer.Configuration.Address, notifier.Configuration.Address)
 	assert.Equal(t, kafkaProducer.Configuration.Topic, notifier.Configuration.Topic)
 	assert.Equal(t, kafkaProducer.Configuration.Timeout, notifier.Configuration.Timeout)
 	assert.Nil(t, kafkaProducer.Producer, "Unexpected behavior: Producer was not set up correctly")
 	assert.NotNil(t, notifier.Producer, "Unexpected behavior: Producer was not set up correctly")
+
+	err := notifier.Close()
+	assert.Nil(t, err, "Unexpected behavior: Producer was not closed successfully")
 }
 
 //---------------------------------------------------------------------------------------
@@ -437,18 +439,18 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 	}
 
 	errorKeys := map[string]types.RuleErrorKeyContent{
-		"RULE_1": types.RuleErrorKeyContent{
-				Metadata:  types.ErrorKeyMetadata{
-					Condition:   "rule 1 error key condition",
-					Description: "rule 1 error key description",
-					Impact:      "impact_1",
-					Likelihood:  2,
-				},
-				Reason:    "rule 1 reason",
-				HasReason: true,
+		"RULE_1": {
+			Metadata: types.ErrorKeyMetadata{
+				Condition:   "rule 1 error key condition",
+				Description: "rule 1 error key description",
+				Impact:      "impact_1",
+				Likelihood:  2,
 			},
-		"RULE_2": types.RuleErrorKeyContent{
-			Metadata:  types.ErrorKeyMetadata{
+			Reason:    "rule 1 reason",
+			HasReason: true,
+		},
+		"RULE_2": {
+			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
 				Impact:      "impact_2",
@@ -459,7 +461,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 	}
 
 	ruleContent := types.RulesMap{
-		"rule_1":{
+		"rule_1": {
 			Summary:    "rule 1 summary",
 			Reason:     "rule 1 reason",
 			Resolution: "rule 1 resolution",
@@ -578,8 +580,8 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 	}
 
 	errorKeys := map[string]types.RuleErrorKeyContent{
-		"RULE_1": types.RuleErrorKeyContent{
-			Metadata:  types.ErrorKeyMetadata{
+		"RULE_1": {
+			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
 				Impact:      "impact_1",
@@ -588,8 +590,8 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			Reason:    "rule 1 reason",
 			HasReason: true,
 		},
-		"RULE_2": types.RuleErrorKeyContent{
-			Metadata:  types.ErrorKeyMetadata{
+		"RULE_2": {
+			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
 				Impact:      "impact_2",
@@ -600,7 +602,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 	}
 
 	ruleContent := types.RulesMap{
-		"rule_1":{
+		"rule_1": {
 			Summary:    "rule 1 summary",
 			Reason:     "rule 1 reason",
 			Resolution: "rule 1 resolution",
@@ -672,11 +674,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 	)
 	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
 		func(msg types.NotificationMessage) int32 {
-			testPartitionID += 1
+			testPartitionID++
 			return int32(testPartitionID)
 		},
 		func(msg types.NotificationMessage) int64 {
-			testOffset += 1
+			testOffset++
 			return int64(testOffset)
 		},
 		func(msg types.NotificationMessage) error {
@@ -738,8 +740,8 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 	}
 
 	errorKeys := map[string]types.RuleErrorKeyContent{
-		"RULE_1": types.RuleErrorKeyContent{
-			Metadata:  types.ErrorKeyMetadata{
+		"RULE_1": {
+			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
 				Impact:      "impact_1",
@@ -748,8 +750,8 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			Reason:    "rule 1 reason",
 			HasReason: true,
 		},
-		"RULE_2": types.RuleErrorKeyContent{
-			Metadata:  types.ErrorKeyMetadata{
+		"RULE_2": {
+			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
 				Impact:      "impact_2",
@@ -760,7 +762,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 	}
 
 	ruleContent := types.RulesMap{
-		"rule_1":{
+		"rule_1": {
 			Summary:    "rule 1 summary",
 			Reason:     "rule 1 reason",
 			Resolution: "rule 1 resolution",
@@ -832,11 +834,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 	)
 	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
 		func(msg types.NotificationMessage) int32 {
-			testPartitionID += 1
+			testPartitionID++
 			return int32(testPartitionID)
 		},
 		func(msg types.NotificationMessage) int64 {
-			testOffset += 1
+			testOffset++
 			return int64(testOffset)
 		},
 		func(msg types.NotificationMessage) error {
@@ -900,8 +902,8 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	}
 
 	errorKeys := map[string]types.RuleErrorKeyContent{
-		"RULE_1": types.RuleErrorKeyContent{
-			Metadata:  types.ErrorKeyMetadata{
+		"RULE_1": {
+			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
 				Impact:      "impact_1",
@@ -910,8 +912,8 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 			Reason:    "rule 1 reason",
 			HasReason: true,
 		},
-		"RULE_2": types.RuleErrorKeyContent{
-			Metadata:  types.ErrorKeyMetadata{
+		"RULE_2": {
+			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
 				Impact:      "impact_2",
@@ -922,7 +924,7 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	}
 
 	ruleContent := types.RulesMap{
-		"rule_1":{
+		"rule_1": {
 			Summary:    "rule 1 summary",
 			Reason:     "rule 1 reason",
 			Resolution: "rule 1 resolution",

@@ -280,4 +280,3 @@ func TestProducerSend(t *testing.T) {
 	helpers.FailOnError(t, kafkaProducer.Close())
 }
 */
-
