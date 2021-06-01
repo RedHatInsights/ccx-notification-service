@@ -17,29 +17,55 @@ limitations under the License.
 package differ
 
 import (
+	"bytes"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
+	"github.com/RedHatInsights/ccx-notification-service/producer"
+	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/types"
+	"github.com/Shopify/sarama"
+	samara_mocks "github.com/Shopify/sarama/mocks"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
+	"io"
 	"os"
 	"os/exec"
 	"testing"
 	"time"
 
 	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 )
 
 var (
 	brokerCfg = conf.KafkaConfiguration{
 		Address: "localhost:9092",
-		Topic:   "test_haberdasher",
+		Topic:   "platform.notifications.ingress",
 		Timeout: time.Duration(30*10 ^ 9),
 	}
 	// Base UNIX time plus approximately 50 years (not long before year 2020).
 	testTimestamp = time.Unix(50*365*24*60*60, 0)
+	testPartitionID = 0
+	testOffset = 0
 )
 
 func init() {
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+}
+
+//Can't redirect zerolog/log to buffer directly in some tests due to clowder init
+func captureStdout(f func()) string {
+	originalStdOutFile := os.Stdout
+	r, w, _ := os.Pipe()
+	os.Stdout = w
+
+	f()
+
+	w.Close()
+	os.Stdout = originalStdOutFile
+
+	var buf bytes.Buffer
+	io.Copy(&buf, r)
+	return buf.String()
 }
 
 // Test the checkArgs function when flag for --show-version is set
@@ -241,4 +267,745 @@ func TestGenerateWeeklyDigestNotificationMessage(t *testing.T) {
 		Payload:  "{\"total_clusters\":\"0\",\"total_critical\":\"0\",\"total_important\":\"0\",\"total_incidents\":\"0\",\"total_recommendations\":\"0\"}",
 	}
 	assert.Equal(t, expectedEvent, notificationMsg.Events[0])
+}
+
+//---------------------------------------------------------------------------------------
+func TestShowVersion(t *testing.T) {
+	assert.Contains(t, captureStdout(showVersion), versionMessage, "showVersion function is not displaying the expected content")
+}
+
+func TestShowAuthors(t *testing.T) {
+	assert.Contains(t, captureStdout(showAuthors), authorsMessage, "showAuthors function is not displaying the expected content")
+}
+
+//---------------------------------------------------------------------------------------
+func TestTotalRiskCalculation(t *testing.T) {
+	type testStruct struct {
+		impact       int
+		likelihood   int
+		expectedRisk int
+	}
+	testVals := []testStruct{
+		{0,0, 0},
+		{3,1, 2},
+		{1,0, 0},
+		{0,3, 1},
+		{2,2, 2},
+		{3,1, 2},
+		{2,3, 2},
+		{3,3, 3},
+		{4,3, 3},
+		{3,4, 3},
+	}
+	for _, item := range testVals {
+		assert.Equal(t, item.expectedRisk, calculateTotalRisk(item.impact, item.likelihood))
+	}
+}
+
+func TestModuleNameToRuleNameValidRuleName(t *testing.T) {
+	moduleName := "ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report"
+	ruleName := "cluster_wide_proxy_auth_check"
+	assert.Equal(t, ruleName, moduleToRuleName(moduleName))
+}
+
+func TestPrintClusters(t *testing.T) {
+	clusters := []types.ClusterEntry{
+		{
+			OrgID:         1,
+			AccountNumber: 1,
+			ClusterName:   "first_cluster",
+			KafkaOffset:   0,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+		{
+			OrgID:         2,
+			AccountNumber: 2,
+			ClusterName:   "second_cluster",
+			KafkaOffset:   100,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+	}
+
+	expectedList := "{\"level\":\"info\",\"#\":0,\"org id\":1,\"account number\":1,\"cluster\":\"first_cluster\",\"message\":\"cluster entry\"}\n{\"level\":\"info\",\"#\":1,\"org id\":2,\"account number\":2,\"cluster\":\"second_cluster\",\"message\":\"cluster entry\"}"
+
+	buf := new(bytes.Buffer)
+	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	printClusters(clusters)
+	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	//TODO: Look for a way to disable log filtering for a specific test. I thought disable sampling would do it...
+	assert.Contains(t, buf.String(), expectedList, "printClusters function is not displaying the expected content")
+}
+
+//---------------------------------------------------------------------------------------
+func TestSetupNotificationProducerInvalidBrokerConf(t *testing.T) {
+	if os.Getenv("SETUP_PRODUCER") == "1" {
+		brokerConfig := conf.KafkaConfiguration{
+			Address: "invalid_address",
+			Topic:   "",
+			Timeout: 0,
+		}
+
+		setupNotificationProducer(brokerConfig)
+	}
+	cmd := exec.Command(os.Args[0], "-test.run=TestSetupNotificationProducerInvalidBrokerConf")
+	cmd.Env = append(os.Environ(), "SETUP_PRODUCER=1")
+	err := cmd.Run()
+	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != ExitStatusKafkaBrokerError{
+		t.Fatalf(
+			"Should exit with status ExitStatusKafkaBrokerError(%d). Got status %d",
+			ExitStatusKafkaBrokerError,
+			e.ExitCode())
+	}
+}
+
+func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
+	mockBroker := sarama.NewMockBroker(t, 0)
+	defer mockBroker.Close()
+
+	mockBroker.SetHandlerByMap(
+		map[string]sarama.MockResponse{
+			"MetadataRequest": sarama.NewMockMetadataResponse(t).
+				SetBroker(mockBroker.Addr(), mockBroker.BrokerID()).
+				SetLeader(brokerCfg.Topic, 0, mockBroker.BrokerID()),
+			"OffsetRequest": sarama.NewMockOffsetResponse(t).
+				SetOffset(brokerCfg.Topic, 0, -1, 0).
+				SetOffset(brokerCfg.Topic, 0, -2, 0),
+			"FetchRequest": sarama.NewMockFetchResponse(t, 1),
+			"FindCoordinatorRequest": sarama.NewMockFindCoordinatorResponse(t).
+				SetCoordinator(sarama.CoordinatorGroup, "", mockBroker),
+			"OffsetFetchRequest": sarama.NewMockOffsetFetchResponse(t).
+				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
+	})
+
+	testConfig := conf.KafkaConfiguration{
+		Address: mockBroker.Addr(),
+		Topic:   brokerCfg.Topic,
+		Timeout: brokerCfg.Timeout,
+	}
+
+	kafkaProducer := producer.KafkaProducer{
+		Configuration: testConfig,
+		Producer:      nil,
+	}
+
+	setupNotificationProducer(testConfig)
+	defer notifier.Close()
+
+	assert.Equal(t, kafkaProducer.Configuration.Address, notifier.Configuration.Address)
+	assert.Equal(t, kafkaProducer.Configuration.Topic, notifier.Configuration.Topic)
+	assert.Equal(t, kafkaProducer.Configuration.Timeout, notifier.Configuration.Timeout)
+	assert.Nil(t, kafkaProducer.Producer, "Unexpected behavior: Producer was not set up correctly")
+	assert.NotNil(t, notifier.Producer, "Unexpected behavior: Producer was not set up correctly")
+}
+
+//---------------------------------------------------------------------------------------
+func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.T) {
+	buf := new(bytes.Buffer)
+	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
+	mockBroker := sarama.NewMockBroker(t, 0)
+	defer mockBroker.Close()
+
+	mockBroker.SetHandlerByMap(
+		map[string]sarama.MockResponse{
+			"MetadataRequest": sarama.NewMockMetadataResponse(t).
+				SetBroker(mockBroker.Addr(), mockBroker.BrokerID()).
+				SetLeader(brokerCfg.Topic, 0, mockBroker.BrokerID()),
+			"OffsetRequest": sarama.NewMockOffsetResponse(t).
+				SetOffset(brokerCfg.Topic, 0, -1, 0).
+				SetOffset(brokerCfg.Topic, 0, -2, 0),
+			"FetchRequest": sarama.NewMockFetchResponse(t, 1),
+			"FindCoordinatorRequest": sarama.NewMockFindCoordinatorResponse(t).
+				SetCoordinator(sarama.CoordinatorGroup, "", mockBroker),
+			"OffsetFetchRequest": sarama.NewMockOffsetFetchResponse(t).
+				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
+		})
+
+	config := conf.ConfigStruct{
+		Kafka: conf.KafkaConfiguration{
+			Address: mockBroker.Addr(),
+			Topic:   brokerCfg.Topic,
+			Timeout: brokerCfg.Timeout,
+		},
+		Notifications: conf.NotificationsConfiguration{
+			InsightsAdvisorURL: "an uri",
+			ClusterDetailsURI:  "a {cluster} details uri",
+			RuleDetailsURI:     "a {rule} details uri",
+		},
+	}
+
+	errorKeys := map[string]types.RuleErrorKeyContent{
+		"RULE_1": types.RuleErrorKeyContent{
+				Metadata:  types.ErrorKeyMetadata{
+					Condition:   "rule 1 error key condition",
+					Description: "rule 1 error key description",
+					Impact:      "impact_1",
+					Likelihood:  2,
+				},
+				Reason:    "rule 1 reason",
+				HasReason: true,
+			},
+		"RULE_2": types.RuleErrorKeyContent{
+			Metadata:  types.ErrorKeyMetadata{
+				Condition:   "rule 2 error key condition",
+				Description: "rule 2 error key description",
+				Impact:      "impact_2",
+				Likelihood:  3,
+			},
+			HasReason: false,
+		},
+	}
+
+	ruleContent := types.RulesMap{
+		"rule_1":{
+			Summary:    "rule 1 summary",
+			Reason:     "rule 1 reason",
+			Resolution: "rule 1 resolution",
+			MoreInfo:   "rule 1 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  true,
+		},
+		"rule_2": {
+			Summary:    "rule 2 summary",
+			Reason:     "",
+			Resolution: "rule 2 resolution",
+			MoreInfo:   "rule 2 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  false,
+		},
+	}
+
+	impacts := types.Impacts{
+		"impact_1": 3,
+		"impact_2": 2,
+	}
+
+	clusters := []types.ClusterEntry{
+		{
+			OrgID:         1,
+			AccountNumber: 1,
+			ClusterName:   "first_cluster",
+			KafkaOffset:   0,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+		{
+			OrgID:         2,
+			AccountNumber: 2,
+			ClusterName:   "second_cluster",
+			KafkaOffset:   100,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+	}
+
+	storage := mocks.Storage{}
+	storage.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
+			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}},{\"rule_id\":\"rule_2|RULE_2\",\"component\":\"ccx_rules_ocp.external.rules.rule_2.report\",\"type\":\"rule\",\"key\":\"RULE_2\",\"details\":{\"info\":{\"name\":\"openshift-samples\",\"condition\":\"Degraded\",\"reason\":\"FailedImageImports\",\"message\":\"Samples installed at , with image import failures for these imagestreams:\",\"lastTransitionTime\":\"2019-12-06T15:58:09Z\"},\"type\":\"rule\",\"error_key\":\"SAMPLES_FAILED_IMAGE_IMPORT_ERR\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4563171\"]}},{\"rule_id\":\"rule_3|RULE_3\",\"component\":\"ccx_rules_ocp.external.rules.rule_3.report\",\"type\":\"rule\",\"key\":\"RULE_3\",\"details\":{\"nodes\":[{\"name\":\"ip-10-0-144-53.us-east-2.compute.internal\",\"roles\":\"worker\",\"cpu\":1,\"cpu_req\":2}],\"type\":\"rule\",\"error_key\":\"NODES_MINIMUM_REQUIREMENTS_NOT_MET\"},\"tags\":[],\"links\":{\"docs\":[\"https://docs.openshift.com/container-platform/4.1/installing/installing_bare_metal/installing-bare-metal.html#minimum-resource-requirements_installing-bare-metal\"]}}]}"
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName) types.Timestamp {
+			return types.Timestamp(testTimestamp)
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName) error {
+			return nil
+		},
+	)
+
+	producerMock := mocks.Producer{}
+	producerMock.On("New", mock.AnythingOfType("conf.KafkaConfiguration")).Return(
+		func(brokerCfg conf.KafkaConfiguration) *producer.KafkaProducer {
+			mockProducer := samara_mocks.NewSyncProducer(t, nil)
+
+			kp := producer.KafkaProducer{
+				Configuration: brokerCfg,
+				Producer:      mockProducer,
+			}
+			return &kp
+		},
+		func(brokerCfg conf.KafkaConfiguration) error {
+			return nil
+		},
+	)
+
+	originalNotifier := notifier
+	notifier, _ = producerMock.New(config.Kafka)
+
+	notificationType = types.InstantNotif
+	processClusters(ruleContent, impacts, &storage, clusters, config)
+
+	assert.Contains(t, buf.String(), "No new issues to notify for cluster first_cluster", "processClusters shouldn't generate any notification for 'first_cluster' with given data")
+	assert.Contains(t, buf.String(), "No new issues to notify for cluster second_cluster", "processClusters shouldn't generate any notification for 'second_cluster' with given data")
+
+	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	notifier = originalNotifier
+}
+
+func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
+	buf := new(bytes.Buffer)
+	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
+	mockBroker := sarama.NewMockBroker(t, 0)
+	defer mockBroker.Close()
+
+	mockBroker.SetHandlerByMap(
+		map[string]sarama.MockResponse{
+			"MetadataRequest": sarama.NewMockMetadataResponse(t).
+				SetBroker(mockBroker.Addr(), mockBroker.BrokerID()).
+				SetLeader(brokerCfg.Topic, 0, mockBroker.BrokerID()),
+			"OffsetRequest": sarama.NewMockOffsetResponse(t).
+				SetOffset(brokerCfg.Topic, 0, -1, 0).
+				SetOffset(brokerCfg.Topic, 0, -2, 0),
+			"FetchRequest": sarama.NewMockFetchResponse(t, 1),
+			"FindCoordinatorRequest": sarama.NewMockFindCoordinatorResponse(t).
+				SetCoordinator(sarama.CoordinatorGroup, "", mockBroker),
+			"OffsetFetchRequest": sarama.NewMockOffsetFetchResponse(t).
+				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
+		})
+
+	config := conf.ConfigStruct{
+		Kafka: conf.KafkaConfiguration{
+			Address: mockBroker.Addr(),
+			Topic:   brokerCfg.Topic,
+			Timeout: 0,
+		},
+		Notifications: conf.NotificationsConfiguration{
+			InsightsAdvisorURL: "an uri",
+			ClusterDetailsURI:  "a {cluster} details uri",
+			RuleDetailsURI:     "a {rule} details uri",
+		},
+	}
+
+	errorKeys := map[string]types.RuleErrorKeyContent{
+		"RULE_1": types.RuleErrorKeyContent{
+			Metadata:  types.ErrorKeyMetadata{
+				Condition:   "rule 1 error key condition",
+				Description: "rule 1 error key description",
+				Impact:      "impact_1",
+				Likelihood:  4,
+			},
+			Reason:    "rule 1 reason",
+			HasReason: true,
+		},
+		"RULE_2": types.RuleErrorKeyContent{
+			Metadata:  types.ErrorKeyMetadata{
+				Condition:   "rule 2 error key condition",
+				Description: "rule 2 error key description",
+				Impact:      "impact_2",
+				Likelihood:  3,
+			},
+			HasReason: false,
+		},
+	}
+
+	ruleContent := types.RulesMap{
+		"rule_1":{
+			Summary:    "rule 1 summary",
+			Reason:     "rule 1 reason",
+			Resolution: "rule 1 resolution",
+			MoreInfo:   "rule 1 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  true,
+		},
+		"rule_2": {
+			Summary:    "rule 2 summary",
+			Reason:     "",
+			Resolution: "rule 2 resolution",
+			MoreInfo:   "rule 2 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  false,
+		},
+	}
+
+	impacts := types.Impacts{
+		"impact_1": 3,
+		"impact_2": 3,
+	}
+
+	clusters := []types.ClusterEntry{
+		{
+			OrgID:         1,
+			AccountNumber: 1,
+			ClusterName:   "first_cluster",
+			KafkaOffset:   0,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+		{
+			OrgID:         2,
+			AccountNumber: 2,
+			ClusterName:   "second_cluster",
+			KafkaOffset:   100,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+	}
+
+	storageMock := mocks.Storage{}
+	storageMock.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
+			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}},{\"rule_id\":\"rule_2|RULE_2\",\"component\":\"ccx_rules_ocp.external.rules.rule_2.report\",\"type\":\"rule\",\"key\":\"RULE_2\",\"details\":{\"info\":{\"name\":\"openshift-samples\",\"condition\":\"Degraded\",\"reason\":\"FailedImageImports\",\"message\":\"Samples installed at , with image import failures for these imagestreams:\",\"lastTransitionTime\":\"2019-12-06T15:58:09Z\"},\"type\":\"rule\",\"error_key\":\"SAMPLES_FAILED_IMAGE_IMPORT_ERR\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4563171\"]}},{\"rule_id\":\"rule_3|RULE_3\",\"component\":\"ccx_rules_ocp.external.rules.rule_3.report\",\"type\":\"rule\",\"key\":\"RULE_3\",\"details\":{\"nodes\":[{\"name\":\"ip-10-0-144-53.us-east-2.compute.internal\",\"roles\":\"worker\",\"cpu\":1,\"cpu_req\":2}],\"type\":\"rule\",\"error_key\":\"NODES_MINIMUM_REQUIREMENTS_NOT_MET\"},\"tags\":[],\"links\":{\"docs\":[\"https://docs.openshift.com/container-platform/4.1/installing/installing_bare_metal/installing-bare-metal.html#minimum-resource-requirements_installing-bare-metal\"]}}]}"
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName) types.Timestamp {
+			return types.Timestamp(testTimestamp)
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName) error {
+			return nil
+		},
+	)
+
+	producerMock := mocks.Producer{}
+	producerMock.On("New", mock.AnythingOfType("conf.KafkaConfiguration")).Return(
+		func(brokerCfg conf.KafkaConfiguration) *producer.KafkaProducer {
+			mockProducer := samara_mocks.NewSyncProducer(t, nil)
+			mockProducer.ExpectSendMessageAndSucceed()
+			mockProducer.ExpectSendMessageAndSucceed()
+
+			kp := producer.KafkaProducer{
+				Configuration: brokerCfg,
+				Producer:      mockProducer,
+			}
+			return &kp
+		},
+		func(brokerCfg conf.KafkaConfiguration) error {
+			return nil
+		},
+	)
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
+		func(msg types.NotificationMessage) int32 {
+			testPartitionID += 1
+			return int32(testPartitionID)
+		},
+		func(msg types.NotificationMessage) int64 {
+			testOffset += 1
+			return int64(testOffset)
+		},
+		func(msg types.NotificationMessage) error {
+			return nil
+		},
+	)
+
+	originalNotifier := notifier
+	notifier, _ = producerMock.New(config.Kafka)
+
+	notificationType = types.InstantNotif
+
+	processClusters(ruleContent, impacts, &storageMock, clusters, config)
+
+	assert.Contains(t, buf.String(), "Report with high impact detected", "processClusters should calculate a totalRisk of 3 for 'first_cluster' with given data")
+	assert.Contains(t, buf.String(), "Producing instant notification for cluster first_cluster with 2 events", "processClusters should generate one notification for 'first_cluster' with given data")
+	assert.Contains(t, buf.String(), "Report with high impact detected", "processClusters should calculate a totalRisk of 3 for 'first_cluster' with given data")
+	assert.Contains(t, buf.String(), "Producing instant notification for cluster second_cluster with 2 events", "processClusters should generate one notification for 'first_cluster' with given data")
+	assert.Contains(t, buf.String(), "message sent to partition")
+
+	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	notifier = originalNotifier
+}
+
+func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
+	buf := new(bytes.Buffer)
+	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
+	mockBroker := sarama.NewMockBroker(t, 0)
+	defer mockBroker.Close()
+
+	mockBroker.SetHandlerByMap(
+		map[string]sarama.MockResponse{
+			"MetadataRequest": sarama.NewMockMetadataResponse(t).
+				SetBroker(mockBroker.Addr(), mockBroker.BrokerID()).
+				SetLeader(brokerCfg.Topic, 0, mockBroker.BrokerID()),
+			"OffsetRequest": sarama.NewMockOffsetResponse(t).
+				SetOffset(brokerCfg.Topic, 0, -1, 0).
+				SetOffset(brokerCfg.Topic, 0, -2, 0),
+			"FetchRequest": sarama.NewMockFetchResponse(t, 1),
+			"FindCoordinatorRequest": sarama.NewMockFindCoordinatorResponse(t).
+				SetCoordinator(sarama.CoordinatorGroup, "", mockBroker),
+			"OffsetFetchRequest": sarama.NewMockOffsetFetchResponse(t).
+				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
+		})
+
+	config := conf.ConfigStruct{
+		Kafka: conf.KafkaConfiguration{
+			Address: mockBroker.Addr(),
+			Topic:   brokerCfg.Topic,
+			Timeout: 0,
+		},
+		Notifications: conf.NotificationsConfiguration{
+			InsightsAdvisorURL: "an uri",
+			ClusterDetailsURI:  "a {cluster} details uri",
+			RuleDetailsURI:     "a {rule} details uri",
+		},
+	}
+
+	errorKeys := map[string]types.RuleErrorKeyContent{
+		"RULE_1": types.RuleErrorKeyContent{
+			Metadata:  types.ErrorKeyMetadata{
+				Condition:   "rule 1 error key condition",
+				Description: "rule 1 error key description",
+				Impact:      "impact_1",
+				Likelihood:  4,
+			},
+			Reason:    "rule 1 reason",
+			HasReason: true,
+		},
+		"RULE_2": types.RuleErrorKeyContent{
+			Metadata:  types.ErrorKeyMetadata{
+				Condition:   "rule 2 error key condition",
+				Description: "rule 2 error key description",
+				Impact:      "impact_2",
+				Likelihood:  4,
+			},
+			HasReason: false,
+		},
+	}
+
+	ruleContent := types.RulesMap{
+		"rule_1":{
+			Summary:    "rule 1 summary",
+			Reason:     "rule 1 reason",
+			Resolution: "rule 1 resolution",
+			MoreInfo:   "rule 1 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  true,
+		},
+		"rule_2": {
+			Summary:    "rule 2 summary",
+			Reason:     "",
+			Resolution: "rule 2 resolution",
+			MoreInfo:   "rule 2 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  false,
+		},
+	}
+
+	impacts := types.Impacts{
+		"impact_1": 4,
+		"impact_2": 4,
+	}
+
+	clusters := []types.ClusterEntry{
+		{
+			OrgID:         1,
+			AccountNumber: 1,
+			ClusterName:   "first_cluster",
+			KafkaOffset:   0,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+		{
+			OrgID:         2,
+			AccountNumber: 2,
+			ClusterName:   "second_cluster",
+			KafkaOffset:   100,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+	}
+
+	storageMock := mocks.Storage{}
+	storageMock.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
+			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}},{\"rule_id\":\"rule_2|RULE_2\",\"component\":\"ccx_rules_ocp.external.rules.rule_2.report\",\"type\":\"rule\",\"key\":\"RULE_2\",\"details\":{\"info\":{\"name\":\"openshift-samples\",\"condition\":\"Degraded\",\"reason\":\"FailedImageImports\",\"message\":\"Samples installed at , with image import failures for these imagestreams:\",\"lastTransitionTime\":\"2019-12-06T15:58:09Z\"},\"type\":\"rule\",\"error_key\":\"SAMPLES_FAILED_IMAGE_IMPORT_ERR\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4563171\"]}},{\"rule_id\":\"rule_3|RULE_3\",\"component\":\"ccx_rules_ocp.external.rules.rule_3.report\",\"type\":\"rule\",\"key\":\"RULE_3\",\"details\":{\"nodes\":[{\"name\":\"ip-10-0-144-53.us-east-2.compute.internal\",\"roles\":\"worker\",\"cpu\":1,\"cpu_req\":2}],\"type\":\"rule\",\"error_key\":\"NODES_MINIMUM_REQUIREMENTS_NOT_MET\"},\"tags\":[],\"links\":{\"docs\":[\"https://docs.openshift.com/container-platform/4.1/installing/installing_bare_metal/installing-bare-metal.html#minimum-resource-requirements_installing-bare-metal\"]}}]}"
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName) types.Timestamp {
+			return types.Timestamp(testTimestamp)
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName) error {
+			return nil
+		},
+	)
+
+	producerMock := mocks.Producer{}
+	producerMock.On("New", mock.AnythingOfType("conf.KafkaConfiguration")).Return(
+		func(brokerCfg conf.KafkaConfiguration) *producer.KafkaProducer {
+			mockProducer := samara_mocks.NewSyncProducer(t, nil)
+			mockProducer.ExpectSendMessageAndSucceed()
+			mockProducer.ExpectSendMessageAndSucceed()
+
+			kp := producer.KafkaProducer{
+				Configuration: brokerCfg,
+				Producer:      mockProducer,
+			}
+			return &kp
+		},
+		func(brokerCfg conf.KafkaConfiguration) error {
+			return nil
+		},
+	)
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
+		func(msg types.NotificationMessage) int32 {
+			testPartitionID += 1
+			return int32(testPartitionID)
+		},
+		func(msg types.NotificationMessage) int64 {
+			testOffset += 1
+			return int64(testOffset)
+		},
+		func(msg types.NotificationMessage) error {
+			return nil
+		},
+	)
+
+	originalNotifier := notifier
+	notifier, _ = producerMock.New(config.Kafka)
+
+	notificationType = types.InstantNotif
+
+	processClusters(ruleContent, impacts, &storageMock, clusters, config)
+
+	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"#\":0,\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report\"}\n", "processClusters should calculate a totalRisk of 4 for 'first_cluster' with given data")
+	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"#\":1,\"type\":\"rule\",\"rule\":\"rule_2\",\"error key\":\"RULE_2\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report\"}\n", "processClusters should calculate a totalRisk of 4 for 'second_cluster' with given data")
+	assert.Contains(t, buf.String(), "{\"level\":\"warn\",\"totalRisk\":4,\"message\":\"Report with high impact detected\"}", "processClusters should indicate that a high impact report has been found")
+	assert.Contains(t, buf.String(), "Producing instant notification for cluster first_cluster with 2 events", "processClusters should generate one notification for 'first_cluster' with given data")
+	assert.Contains(t, buf.String(), "Producing instant notification for cluster second_cluster with 2 events", "processClusters should generate one notification for 'first_cluster' with given data")
+	assert.Contains(t, buf.String(), "message sent to partition")
+
+	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	notifier = originalNotifier
+}
+
+//---------------------------------------------------------------------------------------
+func TestProcessClustersWeeklyDigest(t *testing.T) {
+	buf := new(bytes.Buffer)
+	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
+	mockBroker := sarama.NewMockBroker(t, 0)
+	defer mockBroker.Close()
+
+	mockBroker.SetHandlerByMap(
+		map[string]sarama.MockResponse{
+			"MetadataRequest": sarama.NewMockMetadataResponse(t).
+				SetBroker(mockBroker.Addr(), mockBroker.BrokerID()).
+				SetLeader(brokerCfg.Topic, 0, mockBroker.BrokerID()),
+			"OffsetRequest": sarama.NewMockOffsetResponse(t).
+				SetOffset(brokerCfg.Topic, 0, -1, 0).
+				SetOffset(brokerCfg.Topic, 0, -2, 0),
+			"FetchRequest": sarama.NewMockFetchResponse(t, 1),
+			"FindCoordinatorRequest": sarama.NewMockFindCoordinatorResponse(t).
+				SetCoordinator(sarama.CoordinatorGroup, "", mockBroker),
+			"OffsetFetchRequest": sarama.NewMockOffsetFetchResponse(t).
+				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
+		})
+
+	config := conf.ConfigStruct{
+		Kafka: conf.KafkaConfiguration{
+			Address: mockBroker.Addr(),
+			Topic:   brokerCfg.Topic,
+			Timeout: brokerCfg.Timeout,
+		},
+		Notifications: conf.NotificationsConfiguration{
+			InsightsAdvisorURL: "an uri",
+			ClusterDetailsURI:  "a {cluster} details uri",
+			RuleDetailsURI:     "a {rule} details uri",
+		},
+	}
+
+	errorKeys := map[string]types.RuleErrorKeyContent{
+		"RULE_1": types.RuleErrorKeyContent{
+			Metadata:  types.ErrorKeyMetadata{
+				Condition:   "rule 1 error key condition",
+				Description: "rule 1 error key description",
+				Impact:      "impact_1",
+				Likelihood:  2,
+			},
+			Reason:    "rule 1 reason",
+			HasReason: true,
+		},
+		"RULE_2": types.RuleErrorKeyContent{
+			Metadata:  types.ErrorKeyMetadata{
+				Condition:   "rule 2 error key condition",
+				Description: "rule 2 error key description",
+				Impact:      "impact_2",
+				Likelihood:  3,
+			},
+			HasReason: false,
+		},
+	}
+
+	ruleContent := types.RulesMap{
+		"rule_1":{
+			Summary:    "rule 1 summary",
+			Reason:     "rule 1 reason",
+			Resolution: "rule 1 resolution",
+			MoreInfo:   "rule 1 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  true,
+		},
+		"rule_2": {
+			Summary:    "rule 2 summary",
+			Reason:     "",
+			Resolution: "rule 2 resolution",
+			MoreInfo:   "rule 2 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  false,
+		},
+	}
+
+	impacts := types.Impacts{
+		"impact_1": 3,
+		"impact_2": 2,
+	}
+
+	clusters := []types.ClusterEntry{
+		{
+			OrgID:         1,
+			AccountNumber: 1,
+			ClusterName:   "first_cluster",
+			KafkaOffset:   0,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+		{
+			OrgID:         2,
+			AccountNumber: 2,
+			ClusterName:   "second_cluster",
+			KafkaOffset:   100,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+	}
+
+	storage := mocks.Storage{}
+	storage.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
+			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}},{\"rule_id\":\"rule_2|RULE_2\",\"component\":\"ccx_rules_ocp.external.rules.rule_2.report\",\"type\":\"rule\",\"key\":\"RULE_2\",\"details\":{\"info\":{\"name\":\"openshift-samples\",\"condition\":\"Degraded\",\"reason\":\"FailedImageImports\",\"message\":\"Samples installed at , with image import failures for these imagestreams:\",\"lastTransitionTime\":\"2019-12-06T15:58:09Z\"},\"type\":\"rule\",\"error_key\":\"SAMPLES_FAILED_IMAGE_IMPORT_ERR\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4563171\"]}},{\"rule_id\":\"rule_3|RULE_3\",\"component\":\"ccx_rules_ocp.external.rules.rule_3.report\",\"type\":\"rule\",\"key\":\"RULE_3\",\"details\":{\"nodes\":[{\"name\":\"ip-10-0-144-53.us-east-2.compute.internal\",\"roles\":\"worker\",\"cpu\":1,\"cpu_req\":2}],\"type\":\"rule\",\"error_key\":\"NODES_MINIMUM_REQUIREMENTS_NOT_MET\"},\"tags\":[],\"links\":{\"docs\":[\"https://docs.openshift.com/container-platform/4.1/installing/installing_bare_metal/installing-bare-metal.html#minimum-resource-requirements_installing-bare-metal\"]}}]}"
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName) types.Timestamp {
+			return types.Timestamp(testTimestamp)
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName) error {
+			return nil
+		},
+	)
+
+	producerMock := mocks.Producer{}
+	producerMock.On("New", mock.AnythingOfType("conf.KafkaConfiguration")).Return(
+		func(brokerCfg conf.KafkaConfiguration) *producer.KafkaProducer {
+			mockProducer := samara_mocks.NewSyncProducer(t, nil)
+			mockProducer.ExpectSendMessageAndSucceed()
+			mockProducer.ExpectSendMessageAndSucceed()
+			kp := producer.KafkaProducer{
+				Configuration: brokerCfg,
+				Producer:      mockProducer,
+			}
+			return &kp
+		},
+		func(brokerCfg conf.KafkaConfiguration) error {
+			return nil
+		},
+	)
+
+	originalNotifier := notifier
+	notifier, _ = producerMock.New(config.Kafka)
+
+	notificationType = types.WeeklyDigest
+	processClusters(ruleContent, impacts, &storage, clusters, config)
+
+	print(buf.String())
+
+	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"Creating notification digest for account 1\"}")
+	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"Creating notification digest for account 2\"}")
+	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"account number\":1,\"total recommendations\":3,\"clusters affected\":1,\"critical notifications\":0,\"important notifications\":0,\"message\":\"Producing weekly notification for \"}")
+	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"account number\":2,\"total recommendations\":3,\"clusters affected\":1,\"critical notifications\":0,\"important notifications\":0,\"message\":\"Producing weekly notification for \"}")
+	assert.Contains(t, buf.String(), "message sent to partition")
+
+	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	notifier = originalNotifier
 }
