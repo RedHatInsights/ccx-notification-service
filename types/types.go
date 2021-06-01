@@ -15,6 +15,7 @@
 package types
 
 import (
+	"encoding/json"
 	"fmt"
 	"time"
 )
@@ -151,9 +152,10 @@ type ErrorKey string
 
 // ReportItem represents a single (hit) rule of the string encoded report
 type ReportItem struct {
-	Type     string   `json:"type"`
-	Module   RuleID   `json:"component"`
-	ErrorKey ErrorKey `json:"key"`
+	Type     string          `json:"type"`
+	Module   RuleID          `json:"component"`
+	ErrorKey ErrorKey        `json:"key"`
+	Details  json.RawMessage `json:"details"`
 }
 
 // Impacts represents the impacts parsed from the global config file
