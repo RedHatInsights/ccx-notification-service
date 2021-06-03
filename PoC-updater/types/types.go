@@ -77,8 +77,8 @@ type NotificationType struct {
 
 // NotificationTypes contains all IDs for all possible notification types
 type NotificationTypes struct {
-	Daily  NotificationTypeID
-	Weekly NotificationTypeID
+	Instant NotificationTypeID
+	Weekly  NotificationTypeID
 }
 
 // State represents one record from `states` table.

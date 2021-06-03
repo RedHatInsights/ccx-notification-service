@@ -237,8 +237,8 @@ func getNotificationTypes(storage Storage) (types.NotificationTypes, error) {
 		return types.NotificationTypes{}, err
 	}
 	notificationTypes := types.NotificationTypes{
-		Daily:  getNotificationType(rawNotificationTypes, "daily"),
-		Weekly: getNotificationType(rawNotificationTypes, "weekly"),
+		Instant: getNotificationType(rawNotificationTypes, "daily"),
+		Weekly:  getNotificationType(rawNotificationTypes, "weekly"),
 	}
 	return notificationTypes, nil
 }
