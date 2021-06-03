@@ -17,7 +17,7 @@ package main
 import (
 	"bytes"
 	"encoding/json"
-	"fmt"
+	//"fmt"
 	"os"
 	"time"
 
@@ -58,7 +58,25 @@ func unmarshalReport(reportAsString types.ClusterReport) (types.Report, error) {
 	return report, err
 }
 
-func process(storage Storage) {
+func getState(states []types.State, value string) types.StateID {
+	for _, state := range states {
+		if state.Value == value {
+			return state.ID
+		}
+	}
+	return -1
+}
+
+func getNotificationType(notificationTypes []types.NotificationType, value string) types.NotificationTypeID {
+	for _, notificatinType := range notificationTypes {
+		if notificatinType.Value == value {
+			return notificatinType.ID
+		}
+	}
+	return -1
+}
+
+func process(storage Storage, states types.States, notificationTypes types.NotificationTypes) {
 	const testedOrgID = 1
 	const testedCluster = "11111111-1111-1111-1111-111111111111"
 
@@ -73,24 +91,63 @@ func process(storage Storage) {
 	c := types.ClusterEntry{
 		OrgID:       testedOrgID,
 		ClusterName: testedCluster,
+		UpdatedAt:   timestamp,
 	}
 
-	// read older reports for a cluster
-	reported, err := storage.ReadLastNNotificationRecords(c, 10)
+	// try to read older report for a cluster
+	reported, err := storage.ReadLastNNotificationRecords(c, 1)
 	if err != nil {
 		log.Error().Err(err).Msg("Read last n reports")
 	}
-	for _, r := range reported {
-		rOldAsString := r.Report
-		log.Info().Time("notified at", time.Time(r.NotifiedAt)).Msg("notified record")
 
-		notify, err := CompareReports(rOldAsString, rNewAsString)
-		if err != nil {
-			log.Error().Err(err).Msg("Unable to compare")
-		}
-		log.Info().Bool("resolution", notify).Msg("Should notify user")
-		fmt.Println()
+	notifiedAt := types.Timestamp(time.Now())
+
+	// check if the new result has been stored for brand new cluster
+	if len(reported) == 0 {
+		log.Info().Str("cluster", string(c.ClusterName)).Msg("New cluster -> send instant report")
+		processNotificationForCluster(storage, c, rNewAsString, notificationTypes, states, notifiedAt)
+		// and we are done!
+		return
 	}
+
+	// it is not a brand new cluster -> compare new report with older one
+	rOldAsString := reported[0].Report
+	notify, err := CompareReports(rOldAsString, rNewAsString)
+	if err != nil {
+		log.Error().Err(err).Msg("Unable to compare old and new reports")
+	}
+	log.Info().Bool("resolution", notify).Msg("Should notify user")
+
+	// if new report differs from the older one -> send notification
+	if notify {
+		log.Info().Str("cluster", string(c.ClusterName)).Msg("Different report from the last one")
+		processNotificationForCluster(storage, c, rNewAsString, notificationTypes, states, notifiedAt)
+		// and we are done!
+	} else {
+		log.Info().Str("cluster", string(c.ClusterName)).Msg("Same report as before")
+		// store notification info about not sending the notification
+		storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.SameState, rNewAsString, notifiedAt, "")
+	}
+}
+
+func processNotificationForCluster(storage Storage, c types.ClusterEntry,
+	rNewAsString types.ClusterReport,
+	notificationTypes types.NotificationTypes, states types.States,
+	notifiedAt types.Timestamp) {
+	instantIssue, err := fakeProcessReport(rNewAsString)
+	if err != nil {
+		storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.ErrorState, rNewAsString, notifiedAt, err.Error())
+	}
+
+	if instantIssue {
+		storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.SentState, rNewAsString, notifiedAt, "")
+	} else {
+		storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.SameState, rNewAsString, notifiedAt, "")
+	}
+}
+
+func fakeProcessReport(rNewAsString types.ClusterReport) (bool, error) {
+	return true, nil
 }
 
 // Function issuesEqual compares two issues from reports
@@ -157,6 +214,32 @@ func CompareReports(
 	return false, nil
 }
 
+func getNotificationTypes(storage Storage) (types.NotificationTypes, error) {
+	rawNotificationTypes, err := storage.ReadNotificationTypes()
+	if err != nil {
+		return types.NotificationTypes{}, err
+	}
+	notificationTypes := types.NotificationTypes{
+		Daily:  getNotificationType(rawNotificationTypes, "daily"),
+		Weekly: getNotificationType(rawNotificationTypes, "weekly"),
+	}
+	return notificationTypes, nil
+}
+
+func getStates(storage Storage) (types.States, error) {
+	rawStates, err := storage.ReadStates()
+	if err != nil {
+		return types.States{}, err
+	}
+	states := types.States{
+		SameState:       getState(rawStates, "same"),
+		SentState:       getState(rawStates, "sent"),
+		LowerIssueState: getState(rawStates, "lower"),
+		ErrorState:      getState(rawStates, "error"),
+	}
+	return states, nil
+}
+
 func main() {
 	// config has exactly the same structure as *.toml file
 	config, err := conf.LoadConfiguration(configFileEnvVariableName, defaultConfigFileName)
@@ -178,7 +261,19 @@ func main() {
 		os.Exit(ExitStatusStorageError)
 	}
 
-	process(storage)
+	states, err := getStates(storage)
+	if err != nil {
+		log.Err(err).Msg("Read states")
+		return
+	}
+
+	notificationTypes, err := getNotificationTypes(storage)
+	if err != nil {
+		log.Err(err).Msg("Read notification types")
+		return
+	}
+
+	process(storage, states, notificationTypes)
 
 	err = storage.Close()
 	if err != nil {
