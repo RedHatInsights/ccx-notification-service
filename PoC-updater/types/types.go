@@ -75,11 +75,25 @@ type NotificationType struct {
 	Comment   string
 }
 
+// NotificationTypes contains all IDs for all possible notification types
+type NotificationTypes struct {
+	Instant NotificationTypeID
+	Weekly  NotificationTypeID
+}
+
 // State represents one record from `states` table.
 type State struct {
 	ID      StateID
 	Value   string
 	Comment string
+}
+
+// States contains all IDs for all possible states
+type States struct {
+	SameState       StateID
+	SentState       StateID
+	LowerIssueState StateID
+	ErrorState      StateID
 }
 
 // RuleContent wraps all the content available for a rule into a single structure.
