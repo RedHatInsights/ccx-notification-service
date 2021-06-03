@@ -127,7 +127,10 @@ func process(storage Storage, states types.States, notificationTypes types.Notif
 	} else {
 		log.Info().Str(clusterName, string(c.ClusterName)).Msg("Same report as before")
 		// store notification info about not sending the notification
-		storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.SameState, rNewAsString, notifiedAt, "")
+		err := storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.SameState, rNewAsString, notifiedAt, "")
+		if err != nil {
+			writeNotificationRecordFailed(err)
+		}
 	}
 }
 
@@ -137,14 +140,27 @@ func processNotificationForCluster(storage Storage, c types.ClusterEntry,
 	notifiedAt types.Timestamp) {
 	instantIssue, err := fakeProcessReport(rNewAsString)
 	if err != nil {
-		storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.ErrorState, rNewAsString, notifiedAt, err.Error())
+		err := storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.ErrorState, rNewAsString, notifiedAt, err.Error())
+		if err != nil {
+			writeNotificationRecordFailed(err)
+		}
 	}
 
 	if instantIssue {
-		storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.SentState, rNewAsString, notifiedAt, "")
+		err := storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.SentState, rNewAsString, notifiedAt, "")
+		if err != nil {
+			writeNotificationRecordFailed(err)
+		}
 	} else {
-		storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.SameState, rNewAsString, notifiedAt, "")
+		err := storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.SameState, rNewAsString, notifiedAt, "")
+		if err != nil {
+			writeNotificationRecordFailed(err)
+		}
 	}
+}
+
+func writeNotificationRecordFailed(err error) {
+	log.Error().Err(err).Msg("Write notification record failed")
 }
 
 func fakeProcessReport(rNewAsString types.ClusterReport) (bool, error) {
