@@ -36,6 +36,7 @@ const (
 // Messages
 const (
 	operationFailedMessage = "Operation failed"
+	clusterName            = "cluster"
 )
 
 // Exit codes
@@ -104,7 +105,7 @@ func process(storage Storage, states types.States, notificationTypes types.Notif
 
 	// check if the new result has been stored for brand new cluster
 	if len(reported) == 0 {
-		log.Info().Str("cluster", string(c.ClusterName)).Msg("New cluster -> send instant report")
+		log.Info().Str(clusterName, string(c.ClusterName)).Msg("New cluster -> send instant report")
 		processNotificationForCluster(storage, c, rNewAsString, notificationTypes, states, notifiedAt)
 		// and we are done!
 		return
@@ -120,11 +121,11 @@ func process(storage Storage, states types.States, notificationTypes types.Notif
 
 	// if new report differs from the older one -> send notification
 	if notify {
-		log.Info().Str("cluster", string(c.ClusterName)).Msg("Different report from the last one")
+		log.Info().Str(clusterName, string(c.ClusterName)).Msg("Different report from the last one")
 		processNotificationForCluster(storage, c, rNewAsString, notificationTypes, states, notifiedAt)
 		// and we are done!
 	} else {
-		log.Info().Str("cluster", string(c.ClusterName)).Msg("Same report as before")
+		log.Info().Str(clusterName, string(c.ClusterName)).Msg("Same report as before")
 		// store notification info about not sending the notification
 		storage.WriteNotificationRecordForCluster(c, notificationTypes.Daily, states.SameState, rNewAsString, notifiedAt, "")
 	}
