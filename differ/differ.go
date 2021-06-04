@@ -169,6 +169,7 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 			os.Exit(ExitStatusStorageError)
 		}
 
+		log.Info().Time("time", time.Time(reportedAt)).Msg("Read")
 		var deserialized types.Report
 
 		err = json.Unmarshal([]byte(report), &deserialized)
@@ -181,6 +182,22 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 			log.Info().Msgf("No reports in notification database for cluster %s", cluster.ClusterName)
 			continue
 		}
+
+		notifiedAt := types.Timestamp(time.Now())
+
+		if !shouldNotify(storage, cluster, deserialized) {
+			log.Info().Msgf("No new issues to notify for cluster %s", cluster.ClusterName)
+			log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Same report as before")
+			// store notification info about not sending the notification
+			err = storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SameState, report, notifiedAt, "")
+			if err != nil {
+				writeNotificationRecordFailed(err)
+			}
+			continue
+		}
+
+		// if new report differs from the older one -> send notification
+		log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Different report from the last one")
 
 		notificationMsg := generateInstantNotificationMessage(notificationConfig.ClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), string(cluster.ClusterName))
 
@@ -206,6 +223,10 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 
 		if len(notificationMsg.Events) == 0 {
 			log.Info().Msgf("No new issues to notify for cluster %s", string(cluster.ClusterName))
+			err = storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SameState, report, notifiedAt, "")
+			if err != nil {
+				writeNotificationRecordFailed(err)
+			}
 			continue
 		}
 
@@ -214,9 +235,18 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 		if err != nil {
 			log.Error().
 				Str(errorStr, err.Error()).
-				Msg("Couldn't produce kafka event.")
+				Msg("Couldn't send notification message to kafka topic.")
+			err = storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.ErrorState, report, notifiedAt, err.Error())
+				if err != nil {
+					writeNotificationRecordFailed(err)
+				}
 			os.Exit(ExitStatusKafkaProducerError)
 		}
+		err = storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SentState, report, notifiedAt, "")
+		if err != nil {
+			writeNotificationRecordFailed(err)
+		}
+
 	}
 }
 
@@ -331,14 +361,6 @@ func processClusters(ruleContent types.RulesMap, impacts types.Impacts, storage 
 		processReportsByCluster(ruleContent, impacts, storage, clusters, notificationConfig)
 	} else if notificationType == types.WeeklyDigest {
 		processAllReportsFromCurrentWeek(ruleContent, impacts, storage, clusters, notificationConfig)
-	}
-
-	err := notifier.Close()
-	if err != nil {
-		log.Error().
-			Str(errorStr, err.Error()).
-			Msg("Couldn't close Kafka connection.")
-		os.Exit(ExitStatusKafkaConnectionNotClosedError)
 	}
 }
 
@@ -539,6 +561,18 @@ func Run() {
 
 	//TODO: Set notificationConfig global variables here to avoid passing so much parameters
 
+	err = getStates(storage)
+	if err != nil {
+		log.Err(err).Msg("Read states")
+		os.Exit(ExitStatusStorageError)
+	}
+
+	err = getNotificationTypes(storage)
+	if err != nil {
+		log.Err(err).Msg("Read notification types")
+		os.Exit(ExitStatusStorageError)
+	}
+
 	clusters, err := storage.ReadClusterList()
 	if err != nil {
 		log.Err(err).Msg(operationFailedMessage)
@@ -561,6 +595,18 @@ func Run() {
 
 	log.Info().Msg(separator)
 	processClusters(ruleContent, impacts, storage, clusters, config)
+
+	err = storage.Close()
+	if err != nil {
+		log.Err(err).Msg(operationFailedMessage)
+		os.Exit(ExitStatusStorageError)
+	}
+
+	err = notifier.Close()
+	if err != nil {
+		log.Err(err).Msg(operationFailedMessage)
+		os.Exit(ExitStatusKafkaConnectionNotClosedError)
+	}
 
 	log.Info().Msg("Differ finished")
 }

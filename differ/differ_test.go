@@ -513,6 +513,37 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 			return nil
 		},
 	)
+	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
+			return []types.NotificationRecord{
+				{
+				OrgID:              1,
+				AccountNumber:      2,
+				ClusterName:        "a cluster",
+				UpdatedAt:          types.Timestamp(testTimestamp),
+				NotificationTypeID: 0,
+				StateID:            0,
+				Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_3|RULE_3\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}},{\"rule_id\":\"rule_2|RULE_2\",\"component\":\"ccx_rules_ocp.external.rules.rule_2.report\",\"type\":\"rule\",\"key\":\"RULE_2\",\"details\":{\"info\":{\"name\":\"openshift-samples\",\"condition\":\"Degraded\",\"reason\":\"FailedImageImports\",\"message\":\"Samples installed at , with image import failures for these imagestreams:\",\"lastTransitionTime\":\"2019-12-06T15:58:09Z\"},\"type\":\"rule\",\"error_key\":\"SAMPLES_FAILED_IMAGE_IMPORT_ERR\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4563171\"]}},{\"rule_id\":\"rule_3|RULE_3\",\"component\":\"ccx_rules_ocp.external.rules.rule_3.report\",\"type\":\"rule\",\"key\":\"RULE_3\",\"details\":{\"nodes\":[{\"name\":\"ip-10-0-144-53.us-east-2.compute.internal\",\"roles\":\"worker\",\"cpu\":1,\"cpu_req\":2}],\"type\":\"rule\",\"error_key\":\"NODES_MINIMUM_REQUIREMENTS_NOT_MET\"},\"tags\":[],\"links\":{\"docs\":[\"https://docs.openshift.com/container-platform/4.1/installing/installing_bare_metal/installing-bare-metal.html#minimum-resource-requirements_installing-bare-metal\"]}}]}",
+				NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
+				ErrorLog:           "",
+				},
+			}
+		},
+		func(clusterEntry types.ClusterEntry, numberOfRecords int) error {
+			return nil
+		},
+	)
+	storage.On("WriteNotificationRecordForCluster",
+		mock.AnythingOfType("types.ClusterEntry"),
+		mock.AnythingOfType("types.NotificationTypeID"),
+		mock.AnythingOfType("types.StateID"),
+		mock.AnythingOfType("types.ClusterReport"),
+		mock.AnythingOfType("types.Timestamp"),
+		mock.AnythingOfType("string")).Return(
+		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error {
+			return nil
+		},
+	)
 
 	producerMock := mocks.Producer{}
 	producerMock.On("New", mock.AnythingOfType("conf.KafkaConfiguration")).Return(
@@ -642,8 +673,8 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 		},
 	}
 
-	storageMock := mocks.Storage{}
-	storageMock.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
+	storage := mocks.Storage{}
+	storage.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
 		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
 			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}},{\"rule_id\":\"rule_2|RULE_2\",\"component\":\"ccx_rules_ocp.external.rules.rule_2.report\",\"type\":\"rule\",\"key\":\"RULE_2\",\"details\":{\"info\":{\"name\":\"openshift-samples\",\"condition\":\"Degraded\",\"reason\":\"FailedImageImports\",\"message\":\"Samples installed at , with image import failures for these imagestreams:\",\"lastTransitionTime\":\"2019-12-06T15:58:09Z\"},\"type\":\"rule\",\"error_key\":\"SAMPLES_FAILED_IMAGE_IMPORT_ERR\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4563171\"]}},{\"rule_id\":\"rule_3|RULE_3\",\"component\":\"ccx_rules_ocp.external.rules.rule_3.report\",\"type\":\"rule\",\"key\":\"RULE_3\",\"details\":{\"nodes\":[{\"name\":\"ip-10-0-144-53.us-east-2.compute.internal\",\"roles\":\"worker\",\"cpu\":1,\"cpu_req\":2}],\"type\":\"rule\",\"error_key\":\"NODES_MINIMUM_REQUIREMENTS_NOT_MET\"},\"tags\":[],\"links\":{\"docs\":[\"https://docs.openshift.com/container-platform/4.1/installing/installing_bare_metal/installing-bare-metal.html#minimum-resource-requirements_installing-bare-metal\"]}}]}"
 		},
@@ -651,6 +682,37 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			return types.Timestamp(testTimestamp)
 		},
 		func(orgID types.OrgID, clusterName types.ClusterName) error {
+			return nil
+		},
+	)
+	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
+			return []types.NotificationRecord{
+				{
+					OrgID:              3,
+					AccountNumber:      4,
+					ClusterName:        "a cluster",
+					UpdatedAt:          types.Timestamp(testTimestamp),
+					NotificationTypeID: 0,
+					StateID:            0,
+					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}},{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_2.report\",\"type\":\"rule\",\"key\":\"RULE_2\",\"details\":{\"info\":{\"name\":\"openshift-samples\",\"condition\":\"Degraded\",\"reason\":\"FailedImageImports\",\"message\":\"Samples installed at , with image import failures for these imagestreams:\",\"lastTransitionTime\":\"2019-12-06T15:58:09Z\"},\"type\":\"rule\",\"error_key\":\"SAMPLES_FAILED_IMAGE_IMPORT_ERR\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4563171\"]}},{\"rule_id\":\"rule_5|RULE_5\",\"component\":\"ccx_rules_ocp.external.rules.rule_3.report\",\"type\":\"rule\",\"key\":\"RULE_3\",\"details\":{\"nodes\":[{\"name\":\"ip-10-0-144-53.us-east-2.compute.internal\",\"roles\":\"worker\",\"cpu\":1,\"cpu_req\":2}],\"type\":\"rule\",\"error_key\":\"NODES_MINIMUM_REQUIREMENTS_NOT_MET\"},\"tags\":[],\"links\":{\"docs\":[\"https://docs.openshift.com/container-platform/4.1/installing/installing_bare_metal/installing-bare-metal.html#minimum-resource-requirements_installing-bare-metal\"]}}]}",
+					NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
+					ErrorLog:           "",
+				},
+			}
+		},
+		func(clusterEntry types.ClusterEntry, numberOfRecords int) error {
+			return nil
+		},
+	)
+	storage.On("WriteNotificationRecordForCluster",
+		mock.AnythingOfType("types.ClusterEntry"),
+		mock.AnythingOfType("types.NotificationTypeID"),
+		mock.AnythingOfType("types.StateID"),
+		mock.AnythingOfType("types.ClusterReport"),
+		mock.AnythingOfType("types.Timestamp"),
+		mock.AnythingOfType("string")).Return(
+		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error {
 			return nil
 		},
 	)
@@ -691,7 +753,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 
 	notificationType = types.InstantNotif
 
-	processClusters(ruleContent, impacts, &storageMock, clusters, config)
+	processClusters(ruleContent, impacts, &storage, clusters, config)
 
 	assert.Contains(t, buf.String(), "Report with high impact detected", "processClusters should calculate a totalRisk of 3 for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "Producing instant notification for cluster first_cluster with 2 events", "processClusters should generate one notification for 'first_cluster' with given data")
@@ -802,8 +864,8 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 		},
 	}
 
-	storageMock := mocks.Storage{}
-	storageMock.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
+	storage := mocks.Storage{}
+	storage.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
 		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
 			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}},{\"rule_id\":\"rule_2|RULE_2\",\"component\":\"ccx_rules_ocp.external.rules.rule_2.report\",\"type\":\"rule\",\"key\":\"RULE_2\",\"details\":{\"info\":{\"name\":\"openshift-samples\",\"condition\":\"Degraded\",\"reason\":\"FailedImageImports\",\"message\":\"Samples installed at , with image import failures for these imagestreams:\",\"lastTransitionTime\":\"2019-12-06T15:58:09Z\"},\"type\":\"rule\",\"error_key\":\"SAMPLES_FAILED_IMAGE_IMPORT_ERR\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4563171\"]}},{\"rule_id\":\"rule_3|RULE_3\",\"component\":\"ccx_rules_ocp.external.rules.rule_3.report\",\"type\":\"rule\",\"key\":\"RULE_3\",\"details\":{\"nodes\":[{\"name\":\"ip-10-0-144-53.us-east-2.compute.internal\",\"roles\":\"worker\",\"cpu\":1,\"cpu_req\":2}],\"type\":\"rule\",\"error_key\":\"NODES_MINIMUM_REQUIREMENTS_NOT_MET\"},\"tags\":[],\"links\":{\"docs\":[\"https://docs.openshift.com/container-platform/4.1/installing/installing_bare_metal/installing-bare-metal.html#minimum-resource-requirements_installing-bare-metal\"]}}]}"
 		},
@@ -811,6 +873,37 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			return types.Timestamp(testTimestamp)
 		},
 		func(orgID types.OrgID, clusterName types.ClusterName) error {
+			return nil
+		},
+	)
+	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
+			return []types.NotificationRecord{
+				{
+					OrgID:              3,
+					AccountNumber:      4,
+					ClusterName:        "a cluster",
+					UpdatedAt:          types.Timestamp(testTimestamp),
+					NotificationTypeID: 0,
+					StateID:            0,
+					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}},{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_2.report\",\"type\":\"rule\",\"key\":\"RULE_2\",\"details\":{\"info\":{\"name\":\"openshift-samples\",\"condition\":\"Degraded\",\"reason\":\"FailedImageImports\",\"message\":\"Samples installed at , with image import failures for these imagestreams:\",\"lastTransitionTime\":\"2019-12-06T15:58:09Z\"},\"type\":\"rule\",\"error_key\":\"SAMPLES_FAILED_IMAGE_IMPORT_ERR\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4563171\"]}},{\"rule_id\":\"rule_5|RULE_5\",\"component\":\"ccx_rules_ocp.external.rules.rule_3.report\",\"type\":\"rule\",\"key\":\"RULE_3\",\"details\":{\"nodes\":[{\"name\":\"ip-10-0-144-53.us-east-2.compute.internal\",\"roles\":\"worker\",\"cpu\":1,\"cpu_req\":2}],\"type\":\"rule\",\"error_key\":\"NODES_MINIMUM_REQUIREMENTS_NOT_MET\"},\"tags\":[],\"links\":{\"docs\":[\"https://docs.openshift.com/container-platform/4.1/installing/installing_bare_metal/installing-bare-metal.html#minimum-resource-requirements_installing-bare-metal\"]}}]}",
+					NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
+					ErrorLog:           "",
+				},
+			}
+		},
+		func(clusterEntry types.ClusterEntry, numberOfRecords int) error {
+			return nil
+		},
+	)
+	storage.On("WriteNotificationRecordForCluster",
+		mock.AnythingOfType("types.ClusterEntry"),
+		mock.AnythingOfType("types.NotificationTypeID"),
+		mock.AnythingOfType("types.StateID"),
+		mock.AnythingOfType("types.ClusterReport"),
+		mock.AnythingOfType("types.Timestamp"),
+		mock.AnythingOfType("string")).Return(
+		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error {
 			return nil
 		},
 	)
@@ -851,7 +944,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 
 	notificationType = types.InstantNotif
 
-	processClusters(ruleContent, impacts, &storageMock, clusters, config)
+	processClusters(ruleContent, impacts, &storage, clusters, config)
 
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"#\":0,\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report\"}\n", "processClusters should calculate a totalRisk of 4 for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"#\":1,\"type\":\"rule\",\"rule\":\"rule_2\",\"error key\":\"RULE_2\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report\"}\n", "processClusters should calculate a totalRisk of 4 for 'second_cluster' with given data")
