@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package conf
+package conf_test
 
 import (
 	"os"
@@ -25,6 +25,8 @@ import (
 	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
+
+	conf "github.com/RedHatInsights/ccx-notification-service/conf"
 )
 
 func init() {
@@ -32,14 +34,14 @@ func init() {
 }
 
 func mustLoadConfiguration(envVar string) {
-	_, err := LoadConfiguration(envVar, "../tests/config1")
+	_, err := conf.LoadConfiguration(envVar, "../tests/config1")
 	if err != nil {
 		panic(err)
 	}
 }
 
 func mustFailLoadingConfigurationIfWrongEnvVar(envVar string) {
-	_, err := LoadConfiguration(envVar, "ANonExistingDefaultConfigPath")
+	_, err := conf.LoadConfiguration(envVar, "ANonExistingDefaultConfigPath")
 	if err == nil {
 		panic(err)
 	}
@@ -76,7 +78,7 @@ func TestLoadConfigurationFromEnvVariable(t *testing.T) {
 
 // TestLoadConfigurationNonEnvVarUnknownConfigFile tests loading an unexisting config file when no environment variable is provided
 func TestLoadConfigurationNonEnvVarUnknownConfigFile(t *testing.T) {
-	_, err := LoadConfiguration("", "foobar")
+	_, err := conf.LoadConfiguration("", "foobar")
 	assert.Contains(t, err.Error(), `Config File "foobar" Not Found in`)
 }
 
@@ -86,7 +88,7 @@ func TestLoadingConfigurationEnvVariableBadValueNoDefaultConfig(t *testing.T) {
 
 	mustSetEnv(t, "CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "non existing file")
 
-	_, err := LoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "")
+	_, err := conf.LoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "")
 	assert.Contains(t, err.Error(), `fatal error config file: Config File "non existing file" Not Found in`)
 }
 
@@ -96,7 +98,7 @@ func TestLoadingConfigurationEnvVariableBadValueDefaultConfigFailure(t *testing.
 
 	mustSetEnv(t, "CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "non existing file")
 
-	_, err := LoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "../tests/config1")
+	_, err := conf.LoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "../tests/config1")
 	assert.Contains(t, err.Error(), `fatal error config file: Config File "non existing file" Not Found in`)
 }
 
@@ -108,10 +110,10 @@ func TestLoadBrokerConfiguration(t *testing.T) {
 	//helpers.FailOnError(t, os.Chdir(".."))
 
 	mustSetEnv(t, envVar, "../tests/config2")
-	config, err := LoadConfiguration(envVar, "")
+	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	brokerCfg := GetKafkaBrokerConfiguration(config)
+	brokerCfg := conf.GetKafkaBrokerConfiguration(config)
 
 	assert.Equal(t, "localhost:29092", brokerCfg.Address)
 	assert.Equal(t, "ccx_test_notifications", brokerCfg.Topic)
@@ -122,10 +124,10 @@ func TestLoadBrokerConfiguration(t *testing.T) {
 func TestLoadStorageConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	mustSetEnv(t, envVar, "../tests/config2")
-	config, err := LoadConfiguration(envVar, "")
+	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	storageCfg := GetStorageConfiguration(config)
+	storageCfg := conf.GetStorageConfiguration(config)
 
 	assert.Equal(t, "sqlite3", storageCfg.Driver)
 	assert.Equal(t, "user", storageCfg.PGUsername)
@@ -141,10 +143,10 @@ func TestLoadStorageConfiguration(t *testing.T) {
 func TestLoadLoggingConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	mustSetEnv(t, envVar, "../tests/config2")
-	config, err := LoadConfiguration(envVar, "")
+	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	loggingCfg := GetLoggingConfiguration(config)
+	loggingCfg := conf.GetLoggingConfiguration(config)
 
 	assert.Equal(t, true, loggingCfg.Debug)
 	assert.Equal(t, "", loggingCfg.LogLevel)
@@ -154,10 +156,10 @@ func TestLoadLoggingConfiguration(t *testing.T) {
 func TestLoadDependenciesConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	mustSetEnv(t, envVar, "../tests/config2")
-	config, err := LoadConfiguration(envVar, "")
+	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	depsCfg := GetDependenciesConfiguration(config)
+	depsCfg := conf.GetDependenciesConfiguration(config)
 
 	assert.Equal(t, ":8081", depsCfg.ContentServiceEndpoint)
 }
