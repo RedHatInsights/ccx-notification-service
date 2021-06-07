@@ -111,17 +111,24 @@ func CompareReports(
 	}
 
 	// now the number of issues is the same: time to compare them
+	notFoundIssues := len(newReport.Reports)
 	for _, issue1 := range oldReport.Reports {
 		found := false
 		// check if issue1 is found in newest report
 		for _, issue2 := range newReport.Reports {
 			if issuesEqual(issue1, issue2) {
 				found = true
+				notFoundIssues--
 				break
 			}
 		}
-		// issue can't be found -> there must be change user needs to
-		// be notified about
+		// all issues in newReports have been found in oldReports -> return false
+		if notFoundIssues == 0 {
+			log.Info().Msg("New report does not contain new issues")
+			return false, nil
+		}
+		// issue can't be found in this old report -> there might be change user needs to
+		// be notified about. Let's keep the log for now, might help for debug
 		if !found {
 			log.Info().
 				Str("Type", string(issue1.Type)).
@@ -131,6 +138,11 @@ func CompareReports(
 				Msg("Not found")
 			return true, nil
 		}
+	}
+	// Some issues can't be found -> there must be change user needs to
+	// be notified about
+	if notFoundIssues > 0{
+		return true, nil
 	}
 	// seems like both old report and new report are the same
 	return false, nil
