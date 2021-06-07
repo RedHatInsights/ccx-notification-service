@@ -28,7 +28,6 @@ import (
 )
 
 var (
-
 	storage = mocks.Storage{}
 
 	statesList = []types.State{
@@ -77,6 +76,7 @@ var (
 		UpdatedAt:     types.Timestamp(testTimestamp),
 	}
 )
+
 func init() {
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 }
@@ -86,7 +86,7 @@ func TestGetState(t *testing.T) {
 	assert.Equal(t, types.StateID(2), getState(statesList, "same"))
 	assert.Equal(t, types.StateID(3), getState(statesList, "lower"))
 	assert.Equal(t, types.StateID(4), getState(statesList, "error"))
-	assert.Equal(t, -1, getNotificationType(notificationTypesList, "any_other_state"))
+	assert.Equal(t, types.StateID(-1), getState(statesList, "any_other_state"))
 }
 
 func TestGetStates(t *testing.T) {
@@ -99,9 +99,9 @@ func TestGetStates(t *testing.T) {
 		},
 	)
 
-	getStates(&storage)
-	assert.Equal(t, types.StateID(1), states.SentState)
+	assert.Nil(t, getStates(&storage))
 	assert.Equal(t, types.StateID(2), states.SameState)
+	assert.Equal(t, types.StateID(1), states.SentState)
 	assert.Equal(t, types.StateID(3), states.LowerIssueState)
 	assert.Equal(t, types.StateID(4), states.ErrorState)
 }
@@ -122,7 +122,8 @@ func TestGetNotifications(t *testing.T) {
 		},
 	)
 
-	getNotificationTypes(&storage)
+	assert.Nil(t, getNotificationTypes(&storage))
+	assert.Equal(t, notificationTypesList, notificationTypes)
 	assert.Equal(t, types.NotificationTypeID(1), notificationTypes.Instant)
 	assert.Equal(t, types.NotificationTypeID(2), notificationTypes.Weekly)
 }
@@ -176,7 +177,7 @@ func TestIssuesEqualDifferentModule(t *testing.T) {
 }
 
 func TestCompareReportsMoreItemsInNewReport(t *testing.T) {
-	oldReport := types.Report {
+	oldReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -186,7 +187,7 @@ func TestCompareReportsMoreItemsInNewReport(t *testing.T) {
 			},
 		},
 	}
-	newReport := types.Report {
+	newReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -215,7 +216,7 @@ func TestCompareReportsMoreItemsInNewReport(t *testing.T) {
 }
 
 func TestCompareReportsSameItemsInNewReport(t *testing.T) {
-	oldReport := types.Report {
+	oldReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -231,7 +232,7 @@ func TestCompareReportsSameItemsInNewReport(t *testing.T) {
 			},
 		},
 	}
-	newReport := types.Report {
+	newReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -260,7 +261,7 @@ func TestCompareReportsSameItemsInNewReport(t *testing.T) {
 }
 
 func TestCompareReportsSameLengthDifferentItemsInNewReport(t *testing.T) {
-	oldReport := types.Report {
+	oldReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -276,7 +277,7 @@ func TestCompareReportsSameLengthDifferentItemsInNewReport(t *testing.T) {
 			},
 		},
 	}
-	newReport := types.Report {
+	newReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -299,7 +300,7 @@ func TestCompareReportsSameLengthDifferentItemsInNewReport(t *testing.T) {
 }
 
 func TestCompareReportsLessItemsInNewReportAndIssueNotFoundInOldReports(t *testing.T) {
-	oldReport := types.Report {
+	oldReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -315,7 +316,7 @@ func TestCompareReportsLessItemsInNewReportAndIssueNotFoundInOldReports(t *testi
 			},
 		},
 	}
-	newReport := types.Report {
+	newReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -332,7 +333,7 @@ func TestCompareReportsLessItemsInNewReportAndIssueNotFoundInOldReports(t *testi
 }
 
 func TestCompareReportsLessItemsInNewReportAndIssueFoundInOldReports(t *testing.T) {
-	oldReport := types.Report {
+	oldReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -348,7 +349,7 @@ func TestCompareReportsLessItemsInNewReportAndIssueFoundInOldReports(t *testing.
 			},
 		},
 	}
-	newReport := types.Report {
+	newReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -375,7 +376,7 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 			return nil
 		},
 	)
-	newReport := types.Report {
+	newReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -411,7 +412,7 @@ func TestShouldNotifyPreviousRecordForGivenClusterIsIdentical(t *testing.T) {
 			return nil
 		},
 	)
-	newReport := types.Report {
+	newReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -447,7 +448,7 @@ func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 			return nil
 		},
 	)
-	newReport := types.Report {
+	newReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",
@@ -483,7 +484,7 @@ func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 			return nil
 		},
 	)
-	newReport := types.Report {
+	newReport := types.Report{
 		Reports: []types.ReportItem{
 			{
 				Type:     "rule",

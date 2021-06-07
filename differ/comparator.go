@@ -25,7 +25,7 @@ import (
 
 // Messages
 const (
-	clusterName            = "cluster"
+	clusterName = "cluster"
 )
 
 var (
@@ -81,6 +81,31 @@ func shouldNotify(storage Storage, cluster types.ClusterEntry, report types.Repo
 	return notify
 }
 
+func updateNotificationRecordSameState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp) {
+	log.Info().Msgf("No new issues to notify for cluster %s", cluster.ClusterName)
+	log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Same report as before")
+	// store notification info about not sending the notification
+	err := storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SameState, report, notifiedAt, "")
+	if err != nil {
+		writeNotificationRecordFailed(err)
+	}
+}
+
+func updateNotificationRecordSentState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp) {
+	log.Info().Msgf("New issues notified for cluster %s", string(cluster.ClusterName))
+	err := storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SentState, report, notifiedAt, "")
+	if err != nil {
+		writeNotificationRecordFailed(err)
+	}
+}
+
+func updateNotificationRecordErrorState(storage Storage, err error, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp) {
+	log.Info().Msgf("New issues couldn't be notified for cluster %s", string(cluster.ClusterName))
+	err = storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.ErrorState, report, notifiedAt, err.Error())
+	if err != nil {
+		writeNotificationRecordFailed(err)
+	}
+}
 
 func writeNotificationRecordFailed(err error) {
 	log.Error().Err(err).Msg("Write notification record failed")
@@ -97,7 +122,7 @@ func issuesEqual(issue1 types.ReportItem, issue2 types.ReportItem) bool {
 	return false
 }
 
-// Function CompareReports compare old OCP report with the newest one and
+// CompareReports compares old OCP report with the newest one and
 // returns boolean flag indicating that new report contain new issues and thus
 // user needs to be informed about them.
 func CompareReports(
@@ -141,7 +166,8 @@ func CompareReports(
 	}
 	// Some issues can't be found -> there must be change user needs to
 	// be notified about
-	if notFoundIssues > 0{
+	if notFoundIssues > 0 {
+		log.Info().Msg("All issues in new report have already been reported")
 		return true, nil
 	}
 	// seems like both old report and new report are the same
