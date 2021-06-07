@@ -538,9 +538,9 @@ func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string
 	return int(affected), nil
 }
 
-// CleanupNewReports method deletes all reports from `new_reports` table older
-// than specified relative time. Delete operation is restricted for given
-// organization ID.
+// CleanupNewReportsForOrganization method deletes all reports from
+// `new_reports` table older than specified relative time. Delete operation is
+// restricted for given organization ID.
 //
 // This method is to be used to cleanup older reports after weekly summary is
 // send.
@@ -551,9 +551,9 @@ func (storage DBStorage) CleanupNewReportsForOrganization(orgID types.OrgID, max
 	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
 }
 
-// CleanupOldReports method deletes all reports from `reported` table older
-// than specified relative time. Delete operation is restricted for given
-// organization ID.
+// CleanupOldReportsForOrganization method deletes all reports from `reported`
+// table older than specified relative time. Delete operation is restricted for
+// given organization ID.
 //
 // This method is to be used to cleanup older reports after weekly summary is
 // send.
