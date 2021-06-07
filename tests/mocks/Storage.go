@@ -227,3 +227,18 @@ func (_m *Storage) WriteNotificationRecordImpl(orgID types.OrgID, accountNumber 
 
 	return r0
 }
+
+// CleanupForOrganization is just a stub for a proper mock method
+func (_m *Storage) CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error) {
+	return 0, nil
+}
+
+// CleanupNewReportsForOrganization is just a stub for a proper mock method
+func (_m *Storage) CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
+	return 0, nil
+}
+
+// CleanupOldReportsForOrganization is just a stub for a proper mock method
+func (_m *Storage) CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
+	return 0, nil
+}
