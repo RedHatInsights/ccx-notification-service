@@ -28,27 +28,25 @@ import (
 )
 
 var (
-	storage = mocks.Storage{}
-
 	statesList = []types.State{
 		{
 			ID:      1,
-			Value:   "sent",
+			Value:   notificationStateSent,
 			Comment: "sent state",
 		},
 		{
 			ID:      2,
-			Value:   "same",
+			Value:   notificationStateSame,
 			Comment: "same state",
 		},
 		{
 			ID:      3,
-			Value:   "lower",
+			Value:   notificationStateLower,
 			Comment: "lower state",
 		},
 		{
 			ID:      4,
-			Value:   "error",
+			Value:   notificationStateError,
 			Comment: "error state",
 		},
 	}
@@ -56,13 +54,13 @@ var (
 	notificationTypesList = []types.NotificationType{
 		{
 			ID:        1,
-			Value:     "instant",
+			Value:     notificationTypeInstant,
 			Frequency: "instant",
 			Comment:   "instant notifs",
 		},
 		{
 			ID:        2,
-			Value:     "weekly",
+			Value:     notificationTypeWeekly,
 			Frequency: "weekly",
 			Comment:   "weekly notifs",
 		},
@@ -82,14 +80,15 @@ func init() {
 }
 
 func TestGetState(t *testing.T) {
-	assert.Equal(t, types.StateID(1), getState(statesList, "sent"))
-	assert.Equal(t, types.StateID(2), getState(statesList, "same"))
-	assert.Equal(t, types.StateID(3), getState(statesList, "lower"))
-	assert.Equal(t, types.StateID(4), getState(statesList, "error"))
+	assert.Equal(t, types.StateID(1), getState(statesList, notificationStateSent))
+	assert.Equal(t, types.StateID(2), getState(statesList, notificationStateSame))
+	assert.Equal(t, types.StateID(3), getState(statesList, notificationStateLower))
+	assert.Equal(t, types.StateID(4), getState(statesList, notificationStateError))
 	assert.Equal(t, types.StateID(-1), getState(statesList, "any_other_state"))
 }
 
 func TestGetStates(t *testing.T) {
+	storage := mocks.Storage{}
 	storage.On("ReadStates").Return(
 		func() []types.State {
 			return statesList
@@ -107,12 +106,13 @@ func TestGetStates(t *testing.T) {
 }
 
 func TestGetNotificationType(t *testing.T) {
-	assert.Equal(t, types.NotificationTypeID(1), getNotificationType(notificationTypesList, "instant"))
-	assert.Equal(t, types.NotificationTypeID(2), getNotificationType(notificationTypesList, "weekly"))
+	assert.Equal(t, types.NotificationTypeID(1), getNotificationType(notificationTypesList, notificationTypeInstant))
+	assert.Equal(t, types.NotificationTypeID(2), getNotificationType(notificationTypesList, notificationTypeWeekly))
 	assert.Equal(t, types.NotificationTypeID(-1), getNotificationType(notificationTypesList, "any_other_type"))
 }
 
 func TestGetNotifications(t *testing.T) {
+	storage := mocks.Storage{}
 	storage.On("ReadNotificationTypes").Return(
 		func() []types.NotificationType {
 			return notificationTypesList
@@ -123,7 +123,6 @@ func TestGetNotifications(t *testing.T) {
 	)
 
 	assert.Nil(t, getNotificationTypes(&storage))
-	assert.Equal(t, notificationTypesList, notificationTypes)
 	assert.Equal(t, types.NotificationTypeID(1), notificationTypes.Instant)
 	assert.Equal(t, types.NotificationTypeID(2), notificationTypes.Weekly)
 }
@@ -366,6 +365,7 @@ func TestCompareReportsLessItemsInNewReportAndIssueFoundInOldReports(t *testing.
 }
 
 func TestShouldNotifyNoPreviousRecord(t *testing.T) {
+	storage := mocks.Storage{}
 	storage.On("ReadLastNNotificationRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(
@@ -390,6 +390,7 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 }
 
 func TestShouldNotifyPreviousRecordForGivenClusterIsIdentical(t *testing.T) {
+	storage := mocks.Storage{}
 	storage.On("ReadLastNNotificationRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(
@@ -402,7 +403,7 @@ func TestShouldNotifyPreviousRecordForGivenClusterIsIdentical(t *testing.T) {
 					UpdatedAt:          types.Timestamp(testTimestamp.Add(-2)),
 					NotificationTypeID: 1,
 					StateID:            1,
-					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}}]}",
+					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":\"the same details\",\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}}]}",
 					NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
 					ErrorLog:           "",
 				},
@@ -418,7 +419,7 @@ func TestShouldNotifyPreviousRecordForGivenClusterIsIdentical(t *testing.T) {
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.rule_4.report",
 				ErrorKey: "RULE_4",
-				Details:  []byte("{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"}"),
+				Details:  []byte("\"the same details\""),
 			},
 		},
 	}
@@ -426,6 +427,7 @@ func TestShouldNotifyPreviousRecordForGivenClusterIsIdentical(t *testing.T) {
 }
 
 func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
+	storage := mocks.Storage{}
 	storage.On("ReadLastNNotificationRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(
@@ -462,6 +464,7 @@ func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 }
 
 func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
+	storage := mocks.Storage{}
 	storage.On("ReadLastNNotificationRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(

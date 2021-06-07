@@ -26,6 +26,14 @@ import (
 // Messages
 const (
 	clusterName = "cluster"
+
+	notificationTypeInstant = "instant"
+	notificationTypeWeekly  = "weekly"
+
+	notificationStateSent  = "sent"
+	notificationStateSame  = "same"
+	notificationStateLower = "lower"
+	notificationStateError = "error"
 )
 
 var (
@@ -180,8 +188,8 @@ func getNotificationTypes(storage Storage) error {
 		return err
 	}
 	notificationTypes = types.NotificationTypes{
-		Instant: getNotificationType(rawNotificationTypes, "daily"),
-		Weekly:  getNotificationType(rawNotificationTypes, "weekly"),
+		Instant: getNotificationType(rawNotificationTypes, notificationTypeInstant),
+		Weekly:  getNotificationType(rawNotificationTypes, notificationTypeWeekly),
 	}
 	return nil
 }
@@ -192,10 +200,10 @@ func getStates(storage Storage) error {
 		return err
 	}
 	states = types.States{
-		SameState:       getState(rawStates, "same"),
-		SentState:       getState(rawStates, "sent"),
-		LowerIssueState: getState(rawStates, "lower"),
-		ErrorState:      getState(rawStates, "error"),
+		SameState:       getState(rawStates, notificationStateSame),
+		SentState:       getState(rawStates, notificationStateSent),
+		LowerIssueState: getState(rawStates, notificationStateLower),
+		ErrorState:      getState(rawStates, notificationStateError),
 	}
 	return nil
 }
