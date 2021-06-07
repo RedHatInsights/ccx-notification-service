@@ -514,7 +514,7 @@ func (storage DBStorage) ReadLastNNotificationRecords(clusterEntry types.Cluster
 // relative time for given organization ID.
 //
 // This method is to be used to cleanup older reports after weekly summary is
-// send.
+// sent.
 //
 // The method return number of deleted records.
 func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error) {
@@ -543,7 +543,7 @@ func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string
 // restricted for given organization ID.
 //
 // This method is to be used to cleanup older reports after weekly summary is
-// send.
+// sent.
 //
 // The method return number of deleted records.
 func (storage DBStorage) CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
@@ -556,7 +556,7 @@ func (storage DBStorage) CleanupNewReportsForOrganization(orgID types.OrgID, max
 // given organization ID.
 //
 // This method is to be used to cleanup older reports after weekly summary is
-// send.
+// sent.
 //
 // The method return number of deleted records.
 func (storage DBStorage) CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
