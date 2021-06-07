@@ -92,6 +92,12 @@ const (
 	unableToCloseDBRowsHandle = "Unable to close DB rows handle"
 )
 
+// other messages
+const (
+	OrgIDMessage    = "Organization ID"
+	MaxAgeAttribute = "max age"
+)
+
 // NewStorage function creates and initializes a new instance of Storage interface
 func NewStorage(configuration conf.StorageConfiguration) (*DBStorage, error) {
 	driverType, driverName, dataSource, err := initAndGetDriver(configuration)
@@ -481,4 +487,32 @@ func (storage DBStorage) ReadLastNNotificationRecords(clusterEntry types.Cluster
 	}
 
 	return notificationRecords, nil
+}
+
+// CleanupForOrganization method deletes all reports older than specified
+// relative time for given organization ID.
+//
+// This method is to be used to cleanup older reports after weekly summary is
+// send.
+//
+// The method return number of deleted records.
+func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error) {
+	log.Info().
+		Str(MaxAgeAttribute, maxAge).
+		Str("delete statement", statement).
+		Int(OrgIDMessage, int(orgID)).
+		Msg("Cleanup operation")
+
+	// perform the SQL statement
+	result, err := storage.connection.Exec(statement, int(orgID), maxAge)
+	if err != nil {
+		return 0, err
+	}
+
+	// read number of affected (deleted) rows
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
 }
