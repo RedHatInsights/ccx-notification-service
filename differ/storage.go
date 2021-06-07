@@ -98,6 +98,17 @@ const (
 	MaxAgeAttribute = "max age"
 )
 
+// SQL statements
+const (
+	// Delete older records from new_reports table for given organization ID
+	deleteOldRecordsFromNewReportsTable = `
+                DELETE
+		  FROM new_reports
+		 WHERE org_id = $1
+		   AND updated_at < NOW() - $2::INTERVAL 
+`
+)
+
 // NewStorage function creates and initializes a new instance of Storage interface
 func NewStorage(configuration conf.StorageConfiguration) (*DBStorage, error) {
 	driverType, driverName, dataSource, err := initAndGetDriver(configuration)
@@ -515,4 +526,17 @@ func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string
 		return 0, err
 	}
 	return int(affected), nil
+}
+
+// CleanupNewReports method deletes all reports from `new_reports` table older
+// than specified relative time. Delete operation is restricted for given
+// organization ID.
+//
+// This method is to be used to cleanup older reports after weekly summary is
+// send.
+//
+// The method return number of deleted records.
+func (storage DBStorage) CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
+	sqlStatement := deleteOldRecordsFromNewReportsTable
+	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
 }
