@@ -76,6 +76,8 @@ type Storage interface {
 		updatedAt types.Timestamp,
 		notifiedAt types.Timestamp,
 		errorLog string) error
+	CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+	CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
 }
 
 // DBStorage is an implementation of Storage interface that use selected SQL like database
@@ -90,6 +92,31 @@ type DBStorage struct {
 // error messages
 const (
 	unableToCloseDBRowsHandle = "Unable to close DB rows handle"
+)
+
+// other messages
+const (
+	OrgIDMessage    = "Organization ID"
+	MaxAgeAttribute = "max age"
+)
+
+// SQL statements
+const (
+	// Delete older records from new_reports table for given organization ID
+	deleteOldRecordsFromNewReportsTable = `
+                DELETE
+		  FROM new_reports
+		 WHERE org_id = $1
+		   AND updated_at < NOW() - $2::INTERVAL 
+`
+
+	// Delete older records from reported table for given organization ID
+	deleteOldRecordsFromReportedTable = `
+                DELETE
+		  FROM reported
+		 WHERE org_id = $1
+		   AND updated_at < NOW() - $2::INTERVAL
+`
 )
 
 // NewStorage function creates and initializes a new instance of Storage interface
@@ -481,4 +508,58 @@ func (storage DBStorage) ReadLastNNotificationRecords(clusterEntry types.Cluster
 	}
 
 	return notificationRecords, nil
+}
+
+// CleanupForOrganization method deletes all reports older than specified
+// relative time for given organization ID.
+//
+// This method is to be used to cleanup older reports after weekly summary is
+// sent.
+//
+// The method return number of deleted records.
+func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error) {
+	log.Info().
+		Str(MaxAgeAttribute, maxAge).
+		Str("delete statement", statement).
+		Int(OrgIDMessage, int(orgID)).
+		Msg("Cleanup operation")
+
+	// perform the SQL statement
+	result, err := storage.connection.Exec(statement, int(orgID), maxAge)
+	if err != nil {
+		return 0, err
+	}
+
+	// read number of affected (deleted) rows
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
+// CleanupNewReportsForOrganization method deletes all reports from
+// `new_reports` table older than specified relative time. Delete operation is
+// restricted for given organization ID.
+//
+// This method is to be used to cleanup older reports after weekly summary is
+// sent.
+//
+// The method return number of deleted records.
+func (storage DBStorage) CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
+	sqlStatement := deleteOldRecordsFromNewReportsTable
+	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
+}
+
+// CleanupOldReportsForOrganization method deletes all reports from `reported`
+// table older than specified relative time. Delete operation is restricted for
+// given organization ID.
+//
+// This method is to be used to cleanup older reports after weekly summary is
+// sent.
+//
+// The method return number of deleted records.
+func (storage DBStorage) CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
+	sqlStatement := deleteOldRecordsFromReportedTable
+	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
 }
