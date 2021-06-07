@@ -76,6 +76,8 @@ type Storage interface {
 		updatedAt types.Timestamp,
 		notifiedAt types.Timestamp,
 		errorLog string) error
+	CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+	CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
 }
 
 // DBStorage is an implementation of Storage interface that use selected SQL like database
@@ -106,6 +108,14 @@ const (
 		  FROM new_reports
 		 WHERE org_id = $1
 		   AND updated_at < NOW() - $2::INTERVAL 
+`
+
+	// Delete older records from reported table for given organization ID
+	deleteOldRecordsFromReportedTable = `
+                DELETE
+		  FROM reported
+		 WHERE org_id = $1
+		   AND updated_at < NOW() - $2::INTERVAL
 `
 )
 
@@ -538,5 +548,18 @@ func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string
 // The method return number of deleted records.
 func (storage DBStorage) CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
 	sqlStatement := deleteOldRecordsFromNewReportsTable
+	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
+}
+
+// CleanupOldReports method deletes all reports from `reported` table older
+// than specified relative time. Delete operation is restricted for given
+// organization ID.
+//
+// This method is to be used to cleanup older reports after weekly summary is
+// send.
+//
+// The method return number of deleted records.
+func (storage DBStorage) CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
+	sqlStatement := deleteOldRecordsFromReportedTable
 	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
 }
