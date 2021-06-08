@@ -46,6 +46,7 @@ func mustFailLoadingConfigurationIfWrongEnvVar(envVar string) {
 		panic(err)
 	}
 }
+
 func removeFile(t *testing.T, filename string) {
 	err := os.Remove(filename)
 	helpers.FailOnError(t, err)
@@ -80,6 +81,12 @@ func TestLoadConfigurationFromEnvVariable(t *testing.T) {
 func TestLoadConfigurationNonEnvVarUnknownConfigFile(t *testing.T) {
 	_, err := conf.LoadConfiguration("", "foobar")
 	assert.Contains(t, err.Error(), `Config File "foobar" Not Found in`)
+}
+
+// TestLoadConfigurationBadConfigFile tests loading an unexisting config file when no environment variable is provided
+func TestLoadConfigurationBadConfigFile(t *testing.T) {
+	_, err := conf.LoadConfiguration("", "../tests/config3")
+	assert.Contains(t, err.Error(), `fatal error config file: While parsing config:`)
 }
 
 // TestLoadingConfigurationEnvVariableBadValueNoDefaultConfig tests loading a non-existent configuration file set in environment
@@ -162,4 +169,15 @@ func TestLoadDependenciesConfiguration(t *testing.T) {
 	depsCfg := conf.GetDependenciesConfiguration(config)
 
 	assert.Equal(t, ":8081", depsCfg.ContentServiceEndpoint)
+}
+
+// TestLoadConfigurationFromEnvVariableClowderEnabled tests loading the config.
+// file for testing from an environment variable. Clowder config is enabled in
+// this case.
+func TestLoadConfigurationFromEnvVariableClowderEnabled(t *testing.T) {
+	os.Clearenv()
+
+	mustSetEnv(t, "CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "tests/config2")
+	mustSetEnv(t, "ACG_CONFIG", "tests/clowder_config.json")
+	mustLoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE")
 }
