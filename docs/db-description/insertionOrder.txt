@@ -1,0 +1,4 @@
+notification_types
+states
+reported
+new_reports
