@@ -14,6 +14,12 @@
 
 package types
 
+// Generated documentation is available at:
+// https://pkg.go.dev/github.com/RedHatInsights/ccx-notification-service/types
+//
+// Documentation in literate-programming-style is available at:
+// https://redhatinsights.github.io/ccx-notification-service/packages/types/types.html
+
 import (
 	"encoding/json"
 	"fmt"
