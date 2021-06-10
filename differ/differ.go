@@ -14,6 +14,12 @@
 
 package differ
 
+// Generated documentation is available at:
+// https://pkg.go.dev/github.com/RedHatInsights/ccx-notification-service/differ
+//
+// Documentation in literate-programming-style is available at:
+// https://redhatinsights.github.io/ccx-notification-service/packages/differ/differ.html
+
 import (
 	"encoding/json"
 	"flag"
