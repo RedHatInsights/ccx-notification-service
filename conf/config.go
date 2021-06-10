@@ -51,12 +51,14 @@ package conf
 // TBD
 
 import (
+	"bytes"
 	"fmt"
 	"os"
 	"path/filepath"
 	"strings"
 	"time"
 
+	"github.com/BurntSushi/toml"
 	clowder "github.com/redhatinsights/app-common-go/pkg/api/v1"
 
 	"github.com/rs/zerolog/log"
@@ -146,8 +148,28 @@ func LoadConfiguration(configFileEnvVariableName string, defaultConfigFile strin
 	// try to read the whole configuration
 	err := viper.ReadInConfig()
 	if _, isNotFoundError := err.(viper.ConfigFileNotFoundError); !specified && isNotFoundError {
-		return config, err
+		// If config file is not present (which might be correct in
+		// some environment) we need to read configuration from
+		// environment variables The problem is that Viper is not smart
+		// enough to understand the structure of config by itself, so
+		// we need to read fake config file
+		fakeTomlConfigWriter := new(bytes.Buffer)
+
+		err := toml.NewEncoder(fakeTomlConfigWriter).Encode(config)
+		if err != nil {
+			return config, err
+		}
+
+		fakeTomlConfig := fakeTomlConfigWriter.String()
+
+		viper.SetConfigType("toml")
+
+		err = viper.ReadConfig(strings.NewReader(fakeTomlConfig))
+		if err != nil {
+			return config, err
+		}
 	} else if err != nil {
+		// error is processed on caller side
 		return config, fmt.Errorf("fatal error config file: %s", err)
 	}
 
