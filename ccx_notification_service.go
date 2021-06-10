@@ -12,10 +12,10 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Entry point to the notification writer service.
+// Entry point to the notification service.
 package main
 
-// Entry point to the CCX Notification writer service
+// Entry point to the CCX Notification service
 
 // Generated documentation is available at:
 // https://pkg.go.dev/github.com/RedHatInsights/ccx-notification-service/

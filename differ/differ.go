@@ -66,7 +66,7 @@ const (
 
 // Messages
 const (
-	versionMessage              = "Notification writer version 1.0"
+	versionMessage              = "Notification service version 1.0"
 	authorsMessage              = "Pavel Tisnovsky, Red Hat Inc."
 	separator                   = "------------------------------------------------------------"
 	operationFailedMessage      = "Operation failed"

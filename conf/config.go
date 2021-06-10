@@ -15,7 +15,7 @@
 package conf
 
 // This source file contains definition of data type named ConfigStruct that
-// represents configuration of Notification Writer service. This source file
+// represents configuration of Notification service. This source file
 // also contains function named LoadConfiguration that can be used to load
 // configuration from provided configuration file and/or from environment
 // variables. Additionally several specific functions named
