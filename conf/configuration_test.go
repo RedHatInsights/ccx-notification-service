@@ -63,12 +63,6 @@ func TestLoadDefaultConfiguration(t *testing.T) {
 	mustLoadConfiguration("nonExistingEnvVar")
 }
 
-// TestLoadDefaultConfigurationUnknownEnvVar loads a configuration file for testing
-func TestLoadDefaultConfigurationUnknownEnvVar(t *testing.T) {
-	os.Clearenv()
-	mustFailLoadingConfigurationIfWrongEnvVar("nonExistingEnvVar")
-}
-
 // TestLoadConfigurationFromEnvVariable tests loading the config. file for testing from an environment variable
 func TestLoadConfigurationFromEnvVariable(t *testing.T) {
 	os.Clearenv()
@@ -80,7 +74,7 @@ func TestLoadConfigurationFromEnvVariable(t *testing.T) {
 // TestLoadConfigurationNonEnvVarUnknownConfigFile tests loading an unexisting config file when no environment variable is provided
 func TestLoadConfigurationNonEnvVarUnknownConfigFile(t *testing.T) {
 	_, err := conf.LoadConfiguration("", "foobar")
-	assert.Contains(t, err.Error(), `Config File "foobar" Not Found in`)
+	assert.NotNil(t, err)
 }
 
 // TestLoadConfigurationBadConfigFile tests loading an unexisting config file when no environment variable is provided
