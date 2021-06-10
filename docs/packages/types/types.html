@@ -1,0 +1,599 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2021 Red Hat, Inc
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<html>
+<head>
+<title>types.go</title>
+<meta charset="utf-8"/>
+<style type="text/css">body {
+    background: rgb(225, 225, 225);
+    margin: 0px;
+    padding: 0px;
+}
+
+#docgo p {
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 15px;
+    margin-left: 0px;
+}
+
+#docgo div {
+    display: inline;
+}
+
+#docgo #background {
+    position: fixed;
+    top: 0; left: 525px; right: 0; bottom: 0;
+    background: rgb(47, 47, 47);
+    border-left: 1px solid #e5e5ee;
+    z-index: -1;
+}
+
+#docgo .keyword {
+    color: rgb(250, 200, 100);
+}
+
+#docgo .literal {
+    color: rgb(140, 190, 100);
+}
+
+#docgo .ident {
+    color: white;
+}
+
+#docgo .operator {
+    color: white;
+}
+
+#docgo .comment {
+}
+
+#docgo h1, h2, h3, h4, h5 {
+    text-align: left;
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 15px;
+    margin-left: 0px;
+}
+
+#docgo h1 {
+    margin-top: 40px;
+}
+
+#docgo .doc {
+    vertical-align: top;
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+    font-size: 15px;
+    line-height: 22px;
+    color: black;
+    min-width: 450px;
+    max-width: 450px;
+    padding-top: 10px;
+    padding-right: 25px;
+    padding-bottom: 1px;
+    padding-left: 50px;
+    overflow-x: hidden;
+}
+
+#docgo .code {
+    min-width: 650px;
+    max-width: 650px;
+    padding-left: 25px;
+    padding-right: 15px;
+    border-left: 1px;
+    overflow-x: hidden;
+    vertical-align: top;
+}
+
+#docgo .code pre code  {
+    font-size: 12px;
+    line-height: 18px;
+    font-family: Menlo, Monaco, Consolas, "Lucida Console", monospace;
+    color: rgb(120, 120, 120);
+}
+</style>
+</head>
+<body>
+<div id="docgo">
+  <div id="background"></div>
+  <table>
+    <thead><tr><th class="doc"><h1>types.go</h1></th><th class="code"></th></tr></thead>
+    <tbody>
+      
+      <tr class="section">
+	<td class="doc"><p>Copyright 2021 Red Hat, Inc</p>
+
+<p>Licensed under the Apache License, Version 2.0 (the &quot;License&quot;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at</p>
+
+<pre><code> http://www.apache.org/licenses/LICENSE-2.0
+</code></pre>
+
+<p>Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &quot;AS IS&quot; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">package</div> <div class="ident">types</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Generated documentation is available at:
+https://pkg.go.dev/github.com/RedHatInsights/ccx-notification-service/types</p>
+
+<p>Documentation in literate-programming-style is available at:
+https://redhatinsights.github.io/ccx-notification-service/packages/types/types.html</p>
+</td>
+	<td class="code"><pre><code>
+<div class="keyword">import</div> <div class="operator">(</div>
+	<div class="literal">&#34;encoding/json&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;fmt&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;time&#34;</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Timestamp represents any timestamp in a form gathered from database
+TODO: need to be improved</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">Timestamp</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Time</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>KafkaOffset is a data type representing offset in Kafka topic.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">KafkaOffset</div> <div class="ident">int64</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>OrgID data type represents organization ID.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">OrgID</div> <div class="ident">uint32</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>AccountNumber represents account number for a given report.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">AccountNumber</div> <div class="ident">uint32</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ClusterName data type represents name of cluster in format
+c8590f31-e97e-4b85-b506-c45ce1911a12 (ie. in UUID format).</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">ClusterName</div> <div class="ident">string</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ClusterReport represents cluster report</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">ClusterReport</div> <div class="ident">string</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>DBDriver type for db driver enum</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">DBDriver</div> <div class="ident">int</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationTypeID represents ID value in <code>notifiation_types</code> table.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">NotificationTypeID</div> <div class="ident">int</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>StateID represents ID value in <code>states</code> table.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">StateID</div> <div class="ident">int</div><div class="operator"></div>
+
+<div class="keyword">const</div> <div class="operator">(</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>DBDriverSQLite3 shows that db driver is sqlite</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">DBDriverSQLite3</div> <div class="ident">DBDriver</div> <div class="operator">=</div> <div class="ident">iota</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>DBDriverPostgres shows that db driver is postgres</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">DBDriverPostgres</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>DBDriverGeneral general sql(used for mock now)</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">DBDriverGeneral</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ClusterEntry represents the entries retrieved from the DB</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">ClusterEntry</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">OrgID</div>         <div class="ident">OrgID</div><div class="operator"></div>
+	<div class="ident">AccountNumber</div> <div class="ident">AccountNumber</div><div class="operator"></div>
+	<div class="ident">ClusterName</div>   <div class="ident">ClusterName</div><div class="operator"></div>
+	<div class="ident">KafkaOffset</div>   <div class="ident">KafkaOffset</div><div class="operator"></div>
+	<div class="ident">UpdatedAt</div>     <div class="ident">Timestamp</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationType represents one record from <code>notification_types</code> table.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">NotificationType</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">ID</div>        <div class="ident">NotificationTypeID</div><div class="operator"></div>
+	<div class="ident">Value</div>     <div class="ident">string</div><div class="operator"></div>
+	<div class="ident">Frequency</div> <div class="ident">string</div><div class="operator"></div>
+	<div class="ident">Comment</div>   <div class="ident">string</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationTypes contains all IDs for all possible notification types</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">NotificationTypes</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Instant</div> <div class="ident">NotificationTypeID</div><div class="operator"></div>
+	<div class="ident">Weekly</div>  <div class="ident">NotificationTypeID</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>State represents one record from <code>states</code> table.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">State</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">ID</div>      <div class="ident">StateID</div><div class="operator"></div>
+	<div class="ident">Value</div>   <div class="ident">string</div><div class="operator"></div>
+	<div class="ident">Comment</div> <div class="ident">string</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>States contains all IDs for all possible states</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">States</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">SameState</div>       <div class="ident">StateID</div><div class="operator"></div>
+	<div class="ident">SentState</div>       <div class="ident">StateID</div><div class="operator"></div>
+	<div class="ident">LowerIssueState</div> <div class="ident">StateID</div><div class="operator"></div>
+	<div class="ident">ErrorState</div>      <div class="ident">StateID</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>RuleContent wraps all the content available for a rule into a single structure.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">RuleContent</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Summary</div>    <div class="ident">string</div>                         <div class="literal">`json:&#34;summary&#34;`</div><div class="operator"></div>
+	<div class="ident">Reason</div>     <div class="ident">string</div>                         <div class="literal">`json:&#34;reason&#34;`</div><div class="operator"></div>
+	<div class="ident">Resolution</div> <div class="ident">string</div>                         <div class="literal">`json:&#34;resolution&#34;`</div><div class="operator"></div>
+	<div class="ident">MoreInfo</div>   <div class="ident">string</div>                         <div class="literal">`json:&#34;more_info&#34;`</div><div class="operator"></div>
+	<div class="ident">ErrorKeys</div>  <div class="keyword">map</div><div class="operator">[</div><div class="ident">string</div><div class="operator">]</div><div class="ident">RuleErrorKeyContent</div> <div class="literal">`json:&#34;error_keys&#34;`</div><div class="operator"></div>
+	<div class="ident">HasReason</div>  <div class="ident">bool</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>RuleErrorKeyContent wraps content of a single error key.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">RuleErrorKeyContent</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Generic</div>   <div class="ident">string</div>           <div class="literal">`json:&#34;generic&#34;`</div><div class="operator"></div>
+	<div class="ident">Metadata</div>  <div class="ident">ErrorKeyMetadata</div> <div class="literal">`json:&#34;metadata&#34;`</div><div class="operator"></div>
+	<div class="ident">Reason</div>    <div class="ident">string</div>           <div class="literal">`json:&#34;reason&#34;`</div><div class="operator"></div>
+	<div class="ident">HasReason</div> <div class="ident">bool</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>RulesMap contains a map of RuleContent objects accesible indexed by rule names</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">RulesMap</div> <div class="keyword">map</div><div class="operator">[</div><div class="ident">string</div><div class="operator">]</div><div class="ident">RuleContent</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>RuleContentDirectory contains content for all available rules in a directory.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">RuleContentDirectory</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Config</div> <div class="ident">GlobalRuleConfig</div><div class="operator"></div>
+	<div class="ident">Rules</div>  <div class="ident">RulesMap</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ErrorKeyMetadata is a Go representation of the <code>metadata.yaml</code>
+file inside of an error key content directory.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">ErrorKeyMetadata</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Condition</div>   <div class="ident">string</div>   <div class="literal">`yaml:&#34;condition&#34; json:&#34;condition&#34;`</div><div class="operator"></div>
+	<div class="ident">Description</div> <div class="ident">string</div>   <div class="literal">`yaml:&#34;description&#34; json:&#34;description&#34;`</div><div class="operator"></div>
+	<div class="ident">Impact</div>      <div class="ident">string</div>   <div class="literal">`yaml:&#34;impact&#34; json:&#34;impact&#34;`</div><div class="operator"></div>
+	<div class="ident">Likelihood</div>  <div class="ident">int</div>      <div class="literal">`yaml:&#34;likelihood&#34; json:&#34;likelihood&#34;`</div><div class="operator"></div>
+	<div class="ident">PublishDate</div> <div class="ident">string</div>   <div class="literal">`yaml:&#34;publish_date&#34; json:&#34;publish_date&#34;`</div><div class="operator"></div>
+	<div class="ident">Status</div>      <div class="ident">string</div>   <div class="literal">`yaml:&#34;status&#34; json:&#34;status&#34;`</div><div class="operator"></div>
+	<div class="ident">Tags</div>        <div class="operator">[</div><div class="operator">]</div><div class="ident">string</div> <div class="literal">`yaml:&#34;tags&#34; json:&#34;tags&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>MissingMandatoryFile is an error raised while parsing, when a mandatory file is missing</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">MissingMandatoryFile</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">FileName</div> <div class="ident">string</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+<div class="keyword">func</div> <div class="operator">(</div><div class="ident">err</div> <div class="ident">MissingMandatoryFile</div><div class="operator">)</div> <div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div> <div class="ident">string</div> <div class="operator">{</div>
+	<div class="keyword">return</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div><div class="literal">&#34;Missing required file: %s&#34;</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">.</div><div class="ident">FileName</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>CliFlags represents structure holding all command line arguments/flags.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">CliFlags</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">InstantReports</div>    <div class="ident">bool</div><div class="operator"></div>
+	<div class="ident">WeeklyReports</div>     <div class="ident">bool</div><div class="operator"></div>
+	<div class="ident">ShowVersion</div>       <div class="ident">bool</div><div class="operator"></div>
+	<div class="ident">ShowAuthors</div>       <div class="ident">bool</div><div class="operator"></div>
+	<div class="ident">ShowConfiguration</div> <div class="ident">bool</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Report represents report send in a message consumed from any broker</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">Report</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Reports</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">ReportItem</div> <div class="literal">`json:&#34;reports&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>RuleID represents type for rule id</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">RuleID</div> <div class="ident">string</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ErrorKey represents type for error key</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">ErrorKey</div> <div class="ident">string</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ReportItem represents a single (hit) rule of the string encoded report</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">ReportItem</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Type</div>     <div class="ident">string</div>          <div class="literal">`json:&#34;type&#34;`</div><div class="operator"></div>
+	<div class="ident">Module</div>   <div class="ident">RuleID</div>          <div class="literal">`json:&#34;component&#34;`</div><div class="operator"></div>
+	<div class="ident">ErrorKey</div> <div class="ident">ErrorKey</div>        <div class="literal">`json:&#34;key&#34;`</div><div class="operator"></div>
+	<div class="ident">Details</div>  <div class="ident">json</div><div class="operator">.</div><div class="ident">RawMessage</div> <div class="literal">`json:&#34;details&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Impacts represents the impacts parsed from the global config file</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">Impacts</div> <div class="keyword">map</div><div class="operator">[</div><div class="ident">string</div><div class="operator">]</div><div class="ident">int</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>GlobalRuleConfig represents the file that contains
+metadata globally applicable to any/all rule content.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">GlobalRuleConfig</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Impact</div> <div class="ident">Impacts</div> <div class="literal">`yaml:&#34;impact&#34; json:&#34;impact&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>EventType represents the allowed event types in notification messages</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">EventType</div> <div class="ident">int</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Event types as enum</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">const</div> <div class="operator">(</div>
+	<div class="ident">InstantNotif</div> <div class="ident">EventType</div> <div class="operator">=</div> <div class="ident">iota</div><div class="operator"></div>
+	<div class="ident">WeeklyDigest</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Event types string representation</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">const</div> <div class="operator">(</div>
+	<div class="ident">eventTypeInstant</div> <div class="operator">=</div> <div class="literal">&#34;new-recommendation&#34;</div><div class="operator"></div>
+	<div class="ident">eventTypeWeekly</div>  <div class="operator">=</div> <div class="literal">&#34;weekly-digest&#34;</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>String function returns string representation of given event type</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">e</div> <div class="ident">EventType</div><div class="operator">)</div> <div class="ident">String</div><div class="operator">(</div><div class="operator">)</div> <div class="ident">string</div> <div class="operator">{</div>
+	<div class="keyword">return</div> <div class="operator">[</div><div class="operator">...</div><div class="operator">]</div><div class="ident">string</div><div class="operator">{</div><div class="ident">eventTypeInstant</div><div class="operator">,</div> <div class="ident">eventTypeWeekly</div><div class="operator">}</div><div class="operator">[</div><div class="ident">e</div><div class="operator">]</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>EventMetadata represents the metadata of the sent payload.
+It is expected to be an empty struct as of today</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">EventMetadata</div> <div class="keyword">map</div><div class="operator">[</div><div class="ident">string</div><div class="operator">]</div><div class="keyword">interface</div><div class="operator">{</div><div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>EventPayload is a JSON string containing all the data required
+by the app to compose the various messages (Email, webhook, ...).</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">EventPayload</div> <div class="keyword">map</div><div class="operator">[</div><div class="ident">string</div><div class="operator">]</div><div class="ident">string</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Event is a structure containing the payload and its metadata.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">Event</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Metadata</div> <div class="ident">EventMetadata</div> <div class="literal">`json:&#34;metadata&#34;`</div><div class="operator"></div>
+	<div class="ident">Payload</div>  <div class="ident">string</div>        <div class="literal">`json:&#34;payload&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Digest is a structure containing the counters for weekly digest</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">Digest</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">ClustersAffected</div>       <div class="ident">int</div><div class="operator"></div>
+	<div class="ident">CriticalNotifications</div>  <div class="ident">int</div><div class="operator"></div>
+	<div class="ident">ImportantNotifications</div> <div class="ident">int</div><div class="operator"></div>
+	<div class="ident">Recommendations</div>        <div class="ident">int</div><div class="operator"></div>
+	<div class="ident">Incidents</div>              <div class="ident">int</div> <div class="operator"></div><div class="comment">// We don&#39;t have this info, AFAIK</div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationContext represents the extra information
+that is common to all the events that are sent in
+this message as a JSON string (escaped)</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">NotificationContext</div> <div class="keyword">map</div><div class="operator">[</div><div class="ident">string</div><div class="operator">]</div><div class="keyword">interface</div><div class="operator">{</div><div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationMessage represents content of messages
+sent to the notification platform topic in Kafka.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">NotificationMessage</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Bundle</div>      <div class="ident">string</div>  <div class="literal">`json:&#34;bundle&#34;`</div><div class="operator"></div>
+	<div class="ident">Application</div> <div class="ident">string</div>  <div class="literal">`json:&#34;application&#34;`</div><div class="operator"></div>
+	<div class="ident">EventType</div>   <div class="ident">string</div>  <div class="literal">`json:&#34;event_type&#34;`</div><div class="operator"></div>
+	<div class="ident">Timestamp</div>   <div class="ident">string</div>  <div class="literal">`json:&#34;timestamp&#34;`</div><div class="operator"></div>
+	<div class="ident">AccountID</div>   <div class="ident">string</div>  <div class="literal">`json:&#34;account_id&#34;`</div><div class="operator"></div>
+	<div class="ident">Events</div>      <div class="operator">[</div><div class="operator">]</div><div class="ident">Event</div> <div class="literal">`json:&#34;events&#34;`</div><div class="operator"></div>
+	<div class="ident">Context</div>     <div class="ident">string</div>  <div class="literal">`json:&#34;context&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationRecord structure represents one record stored in <code>reported</code> table.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">NotificationRecord</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">OrgID</div>              <div class="ident">OrgID</div><div class="operator"></div>
+	<div class="ident">AccountNumber</div>      <div class="ident">AccountNumber</div><div class="operator"></div>
+	<div class="ident">ClusterName</div>        <div class="ident">ClusterName</div><div class="operator"></div>
+	<div class="ident">UpdatedAt</div>          <div class="ident">Timestamp</div><div class="operator"></div>
+	<div class="ident">NotificationTypeID</div> <div class="ident">NotificationTypeID</div><div class="operator"></div>
+	<div class="ident">StateID</div>            <div class="ident">StateID</div><div class="operator"></div>
+	<div class="ident">Report</div>             <div class="ident">ClusterReport</div><div class="operator"></div>
+	<div class="ident">NotifiedAt</div>         <div class="ident">Timestamp</div><div class="operator"></div>
+	<div class="ident">ErrorLog</div>           <div class="ident">string</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+</body>
+</html>
