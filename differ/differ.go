@@ -15,7 +15,6 @@
 package differ
 
 import (
-	"bufio"
 	"encoding/json"
 	"flag"
 	"fmt"
@@ -144,14 +143,6 @@ func findRuleByNameAndErrorKey(ruleContent types.RulesMap, impacts types.Impacts
 	impact := impacts[val.Metadata.Impact]
 	totalRisk := calculateTotalRisk(likelihood, impact)
 	return likelihood, impact, totalRisk
-}
-
-func waitForEnter() {
-	fmt.Println("\n... demo mode ... Press 'Enter' to continue...")
-	_, err := bufio.NewReader(os.Stdin).ReadBytes('\n')
-	if err != nil {
-		log.Error().Err(err)
-	}
 }
 
 func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, storage Storage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration) {
@@ -550,18 +541,13 @@ func Run() {
 	}
 
 	log.Info().Msg("Differ started")
-	waitForEnter()
-
 	log.Info().Msg(separator)
-
 	log.Info().Msg("Getting rule content and impacts from content service")
 
 	ruleContent, impacts, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
 	if err != nil {
 		os.Exit(ExitStatusFetchContentError)
 	}
-
-	waitForEnter()
 
 	log.Info().Msg(separator)
 	log.Info().Msg("Read cluster list")
@@ -587,19 +573,16 @@ func Run() {
 
 	printClusters(clusters)
 	log.Info().Int("clusters", len(clusters)).Msg("Read cluster list: done")
-	waitForEnter()
-
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
-	waitForEnter()
-
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
-	setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
-	log.Info().Msg("Kafka producer ready")
-	waitForEnter()
 
+	setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
+
+	log.Info().Msg("Kafka producer ready")
 	log.Info().Msg(separator)
+
 	processClusters(ruleContent, impacts, storage, clusters, config)
 
 	closeStorage(storage)
