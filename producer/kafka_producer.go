@@ -18,6 +18,12 @@ limitations under the License.
 // send) messages to properly configured Kafka broker.
 package producer
 
+// Generated documentation is available at:
+// https://pkg.go.dev/github.com/RedHatInsights/ccx-notification-service/producer
+//
+// Documentation in literate-programming-style is available at:
+// https://redhatinsights.github.io/ccx-notification-service/packages/producer/kafka_producer.html
+
 import (
 	"encoding/json"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
