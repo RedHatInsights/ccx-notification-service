@@ -105,7 +105,7 @@ type StorageConfiguration struct {
 
 // DependenciesConfiguration represents configuration of external services and other dependencies
 type DependenciesConfiguration struct {
-	ContentServiceServer   string `mapstructure:"content_server" toml:"content_endpoint"`
+	ContentServiceServer   string `mapstructure:"content_server" toml:"content_server"`
 	ContentServiceEndpoint string `mapstructure:"content_endpoint" toml:"content_endpoint"`
 }
 
