@@ -380,6 +380,11 @@ func generateInstantNotificationMessage(clusterURI string, accountID string, clu
 		return
 	}
 
+	//Temporal code to avoid flooding insights-qa owner's email inbox
+	if accountID == "6089719" {
+		accountID = "5910538"
+	}
+
 	notification = types.NotificationMessage{
 		Bundle:      notificationBundleName,
 		Application: notificationApplicationName,
