@@ -1,0 +1,1620 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="1400px" preserveAspectRatio="none" style="width:10629px;height:1400px;" version="1.1" viewBox="0 0 10629 1400" width="10629px" zoomAndPan="magnify">
+  <defs>
+    <filter height="300%" id="fv30ae0jc4t3a" width="300%" x="-1" y="-1">
+      <feGaussianBlur result="blurOut" stdDeviation="2.0"/>
+      <feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/>
+      <feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/>
+      <feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/>
+    </filter>
+  </defs>
+  <g>
+    <!--MD5=[e87e632f9e56300245bbeebdaaa83f70]
+cluster conf-->
+    <polygon fill="#FFFFFF" filter="url(#fv30ae0jc4t3a)" points="14,67,54,67,61,89.2969,716,89.2969,716,526.5,14,526.5,14,67" style="stroke: #000000; stroke-width: 1.5;"/>
+    <line style="stroke: #000000; stroke-width: 1.5;" x1="14" x2="61" y1="89.2969" y2="89.2969"/>
+    <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="34" x="18" y="81.9951">conf</text>
+    <!--MD5=[b5c97e13c22d310f2fed4b9c7ce37d3b]
+cluster differ-->
+    <polygon fill="#FFFFFF" filter="url(#fv30ae0jc4t3a)" points="4027,16,4077,16,4084,38.2969,5747,38.2969,5747,578,4027,578,4027,16" style="stroke: #000000; stroke-width: 1.5;"/>
+    <line style="stroke: #000000; stroke-width: 1.5;" x1="4027" x2="4084" y1="38.2969" y2="38.2969"/>
+    <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="44" x="4031" y="30.9951">differ</text>
+    <!--MD5=[a70b0d373322012744ecc119c63f921b]
+cluster main-->
+    <polygon fill="#FFFFFF" filter="url(#fv30ae0jc4t3a)" points="7983,28.5,8028,28.5,8035,50.7969,9703,50.7969,9703,558.5,7983,558.5,7983,28.5" style="stroke: #000000; stroke-width: 1.5;"/>
+    <line style="stroke: #000000; stroke-width: 1.5;" x1="7983" x2="8035" y1="50.7969" y2="50.7969"/>
+    <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="39" x="7987" y="43.4951">main</text>
+    <!--MD5=[2e7f0cd6ed7f31d40caf3dde8dbcaf9a]
+cluster mocks-->
+    <polygon fill="#FFFFFF" filter="url(#fv30ae0jc4t3a)" points="5765,303,5821,303,5828,325.2969,7965,325.2969,7965,565,5765,565,5765,303" style="stroke: #000000; stroke-width: 1.5;"/>
+    <line style="stroke: #000000; stroke-width: 1.5;" x1="5765" x2="5828" y1="325.2969" y2="325.2969"/>
+    <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="50" x="5769" y="317.9951">mocks</text>
+    <!--MD5=[e9eea54a66264f5aea1ce9493004d9a5]
+cluster mock-->
+    <polygon fill="#FFFFFF" filter="url(#fv30ae0jc4t3a)" points="7139,99,7187,99,7194,121.2969,7219,121.2969,7219,182,7139,182,7139,99" style="stroke: #000000; stroke-width: 1.5;"/>
+    <line style="stroke: #000000; stroke-width: 1.5;" x1="7139" x2="7194" y1="121.2969" y2="121.2969"/>
+    <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="42" x="7143" y="113.9951">mock</text>
+    <!--MD5=[195730c71f548e900b39753e9208fa41]
+cluster producer-->
+    <polygon fill="#FFFFFF" filter="url(#fv30ae0jc4t3a)" points="9721,73.5,9799,73.5,9806,95.7969,10607,95.7969,10607,207.5,9721,207.5,9721,73.5" style="stroke: #000000; stroke-width: 1.5;"/>
+    <line style="stroke: #000000; stroke-width: 1.5;" x1="9721" x2="9806" y1="95.7969" y2="95.7969"/>
+    <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="72" x="9725" y="88.4951">producer</text>
+    <!--MD5=[67cd15ce44b6dd54f77054b62c31bf42]
+cluster types-->
+    <polygon fill="#FFFFFF" filter="url(#fv30ae0jc4t3a)" points="724,303,774,303,781,325.2969,4008,325.2969,4008,1388,724,1388,724,303" style="stroke: #000000; stroke-width: 1.5;"/>
+    <line style="stroke: #000000; stroke-width: 1.5;" x1="724" x2="781" y1="325.2969" y2="325.2969"/>
+    <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" textLength="44" x="728" y="317.9951">types</text>
+    <!--MD5=[857233cdc7018b1e8695fe78ce49561f]
+cluster __builtin__-->
+    <polygon fill="#FFFFFF" filter="url(#fv30ae0jc4t3a)" points="1640,99,1698,99,1705,121.2969,2342,121.2969,2342,182,1640,182,1640,99" style="stroke: #000000; stroke-width: 1.5;"/>
+    <line style="stroke: #000000; stroke-width: 1.5;" x1="1640" x2="1705" y1="121.2969" y2="121.2969"/>
+    <text fill="#000000" font-family="sans-serif" font-size="14" font-weight="bold" lengthAdjust="spacingAndGlyphs" text-decoration="underline" textLength="52" x="1644" y="113.9951">builtin</text>
+    <!--MD5=[75b90395d88ccad922e5d526882a4971]
+class conf.ConfigStruct-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="112.0234" id="conf.ConfigStruct" style="stroke: #A80036; stroke-width: 1.5;" width="264" x="22" y="94"/>
+    <ellipse cx="111.75" cy="110" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M110.9844,110.5625 Q109.125,109.8594 108.4766,109.0859 Q107.8281,108.3125 107.8281,107 Q107.8281,105.3125 108.9063,104.3438 Q109.9844,103.375 111.8594,103.375 Q112.7188,103.375 113.5703,103.5703 Q114.4219,103.7656 115.2656,104.1563 L115.2656,106.5469 Q114.4844,105.9844 113.6641,105.6953 Q112.8438,105.4063 112.0469,105.4063 Q111.1719,105.4063 110.6953,105.7656 Q110.2188,106.125 110.2188,106.7813 Q110.2188,107.2969 110.5625,107.6328 Q110.9063,107.9688 112,108.375 L113.0625,108.7813 Q114.5469,109.3281 115.2578,110.2344 Q115.9688,111.1406 115.9688,112.5156 Q115.9688,114.3906 114.8594,115.3125 Q113.75,116.2344 111.5,116.2344 Q110.5781,116.2344 109.6563,116.0156 Q108.7344,115.7969 107.875,115.375 L107.875,112.8438 Q108.8438,113.5313 109.7656,113.875 Q110.6875,114.2188 111.5781,114.2188 Q112.4844,114.2188 112.9844,113.8047 Q113.4844,113.3906 113.4844,112.6563 Q113.4844,112.0938 113.1484,111.6797 Q112.8125,111.2656 112.1875,111.0156 L110.9844,110.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="76" x="132.25" y="114.1543">ConfigStruct</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="23" x2="285" y1="126" y2="126"/>
+    <ellipse cx="33" cy="137" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="168" x="42" y="140.2104">Logging LoggingConfiguration</text>
+    <ellipse cx="33" cy="149.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="168" x="42" y="153.0151">Storage StorageConfiguration</text>
+    <ellipse cx="33" cy="162.6094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="142" x="42" y="165.8198">Kafka KafkaConfiguration</text>
+    <ellipse cx="33" cy="175.4141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="238" x="42" y="178.6245">Dependencies DependenciesConfiguration</text>
+    <ellipse cx="33" cy="188.2188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="218" x="42" y="191.4292">Notifications NotificationsConfiguration</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="23" x2="285" y1="198.0234" y2="198.0234"/>
+    <!--MD5=[1ea139f067fe66a1031bddae2338cad1]
+class conf.DependenciesConfiguration-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="73.6094" id="conf.DependenciesConfiguration" style="stroke: #A80036; stroke-width: 1.5;" width="198" x="321" y="113"/>
+    <ellipse cx="336" cy="129" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M335.2344,129.5625 Q333.375,128.8594 332.7266,128.0859 Q332.0781,127.3125 332.0781,126 Q332.0781,124.3125 333.1563,123.3438 Q334.2344,122.375 336.1094,122.375 Q336.9688,122.375 337.8203,122.5703 Q338.6719,122.7656 339.5156,123.1563 L339.5156,125.5469 Q338.7344,124.9844 337.9141,124.6953 Q337.0938,124.4063 336.2969,124.4063 Q335.4219,124.4063 334.9453,124.7656 Q334.4688,125.125 334.4688,125.7813 Q334.4688,126.2969 334.8125,126.6328 Q335.1563,126.9688 336.25,127.375 L337.3125,127.7813 Q338.7969,128.3281 339.5078,129.2344 Q340.2188,130.1406 340.2188,131.5156 Q340.2188,133.3906 339.1094,134.3125 Q338,135.2344 335.75,135.2344 Q334.8281,135.2344 333.9063,135.0156 Q332.9844,134.7969 332.125,134.375 L332.125,131.8438 Q333.0938,132.5313 334.0156,132.875 Q334.9375,133.2188 335.8281,133.2188 Q336.7344,133.2188 337.2344,132.8047 Q337.7344,132.3906 337.7344,131.6563 Q337.7344,131.0938 337.3984,130.6797 Q337.0625,130.2656 336.4375,130.0156 L335.2344,129.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="166" x="350" y="133.1543">DependenciesConfiguration</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="322" x2="518" y1="145" y2="145"/>
+    <ellipse cx="332" cy="156" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="160" x="341" y="159.2104">ContentServiceServer string</text>
+    <ellipse cx="332" cy="168.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="171" x="341" y="172.0151">ContentServiceEndpoint string</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="322" x2="518" y1="178.6094" y2="178.6094"/>
+    <!--MD5=[8bbf627ed5a32750fc7ddbcf70e0148a]
+class conf.KafkaConfiguration-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="86.4141" id="conf.KafkaConfiguration" style="stroke: #A80036; stroke-width: 1.5;" width="153" x="554.5" y="107"/>
+    <ellipse cx="572.65" cy="123" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M571.8844,123.5625 Q570.025,122.8594 569.3766,122.0859 Q568.7281,121.3125 568.7281,120 Q568.7281,118.3125 569.8063,117.3438 Q570.8844,116.375 572.7594,116.375 Q573.6188,116.375 574.4703,116.5703 Q575.3219,116.7656 576.1656,117.1563 L576.1656,119.5469 Q575.3844,118.9844 574.5641,118.6953 Q573.7438,118.4063 572.9469,118.4063 Q572.0719,118.4063 571.5953,118.7656 Q571.1188,119.125 571.1188,119.7813 Q571.1188,120.2969 571.4625,120.6328 Q571.8063,120.9688 572.9,121.375 L573.9625,121.7813 Q575.4469,122.3281 576.1578,123.2344 Q576.8688,124.1406 576.8688,125.5156 Q576.8688,127.3906 575.7594,128.3125 Q574.65,129.2344 572.4,129.2344 Q571.4781,129.2344 570.5563,129.0156 Q569.6344,128.7969 568.775,128.375 L568.775,125.8438 Q569.7438,126.5313 570.6656,126.875 Q571.5875,127.2188 572.4781,127.2188 Q573.3844,127.2188 573.8844,126.8047 Q574.3844,126.3906 574.3844,125.6563 Q574.3844,125.0938 574.0484,124.6797 Q573.7125,124.2656 573.0875,124.0156 L571.8844,123.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="114" x="587.35" y="127.1543">KafkaConfiguration</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="555.5" x2="706.5" y1="139" y2="139"/>
+    <ellipse cx="565.5" cy="150" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="82" x="574.5" y="153.2104">Address string</text>
+    <ellipse cx="565.5" cy="162.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="66" x="574.5" y="166.0151">Topic string</text>
+    <ellipse cx="565.5" cy="175.6094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="127" x="574.5" y="178.8198">Timeout time.Duration</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="555.5" x2="706.5" y1="185.4141" y2="185.4141"/>
+    <!--MD5=[9ee4663eceaabee178f48b3719d2f504]
+class conf.LoggingConfiguration-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="73.6094" id="conf.LoggingConfiguration" style="stroke: #A80036; stroke-width: 1.5;" width="162" x="73" y="406.5"/>
+    <ellipse cx="88" cy="422.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M87.2344,423.0625 Q85.375,422.3594 84.7266,421.5859 Q84.0781,420.8125 84.0781,419.5 Q84.0781,417.8125 85.1563,416.8438 Q86.2344,415.875 88.1094,415.875 Q88.9688,415.875 89.8203,416.0703 Q90.6719,416.2656 91.5156,416.6563 L91.5156,419.0469 Q90.7344,418.4844 89.9141,418.1953 Q89.0938,417.9063 88.2969,417.9063 Q87.4219,417.9063 86.9453,418.2656 Q86.4688,418.625 86.4688,419.2813 Q86.4688,419.7969 86.8125,420.1328 Q87.1563,420.4688 88.25,420.875 L89.3125,421.2813 Q90.7969,421.8281 91.5078,422.7344 Q92.2188,423.6406 92.2188,425.0156 Q92.2188,426.8906 91.1094,427.8125 Q90,428.7344 87.75,428.7344 Q86.8281,428.7344 85.9063,428.5156 Q84.9844,428.2969 84.125,427.875 L84.125,425.3438 Q85.0938,426.0313 86.0156,426.375 Q86.9375,426.7188 87.8281,426.7188 Q88.7344,426.7188 89.2344,426.3047 Q89.7344,425.8906 89.7344,425.1563 Q89.7344,424.5938 89.3984,424.1797 Q89.0625,423.7656 88.4375,423.5156 L87.2344,423.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="130" x="102" y="426.6543">LoggingConfiguration</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="74" x2="234" y1="438.5" y2="438.5"/>
+    <ellipse cx="84" cy="449.5" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="64" x="93" y="452.7104">Debug bool</text>
+    <ellipse cx="84" cy="462.3047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="86" x="93" y="465.5151">LogLevel string</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="74" x2="234" y1="472.1094" y2="472.1094"/>
+    <!--MD5=[41ca2429cb068f553fc598e7f5198f8a]
+class conf.NotificationsConfiguration-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="86.4141" id="conf.NotificationsConfiguration" style="stroke: #A80036; stroke-width: 1.5;" width="187" x="270.5" y="400.5"/>
+    <ellipse cx="285.5" cy="416.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M284.7344,417.0625 Q282.875,416.3594 282.2266,415.5859 Q281.5781,414.8125 281.5781,413.5 Q281.5781,411.8125 282.6563,410.8438 Q283.7344,409.875 285.6094,409.875 Q286.4688,409.875 287.3203,410.0703 Q288.1719,410.2656 289.0156,410.6563 L289.0156,413.0469 Q288.2344,412.4844 287.4141,412.1953 Q286.5938,411.9063 285.7969,411.9063 Q284.9219,411.9063 284.4453,412.2656 Q283.9688,412.625 283.9688,413.2813 Q283.9688,413.7969 284.3125,414.1328 Q284.6563,414.4688 285.75,414.875 L286.8125,415.2813 Q288.2969,415.8281 289.0078,416.7344 Q289.7188,417.6406 289.7188,419.0156 Q289.7188,420.8906 288.6094,421.8125 Q287.5,422.7344 285.25,422.7344 Q284.3281,422.7344 283.4063,422.5156 Q282.4844,422.2969 281.625,421.875 L281.625,419.3438 Q282.5938,420.0313 283.5156,420.375 Q284.4375,420.7188 285.3281,420.7188 Q286.2344,420.7188 286.7344,420.3047 Q287.2344,419.8906 287.2344,419.1563 Q287.2344,418.5938 286.8984,418.1797 Q286.5625,417.7656 285.9375,417.5156 L284.7344,417.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="155" x="299.5" y="420.6543">NotificationsConfiguration</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="271.5" x2="456.5" y1="432.5" y2="432.5"/>
+    <ellipse cx="281.5" cy="443.5" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="144" x="290.5" y="446.7104">InsightsAdvisorURL string</text>
+    <ellipse cx="281.5" cy="456.3047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="133" x="290.5" y="459.5151">ClusterDetailsURI string</text>
+    <ellipse cx="281.5" cy="469.1094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="118" x="290.5" y="472.3198">RuleDetailsURI string</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="271.5" x2="456.5" y1="478.9141" y2="478.9141"/>
+    <!--MD5=[3c9b9c73f58496a944af030b828820bb]
+class conf.StorageConfiguration-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="150.4375" id="conf.StorageConfiguration" style="stroke: #A80036; stroke-width: 1.5;" width="160" x="493" y="368.5"/>
+    <ellipse cx="508" cy="384.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M507.2344,385.0625 Q505.375,384.3594 504.7266,383.5859 Q504.0781,382.8125 504.0781,381.5 Q504.0781,379.8125 505.1563,378.8438 Q506.2344,377.875 508.1094,377.875 Q508.9688,377.875 509.8203,378.0703 Q510.6719,378.2656 511.5156,378.6563 L511.5156,381.0469 Q510.7344,380.4844 509.9141,380.1953 Q509.0938,379.9063 508.2969,379.9063 Q507.4219,379.9063 506.9453,380.2656 Q506.4688,380.625 506.4688,381.2813 Q506.4688,381.7969 506.8125,382.1328 Q507.1563,382.4688 508.25,382.875 L509.3125,383.2813 Q510.7969,383.8281 511.5078,384.7344 Q512.2188,385.6406 512.2188,387.0156 Q512.2188,388.8906 511.1094,389.8125 Q510,390.7344 507.75,390.7344 Q506.8281,390.7344 505.9063,390.5156 Q504.9844,390.2969 504.125,389.875 L504.125,387.3438 Q505.0938,388.0313 506.0156,388.375 Q506.9375,388.7188 507.8281,388.7188 Q508.7344,388.7188 509.2344,388.3047 Q509.7344,387.8906 509.7344,387.1563 Q509.7344,386.5938 509.3984,386.1797 Q509.0625,385.7656 508.4375,385.5156 L507.2344,385.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="128" x="522" y="388.6543">StorageConfiguration</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="494" x2="652" y1="400.5" y2="400.5"/>
+    <ellipse cx="504" cy="411.5" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="71" x="513" y="414.7104">Driver string</text>
+    <ellipse cx="504" cy="424.3047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="110" x="513" y="427.5151">PGUsername string</text>
+    <ellipse cx="504" cy="437.1094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="106" x="513" y="440.3198">PGPassword string</text>
+    <ellipse cx="504" cy="449.9141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="77" x="513" y="453.1245">PGHost string</text>
+    <ellipse cx="504" cy="462.7188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="57" x="513" y="465.9292">PGPort int</text>
+    <ellipse cx="504" cy="475.5234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="101" x="513" y="478.7339">PGDBName string</text>
+    <ellipse cx="504" cy="488.3281" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="95" x="513" y="491.5386">PGParams string</text>
+    <ellipse cx="504" cy="501.1328" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="114" x="513" y="504.3433">LogSQLQueries bool</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="494" x2="652" y1="510.9375" y2="510.9375"/>
+    <!--MD5=[d0a5c5cb2d296dfe0370b109c4dd9054]
+class differ.DBStorage-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="252.875" id="differ.DBStorage" style="stroke: #A80036; stroke-width: 1.5;" width="1703" x="4035.5" y="317"/>
+    <ellipse cx="4850.75" cy="333" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M4849.9844,333.5625 Q4848.125,332.8594 4847.4766,332.0859 Q4846.8281,331.3125 4846.8281,330 Q4846.8281,328.3125 4847.9063,327.3438 Q4848.9844,326.375 4850.8594,326.375 Q4851.7188,326.375 4852.5703,326.5703 Q4853.4219,326.7656 4854.2656,327.1563 L4854.2656,329.5469 Q4853.4844,328.9844 4852.6641,328.6953 Q4851.8438,328.4063 4851.0469,328.4063 Q4850.1719,328.4063 4849.6953,328.7656 Q4849.2188,329.125 4849.2188,329.7813 Q4849.2188,330.2969 4849.5625,330.6328 Q4849.9063,330.9688 4851,331.375 L4852.0625,331.7813 Q4853.5469,332.3281 4854.2578,333.2344 Q4854.9688,334.1406 4854.9688,335.5156 Q4854.9688,337.3906 4853.8594,338.3125 Q4852.75,339.2344 4850.5,339.2344 Q4849.5781,339.2344 4848.6563,339.0156 Q4847.7344,338.7969 4846.875,338.375 L4846.875,335.8438 Q4847.8438,336.5313 4848.7656,336.875 Q4849.6875,337.2188 4850.5781,337.2188 Q4851.4844,337.2188 4851.9844,336.8047 Q4852.4844,336.3906 4852.4844,335.6563 Q4852.4844,335.0938 4852.1484,334.6797 Q4851.8125,334.2656 4851.1875,334.0156 L4849.9844,333.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="64" x="4871.25" y="337.1543">DBStorage</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="4036.5" x2="5737.5" y1="349" y2="349"/>
+    <rect fill="none" height="6" style="stroke: #C82930; stroke-width: 1.0;" width="6" x="4043.5" y="357"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="107" x="4055.5" y="363.2104">connection *sql.DB</text>
+    <rect fill="none" height="6" style="stroke: #C82930; stroke-width: 1.0;" width="6" x="4043.5" y="369.8047"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="167" x="4055.5" y="376.0151">dbDriverType types.DBDriver</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="4036.5" x2="5737.5" y1="382.6094" y2="382.6094"/>
+    <ellipse cx="4046.5" cy="393.6094" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="4055.5" y="396.8198">Close() error</text>
+    <ellipse cx="4046.5" cy="406.4141" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="317" x="4055.5" y="409.6245">ReadNotificationTypes() ([]types.NotificationType, error)</text>
+    <ellipse cx="4046.5" cy="419.2188" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="193" x="4055.5" y="422.4292">ReadStates() ([]types.State, error)</text>
+    <ellipse cx="4046.5" cy="432.0234" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="258" x="4055.5" y="435.2339">ReadClusterList() ([]types.ClusterEntry, error)</text>
+    <ellipse cx="4046.5" cy="444.8281" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="795" x="4055.5" y="448.0386">ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)</text>
+    <ellipse cx="4046.5" cy="457.6328" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="809" x="4055.5" y="460.8433">ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, kafkaOffset types.KafkaOffset) (types.ClusterReport, error)</text>
+    <ellipse cx="4046.5" cy="470.4375" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="693" x="4055.5" y="473.6479">ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)</text>
+    <ellipse cx="4046.5" cy="483.2422" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="418" x="4055.5" y="486.4526">WriteNotificationRecord(notificationRecord types.NotificationRecord) error</text>
+    <ellipse cx="4046.5" cy="496.0469" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="1677" x="4055.5" y="499.2573">WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error</text>
+    <ellipse cx="4046.5" cy="508.8516" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="1202" x="4055.5" y="512.062">WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error</text>
+    <ellipse cx="4046.5" cy="521.6563" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="678" x="4055.5" y="524.8667">ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)</text>
+    <ellipse cx="4046.5" cy="534.4609" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="500" x="4055.5" y="537.6714">CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error)</text>
+    <ellipse cx="4046.5" cy="547.2656" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="467" x="4055.5" y="550.4761">CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)</text>
+    <ellipse cx="4046.5" cy="560.0703" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="462" x="4055.5" y="563.2808">CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)</text>
+    <!--MD5=[dd7add70ec8ef12dbbd81df23c1b38f9]
+class differ.Storage-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="214.4609" id="differ.Storage" style="stroke: #A80036; stroke-width: 1.5;" width="1703" x="4035.5" y="43"/>
+    <ellipse cx="4859.25" cy="59" fill="#B4A7E5" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M4855.6719,54.7656 L4855.6719,52.6094 L4863.0625,52.6094 L4863.0625,54.7656 L4860.5938,54.7656 L4860.5938,62.8438 L4863.0625,62.8438 L4863.0625,65 L4855.6719,65 L4855.6719,62.8438 L4858.1406,62.8438 L4858.1406,54.7656 L4855.6719,54.7656 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="47" x="4879.75" y="63.1543">Storage</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="4036.5" x2="5737.5" y1="75" y2="75"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="4036.5" x2="5737.5" y1="83" y2="83"/>
+    <ellipse cx="4046.5" cy="94" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="4055.5" y="97.2104">Close() error</text>
+    <ellipse cx="4046.5" cy="106.8047" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="693" x="4055.5" y="110.0151">ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)</text>
+    <ellipse cx="4046.5" cy="119.6094" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="258" x="4055.5" y="122.8198">ReadClusterList() ([]types.ClusterEntry, error)</text>
+    <ellipse cx="4046.5" cy="132.4141" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="317" x="4055.5" y="135.6245">ReadNotificationTypes() ([]types.NotificationType, error)</text>
+    <ellipse cx="4046.5" cy="145.2188" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="193" x="4055.5" y="148.4292">ReadStates() ([]types.State, error)</text>
+    <ellipse cx="4046.5" cy="158.0234" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="795" x="4055.5" y="161.2339">ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)</text>
+    <ellipse cx="4046.5" cy="170.8281" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="777" x="4055.5" y="174.0386">ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, offset types.KafkaOffset) (types.ClusterReport, error)</text>
+    <ellipse cx="4046.5" cy="183.6328" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="678" x="4055.5" y="186.8433">ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)</text>
+    <ellipse cx="4046.5" cy="196.4375" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="418" x="4055.5" y="199.6479">WriteNotificationRecord(notificationRecord types.NotificationRecord) error</text>
+    <ellipse cx="4046.5" cy="209.2422" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="1202" x="4055.5" y="212.4526">WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error</text>
+    <ellipse cx="4046.5" cy="222.0469" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="1677" x="4055.5" y="225.2573">WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error</text>
+    <ellipse cx="4046.5" cy="234.8516" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="467" x="4055.5" y="238.062">CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)</text>
+    <ellipse cx="4046.5" cy="247.6563" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="462" x="4055.5" y="250.8667">CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)</text>
+    <!--MD5=[8e05dfc5e7366a5d793b608004a40c87]
+class main.Storage-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="188.8516" id="main.Storage" style="stroke: #A80036; stroke-width: 1.5;" width="1703" x="7991.5" y="55.5"/>
+    <ellipse cx="8815.25" cy="71.5" fill="#B4A7E5" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M8811.6719,67.2656 L8811.6719,65.1094 L8819.0625,65.1094 L8819.0625,67.2656 L8816.5938,67.2656 L8816.5938,75.3438 L8819.0625,75.3438 L8819.0625,77.5 L8811.6719,77.5 L8811.6719,75.3438 L8814.1406,75.3438 L8814.1406,67.2656 L8811.6719,67.2656 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="47" x="8835.75" y="75.6543">Storage</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="7992.5" x2="9693.5" y1="87.5" y2="87.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="7992.5" x2="9693.5" y1="95.5" y2="95.5"/>
+    <ellipse cx="8002.5" cy="106.5" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="8011.5" y="109.7104">Close() error</text>
+    <ellipse cx="8002.5" cy="119.3047" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="693" x="8011.5" y="122.5151">ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)</text>
+    <ellipse cx="8002.5" cy="132.1094" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="258" x="8011.5" y="135.3198">ReadClusterList() ([]types.ClusterEntry, error)</text>
+    <ellipse cx="8002.5" cy="144.9141" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="317" x="8011.5" y="148.1245">ReadNotificationTypes() ([]types.NotificationType, error)</text>
+    <ellipse cx="8002.5" cy="157.7188" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="193" x="8011.5" y="160.9292">ReadStates() ([]types.State, error)</text>
+    <ellipse cx="8002.5" cy="170.5234" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="795" x="8011.5" y="173.7339">ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)</text>
+    <ellipse cx="8002.5" cy="183.3281" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="777" x="8011.5" y="186.5386">ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, offset types.KafkaOffset) (types.ClusterReport, error)</text>
+    <ellipse cx="8002.5" cy="196.1328" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="678" x="8011.5" y="199.3433">ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)</text>
+    <ellipse cx="8002.5" cy="208.9375" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="418" x="8011.5" y="212.1479">WriteNotificationRecord(notificationRecord types.NotificationRecord) error</text>
+    <ellipse cx="8002.5" cy="221.7422" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="1202" x="8011.5" y="224.9526">WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error</text>
+    <ellipse cx="8002.5" cy="234.5469" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="1677" x="8011.5" y="237.7573">WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error</text>
+    <!--MD5=[959739d0dd8840a1c96452e944a779a2]
+class main.DBStorage-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="214.4609" id="main.DBStorage" style="stroke: #A80036; stroke-width: 1.5;" width="1703" x="7991.5" y="336.5"/>
+    <ellipse cx="8806.75" cy="352.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M8805.9844,353.0625 Q8804.125,352.3594 8803.4766,351.5859 Q8802.8281,350.8125 8802.8281,349.5 Q8802.8281,347.8125 8803.9063,346.8438 Q8804.9844,345.875 8806.8594,345.875 Q8807.7188,345.875 8808.5703,346.0703 Q8809.4219,346.2656 8810.2656,346.6563 L8810.2656,349.0469 Q8809.4844,348.4844 8808.6641,348.1953 Q8807.8438,347.9063 8807.0469,347.9063 Q8806.1719,347.9063 8805.6953,348.2656 Q8805.2188,348.625 8805.2188,349.2813 Q8805.2188,349.7969 8805.5625,350.1328 Q8805.9063,350.4688 8807,350.875 L8808.0625,351.2813 Q8809.5469,351.8281 8810.2578,352.7344 Q8810.9688,353.6406 8810.9688,355.0156 Q8810.9688,356.8906 8809.8594,357.8125 Q8808.75,358.7344 8806.5,358.7344 Q8805.5781,358.7344 8804.6563,358.5156 Q8803.7344,358.2969 8802.875,357.875 L8802.875,355.3438 Q8803.8438,356.0313 8804.7656,356.375 Q8805.6875,356.7188 8806.5781,356.7188 Q8807.4844,356.7188 8807.9844,356.3047 Q8808.4844,355.8906 8808.4844,355.1563 Q8808.4844,354.5938 8808.1484,354.1797 Q8807.8125,353.7656 8807.1875,353.5156 L8805.9844,353.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="64" x="8827.25" y="356.6543">DBStorage</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="7992.5" x2="9693.5" y1="368.5" y2="368.5"/>
+    <rect fill="none" height="6" style="stroke: #C82930; stroke-width: 1.0;" width="6" x="7999.5" y="376.5"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="107" x="8011.5" y="382.7104">connection *sql.DB</text>
+    <rect fill="none" height="6" style="stroke: #C82930; stroke-width: 1.0;" width="6" x="7999.5" y="389.3047"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="167" x="8011.5" y="395.5151">dbDriverType types.DBDriver</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="7992.5" x2="9693.5" y1="402.1094" y2="402.1094"/>
+    <ellipse cx="8002.5" cy="413.1094" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="8011.5" y="416.3198">Close() error</text>
+    <ellipse cx="8002.5" cy="425.9141" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="317" x="8011.5" y="429.1245">ReadNotificationTypes() ([]types.NotificationType, error)</text>
+    <ellipse cx="8002.5" cy="438.7188" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="193" x="8011.5" y="441.9292">ReadStates() ([]types.State, error)</text>
+    <ellipse cx="8002.5" cy="451.5234" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="258" x="8011.5" y="454.7339">ReadClusterList() ([]types.ClusterEntry, error)</text>
+    <ellipse cx="8002.5" cy="464.3281" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="795" x="8011.5" y="467.5386">ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)</text>
+    <ellipse cx="8002.5" cy="477.1328" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="809" x="8011.5" y="480.3433">ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, kafkaOffset types.KafkaOffset) (types.ClusterReport, error)</text>
+    <ellipse cx="8002.5" cy="489.9375" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="693" x="8011.5" y="493.1479">ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)</text>
+    <ellipse cx="8002.5" cy="502.7422" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="418" x="8011.5" y="505.9526">WriteNotificationRecord(notificationRecord types.NotificationRecord) error</text>
+    <ellipse cx="8002.5" cy="515.5469" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="1677" x="8011.5" y="518.7573">WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error</text>
+    <ellipse cx="8002.5" cy="528.3516" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="1202" x="8011.5" y="531.562">WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error</text>
+    <ellipse cx="8002.5" cy="541.1563" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="678" x="8011.5" y="544.3667">ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)</text>
+    <!--MD5=[7af389ca79b854cf7e5c5d1258b803ea]
+class mocks.Producer-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="86.4141" id="mocks.Producer" style="stroke: #A80036; stroke-width: 1.5;" width="445" x="7511.5" y="400.5"/>
+    <ellipse cx="7702.75" cy="416.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M7701.9844,417.0625 Q7700.125,416.3594 7699.4766,415.5859 Q7698.8281,414.8125 7698.8281,413.5 Q7698.8281,411.8125 7699.9063,410.8438 Q7700.9844,409.875 7702.8594,409.875 Q7703.7188,409.875 7704.5703,410.0703 Q7705.4219,410.2656 7706.2656,410.6563 L7706.2656,413.0469 Q7705.4844,412.4844 7704.6641,412.1953 Q7703.8438,411.9063 7703.0469,411.9063 Q7702.1719,411.9063 7701.6953,412.2656 Q7701.2188,412.625 7701.2188,413.2813 Q7701.2188,413.7969 7701.5625,414.1328 Q7701.9063,414.4688 7703,414.875 L7704.0625,415.2813 Q7705.5469,415.8281 7706.2578,416.7344 Q7706.9688,417.6406 7706.9688,419.0156 Q7706.9688,420.8906 7705.8594,421.8125 Q7704.75,422.7344 7702.5,422.7344 Q7701.5781,422.7344 7700.6563,422.5156 Q7699.7344,422.2969 7698.875,421.875 L7698.875,419.3438 Q7699.8438,420.0313 7700.7656,420.375 Q7701.6875,420.7188 7702.5781,420.7188 Q7703.4844,420.7188 7703.9844,420.3047 Q7704.4844,419.8906 7704.4844,419.1563 Q7704.4844,418.5938 7704.1484,418.1797 Q7703.8125,417.7656 7703.1875,417.5156 L7701.9844,417.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="54" x="7723.25" y="420.6543">Producer</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="7512.5" x2="7955.5" y1="432.5" y2="432.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="7512.5" x2="7955.5" y1="440.5" y2="440.5"/>
+    <ellipse cx="7522.5" cy="451.5" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="7531.5" y="454.7104">Close() error</text>
+    <ellipse cx="7522.5" cy="464.3047" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="419" x="7531.5" y="467.5151">New(brokerCfg conf.KafkaConfiguration) (*producer.KafkaProducer, error)</text>
+    <ellipse cx="7522.5" cy="477.1094" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="391" x="7531.5" y="480.3198">ProduceMessage(msg types.NotificationMessage) (int32, int64, error)</text>
+    <!--MD5=[b5dc2a8547400f61bb199545f85b051b]
+class mocks.Storage-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="227.2656" id="mocks.Storage" style="stroke: #A80036; stroke-width: 1.5;" width="1703" x="5773.5" y="330"/>
+    <ellipse cx="6597.25" cy="346" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M6596.4844,346.5625 Q6594.625,345.8594 6593.9766,345.0859 Q6593.3281,344.3125 6593.3281,343 Q6593.3281,341.3125 6594.4063,340.3438 Q6595.4844,339.375 6597.3594,339.375 Q6598.2188,339.375 6599.0703,339.5703 Q6599.9219,339.7656 6600.7656,340.1563 L6600.7656,342.5469 Q6599.9844,341.9844 6599.1641,341.6953 Q6598.3438,341.4063 6597.5469,341.4063 Q6596.6719,341.4063 6596.1953,341.7656 Q6595.7188,342.125 6595.7188,342.7813 Q6595.7188,343.2969 6596.0625,343.6328 Q6596.4063,343.9688 6597.5,344.375 L6598.5625,344.7813 Q6600.0469,345.3281 6600.7578,346.2344 Q6601.4688,347.1406 6601.4688,348.5156 Q6601.4688,350.3906 6600.3594,351.3125 Q6599.25,352.2344 6597,352.2344 Q6596.0781,352.2344 6595.1563,352.0156 Q6594.2344,351.7969 6593.375,351.375 L6593.375,348.8438 Q6594.3438,349.5313 6595.2656,349.875 Q6596.1875,350.2188 6597.0781,350.2188 Q6597.9844,350.2188 6598.4844,349.8047 Q6598.9844,349.3906 6598.9844,348.6563 Q6598.9844,348.0938 6598.6484,347.6797 Q6598.3125,347.2656 6597.6875,347.0156 L6596.4844,346.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="47" x="6617.75" y="350.1543">Storage</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="5774.5" x2="7475.5" y1="362" y2="362"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="5774.5" x2="7475.5" y1="370" y2="370"/>
+    <ellipse cx="5784.5" cy="381" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="5793.5" y="384.2104">Close() error</text>
+    <ellipse cx="5784.5" cy="393.8047" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="258" x="5793.5" y="397.0151">ReadClusterList() ([]types.ClusterEntry, error)</text>
+    <ellipse cx="5784.5" cy="406.6094" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="678" x="5793.5" y="409.8198">ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)</text>
+    <ellipse cx="5784.5" cy="419.4141" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="317" x="5793.5" y="422.6245">ReadNotificationTypes() ([]types.NotificationType, error)</text>
+    <ellipse cx="5784.5" cy="432.2188" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="693" x="5793.5" y="435.4292">ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)</text>
+    <ellipse cx="5784.5" cy="445.0234" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="777" x="5793.5" y="448.2339">ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, offset types.KafkaOffset) (types.ClusterReport, error)</text>
+    <ellipse cx="5784.5" cy="457.8281" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="795" x="5793.5" y="461.0386">ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)</text>
+    <ellipse cx="5784.5" cy="470.6328" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="193" x="5793.5" y="473.8433">ReadStates() ([]types.State, error)</text>
+    <ellipse cx="5784.5" cy="483.4375" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="418" x="5793.5" y="486.6479">WriteNotificationRecord(notificationRecord types.NotificationRecord) error</text>
+    <ellipse cx="5784.5" cy="496.2422" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="1202" x="5793.5" y="499.4526">WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error</text>
+    <ellipse cx="5784.5" cy="509.0469" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="1677" x="5793.5" y="512.2573">WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error</text>
+    <ellipse cx="5784.5" cy="521.8516" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="500" x="5793.5" y="525.062">CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error)</text>
+    <ellipse cx="5784.5" cy="534.6563" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="467" x="5793.5" y="537.8667">CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)</text>
+    <ellipse cx="5784.5" cy="547.4609" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="462" x="5793.5" y="550.6714">CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)</text>
+    <!--MD5=[5c0bf49f72ef757dd4d5423466c031ac]
+class mock.Mock-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="mock.Mock" style="stroke: #A80036; stroke-width: 1.5;" width="63" x="7147.5" y="126"/>
+    <ellipse cx="7162.5" cy="142" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M7165.4688,147.6406 Q7164.8906,147.9375 7164.25,148.0859 Q7163.6094,148.2344 7162.9063,148.2344 Q7160.4063,148.2344 7159.0859,146.5859 Q7157.7656,144.9375 7157.7656,141.8125 Q7157.7656,138.6875 7159.0859,137.0313 Q7160.4063,135.375 7162.9063,135.375 Q7163.6094,135.375 7164.2578,135.5313 Q7164.9063,135.6875 7165.4688,135.9844 L7165.4688,138.7031 Q7164.8438,138.125 7164.25,137.8516 Q7163.6563,137.5781 7163.0313,137.5781 Q7161.6875,137.5781 7161,138.6484 Q7160.3125,139.7188 7160.3125,141.8125 Q7160.3125,143.9063 7161,144.9766 Q7161.6875,146.0469 7163.0313,146.0469 Q7163.6563,146.0469 7164.25,145.7734 Q7164.8438,145.5 7165.4688,144.9219 L7165.4688,147.6406 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="31" x="7176.5" y="146.1543">Mock</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="7148.5" x2="7209.5" y1="158" y2="158"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="7148.5" x2="7209.5" y1="166" y2="166"/>
+    <!--MD5=[f88d886f84f1e575c0ca4eb1877fa6f2]
+class producer.KafkaProducer-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="99.2188" id="producer.KafkaProducer" style="stroke: #A80036; stroke-width: 1.5;" width="417" x="10181.5" y="100.5"/>
+    <ellipse cx="10342.25" cy="116.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M10341.4844,117.0625 Q10339.625,116.3594 10338.9766,115.5859 Q10338.3281,114.8125 10338.3281,113.5 Q10338.3281,111.8125 10339.4063,110.8438 Q10340.4844,109.875 10342.3594,109.875 Q10343.2188,109.875 10344.0703,110.0703 Q10344.9219,110.2656 10345.7656,110.6563 L10345.7656,113.0469 Q10344.9844,112.4844 10344.1641,112.1953 Q10343.3438,111.9063 10342.5469,111.9063 Q10341.6719,111.9063 10341.1953,112.2656 Q10340.7188,112.625 10340.7188,113.2813 Q10340.7188,113.7969 10341.0625,114.1328 Q10341.4063,114.4688 10342.5,114.875 L10343.5625,115.2813 Q10345.0469,115.8281 10345.7578,116.7344 Q10346.4688,117.6406 10346.4688,119.0156 Q10346.4688,120.8906 10345.3594,121.8125 Q10344.25,122.7344 10342,122.7344 Q10341.0781,122.7344 10340.1563,122.5156 Q10339.2344,122.2969 10338.375,121.875 L10338.375,119.3438 Q10339.3438,120.0313 10340.2656,120.375 Q10341.1875,120.7188 10342.0781,120.7188 Q10342.9844,120.7188 10343.4844,120.3047 Q10343.9844,119.8906 10343.9844,119.1563 Q10343.9844,118.5938 10343.6484,118.1797 Q10343.3125,117.7656 10342.6875,117.5156 L10341.4844,117.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="87" x="10362.75" y="120.6543">KafkaProducer</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="10182.5" x2="10597.5" y1="132.5" y2="132.5"/>
+    <ellipse cx="10192.5" cy="143.5" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="215" x="10201.5" y="146.7104">Configuration conf.KafkaConfiguration</text>
+    <ellipse cx="10192.5" cy="156.3047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="180" x="10201.5" y="159.5151">Producer sarama.SyncProducer</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="10182.5" x2="10597.5" y1="166.1094" y2="166.1094"/>
+    <ellipse cx="10192.5" cy="177.1094" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="391" x="10201.5" y="180.3198">ProduceMessage(msg types.NotificationMessage) (int32, int64, error)</text>
+    <ellipse cx="10192.5" cy="189.9141" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="10201.5" y="193.1245">Close() error</text>
+    <!--MD5=[e13b364078239f93348d0a15027d18c8]
+class producer.Producer-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="86.4141" id="producer.Producer" style="stroke: #A80036; stroke-width: 1.5;" width="417" x="9729.5" y="107"/>
+    <ellipse cx="9906.75" cy="123" fill="#B4A7E5" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M9903.1719,118.7656 L9903.1719,116.6094 L9910.5625,116.6094 L9910.5625,118.7656 L9908.0938,118.7656 L9908.0938,126.8438 L9910.5625,126.8438 L9910.5625,129 L9903.1719,129 L9903.1719,126.8438 L9905.6406,126.8438 L9905.6406,118.7656 L9903.1719,118.7656 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" font-style="italic" lengthAdjust="spacingAndGlyphs" textLength="54" x="9927.25" y="127.1543">Producer</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="9730.5" x2="10145.5" y1="139" y2="139"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="9730.5" x2="10145.5" y1="147" y2="147"/>
+    <ellipse cx="9740.5" cy="158" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="327" x="9749.5" y="161.2104">New(brokerCfg conf.KafkaConfiguration) (Producer, error)</text>
+    <ellipse cx="9740.5" cy="170.8047" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="391" x="9749.5" y="174.0151">ProduceMessage(msg types.NotificationMessage) (int32, int64, error)</text>
+    <ellipse cx="9740.5" cy="183.6094" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="72" x="9749.5" y="186.8198">Close() error</text>
+    <!--MD5=[c7ab372bb3c3b99b752fd2639c5dc56f]
+class types.CliFlags-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="176.0469" id="types.CliFlags" style="stroke: #A80036; stroke-width: 1.5;" width="160" x="3016" y="355.5"/>
+    <ellipse cx="3069.25" cy="371.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3068.4844,372.0625 Q3066.625,371.3594 3065.9766,370.5859 Q3065.3281,369.8125 3065.3281,368.5 Q3065.3281,366.8125 3066.4063,365.8438 Q3067.4844,364.875 3069.3594,364.875 Q3070.2188,364.875 3071.0703,365.0703 Q3071.9219,365.2656 3072.7656,365.6563 L3072.7656,368.0469 Q3071.9844,367.4844 3071.1641,367.1953 Q3070.3438,366.9063 3069.5469,366.9063 Q3068.6719,366.9063 3068.1953,367.2656 Q3067.7188,367.625 3067.7188,368.2813 Q3067.7188,368.7969 3068.0625,369.1328 Q3068.4063,369.4688 3069.5,369.875 L3070.5625,370.2813 Q3072.0469,370.8281 3072.7578,371.7344 Q3073.4688,372.6406 3073.4688,374.0156 Q3073.4688,375.8906 3072.3594,376.8125 Q3071.25,377.7344 3069,377.7344 Q3068.0781,377.7344 3067.1563,377.5156 Q3066.2344,377.2969 3065.375,376.875 L3065.375,374.3438 Q3066.3438,375.0313 3067.2656,375.375 Q3068.1875,375.7188 3069.0781,375.7188 Q3069.9844,375.7188 3070.4844,375.3047 Q3070.9844,374.8906 3070.9844,374.1563 Q3070.9844,373.5938 3070.6484,373.1797 Q3070.3125,372.7656 3069.6875,372.5156 L3068.4844,372.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="45" x="3089.75" y="375.6543">CliFlags</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3017" x2="3175" y1="387.5" y2="387.5"/>
+    <ellipse cx="3027" cy="398.5" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="110" x="3036" y="401.7104">InstantReports bool</text>
+    <ellipse cx="3027" cy="411.3047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="113" x="3036" y="414.5151">WeeklyReports bool</text>
+    <ellipse cx="3027" cy="424.1094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="101" x="3036" y="427.3198">ShowVersion bool</text>
+    <ellipse cx="3027" cy="436.9141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="102" x="3036" y="440.1245">ShowAuthors bool</text>
+    <ellipse cx="3027" cy="449.7188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="134" x="3036" y="452.9292">ShowConfiguration bool</text>
+    <ellipse cx="3027" cy="462.5234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="110" x="3036" y="465.7339">InstantReports bool</text>
+    <ellipse cx="3027" cy="475.3281" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="113" x="3036" y="478.5386">WeeklyReports bool</text>
+    <ellipse cx="3027" cy="488.1328" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="101" x="3036" y="491.3433">ShowVersion bool</text>
+    <ellipse cx="3027" cy="500.9375" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="102" x="3036" y="504.1479">ShowAuthors bool</text>
+    <ellipse cx="3027" cy="513.7422" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="134" x="3036" y="516.9526">ShowConfiguration bool</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3017" x2="3175" y1="523.5469" y2="523.5469"/>
+    <!--MD5=[17138987fd29ea31ba2cf94b515584d9]
+class types.ClusterEntry-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="176.0469" id="types.ClusterEntry" style="stroke: #A80036; stroke-width: 1.5;" width="210" x="3211" y="355.5"/>
+    <ellipse cx="3274.25" cy="371.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3273.4844,372.0625 Q3271.625,371.3594 3270.9766,370.5859 Q3270.3281,369.8125 3270.3281,368.5 Q3270.3281,366.8125 3271.4063,365.8438 Q3272.4844,364.875 3274.3594,364.875 Q3275.2188,364.875 3276.0703,365.0703 Q3276.9219,365.2656 3277.7656,365.6563 L3277.7656,368.0469 Q3276.9844,367.4844 3276.1641,367.1953 Q3275.3438,366.9063 3274.5469,366.9063 Q3273.6719,366.9063 3273.1953,367.2656 Q3272.7188,367.625 3272.7188,368.2813 Q3272.7188,368.7969 3273.0625,369.1328 Q3273.4063,369.4688 3274.5,369.875 L3275.5625,370.2813 Q3277.0469,370.8281 3277.7578,371.7344 Q3278.4688,372.6406 3278.4688,374.0156 Q3278.4688,375.8906 3277.3594,376.8125 Q3276.25,377.7344 3274,377.7344 Q3273.0781,377.7344 3272.1563,377.5156 Q3271.2344,377.2969 3270.375,376.875 L3270.375,374.3438 Q3271.3438,375.0313 3272.2656,375.375 Q3273.1875,375.7188 3274.0781,375.7188 Q3274.9844,375.7188 3275.4844,375.3047 Q3275.9844,374.8906 3275.9844,374.1563 Q3275.9844,373.5938 3275.6484,373.1797 Q3275.3125,372.7656 3274.6875,372.5156 L3273.4844,372.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="75" x="3294.75" y="375.6543">ClusterEntry</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3212" x2="3420" y1="387.5" y2="387.5"/>
+    <ellipse cx="3222" cy="398.5" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="68" x="3231" y="401.7104">OrgID OrgID</text>
+    <ellipse cx="3222" cy="411.3047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="184" x="3231" y="414.5151">AccountNumber AccountNumber</text>
+    <ellipse cx="3222" cy="424.1094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="150" x="3231" y="427.3198">ClusterName ClusterName</text>
+    <ellipse cx="3222" cy="436.9141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="134" x="3231" y="440.1245">KafkaOffset KafkaOffset</text>
+    <ellipse cx="3222" cy="449.7188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="126" x="3231" y="452.9292">UpdatedAt Timestamp</text>
+    <ellipse cx="3222" cy="462.5234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="68" x="3231" y="465.7339">OrgID OrgID</text>
+    <ellipse cx="3222" cy="475.3281" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="184" x="3231" y="478.5386">AccountNumber AccountNumber</text>
+    <ellipse cx="3222" cy="488.1328" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="150" x="3231" y="491.3433">ClusterName ClusterName</text>
+    <ellipse cx="3222" cy="500.9375" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="134" x="3231" y="504.1479">KafkaOffset KafkaOffset</text>
+    <ellipse cx="3222" cy="513.7422" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="126" x="3231" y="516.9526">UpdatedAt Timestamp</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3212" x2="3420" y1="523.5469" y2="523.5469"/>
+    <!--MD5=[1faa65bda683a4f6fbd6d2055c960158]
+class types.Digest-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="176.0469" id="types.Digest" style="stroke: #A80036; stroke-width: 1.5;" width="168" x="3456" y="355.5"/>
+    <ellipse cx="3516.75" cy="371.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3515.9844,372.0625 Q3514.125,371.3594 3513.4766,370.5859 Q3512.8281,369.8125 3512.8281,368.5 Q3512.8281,366.8125 3513.9063,365.8438 Q3514.9844,364.875 3516.8594,364.875 Q3517.7188,364.875 3518.5703,365.0703 Q3519.4219,365.2656 3520.2656,365.6563 L3520.2656,368.0469 Q3519.4844,367.4844 3518.6641,367.1953 Q3517.8438,366.9063 3517.0469,366.9063 Q3516.1719,366.9063 3515.6953,367.2656 Q3515.2188,367.625 3515.2188,368.2813 Q3515.2188,368.7969 3515.5625,369.1328 Q3515.9063,369.4688 3517,369.875 L3518.0625,370.2813 Q3519.5469,370.8281 3520.2578,371.7344 Q3520.9688,372.6406 3520.9688,374.0156 Q3520.9688,375.8906 3519.8594,376.8125 Q3518.75,377.7344 3516.5,377.7344 Q3515.5781,377.7344 3514.6563,377.5156 Q3513.7344,377.2969 3512.875,376.875 L3512.875,374.3438 Q3513.8438,375.0313 3514.7656,375.375 Q3515.6875,375.7188 3516.5781,375.7188 Q3517.4844,375.7188 3517.9844,375.3047 Q3518.4844,374.8906 3518.4844,374.1563 Q3518.4844,373.5938 3518.1484,373.1797 Q3517.8125,372.7656 3517.1875,372.5156 L3515.9844,372.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="38" x="3537.25" y="375.6543">Digest</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3457" x2="3623" y1="387.5" y2="387.5"/>
+    <ellipse cx="3467" cy="398.5" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="111" x="3476" y="401.7104">ClustersAffected int</text>
+    <ellipse cx="3467" cy="411.3047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="126" x="3476" y="414.5151">CriticalNotifications int</text>
+    <ellipse cx="3467" cy="424.1094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="142" x="3476" y="427.3198">ImportantNotifications int</text>
+    <ellipse cx="3467" cy="436.9141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="123" x="3476" y="440.1245">Recommendations int</text>
+    <ellipse cx="3467" cy="449.7188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="68" x="3476" y="452.9292">Incidents int</text>
+    <ellipse cx="3467" cy="462.5234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="111" x="3476" y="465.7339">ClustersAffected int</text>
+    <ellipse cx="3467" cy="475.3281" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="126" x="3476" y="478.5386">CriticalNotifications int</text>
+    <ellipse cx="3467" cy="488.1328" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="142" x="3476" y="491.3433">ImportantNotifications int</text>
+    <ellipse cx="3467" cy="500.9375" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="123" x="3476" y="504.1479">Recommendations int</text>
+    <ellipse cx="3467" cy="513.7422" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="68" x="3476" y="516.9526">Incidents int</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3457" x2="3623" y1="523.5469" y2="523.5469"/>
+    <!--MD5=[61bec795a879bf84ba6b276b694f643b]
+class types.ErrorKeyMetadata-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="227.2656" id="types.ErrorKeyMetadata" style="stroke: #A80036; stroke-width: 1.5;" width="140" x="3659" y="330"/>
+    <ellipse cx="3674" cy="346" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3673.2344,346.5625 Q3671.375,345.8594 3670.7266,345.0859 Q3670.0781,344.3125 3670.0781,343 Q3670.0781,341.3125 3671.1563,340.3438 Q3672.2344,339.375 3674.1094,339.375 Q3674.9688,339.375 3675.8203,339.5703 Q3676.6719,339.7656 3677.5156,340.1563 L3677.5156,342.5469 Q3676.7344,341.9844 3675.9141,341.6953 Q3675.0938,341.4063 3674.2969,341.4063 Q3673.4219,341.4063 3672.9453,341.7656 Q3672.4688,342.125 3672.4688,342.7813 Q3672.4688,343.2969 3672.8125,343.6328 Q3673.1563,343.9688 3674.25,344.375 L3675.3125,344.7813 Q3676.7969,345.3281 3677.5078,346.2344 Q3678.2188,347.1406 3678.2188,348.5156 Q3678.2188,350.3906 3677.1094,351.3125 Q3676,352.2344 3673.75,352.2344 Q3672.8281,352.2344 3671.9063,352.0156 Q3670.9844,351.7969 3670.125,351.375 L3670.125,348.8438 Q3671.0938,349.5313 3672.0156,349.875 Q3672.9375,350.2188 3673.8281,350.2188 Q3674.7344,350.2188 3675.2344,349.8047 Q3675.7344,349.3906 3675.7344,348.6563 Q3675.7344,348.0938 3675.3984,347.6797 Q3675.0625,347.2656 3674.4375,347.0156 L3673.2344,346.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="108" x="3688" y="350.1543">ErrorKeyMetadata</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3660" x2="3798" y1="362" y2="362"/>
+    <ellipse cx="3670" cy="373" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="89" x="3679" y="376.2104">Condition string</text>
+    <ellipse cx="3670" cy="385.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="99" x="3679" y="389.0151">Description string</text>
+    <ellipse cx="3670" cy="398.6094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="74" x="3679" y="401.8198">Impact string</text>
+    <ellipse cx="3670" cy="411.4141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="74" x="3679" y="414.6245">Likelihood int</text>
+    <ellipse cx="3670" cy="424.2188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="102" x="3679" y="427.4292">PublishDate string</text>
+    <ellipse cx="3670" cy="437.0234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="71" x="3679" y="440.2339">Status string</text>
+    <ellipse cx="3670" cy="449.8281" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="71" x="3679" y="453.0386">Tags []string</text>
+    <ellipse cx="3670" cy="462.6328" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="89" x="3679" y="465.8433">Condition string</text>
+    <ellipse cx="3670" cy="475.4375" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="99" x="3679" y="478.6479">Description string</text>
+    <ellipse cx="3670" cy="488.2422" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="74" x="3679" y="491.4526">Impact string</text>
+    <ellipse cx="3670" cy="501.0469" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="74" x="3679" y="504.2573">Likelihood int</text>
+    <ellipse cx="3670" cy="513.8516" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="102" x="3679" y="517.062">PublishDate string</text>
+    <ellipse cx="3670" cy="526.6563" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="71" x="3679" y="529.8667">Status string</text>
+    <ellipse cx="3670" cy="539.4609" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="71" x="3679" y="542.6714">Tags []string</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3660" x2="3798" y1="549.2656" y2="549.2656"/>
+    <!--MD5=[b175c95113a06e234ba4012af1db6b04]
+class types.Event-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="99.2188" id="types.Event" style="stroke: #A80036; stroke-width: 1.5;" width="166" x="3834" y="394"/>
+    <ellipse cx="3895.25" cy="410" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3894.4844,410.5625 Q3892.625,409.8594 3891.9766,409.0859 Q3891.3281,408.3125 3891.3281,407 Q3891.3281,405.3125 3892.4063,404.3438 Q3893.4844,403.375 3895.3594,403.375 Q3896.2188,403.375 3897.0703,403.5703 Q3897.9219,403.7656 3898.7656,404.1563 L3898.7656,406.5469 Q3897.9844,405.9844 3897.1641,405.6953 Q3896.3438,405.4063 3895.5469,405.4063 Q3894.6719,405.4063 3894.1953,405.7656 Q3893.7188,406.125 3893.7188,406.7813 Q3893.7188,407.2969 3894.0625,407.6328 Q3894.4063,407.9688 3895.5,408.375 L3896.5625,408.7813 Q3898.0469,409.3281 3898.7578,410.2344 Q3899.4688,411.1406 3899.4688,412.5156 Q3899.4688,414.3906 3898.3594,415.3125 Q3897.25,416.2344 3895,416.2344 Q3894.0781,416.2344 3893.1563,416.0156 Q3892.2344,415.7969 3891.375,415.375 L3891.375,412.8438 Q3892.3438,413.5313 3893.2656,413.875 Q3894.1875,414.2188 3895.0781,414.2188 Q3895.9844,414.2188 3896.4844,413.8047 Q3896.9844,413.3906 3896.9844,412.6563 Q3896.9844,412.0938 3896.6484,411.6797 Q3896.3125,411.2656 3895.6875,411.0156 L3894.4844,410.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="35" x="3915.75" y="414.1543">Event</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3835" x2="3999" y1="426" y2="426"/>
+    <ellipse cx="3845" cy="437" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="140" x="3854" y="440.2104">Metadata EventMetadata</text>
+    <ellipse cx="3845" cy="449.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="81" x="3854" y="453.0151">Payload string</text>
+    <ellipse cx="3845" cy="462.6094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="140" x="3854" y="465.8198">Metadata EventMetadata</text>
+    <ellipse cx="3845" cy="475.4141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="81" x="3854" y="478.6245">Payload string</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3835" x2="3999" y1="485.2188" y2="485.2188"/>
+    <!--MD5=[e793864c17de9e68fad38f81460d1a57]
+class types.EventType-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="73.6094" id="types.EventType" style="stroke: #A80036; stroke-width: 1.5;" width="103" x="2609.5" y="406.5"/>
+    <ellipse cx="2627.65" cy="422.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M2628.9938,429 L2626.5406,429 L2626.5406,418.75 L2623.4,418.75 L2623.4,416.6094 L2632.1344,416.6094 L2632.1344,418.75 L2628.9938,418.75 L2628.9938,429 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="64" x="2642.35" y="426.6543">EventType</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2610.5" x2="2711.5" y1="438.5" y2="438.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2610.5" x2="2711.5" y1="446.5" y2="446.5"/>
+    <ellipse cx="2620.5" cy="457.5" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="77" x="2629.5" y="460.7104">String() string</text>
+    <ellipse cx="2620.5" cy="470.3047" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="77" x="2629.5" y="473.5151">String() string</text>
+    <!--MD5=[859c09d9bb13f3b1a524106758702668]
+class types.GlobalRuleConfig-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="73.6094" id="types.GlobalRuleConfig" style="stroke: #A80036; stroke-width: 1.5;" width="133" x="2994.5" y="732"/>
+    <ellipse cx="3009.5" cy="748" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3008.7344,748.5625 Q3006.875,747.8594 3006.2266,747.0859 Q3005.5781,746.3125 3005.5781,745 Q3005.5781,743.3125 3006.6563,742.3438 Q3007.7344,741.375 3009.6094,741.375 Q3010.4688,741.375 3011.3203,741.5703 Q3012.1719,741.7656 3013.0156,742.1563 L3013.0156,744.5469 Q3012.2344,743.9844 3011.4141,743.6953 Q3010.5938,743.4063 3009.7969,743.4063 Q3008.9219,743.4063 3008.4453,743.7656 Q3007.9688,744.125 3007.9688,744.7813 Q3007.9688,745.2969 3008.3125,745.6328 Q3008.6563,745.9688 3009.75,746.375 L3010.8125,746.7813 Q3012.2969,747.3281 3013.0078,748.2344 Q3013.7188,749.1406 3013.7188,750.5156 Q3013.7188,752.3906 3012.6094,753.3125 Q3011.5,754.2344 3009.25,754.2344 Q3008.3281,754.2344 3007.4063,754.0156 Q3006.4844,753.7969 3005.625,753.375 L3005.625,750.8438 Q3006.5938,751.5313 3007.5156,751.875 Q3008.4375,752.2188 3009.3281,752.2188 Q3010.2344,752.2188 3010.7344,751.8047 Q3011.2344,751.3906 3011.2344,750.6563 Q3011.2344,750.0938 3010.8984,749.6797 Q3010.5625,749.2656 3009.9375,749.0156 L3008.7344,748.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="101" x="3023.5" y="752.1543">GlobalRuleConfig</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2995.5" x2="3126.5" y1="764" y2="764"/>
+    <ellipse cx="3005.5" cy="775" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="86" x="3014.5" y="778.2104">Impact Impacts</text>
+    <ellipse cx="3005.5" cy="787.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="86" x="3014.5" y="791.0151">Impact Impacts</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2995.5" x2="3126.5" y1="797.6094" y2="797.6094"/>
+    <!--MD5=[79927d3b996fc99662eaa53c0b148a11]
+class types.MissingMandatoryFile-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="99.2188" id="types.MissingMandatoryFile" style="stroke: #A80036; stroke-width: 1.5;" width="160" x="3163" y="719.5"/>
+    <ellipse cx="3178" cy="735.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3177.2344,736.0625 Q3175.375,735.3594 3174.7266,734.5859 Q3174.0781,733.8125 3174.0781,732.5 Q3174.0781,730.8125 3175.1563,729.8438 Q3176.2344,728.875 3178.1094,728.875 Q3178.9688,728.875 3179.8203,729.0703 Q3180.6719,729.2656 3181.5156,729.6563 L3181.5156,732.0469 Q3180.7344,731.4844 3179.9141,731.1953 Q3179.0938,730.9063 3178.2969,730.9063 Q3177.4219,730.9063 3176.9453,731.2656 Q3176.4688,731.625 3176.4688,732.2813 Q3176.4688,732.7969 3176.8125,733.1328 Q3177.1563,733.4688 3178.25,733.875 L3179.3125,734.2813 Q3180.7969,734.8281 3181.5078,735.7344 Q3182.2188,736.6406 3182.2188,738.0156 Q3182.2188,739.8906 3181.1094,740.8125 Q3180,741.7344 3177.75,741.7344 Q3176.8281,741.7344 3175.9063,741.5156 Q3174.9844,741.2969 3174.125,740.875 L3174.125,738.3438 Q3175.0938,739.0313 3176.0156,739.375 Q3176.9375,739.7188 3177.8281,739.7188 Q3178.7344,739.7188 3179.2344,739.3047 Q3179.7344,738.8906 3179.7344,738.1563 Q3179.7344,737.5938 3179.3984,737.1797 Q3179.0625,736.7656 3178.4375,736.5156 L3177.2344,736.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="128" x="3192" y="739.6543">MissingMandatoryFile</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3164" x2="3322" y1="751.5" y2="751.5"/>
+    <ellipse cx="3174" cy="762.5" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="88" x="3183" y="765.7104">FileName string</text>
+    <ellipse cx="3174" cy="775.3047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="88" x="3183" y="778.5151">FileName string</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3164" x2="3322" y1="785.1094" y2="785.1094"/>
+    <ellipse cx="3174" cy="796.1094" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="73" x="3183" y="799.3198">Error() string</text>
+    <ellipse cx="3174" cy="808.9141" fill="#84BE84" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="73" x="3183" y="812.1245">Error() string</text>
+    <!--MD5=[2e4de0abd944be30e83b8e7660496f04]
+class types.NotificationMessage-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="227.2656" id="types.NotificationMessage" style="stroke: #A80036; stroke-width: 1.5;" width="151" x="3358.5" y="655.5"/>
+    <ellipse cx="3373.5" cy="671.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3372.7344,672.0625 Q3370.875,671.3594 3370.2266,670.5859 Q3369.5781,669.8125 3369.5781,668.5 Q3369.5781,666.8125 3370.6563,665.8438 Q3371.7344,664.875 3373.6094,664.875 Q3374.4688,664.875 3375.3203,665.0703 Q3376.1719,665.2656 3377.0156,665.6563 L3377.0156,668.0469 Q3376.2344,667.4844 3375.4141,667.1953 Q3374.5938,666.9063 3373.7969,666.9063 Q3372.9219,666.9063 3372.4453,667.2656 Q3371.9688,667.625 3371.9688,668.2813 Q3371.9688,668.7969 3372.3125,669.1328 Q3372.6563,669.4688 3373.75,669.875 L3374.8125,670.2813 Q3376.2969,670.8281 3377.0078,671.7344 Q3377.7188,672.6406 3377.7188,674.0156 Q3377.7188,675.8906 3376.6094,676.8125 Q3375.5,677.7344 3373.25,677.7344 Q3372.3281,677.7344 3371.4063,677.5156 Q3370.4844,677.2969 3369.625,676.875 L3369.625,674.3438 Q3370.5938,675.0313 3371.5156,675.375 Q3372.4375,675.7188 3373.3281,675.7188 Q3374.2344,675.7188 3374.7344,675.3047 Q3375.2344,674.8906 3375.2344,674.1563 Q3375.2344,673.5938 3374.8984,673.1797 Q3374.5625,672.7656 3373.9375,672.5156 L3372.7344,672.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="119" x="3387.5" y="675.6543">NotificationMessage</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3359.5" x2="3508.5" y1="687.5" y2="687.5"/>
+    <ellipse cx="3369.5" cy="698.5" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="75" x="3378.5" y="701.7104">Bundle string</text>
+    <ellipse cx="3369.5" cy="711.3047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="98" x="3378.5" y="714.5151">Application string</text>
+    <ellipse cx="3369.5" cy="724.1094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="96" x="3378.5" y="727.3198">EventType string</text>
+    <ellipse cx="3369.5" cy="736.9141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="99" x="3378.5" y="740.1245">Timestamp string</text>
+    <ellipse cx="3369.5" cy="749.7188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="92" x="3378.5" y="752.9292">AccountID string</text>
+    <ellipse cx="3369.5" cy="762.5234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="82" x="3378.5" y="765.7339">Events []Event</text>
+    <ellipse cx="3369.5" cy="775.3281" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="80" x="3378.5" y="778.5386">Context string</text>
+    <ellipse cx="3369.5" cy="788.1328" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="75" x="3378.5" y="791.3433">Bundle string</text>
+    <ellipse cx="3369.5" cy="800.9375" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="98" x="3378.5" y="804.1479">Application string</text>
+    <ellipse cx="3369.5" cy="813.7422" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="96" x="3378.5" y="816.9526">EventType string</text>
+    <ellipse cx="3369.5" cy="826.5469" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="99" x="3378.5" y="829.7573">Timestamp string</text>
+    <ellipse cx="3369.5" cy="839.3516" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="92" x="3378.5" y="842.562">AccountID string</text>
+    <ellipse cx="3369.5" cy="852.1563" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="82" x="3378.5" y="855.3667">Events []Event</text>
+    <ellipse cx="3369.5" cy="864.9609" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="80" x="3378.5" y="868.1714">Context string</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3359.5" x2="3508.5" y1="874.7656" y2="874.7656"/>
+    <!--MD5=[bfc95913f24df4099c6e566c809d0161]
+class types.NotificationRecord-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="278.4844" id="types.NotificationRecord" style="stroke: #A80036; stroke-width: 1.5;" width="234" x="3545" y="630"/>
+    <ellipse cx="3602.75" cy="646" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3601.9844,646.5625 Q3600.125,645.8594 3599.4766,645.0859 Q3598.8281,644.3125 3598.8281,643 Q3598.8281,641.3125 3599.9063,640.3438 Q3600.9844,639.375 3602.8594,639.375 Q3603.7188,639.375 3604.5703,639.5703 Q3605.4219,639.7656 3606.2656,640.1563 L3606.2656,642.5469 Q3605.4844,641.9844 3604.6641,641.6953 Q3603.8438,641.4063 3603.0469,641.4063 Q3602.1719,641.4063 3601.6953,641.7656 Q3601.2188,642.125 3601.2188,642.7813 Q3601.2188,643.2969 3601.5625,643.6328 Q3601.9063,643.9688 3603,644.375 L3604.0625,644.7813 Q3605.5469,645.3281 3606.2578,646.2344 Q3606.9688,647.1406 3606.9688,648.5156 Q3606.9688,650.3906 3605.8594,651.3125 Q3604.75,652.2344 3602.5,652.2344 Q3601.5781,652.2344 3600.6563,652.0156 Q3599.7344,651.7969 3598.875,651.375 L3598.875,648.8438 Q3599.8438,649.5313 3600.7656,649.875 Q3601.6875,650.2188 3602.5781,650.2188 Q3603.4844,650.2188 3603.9844,649.8047 Q3604.4844,649.3906 3604.4844,648.6563 Q3604.4844,648.0938 3604.1484,647.6797 Q3603.8125,647.2656 3603.1875,647.0156 L3601.9844,646.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="110" x="3623.25" y="650.1543">NotificationRecord</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3546" x2="3778" y1="662" y2="662"/>
+    <ellipse cx="3556" cy="673" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="68" x="3565" y="676.2104">OrgID OrgID</text>
+    <ellipse cx="3556" cy="685.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="184" x="3565" y="689.0151">AccountNumber AccountNumber</text>
+    <ellipse cx="3556" cy="698.6094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="150" x="3565" y="701.8198">ClusterName ClusterName</text>
+    <ellipse cx="3556" cy="711.4141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="126" x="3565" y="714.6245">UpdatedAt Timestamp</text>
+    <ellipse cx="3556" cy="724.2188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="208" x="3565" y="727.4292">NotificationTypeID NotificationTypeID</text>
+    <ellipse cx="3556" cy="737.0234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="84" x="3565" y="740.2339">StateID StateID</text>
+    <ellipse cx="3556" cy="749.8281" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="120" x="3565" y="753.0386">Report ClusterReport</text>
+    <ellipse cx="3556" cy="762.6328" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="122" x="3565" y="765.8433">NotifiedAt Timestamp</text>
+    <ellipse cx="3556" cy="775.4375" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="85" x="3565" y="778.6479">ErrorLog string</text>
+    <ellipse cx="3556" cy="788.2422" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="68" x="3565" y="791.4526">OrgID OrgID</text>
+    <ellipse cx="3556" cy="801.0469" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="184" x="3565" y="804.2573">AccountNumber AccountNumber</text>
+    <ellipse cx="3556" cy="813.8516" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="150" x="3565" y="817.062">ClusterName ClusterName</text>
+    <ellipse cx="3556" cy="826.6563" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="126" x="3565" y="829.8667">UpdatedAt Timestamp</text>
+    <ellipse cx="3556" cy="839.4609" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="208" x="3565" y="842.6714">NotificationTypeID NotificationTypeID</text>
+    <ellipse cx="3556" cy="852.2656" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="84" x="3565" y="855.4761">StateID StateID</text>
+    <ellipse cx="3556" cy="865.0703" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="120" x="3565" y="868.2808">Report ClusterReport</text>
+    <ellipse cx="3556" cy="877.875" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="122" x="3565" y="881.0854">NotifiedAt Timestamp</text>
+    <ellipse cx="3556" cy="890.6797" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="85" x="3565" y="893.8901">ErrorLog string</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3546" x2="3778" y1="900.4844" y2="900.4844"/>
+    <!--MD5=[a7ee22867991729e0e4dfdffc59b0f15]
+class types.NotificationType-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="150.4375" id="types.NotificationType" style="stroke: #A80036; stroke-width: 1.5;" width="143" x="3814.5" y="694"/>
+    <ellipse cx="3835.8" cy="710" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3835.0344,710.5625 Q3833.175,709.8594 3832.5266,709.0859 Q3831.8781,708.3125 3831.8781,707 Q3831.8781,705.3125 3832.9563,704.3438 Q3834.0344,703.375 3835.9094,703.375 Q3836.7688,703.375 3837.6203,703.5703 Q3838.4719,703.7656 3839.3156,704.1563 L3839.3156,706.5469 Q3838.5344,705.9844 3837.7141,705.6953 Q3836.8938,705.4063 3836.0969,705.4063 Q3835.2219,705.4063 3834.7453,705.7656 Q3834.2688,706.125 3834.2688,706.7813 Q3834.2688,707.2969 3834.6125,707.6328 Q3834.9563,707.9688 3836.05,708.375 L3837.1125,708.7813 Q3838.5969,709.3281 3839.3078,710.2344 Q3840.0188,711.1406 3840.0188,712.5156 Q3840.0188,714.3906 3838.9094,715.3125 Q3837.8,716.2344 3835.55,716.2344 Q3834.6281,716.2344 3833.7063,716.0156 Q3832.7844,715.7969 3831.925,715.375 L3831.925,712.8438 Q3832.8938,713.5313 3833.8156,713.875 Q3834.7375,714.2188 3835.6281,714.2188 Q3836.5344,714.2188 3837.0344,713.8047 Q3837.5344,713.3906 3837.5344,712.6563 Q3837.5344,712.0938 3837.1984,711.6797 Q3836.8625,711.2656 3836.2375,711.0156 L3835.0344,710.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="97" x="3851.2" y="714.1543">NotificationType</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3815.5" x2="3956.5" y1="726" y2="726"/>
+    <ellipse cx="3825.5" cy="737" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="117" x="3834.5" y="740.2104">ID NotificationTypeID</text>
+    <ellipse cx="3825.5" cy="749.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="68" x="3834.5" y="753.0151">Value string</text>
+    <ellipse cx="3825.5" cy="762.6094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="95" x="3834.5" y="765.8198">Frequency string</text>
+    <ellipse cx="3825.5" cy="775.4141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="91" x="3834.5" y="778.6245">Comment string</text>
+    <ellipse cx="3825.5" cy="788.2188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="117" x="3834.5" y="791.4292">ID NotificationTypeID</text>
+    <ellipse cx="3825.5" cy="801.0234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="68" x="3834.5" y="804.2339">Value string</text>
+    <ellipse cx="3825.5" cy="813.8281" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="95" x="3834.5" y="817.0386">Frequency string</text>
+    <ellipse cx="3825.5" cy="826.6328" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="91" x="3834.5" y="829.8433">Comment string</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3815.5" x2="3956.5" y1="836.4375" y2="836.4375"/>
+    <!--MD5=[cf499d09897d694abc61e6af6bfad68a]
+class types.NotificationTypes-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="99.2188" id="types.NotificationTypes" style="stroke: #A80036; stroke-width: 1.5;" width="173" x="2939.5" y="1019.5"/>
+    <ellipse cx="2971.6" cy="1035.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M2970.8344,1036.0625 Q2968.975,1035.3594 2968.3266,1034.5859 Q2967.6781,1033.8125 2967.6781,1032.5 Q2967.6781,1030.8125 2968.7563,1029.8438 Q2969.8344,1028.875 2971.7094,1028.875 Q2972.5688,1028.875 2973.4203,1029.0703 Q2974.2719,1029.2656 2975.1156,1029.6563 L2975.1156,1032.0469 Q2974.3344,1031.4844 2973.5141,1031.1953 Q2972.6938,1030.9063 2971.8969,1030.9063 Q2971.0219,1030.9063 2970.5453,1031.2656 Q2970.0688,1031.625 2970.0688,1032.2813 Q2970.0688,1032.7969 2970.4125,1033.1328 Q2970.7563,1033.4688 2971.85,1033.875 L2972.9125,1034.2813 Q2974.3969,1034.8281 2975.1078,1035.7344 Q2975.8188,1036.6406 2975.8188,1038.0156 Q2975.8188,1039.8906 2974.7094,1040.8125 Q2973.6,1041.7344 2971.35,1041.7344 Q2970.4281,1041.7344 2969.5063,1041.5156 Q2968.5844,1041.2969 2967.725,1040.875 L2967.725,1038.3438 Q2968.6938,1039.0313 2969.6156,1039.375 Q2970.5375,1039.7188 2971.4281,1039.7188 Q2972.3344,1039.7188 2972.8344,1039.3047 Q2973.3344,1038.8906 2973.3344,1038.1563 Q2973.3344,1037.5938 2972.9984,1037.1797 Q2972.6625,1036.7656 2972.0375,1036.5156 L2970.8344,1036.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="103" x="2989.4" y="1039.6543">NotificationTypes</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2940.5" x2="3111.5" y1="1051.5" y2="1051.5"/>
+    <ellipse cx="2950.5" cy="1062.5" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="144" x="2959.5" y="1065.7104">Instant NotificationTypeID</text>
+    <ellipse cx="2950.5" cy="1075.3047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="147" x="2959.5" y="1078.5151">Weekly NotificationTypeID</text>
+    <ellipse cx="2950.5" cy="1088.1094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="144" x="2959.5" y="1091.3198">Instant NotificationTypeID</text>
+    <ellipse cx="2950.5" cy="1100.9141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="147" x="2959.5" y="1104.1245">Weekly NotificationTypeID</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2940.5" x2="3111.5" y1="1110.7188" y2="1110.7188"/>
+    <!--MD5=[85455a637d351143e02cb0f376330fc4]
+class types.Report-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="73.6094" id="types.Report" style="stroke: #A80036; stroke-width: 1.5;" width="145" x="3147.5" y="1032"/>
+    <ellipse cx="3195.75" cy="1048" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3194.9844,1048.5625 Q3193.125,1047.8594 3192.4766,1047.0859 Q3191.8281,1046.3125 3191.8281,1045 Q3191.8281,1043.3125 3192.9063,1042.3438 Q3193.9844,1041.375 3195.8594,1041.375 Q3196.7188,1041.375 3197.5703,1041.5703 Q3198.4219,1041.7656 3199.2656,1042.1563 L3199.2656,1044.5469 Q3198.4844,1043.9844 3197.6641,1043.6953 Q3196.8438,1043.4063 3196.0469,1043.4063 Q3195.1719,1043.4063 3194.6953,1043.7656 Q3194.2188,1044.125 3194.2188,1044.7813 Q3194.2188,1045.2969 3194.5625,1045.6328 Q3194.9063,1045.9688 3196,1046.375 L3197.0625,1046.7813 Q3198.5469,1047.3281 3199.2578,1048.2344 Q3199.9688,1049.1406 3199.9688,1050.5156 Q3199.9688,1052.3906 3198.8594,1053.3125 Q3197.75,1054.2344 3195.5,1054.2344 Q3194.5781,1054.2344 3193.6563,1054.0156 Q3192.7344,1053.7969 3191.875,1053.375 L3191.875,1050.8438 Q3192.8438,1051.5313 3193.7656,1051.875 Q3194.6875,1052.2188 3195.5781,1052.2188 Q3196.4844,1052.2188 3196.9844,1051.8047 Q3197.4844,1051.3906 3197.4844,1050.6563 Q3197.4844,1050.0938 3197.1484,1049.6797 Q3196.8125,1049.2656 3196.1875,1049.0156 L3194.9844,1048.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="40" x="3216.25" y="1052.1543">Report</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3148.5" x2="3291.5" y1="1064" y2="1064"/>
+    <ellipse cx="3158.5" cy="1075" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="119" x="3167.5" y="1078.2104">Reports []ReportItem</text>
+    <ellipse cx="3158.5" cy="1087.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="119" x="3167.5" y="1091.0151">Reports []ReportItem</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3148.5" x2="3291.5" y1="1097.6094" y2="1097.6094"/>
+    <!--MD5=[8a0cf4944e32ca97e135e3bb70906f4d]
+class types.ReportItem-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="150.4375" id="types.ReportItem" style="stroke: #A80036; stroke-width: 1.5;" width="168" x="3328" y="994"/>
+    <ellipse cx="3373.75" cy="1010" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3372.9844,1010.5625 Q3371.125,1009.8594 3370.4766,1009.0859 Q3369.8281,1008.3125 3369.8281,1007 Q3369.8281,1005.3125 3370.9063,1004.3438 Q3371.9844,1003.375 3373.8594,1003.375 Q3374.7188,1003.375 3375.5703,1003.5703 Q3376.4219,1003.7656 3377.2656,1004.1563 L3377.2656,1006.5469 Q3376.4844,1005.9844 3375.6641,1005.6953 Q3374.8438,1005.4063 3374.0469,1005.4063 Q3373.1719,1005.4063 3372.6953,1005.7656 Q3372.2188,1006.125 3372.2188,1006.7813 Q3372.2188,1007.2969 3372.5625,1007.6328 Q3372.9063,1007.9688 3374,1008.375 L3375.0625,1008.7813 Q3376.5469,1009.3281 3377.2578,1010.2344 Q3377.9688,1011.1406 3377.9688,1012.5156 Q3377.9688,1014.3906 3376.8594,1015.3125 Q3375.75,1016.2344 3373.5,1016.2344 Q3372.5781,1016.2344 3371.6563,1016.0156 Q3370.7344,1015.7969 3369.875,1015.375 L3369.875,1012.8438 Q3370.8438,1013.5313 3371.7656,1013.875 Q3372.6875,1014.2188 3373.5781,1014.2188 Q3374.4844,1014.2188 3374.9844,1013.8047 Q3375.4844,1013.3906 3375.4844,1012.6563 Q3375.4844,1012.0938 3375.1484,1011.6797 Q3374.8125,1011.2656 3374.1875,1011.0156 L3372.9844,1010.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="68" x="3394.25" y="1014.1543">ReportItem</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3329" x2="3495" y1="1026" y2="1026"/>
+    <ellipse cx="3339" cy="1037" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="64" x="3348" y="1040.2104">Type string</text>
+    <ellipse cx="3339" cy="1049.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="80" x="3348" y="1053.0151">Module RuleID</text>
+    <ellipse cx="3339" cy="1062.6094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="104" x="3348" y="1065.8198">ErrorKey ErrorKey</text>
+    <ellipse cx="3339" cy="1075.4141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="142" x="3348" y="1078.6245">Details json.RawMessage</text>
+    <ellipse cx="3339" cy="1088.2188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="64" x="3348" y="1091.4292">Type string</text>
+    <ellipse cx="3339" cy="1101.0234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="80" x="3348" y="1104.2339">Module RuleID</text>
+    <ellipse cx="3339" cy="1113.8281" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="104" x="3348" y="1117.0386">ErrorKey ErrorKey</text>
+    <ellipse cx="3339" cy="1126.6328" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="142" x="3348" y="1129.8433">Details json.RawMessage</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3329" x2="3495" y1="1136.4375" y2="1136.4375"/>
+    <!--MD5=[06dc0a9a4b67c75e56b98cff96028e24]
+class types.RuleContent-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="201.6563" id="types.RuleContent" style="stroke: #A80036; stroke-width: 1.5;" width="270" x="3531" y="968"/>
+    <ellipse cx="3624.75" cy="984" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3623.9844,984.5625 Q3622.125,983.8594 3621.4766,983.0859 Q3620.8281,982.3125 3620.8281,981 Q3620.8281,979.3125 3621.9063,978.3438 Q3622.9844,977.375 3624.8594,977.375 Q3625.7188,977.375 3626.5703,977.5703 Q3627.4219,977.7656 3628.2656,978.1563 L3628.2656,980.5469 Q3627.4844,979.9844 3626.6641,979.6953 Q3625.8438,979.4063 3625.0469,979.4063 Q3624.1719,979.4063 3623.6953,979.7656 Q3623.2188,980.125 3623.2188,980.7813 Q3623.2188,981.2969 3623.5625,981.6328 Q3623.9063,981.9688 3625,982.375 L3626.0625,982.7813 Q3627.5469,983.3281 3628.2578,984.2344 Q3628.9688,985.1406 3628.9688,986.5156 Q3628.9688,988.3906 3627.8594,989.3125 Q3626.75,990.2344 3624.5,990.2344 Q3623.5781,990.2344 3622.6563,990.0156 Q3621.7344,989.7969 3620.875,989.375 L3620.875,986.8438 Q3621.8438,987.5313 3622.7656,987.875 Q3623.6875,988.2188 3624.5781,988.2188 Q3625.4844,988.2188 3625.9844,987.8047 Q3626.4844,987.3906 3626.4844,986.6563 Q3626.4844,986.0938 3626.1484,985.6797 Q3625.8125,985.2656 3625.1875,985.0156 L3623.9844,984.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="74" x="3645.25" y="988.1543">RuleContent</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3532" x2="3800" y1="1000" y2="1000"/>
+    <ellipse cx="3542" cy="1011" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="91" x="3551" y="1014.2104">Summary string</text>
+    <ellipse cx="3542" cy="1023.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="78" x="3551" y="1027.0151">Reason string</text>
+    <ellipse cx="3542" cy="1036.6094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="95" x="3551" y="1039.8198">Resolution string</text>
+    <ellipse cx="3542" cy="1049.4141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="85" x="3551" y="1052.6245">MoreInfo string</text>
+    <ellipse cx="3542" cy="1062.2188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="56" x="3551" y="1065.4292">ErrorKeys</text>
+    <text fill="#0000FF" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="25" x="3611" y="1065.4292">map</text>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="159" x="3636" y="1065.4292">[string]RuleErrorKeyContent</text>
+    <ellipse cx="3542" cy="1075.0234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="91" x="3551" y="1078.2339">HasReason bool</text>
+    <ellipse cx="3542" cy="1087.8281" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="91" x="3551" y="1091.0386">Summary string</text>
+    <ellipse cx="3542" cy="1100.6328" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="78" x="3551" y="1103.8433">Reason string</text>
+    <ellipse cx="3542" cy="1113.4375" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="95" x="3551" y="1116.6479">Resolution string</text>
+    <ellipse cx="3542" cy="1126.2422" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="85" x="3551" y="1129.4526">MoreInfo string</text>
+    <ellipse cx="3542" cy="1139.0469" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="56" x="3551" y="1142.2573">ErrorKeys</text>
+    <text fill="#0000FF" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="25" x="3611" y="1142.2573">map</text>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="159" x="3636" y="1142.2573">[string]RuleErrorKeyContent</text>
+    <ellipse cx="3542" cy="1151.8516" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="91" x="3551" y="1155.062">HasReason bool</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3532" x2="3800" y1="1161.6563" y2="1161.6563"/>
+    <!--MD5=[c64a734c0a61547dad5196cc980861fb]
+class types.RuleContentDirectory-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="99.2188" id="types.RuleContentDirectory" style="stroke: #A80036; stroke-width: 1.5;" width="163" x="3836.5" y="1019.5"/>
+    <ellipse cx="3852.4" cy="1035.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3851.6344,1036.0625 Q3849.775,1035.3594 3849.1266,1034.5859 Q3848.4781,1033.8125 3848.4781,1032.5 Q3848.4781,1030.8125 3849.5563,1029.8438 Q3850.6344,1028.875 3852.5094,1028.875 Q3853.3688,1028.875 3854.2203,1029.0703 Q3855.0719,1029.2656 3855.9156,1029.6563 L3855.9156,1032.0469 Q3855.1344,1031.4844 3854.3141,1031.1953 Q3853.4938,1030.9063 3852.6969,1030.9063 Q3851.8219,1030.9063 3851.3453,1031.2656 Q3850.8688,1031.625 3850.8688,1032.2813 Q3850.8688,1032.7969 3851.2125,1033.1328 Q3851.5563,1033.4688 3852.65,1033.875 L3853.7125,1034.2813 Q3855.1969,1034.8281 3855.9078,1035.7344 Q3856.6188,1036.6406 3856.6188,1038.0156 Q3856.6188,1039.8906 3855.5094,1040.8125 Q3854.4,1041.7344 3852.15,1041.7344 Q3851.2281,1041.7344 3850.3063,1041.5156 Q3849.3844,1041.2969 3848.525,1040.875 L3848.525,1038.3438 Q3849.4938,1039.0313 3850.4156,1039.375 Q3851.3375,1039.7188 3852.2281,1039.7188 Q3853.1344,1039.7188 3853.6344,1039.3047 Q3854.1344,1038.8906 3854.1344,1038.1563 Q3854.1344,1037.5938 3853.7984,1037.1797 Q3853.4625,1036.7656 3852.8375,1036.5156 L3851.6344,1036.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="129" x="3866.6" y="1039.6543">RuleContentDirectory</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3837.5" x2="3998.5" y1="1051.5" y2="1051.5"/>
+    <ellipse cx="3847.5" cy="1062.5" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="137" x="3856.5" y="1065.7104">Config GlobalRuleConfig</text>
+    <ellipse cx="3847.5" cy="1075.3047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="89" x="3856.5" y="1078.5151">Rules RulesMap</text>
+    <ellipse cx="3847.5" cy="1088.1094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="137" x="3856.5" y="1091.3198">Config GlobalRuleConfig</text>
+    <ellipse cx="3847.5" cy="1100.9141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="89" x="3856.5" y="1104.1245">Rules RulesMap</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3837.5" x2="3998.5" y1="1110.7188" y2="1110.7188"/>
+    <!--MD5=[7b6de18a81e85a2f9f32a26adcccec6b]
+class types.RuleErrorKeyContent-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="150.4375" id="types.RuleErrorKeyContent" style="stroke: #A80036; stroke-width: 1.5;" width="184" x="2934" y="1230"/>
+    <ellipse cx="2960.7" cy="1246" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M2959.9344,1246.5625 Q2958.075,1245.8594 2957.4266,1245.0859 Q2956.7781,1244.3125 2956.7781,1243 Q2956.7781,1241.3125 2957.8563,1240.3438 Q2958.9344,1239.375 2960.8094,1239.375 Q2961.6688,1239.375 2962.5203,1239.5703 Q2963.3719,1239.7656 2964.2156,1240.1563 L2964.2156,1242.5469 Q2963.4344,1241.9844 2962.6141,1241.6953 Q2961.7938,1241.4063 2960.9969,1241.4063 Q2960.1219,1241.4063 2959.6453,1241.7656 Q2959.1688,1242.125 2959.1688,1242.7813 Q2959.1688,1243.2969 2959.5125,1243.6328 Q2959.8563,1243.9688 2960.95,1244.375 L2962.0125,1244.7813 Q2963.4969,1245.3281 2964.2078,1246.2344 Q2964.9188,1247.1406 2964.9188,1248.5156 Q2964.9188,1250.3906 2963.8094,1251.3125 Q2962.7,1252.2344 2960.45,1252.2344 Q2959.5281,1252.2344 2958.6063,1252.0156 Q2957.6844,1251.7969 2956.825,1251.375 L2956.825,1248.8438 Q2957.7938,1249.5313 2958.7156,1249.875 Q2959.6375,1250.2188 2960.5281,1250.2188 Q2961.4344,1250.2188 2961.9344,1249.8047 Q2962.4344,1249.3906 2962.4344,1248.6563 Q2962.4344,1248.0938 2962.0984,1247.6797 Q2961.7625,1247.2656 2961.1375,1247.0156 L2959.9344,1246.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="126" x="2977.3" y="1250.1543">RuleErrorKeyContent</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2935" x2="3117" y1="1262" y2="1262"/>
+    <ellipse cx="2945" cy="1273" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="80" x="2954" y="1276.2104">Generic string</text>
+    <ellipse cx="2945" cy="1285.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="158" x="2954" y="1289.0151">Metadata ErrorKeyMetadata</text>
+    <ellipse cx="2945" cy="1298.6094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="78" x="2954" y="1301.8198">Reason string</text>
+    <ellipse cx="2945" cy="1311.4141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="91" x="2954" y="1314.6245">HasReason bool</text>
+    <ellipse cx="2945" cy="1324.2188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="80" x="2954" y="1327.4292">Generic string</text>
+    <ellipse cx="2945" cy="1337.0234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="158" x="2954" y="1340.2339">Metadata ErrorKeyMetadata</text>
+    <ellipse cx="2945" cy="1349.8281" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="78" x="2954" y="1353.0386">Reason string</text>
+    <ellipse cx="2945" cy="1362.6328" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="91" x="2954" y="1365.8433">HasReason bool</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2935" x2="3117" y1="1372.4375" y2="1372.4375"/>
+    <!--MD5=[e47a8185cc7841233f74155690366d71]
+class types.State-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="124.8281" id="types.State" style="stroke: #A80036; stroke-width: 1.5;" width="117" x="3153.5" y="1242.5"/>
+    <ellipse cx="3192.35" cy="1258.5" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3191.5844,1259.0625 Q3189.725,1258.3594 3189.0766,1257.5859 Q3188.4281,1256.8125 3188.4281,1255.5 Q3188.4281,1253.8125 3189.5063,1252.8438 Q3190.5844,1251.875 3192.4594,1251.875 Q3193.3188,1251.875 3194.1703,1252.0703 Q3195.0219,1252.2656 3195.8656,1252.6563 L3195.8656,1255.0469 Q3195.0844,1254.4844 3194.2641,1254.1953 Q3193.4438,1253.9063 3192.6469,1253.9063 Q3191.7719,1253.9063 3191.2953,1254.2656 Q3190.8188,1254.625 3190.8188,1255.2813 Q3190.8188,1255.7969 3191.1625,1256.1328 Q3191.5063,1256.4688 3192.6,1256.875 L3193.6625,1257.2813 Q3195.1469,1257.8281 3195.8578,1258.7344 Q3196.5688,1259.6406 3196.5688,1261.0156 Q3196.5688,1262.8906 3195.4594,1263.8125 Q3194.35,1264.7344 3192.1,1264.7344 Q3191.1781,1264.7344 3190.2563,1264.5156 Q3189.3344,1264.2969 3188.475,1263.875 L3188.475,1261.3438 Q3189.4438,1262.0313 3190.3656,1262.375 Q3191.2875,1262.7188 3192.1781,1262.7188 Q3193.0844,1262.7188 3193.5844,1262.3047 Q3194.0844,1261.8906 3194.0844,1261.1563 Q3194.0844,1260.5938 3193.7484,1260.1797 Q3193.4125,1259.7656 3192.7875,1259.5156 L3191.5844,1259.0625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="32" x="3211.65" y="1262.6543">State</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3154.5" x2="3269.5" y1="1274.5" y2="1274.5"/>
+    <ellipse cx="3164.5" cy="1285.5" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="55" x="3173.5" y="1288.7104">ID StateID</text>
+    <ellipse cx="3164.5" cy="1298.3047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="68" x="3173.5" y="1301.5151">Value string</text>
+    <ellipse cx="3164.5" cy="1311.1094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="91" x="3173.5" y="1314.3198">Comment string</text>
+    <ellipse cx="3164.5" cy="1323.9141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="55" x="3173.5" y="1327.1245">ID StateID</text>
+    <ellipse cx="3164.5" cy="1336.7188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="68" x="3173.5" y="1339.9292">Value string</text>
+    <ellipse cx="3164.5" cy="1349.5234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="91" x="3173.5" y="1352.7339">Comment string</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3154.5" x2="3269.5" y1="1359.3281" y2="1359.3281"/>
+    <!--MD5=[dca46aa8dc2c2837cb8416b2a8500239]
+class types.States-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="150.4375" id="types.States" style="stroke: #A80036; stroke-width: 1.5;" width="162" x="3306" y="1230"/>
+    <ellipse cx="3363.75" cy="1246" fill="#7FFFD4" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M3362.9844,1246.5625 Q3361.125,1245.8594 3360.4766,1245.0859 Q3359.8281,1244.3125 3359.8281,1243 Q3359.8281,1241.3125 3360.9063,1240.3438 Q3361.9844,1239.375 3363.8594,1239.375 Q3364.7188,1239.375 3365.5703,1239.5703 Q3366.4219,1239.7656 3367.2656,1240.1563 L3367.2656,1242.5469 Q3366.4844,1241.9844 3365.6641,1241.6953 Q3364.8438,1241.4063 3364.0469,1241.4063 Q3363.1719,1241.4063 3362.6953,1241.7656 Q3362.2188,1242.125 3362.2188,1242.7813 Q3362.2188,1243.2969 3362.5625,1243.6328 Q3362.9063,1243.9688 3364,1244.375 L3365.0625,1244.7813 Q3366.5469,1245.3281 3367.2578,1246.2344 Q3367.9688,1247.1406 3367.9688,1248.5156 Q3367.9688,1250.3906 3366.8594,1251.3125 Q3365.75,1252.2344 3363.5,1252.2344 Q3362.5781,1252.2344 3361.6563,1252.0156 Q3360.7344,1251.7969 3359.875,1251.375 L3359.875,1248.8438 Q3360.8438,1249.5313 3361.7656,1249.875 Q3362.6875,1250.2188 3363.5781,1250.2188 Q3364.4844,1250.2188 3364.9844,1249.8047 Q3365.4844,1249.3906 3365.4844,1248.6563 Q3365.4844,1248.0938 3365.1484,1247.6797 Q3364.8125,1247.2656 3364.1875,1247.0156 L3362.9844,1246.5625 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="38" x="3384.25" y="1250.1543">States</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3307" x2="3467" y1="1262" y2="1262"/>
+    <ellipse cx="3317" cy="1273" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="105" x="3326" y="1276.2104">SameState StateID</text>
+    <ellipse cx="3317" cy="1285.8047" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="98" x="3326" y="1289.0151">SentState StateID</text>
+    <ellipse cx="3317" cy="1298.6094" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="136" x="3326" y="1301.8198">LowerIssueState StateID</text>
+    <ellipse cx="3317" cy="1311.4141" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="102" x="3326" y="1314.6245">ErrorState StateID</text>
+    <ellipse cx="3317" cy="1324.2188" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="105" x="3326" y="1327.4292">SameState StateID</text>
+    <ellipse cx="3317" cy="1337.0234" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="98" x="3326" y="1340.2339">SentState StateID</text>
+    <ellipse cx="3317" cy="1349.8281" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="136" x="3326" y="1353.0386">LowerIssueState StateID</text>
+    <ellipse cx="3317" cy="1362.6328" fill="none" rx="3" ry="3" style="stroke: #038048; stroke-width: 1.0;"/>
+    <text fill="#000000" font-family="sans-serif" font-size="11" lengthAdjust="spacingAndGlyphs" textLength="102" x="3326" y="1365.8433">ErrorState StateID</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="3307" x2="3467" y1="1372.4375" y2="1372.4375"/>
+    <!--MD5=[23d413a1b4f781a4812b5b7b278d200c]
+class types.AccountNumber-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.AccountNumber" style="stroke: #A80036; stroke-width: 1.5;" width="131" x="2747.5" y="419.5"/>
+    <ellipse cx="2762.5" cy="435.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M2763.8438,442 L2761.3906,442 L2761.3906,431.75 L2758.25,431.75 L2758.25,429.6094 L2766.9844,429.6094 L2766.9844,431.75 L2763.8438,431.75 L2763.8438,442 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="99" x="2776.5" y="439.6543">AccountNumber</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2748.5" x2="2877.5" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2748.5" x2="2877.5" y1="459.5" y2="459.5"/>
+    <!--MD5=[e1a85f63bf8837ae15b1d4c4419f772c]
+class types.ClusterName-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.ClusterName" style="stroke: #A80036; stroke-width: 1.5;" width="109" x="2055.5" y="419.5"/>
+    <ellipse cx="2070.5" cy="435.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M2071.8438,442 L2069.3906,442 L2069.3906,431.75 L2066.25,431.75 L2066.25,429.6094 L2074.9844,429.6094 L2074.9844,431.75 L2071.8438,431.75 L2071.8438,442 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="77" x="2084.5" y="439.6543">ClusterName</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2056.5" x2="2163.5" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2056.5" x2="2163.5" y1="459.5" y2="459.5"/>
+    <!--MD5=[c9aa96860f366442e541b54a78a1bd5f]
+class types.ClusterReport-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.ClusterReport" style="stroke: #A80036; stroke-width: 1.5;" width="114" x="1906" y="419.5"/>
+    <ellipse cx="1921" cy="435.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M1922.3438,442 L1919.8906,442 L1919.8906,431.75 L1916.75,431.75 L1916.75,429.6094 L1925.4844,429.6094 L1925.4844,431.75 L1922.3438,431.75 L1922.3438,442 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="82" x="1935" y="439.6543">ClusterReport</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1907" x2="2019" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1907" x2="2019" y1="459.5" y2="459.5"/>
+    <!--MD5=[dd68b32c23567738fb6938e8cc30e866]
+class types.DBDriver-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.DBDriver" style="stroke: #A80036; stroke-width: 1.5;" width="85" x="2311.5" y="419.5"/>
+    <ellipse cx="2326.5" cy="435.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M2327.8438,442 L2325.3906,442 L2325.3906,431.75 L2322.25,431.75 L2322.25,429.6094 L2330.9844,429.6094 L2330.9844,431.75 L2327.8438,431.75 L2327.8438,442 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="53" x="2340.5" y="439.6543">DBDriver</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2312.5" x2="2395.5" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2312.5" x2="2395.5" y1="459.5" y2="459.5"/>
+    <!--MD5=[48cefaf08e0d7805717812befc41e5b9]
+class types.ErrorKey-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.ErrorKey" style="stroke: #A80036; stroke-width: 1.5;" width="84" x="1787" y="419.5"/>
+    <ellipse cx="1802" cy="435.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M1803.3438,442 L1800.8906,442 L1800.8906,431.75 L1797.75,431.75 L1797.75,429.6094 L1806.4844,429.6094 L1806.4844,431.75 L1803.3438,431.75 L1803.3438,442 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="52" x="1816" y="439.6543">ErrorKey</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1788" x2="1870" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1788" x2="1870" y1="459.5" y2="459.5"/>
+    <!--MD5=[c86713b873b4e1048ccd1e7ee3ba0a22]
+class types.EventMetadata-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.EventMetadata" style="stroke: #A80036; stroke-width: 1.5;" width="123" x="1060.5" y="745"/>
+    <ellipse cx="1075.5" cy="761" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M1076.8438,767.5 L1074.3906,767.5 L1074.3906,757.25 L1071.25,757.25 L1071.25,755.1094 L1079.9844,755.1094 L1079.9844,757.25 L1076.8438,757.25 L1076.8438,767.5 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="91" x="1089.5" y="765.1543">EventMetadata</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1061.5" x2="1182.5" y1="777" y2="777"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1061.5" x2="1182.5" y1="785" y2="785"/>
+    <!--MD5=[fb1f80d94032f5d4ca0f3705c102f5bc]
+class types.EventPayload-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.EventPayload" style="stroke: #A80036; stroke-width: 1.5;" width="113" x="1532.5" y="419.5"/>
+    <ellipse cx="1547.5" cy="435.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M1548.8438,442 L1546.3906,442 L1546.3906,431.75 L1543.25,431.75 L1543.25,429.6094 L1551.9844,429.6094 L1551.9844,431.75 L1548.8438,431.75 L1548.8438,442 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="81" x="1561.5" y="439.6543">EventPayload</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1533.5" x2="1644.5" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1533.5" x2="1644.5" y1="459.5" y2="459.5"/>
+    <!--MD5=[4842a391750a8822d2d153545e23a596]
+class types.Impacts-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.Impacts" style="stroke: #A80036; stroke-width: 1.5;" width="81" x="1416.5" y="419.5"/>
+    <ellipse cx="1431.5" cy="435.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M1432.8438,442 L1430.3906,442 L1430.3906,431.75 L1427.25,431.75 L1427.25,429.6094 L1435.9844,429.6094 L1435.9844,431.75 L1432.8438,431.75 L1432.8438,442 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="49" x="1445.5" y="439.6543">Impacts</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1417.5" x2="1496.5" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1417.5" x2="1496.5" y1="459.5" y2="459.5"/>
+    <!--MD5=[3e3182494e2712107987e6ca5e4b0e04]
+class types.KafkaOffset-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.KafkaOffset" style="stroke: #A80036; stroke-width: 1.5;" width="100" x="1281" y="419.5"/>
+    <ellipse cx="1296" cy="435.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M1297.3438,442 L1294.8906,442 L1294.8906,431.75 L1291.75,431.75 L1291.75,429.6094 L1300.4844,429.6094 L1300.4844,431.75 L1297.3438,431.75 L1297.3438,442 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="68" x="1310" y="439.6543">KafkaOffset</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1282" x2="1380" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1282" x2="1380" y1="459.5" y2="459.5"/>
+    <!--MD5=[34d5b89f50d5e8ee60db4fff6855bb7b]
+class types.NotificationContext-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.NotificationContext" style="stroke: #A80036; stroke-width: 1.5;" width="147" x="878.5" y="745"/>
+    <ellipse cx="893.5" cy="761" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M894.8438,767.5 L892.3906,767.5 L892.3906,757.25 L889.25,757.25 L889.25,755.1094 L897.9844,755.1094 L897.9844,757.25 L894.8438,757.25 L894.8438,767.5 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="115" x="907.5" y="765.1543">NotificationContext</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="879.5" x2="1024.5" y1="777" y2="777"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="879.5" x2="1024.5" y1="785" y2="785"/>
+    <!--MD5=[b190c3440cb1ea7a0fb6d8d0aa68b116]
+class types.NotificationTypeID-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.NotificationTypeID" style="stroke: #A80036; stroke-width: 1.5;" width="142" x="2432" y="419.5"/>
+    <ellipse cx="2447" cy="435.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M2448.3438,442 L2445.8906,442 L2445.8906,431.75 L2442.75,431.75 L2442.75,429.6094 L2451.4844,429.6094 L2451.4844,431.75 L2448.3438,431.75 L2448.3438,442 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="110" x="2461" y="439.6543">NotificationTypeID</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2433" x2="2573" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2433" x2="2573" y1="459.5" y2="459.5"/>
+    <!--MD5=[4d92ab61438da96250eefa79cde81a87]
+class types.OrgID-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.OrgID" style="stroke: #A80036; stroke-width: 1.5;" width="67" x="2913.5" y="419.5"/>
+    <ellipse cx="2928.5" cy="435.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M2929.8438,442 L2927.3906,442 L2927.3906,431.75 L2924.25,431.75 L2924.25,429.6094 L2932.9844,429.6094 L2932.9844,431.75 L2929.8438,431.75 L2929.8438,442 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="35" x="2942.5" y="439.6543">OrgID</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2914.5" x2="2979.5" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2914.5" x2="2979.5" y1="459.5" y2="459.5"/>
+    <!--MD5=[5dabb956a4070217c9f23ae4f6d7a66f]
+class types.RuleID-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.RuleID" style="stroke: #A80036; stroke-width: 1.5;" width="71" x="1680.5" y="419.5"/>
+    <ellipse cx="1695.5" cy="435.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M1696.8438,442 L1694.3906,442 L1694.3906,431.75 L1691.25,431.75 L1691.25,429.6094 L1699.9844,429.6094 L1699.9844,431.75 L1696.8438,431.75 L1696.8438,442 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="39" x="1709.5" y="439.6543">RuleID</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1681.5" x2="1750.5" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1681.5" x2="1750.5" y1="459.5" y2="459.5"/>
+    <!--MD5=[b710ff0b63e266bf43cb8cc22ffe5ba7]
+class types.RulesMap-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.RulesMap" style="stroke: #A80036; stroke-width: 1.5;" width="89" x="754.5" y="745"/>
+    <ellipse cx="769.5" cy="761" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M770.8438,767.5 L768.3906,767.5 L768.3906,757.25 L765.25,757.25 L765.25,755.1094 L773.9844,755.1094 L773.9844,757.25 L770.8438,757.25 L770.8438,767.5 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="57" x="783.5" y="765.1543">RulesMap</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="755.5" x2="842.5" y1="777" y2="777"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="755.5" x2="842.5" y1="785" y2="785"/>
+    <!--MD5=[ca5536515c977208977ae74e0446e2a3]
+class types.StateID-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.StateID" style="stroke: #A80036; stroke-width: 1.5;" width="77" x="2199.5" y="419.5"/>
+    <ellipse cx="2214.5" cy="435.5" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M2215.8438,442 L2213.3906,442 L2213.3906,431.75 L2210.25,431.75 L2210.25,429.6094 L2218.9844,429.6094 L2218.9844,431.75 L2215.8438,431.75 L2215.8438,442 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="45" x="2228.5" y="439.6543">StateID</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2200.5" x2="2275.5" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2200.5" x2="2275.5" y1="459.5" y2="459.5"/>
+    <!--MD5=[710acf4fbfb4df95e6512cccd93e5c3d]
+class types.Timestamp-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.Timestamp" style="stroke: #A80036; stroke-width: 1.5;" width="99" x="1218.5" y="745"/>
+    <ellipse cx="1233.5" cy="761" fill="#FF7700" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M1234.8438,767.5 L1232.3906,767.5 L1232.3906,757.25 L1229.25,757.25 L1229.25,755.1094 L1237.9844,755.1094 L1237.9844,757.25 L1234.8438,757.25 L1234.8438,767.5 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="67" x="1247.5" y="765.1543">Timestamp</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1219.5" x2="1316.5" y1="777" y2="777"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1219.5" x2="1316.5" y1="785" y2="785"/>
+    <!--MD5=[9f7a407556ed2cbf14c91ddc1eb927f3]
+class types.timeTime-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.timeTime" style="stroke: #A80036; stroke-width: 1.5;" width="92" x="1154" y="419.5"/>
+    <ellipse cx="1169" cy="435.5" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M1171.9688,441.1406 Q1171.3906,441.4375 1170.75,441.5859 Q1170.1094,441.7344 1169.4063,441.7344 Q1166.9063,441.7344 1165.5859,440.0859 Q1164.2656,438.4375 1164.2656,435.3125 Q1164.2656,432.1875 1165.5859,430.5313 Q1166.9063,428.875 1169.4063,428.875 Q1170.1094,428.875 1170.7578,429.0313 Q1171.4063,429.1875 1171.9688,429.4844 L1171.9688,432.2031 Q1171.3438,431.625 1170.75,431.3516 Q1170.1563,431.0781 1169.5313,431.0781 Q1168.1875,431.0781 1167.5,432.1484 Q1166.8125,433.2188 1166.8125,435.3125 Q1166.8125,437.4063 1167.5,438.4766 Q1168.1875,439.5469 1169.5313,439.5469 Q1170.1563,439.5469 1170.75,439.2734 Q1171.3438,439 1171.9688,438.4219 L1171.9688,441.1406 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="60" x="1183" y="439.6543">time.Time</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1155" x2="1245" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1155" x2="1245" y1="459.5" y2="459.5"/>
+    <!--MD5=[c4f53f4b99b5c877f5696a33e19c06e0]
+class types.<font color=blue>map</font>[string]<font color=blue>interface</font>{}-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.&lt;font color=blue&gt;map&lt;/font&gt;[string]&lt;font color=blue&gt;interface&lt;/font&gt;{}" style="stroke: #A80036; stroke-width: 1.5;" width="173" x="945.5" y="419.5"/>
+    <ellipse cx="960.5" cy="435.5" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M963.4688,441.1406 Q962.8906,441.4375 962.25,441.5859 Q961.6094,441.7344 960.9063,441.7344 Q958.4063,441.7344 957.0859,440.0859 Q955.7656,438.4375 955.7656,435.3125 Q955.7656,432.1875 957.0859,430.5313 Q958.4063,428.875 960.9063,428.875 Q961.6094,428.875 962.2578,429.0313 Q962.9063,429.1875 963.4688,429.4844 L963.4688,432.2031 Q962.8438,431.625 962.25,431.3516 Q961.6563,431.0781 961.0313,431.0781 Q959.6875,431.0781 959,432.1484 Q958.3125,433.2188 958.3125,435.3125 Q958.3125,437.4063 959,438.4766 Q959.6875,439.5469 961.0313,439.5469 Q961.6563,439.5469 962.25,439.2734 Q962.8438,439 963.4688,438.4219 L963.4688,441.1406 Z "/>
+    <text fill="#0000FF" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="27" x="974.5" y="439.6543">map</text>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="45" x="1001.5" y="439.6543">[string]</text>
+    <text fill="#0000FF" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="53" x="1046.5" y="439.6543">interface</text>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="16" x="1099.5" y="439.6543">{}</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="946.5" x2="1117.5" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="946.5" x2="1117.5" y1="459.5" y2="459.5"/>
+    <!--MD5=[a4465ffe535c88bdc2aa0673af7f57d6]
+class types.<font color=blue>map</font>[string]RuleContent-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="types.&lt;font color=blue&gt;map&lt;/font&gt;[string]RuleContent" style="stroke: #A80036; stroke-width: 1.5;" width="178" x="732" y="419.5"/>
+    <ellipse cx="747" cy="435.5" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M749.9688,441.1406 Q749.3906,441.4375 748.75,441.5859 Q748.1094,441.7344 747.4063,441.7344 Q744.9063,441.7344 743.5859,440.0859 Q742.2656,438.4375 742.2656,435.3125 Q742.2656,432.1875 743.5859,430.5313 Q744.9063,428.875 747.4063,428.875 Q748.1094,428.875 748.7578,429.0313 Q749.4063,429.1875 749.9688,429.4844 L749.9688,432.2031 Q749.3438,431.625 748.75,431.3516 Q748.1563,431.0781 747.5313,431.0781 Q746.1875,431.0781 745.5,432.1484 Q744.8125,433.2188 744.8125,435.3125 Q744.8125,437.4063 745.5,438.4766 Q746.1875,439.5469 747.5313,439.5469 Q748.1563,439.5469 748.75,439.2734 Q749.3438,439 749.9688,438.4219 L749.9688,441.1406 Z "/>
+    <text fill="#0000FF" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="27" x="761" y="439.6543">map</text>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="119" x="788" y="439.6543">[string]RuleContent</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="733" x2="909" y1="451.5" y2="451.5"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="733" x2="909" y1="459.5" y2="459.5"/>
+    <!--MD5=[6816469bf813770087389abd7d22309a]
+class __builtin__.<font color=blue>map</font>[string]int-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="__builtin__.&lt;font color=blue&gt;map&lt;/font&gt;[string]int" style="stroke: #A80036; stroke-width: 1.5;" width="120" x="1747" y="126"/>
+    <ellipse cx="1762" cy="142" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M1764.9688,147.6406 Q1764.3906,147.9375 1763.75,148.0859 Q1763.1094,148.2344 1762.4063,148.2344 Q1759.9063,148.2344 1758.5859,146.5859 Q1757.2656,144.9375 1757.2656,141.8125 Q1757.2656,138.6875 1758.5859,137.0313 Q1759.9063,135.375 1762.4063,135.375 Q1763.1094,135.375 1763.7578,135.5313 Q1764.4063,135.6875 1764.9688,135.9844 L1764.9688,138.7031 Q1764.3438,138.125 1763.75,137.8516 Q1763.1563,137.5781 1762.5313,137.5781 Q1761.1875,137.5781 1760.5,138.6484 Q1759.8125,139.7188 1759.8125,141.8125 Q1759.8125,143.9063 1760.5,144.9766 Q1761.1875,146.0469 1762.5313,146.0469 Q1763.1563,146.0469 1763.75,145.7734 Q1764.3438,145.5 1764.9688,144.9219 L1764.9688,147.6406 Z "/>
+    <text fill="#0000FF" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="27" x="1776" y="146.1543">map</text>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="61" x="1803" y="146.1543">[string]int</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1748" x2="1866" y1="158" y2="158"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1748" x2="1866" y1="166" y2="166"/>
+    <!--MD5=[6954536899f4dff178eaeddbbe85cfcb]
+class __builtin__.<font color=blue>map</font>[string]string-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="__builtin__.&lt;font color=blue&gt;map&lt;/font&gt;[string]string" style="stroke: #A80036; stroke-width: 1.5;" width="139" x="1902.5" y="126"/>
+    <ellipse cx="1917.5" cy="142" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M1920.4688,147.6406 Q1919.8906,147.9375 1919.25,148.0859 Q1918.6094,148.2344 1917.9063,148.2344 Q1915.4063,148.2344 1914.0859,146.5859 Q1912.7656,144.9375 1912.7656,141.8125 Q1912.7656,138.6875 1914.0859,137.0313 Q1915.4063,135.375 1917.9063,135.375 Q1918.6094,135.375 1919.2578,135.5313 Q1919.9063,135.6875 1920.4688,135.9844 L1920.4688,138.7031 Q1919.8438,138.125 1919.25,137.8516 Q1918.6563,137.5781 1918.0313,137.5781 Q1916.6875,137.5781 1916,138.6484 Q1915.3125,139.7188 1915.3125,141.8125 Q1915.3125,143.9063 1916,144.9766 Q1916.6875,146.0469 1918.0313,146.0469 Q1918.6563,146.0469 1919.25,145.7734 Q1919.8438,145.5 1920.4688,144.9219 L1920.4688,147.6406 Z "/>
+    <text fill="#0000FF" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="27" x="1931.5" y="146.1543">map</text>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="80" x="1958.5" y="146.1543">[string]string</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1903.5" x2="2040.5" y1="158" y2="158"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1903.5" x2="2040.5" y1="166" y2="166"/>
+    <!--MD5=[2236f6c5d9deadb4f6bceeb4cf3ac6c7]
+class __builtin__.int-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="__builtin__.int" style="stroke: #A80036; stroke-width: 1.5;" width="48" x="2179" y="126"/>
+    <ellipse cx="2194" cy="142" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M2196.9688,147.6406 Q2196.3906,147.9375 2195.75,148.0859 Q2195.1094,148.2344 2194.4063,148.2344 Q2191.9063,148.2344 2190.5859,146.5859 Q2189.2656,144.9375 2189.2656,141.8125 Q2189.2656,138.6875 2190.5859,137.0313 Q2191.9063,135.375 2194.4063,135.375 Q2195.1094,135.375 2195.7578,135.5313 Q2196.4063,135.6875 2196.9688,135.9844 L2196.9688,138.7031 Q2196.3438,138.125 2195.75,137.8516 Q2195.1563,137.5781 2194.5313,137.5781 Q2193.1875,137.5781 2192.5,138.6484 Q2191.8125,139.7188 2191.8125,141.8125 Q2191.8125,143.9063 2192.5,144.9766 Q2193.1875,146.0469 2194.5313,146.0469 Q2195.1563,146.0469 2195.75,145.7734 Q2196.3438,145.5 2196.9688,144.9219 L2196.9688,147.6406 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="16" x="2208" y="146.1543">int</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2180" x2="2226" y1="158" y2="158"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2180" x2="2226" y1="166" y2="166"/>
+    <!--MD5=[708beb641bcb0eff76b4c6674ee2f355]
+class __builtin__.int64-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="__builtin__.int64" style="stroke: #A80036; stroke-width: 1.5;" width="64" x="1648" y="126"/>
+    <ellipse cx="1663" cy="142" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M1665.9688,147.6406 Q1665.3906,147.9375 1664.75,148.0859 Q1664.1094,148.2344 1663.4063,148.2344 Q1660.9063,148.2344 1659.5859,146.5859 Q1658.2656,144.9375 1658.2656,141.8125 Q1658.2656,138.6875 1659.5859,137.0313 Q1660.9063,135.375 1663.4063,135.375 Q1664.1094,135.375 1664.7578,135.5313 Q1665.4063,135.6875 1665.9688,135.9844 L1665.9688,138.7031 Q1665.3438,138.125 1664.75,137.8516 Q1664.1563,137.5781 1663.5313,137.5781 Q1662.1875,137.5781 1661.5,138.6484 Q1660.8125,139.7188 1660.8125,141.8125 Q1660.8125,143.9063 1661.5,144.9766 Q1662.1875,146.0469 1663.5313,146.0469 Q1664.1563,146.0469 1664.75,145.7734 Q1665.3438,145.5 1665.9688,144.9219 L1665.9688,147.6406 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="32" x="1677" y="146.1543">int64</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1649" x2="1711" y1="158" y2="158"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="1649" x2="1711" y1="166" y2="166"/>
+    <!--MD5=[aaadaf5c3ad6e0e0dd8a1e035309d301]
+class __builtin__.string-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="__builtin__.string" style="stroke: #A80036; stroke-width: 1.5;" width="67" x="2076.5" y="126"/>
+    <ellipse cx="2091.5" cy="142" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M2094.4688,147.6406 Q2093.8906,147.9375 2093.25,148.0859 Q2092.6094,148.2344 2091.9063,148.2344 Q2089.4063,148.2344 2088.0859,146.5859 Q2086.7656,144.9375 2086.7656,141.8125 Q2086.7656,138.6875 2088.0859,137.0313 Q2089.4063,135.375 2091.9063,135.375 Q2092.6094,135.375 2093.2578,135.5313 Q2093.9063,135.6875 2094.4688,135.9844 L2094.4688,138.7031 Q2093.8438,138.125 2093.25,137.8516 Q2092.6563,137.5781 2092.0313,137.5781 Q2090.6875,137.5781 2090,138.6484 Q2089.3125,139.7188 2089.3125,141.8125 Q2089.3125,143.9063 2090,144.9766 Q2090.6875,146.0469 2092.0313,146.0469 Q2092.6563,146.0469 2093.25,145.7734 Q2093.8438,145.5 2094.4688,144.9219 L2094.4688,147.6406 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="35" x="2105.5" y="146.1543">string</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2077.5" x2="2142.5" y1="158" y2="158"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2077.5" x2="2142.5" y1="166" y2="166"/>
+    <!--MD5=[f4b0a476a318806863263f0fa6013cbe]
+class __builtin__.uint32-->
+    <rect fill="#FEFECE" filter="url(#fv30ae0jc4t3a)" height="48" id="__builtin__.uint32" style="stroke: #A80036; stroke-width: 1.5;" width="72" x="2262" y="126"/>
+    <ellipse cx="2277" cy="142" fill="#ADD1B2" rx="11" ry="11" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <path d="M2279.9688,147.6406 Q2279.3906,147.9375 2278.75,148.0859 Q2278.1094,148.2344 2277.4063,148.2344 Q2274.9063,148.2344 2273.5859,146.5859 Q2272.2656,144.9375 2272.2656,141.8125 Q2272.2656,138.6875 2273.5859,137.0313 Q2274.9063,135.375 2277.4063,135.375 Q2278.1094,135.375 2278.7578,135.5313 Q2279.4063,135.6875 2279.9688,135.9844 L2279.9688,138.7031 Q2279.3438,138.125 2278.75,137.8516 Q2278.1563,137.5781 2277.5313,137.5781 Q2276.1875,137.5781 2275.5,138.6484 Q2274.8125,139.7188 2274.8125,141.8125 Q2274.8125,143.9063 2275.5,144.9766 Q2276.1875,146.0469 2277.5313,146.0469 Q2278.1563,146.0469 2278.75,145.7734 Q2279.3438,145.5 2279.9688,144.9219 L2279.9688,147.6406 Z "/>
+    <text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="40" x="2291" y="146.1543">uint32</text>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2263" x2="2333" y1="158" y2="158"/>
+    <line style="stroke: #A80036; stroke-width: 1.5;" x1="2263" x2="2333" y1="166" y2="166"/>
+    <!--MD5=[636bfd65ea9e4b45039d2674dbd6e866]
+reverse link differ.Storage to differ.DBStorage-->
+    <path d="M4887,277.5098 C4887,290.5776 4887,303.8526 4887,316.9104 " fill="none" id="differ.Storage&lt;-differ.DBStorage" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <polygon fill="none" points="4880.0001,277.2061,4887,257.2061,4894.0001,277.2061,4880.0001,277.2061" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <!--MD5=[5f0f1f3891ca51b4ed941b489aa72f24]
+reverse link main.Storage to differ.DBStorage-->
+    <path d="M7971.0066,213.3207 C7730.0725,229.2952 7468.4882,245.2304 7227,257 C6574.1218,288.8199 6407.6624,240.5427 5757,303 C5715.4986,306.9837 5672.9749,311.7113 5630.1167,316.9792 " fill="none" id="main.Storage&lt;-differ.DBStorage" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <polygon fill="none" points="7970.8562,206.3154,7991.2765,211.9735,7971.7848,220.2845,7970.8562,206.3154" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <!--MD5=[13a8bab6d7612f405c065abaa0da3cbb]
+reverse link main.Storage to main.DBStorage-->
+    <path d="M8843,265.1704 C8843,288.6582 8843,313.279 8843,336.4689 " fill="none" id="main.Storage&lt;-main.DBStorage" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <polygon fill="none" points="8836.0001,264.8858,8843,244.8857,8850.0001,264.8857,8836.0001,264.8858" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <!--MD5=[62a93b7072716bc7527388d3d92e233a]
+reverse link mock.Mock to mocks.Producer-->
+    <path d="M7222.5827,169.8647 C7283.8697,198.0925 7398.6923,252.0549 7494,303 C7552.0153,334.0111 7616.2597,371.8111 7663.6688,400.3891 " fill="none" id="mock.Mock&lt;-mocks.Producer" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <polygon fill="#A80036" points="7210.702,164.4064,7214.4842,170.546,7221.6062,169.4162,7217.824,163.2765,7210.702,164.4064" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <!--MD5=[9d7893350e6e2dc3dd0eac78a4cc5ede]
+reverse link mock.Mock to mocks.Storage-->
+    <path d="M7135.6688,172.9561 C7071.9619,206.707 6948.7111,272.0033 6839.2559,329.9908 " fill="none" id="mock.Mock&lt;-mocks.Storage" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <polygon fill="#A80036" points="7147.2248,166.834,7140.0503,166.1083,7136.621,172.4517,7143.7955,173.1775,7147.2248,166.834" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <!--MD5=[f623c61f237213fead9b5b92183a679c]
+reverse link differ.Storage to mocks.Storage-->
+    <path d="M5540.7315,260.3971 C5675.4352,283.1448 5817.5037,307.1363 5952.8481,329.9922 " fill="none" id="differ.Storage&lt;-mocks.Storage" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <polygon fill="none" points="5539.4674,267.2829,5520.9123,257.0502,5541.7987,253.4783,5539.4674,267.2829" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <!--MD5=[8d6742a11fca405831738155d21932d0]
+reverse link main.Storage to mocks.Storage-->
+    <path d="M7971.4189,242.7268 C7812.4147,261.384 7648.1082,281.8147 7494,303 C7433.4387,311.3254 7370.587,320.4792 7307.6391,329.9994 " fill="none" id="main.Storage&lt;-mocks.Storage" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <polygon fill="none" points="7970.6076,235.774,7991.2858,240.4016,7972.2351,249.6791,7970.6076,235.774" style="stroke: #A80036; stroke-width: 1.0;"/>
+    <!--MD5=[d37cc8aa614a240e583a8618ea28529a]
+reverse link __builtin__.<font color=blue>map</font>[string]int to types.Impacts-->
+    <path d="M1793.9828,178.505 C1781.2178,203.162 1759.3969,237.7863 1730,257 C1648.2034,310.4618 1590.0506,240.4201 1515,303 C1479.4304,332.6593 1465.3715,387.6843 1460.047,419.3572 " fill="none" id="__builtin__.&lt;font color=blue&gt;map&lt;/font&gt;[string]int&lt;-types.Impacts" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="1791.2607" y="169.023"/>
+    <!--MD5=[67fa17cbd015b91990405af7bed477e5]
+reverse link __builtin__.<font color=blue>map</font>[string]string to types.EventPayload-->
+    <path d="M1956.4153,178.5673 C1941.4099,203.2656 1916.393,237.9156 1885,257 C1798.8991,309.3424 1743.509,242.408 1663,303 C1624.2318,332.1774 1603.7933,387.6441 1594.8052,419.4614 " fill="none" id="__builtin__.&lt;font color=blue&gt;map&lt;/font&gt;[string]string&lt;-types.EventPayload" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="1954.0998" y="169.0773"/>
+    <!--MD5=[039ca8248c76f6f3ded51ec72c2bd475]
+reverse link __builtin__.int to types.DBDriver-->
+    <path d="M2210.682,179.3787 C2217.4453,201.8853 2228.7652,233.0393 2245,257 C2261.7552,281.7287 2276.8812,278.5216 2294,303 C2319.9171,340.0592 2337.9264,390.0769 2347.0651,419.3534 " fill="none" id="__builtin__.int&lt;-types.DBDriver" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="2204.2255" y="169.4274"/>
+    <!--MD5=[4b6413d85dda522c7a195f3bbdd148b5]
+reverse link __builtin__.int to types.EventType-->
+    <path d="M2206.3224,179.285 C2210.7642,204.0052 2221.0889,238.2782 2245,257 C2367.4914,352.9079 2465.6595,212.2225 2592,303 C2626.0967,327.499 2644.1696,373.6014 2653.1408,406.3079 " fill="none" id="__builtin__.int&lt;-types.EventType" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="2200.4611" y="169.1639"/>
+    <!--MD5=[cfe6f4773a6734c790e45a29767e23fc]
+reverse link __builtin__.int to types.NotificationTypeID-->
+    <path d="M2207.1485,179.4121 C2212.0852,203.573 2222.6729,236.9687 2245,257 C2302.9422,308.9842 2351.3739,256.7655 2414,303 C2454.7682,333.0977 2481.4671,387.96 2494.227,419.4872 " fill="none" id="__builtin__.int&lt;-types.NotificationTypeID" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="2201.1787" y="169.4047"/>
+    <!--MD5=[cf6f8e101c3aca3218d85b56fb47457b]
+reverse link __builtin__.int to types.StateID-->
+    <path d="M2206.465,179.0568 C2213.3607,236.8817 2228.6885,365.4161 2235.0962,419.1498 " fill="none" id="__builtin__.int&lt;-types.StateID" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="2200.8642" y="169.0183"/>
+    <!--MD5=[01308823f5e77eb8fafb7c4dc261f9ce]
+reverse link __builtin__.int64 to types.KafkaOffset-->
+    <path d="M1642.8599,161.8386 C1584.2294,182.1851 1469.6441,228.8925 1399,303 C1366.6523,336.9336 1346.9703,389.1674 1337.608,419.4707 " fill="none" id="__builtin__.int64&lt;-types.KafkaOffset" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="1642.6697" y="155.1851"/>
+    <!--MD5=[5fb2081855c8e4112f66582b13d5f21f]
+reverse link __builtin__.string to types.ClusterName-->
+    <path d="M2110,179.0568 C2110,236.8817 2110,365.4161 2110,419.1498 " fill="none" id="__builtin__.string&lt;-types.ClusterName" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="2105" y="169.0183"/>
+    <!--MD5=[01de056155dd4bbd11c6f73199a6dd8b]
+reverse link __builtin__.string to types.ClusterReport-->
+    <path d="M2096.4377,179.0708 C2086.2961,200.6566 2071.997,230.7723 2059,257 C2029.895,315.7333 1994.2579,384.0757 1975.6636,419.4775 " fill="none" id="__builtin__.string&lt;-types.ClusterReport" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="2093.665" y="169.3249"/>
+    <!--MD5=[5c345da71cf7d5a7282d2c558a8c9c3e]
+reverse link __builtin__.string to types.ErrorKey-->
+    <path d="M2103.3764,179.0742 C2096.3624,203.3389 2082.9018,237.0657 2059,257 C1998.8892,307.133 1948.0659,251.6401 1889,303 C1853.9737,333.4566 1838.7969,387.9291 1832.6994,419.3508 " fill="none" id="__builtin__.string&lt;-types.ErrorKey" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="2099.7767" y="169.0484"/>
+    <!--MD5=[9193991c1ee462e489dc6f20238b5144]
+reverse link __builtin__.string to types.RuleID-->
+    <path d="M2104.0151,179.2711 C2097.3658,203.9824 2084.082,238.25 2059,257 C1954.8285,334.8732 1871.0623,221.1321 1770,303 C1734.2624,331.9501 1722.1406,387.502 1718.0544,419.3948 " fill="none" id="__builtin__.string&lt;-types.RuleID" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="2100.3351" y="169.152"/>
+    <!--MD5=[7f41089906eef31f9f2c9b7432e353d2]
+reverse link __builtin__.uint32 to types.AccountNumber-->
+    <path d="M2339.5318,155.1294 C2422.3241,167.2423 2610.24,204.4001 2730,303 C2768.166,334.4225 2792.8656,388.2884 2804.7241,419.401 " fill="none" id="__builtin__.uint32&lt;-types.AccountNumber" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="2329.2323" y="149.3673"/>
+    <!--MD5=[c50d51073c7b1e77be3c459f35b32a56]
+reverse link __builtin__.uint32 to types.OrgID-->
+    <path d="M2339.4056,155.5132 C2460.7618,172.4323 2812.3006,227.1046 2896,303 C2929.641,333.5044 2941.1208,387.9593 2945.0174,419.3651 " fill="none" id="__builtin__.uint32&lt;-types.OrgID" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="2329.1475" y="149.7838"/>
+    <!--MD5=[2d892eacf3b3633da01ded1ff2848130]
+reverse link types.<font color=blue>map</font>[string]<font color=blue>interface</font>{} to types.EventMetadata-->
+    <path d="M1040.1163,472.8541 C1057.6957,536.4329 1099.0133,685.8648 1115.2649,744.6412 " fill="none" id="types.&lt;font color=blue&gt;map&lt;/font&gt;[string]&lt;font color=blue&gt;interface&lt;/font&gt;{}&lt;-types.EventMetadata" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="1033.6911" y="462.6995"/>
+    <!--MD5=[dc8213935dbdde78e41b652ef08bf4d0]
+reverse link types.<font color=blue>map</font>[string]<font color=blue>interface</font>{} to types.NotificationContext-->
+    <path d="M1024.7855,472.8541 C1009.1594,536.4329 972.4326,685.8648 957.9868,744.6412 " fill="none" id="types.&lt;font color=blue&gt;map&lt;/font&gt;[string]&lt;font color=blue&gt;interface&lt;/font&gt;{}&lt;-types.NotificationContext" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="1021.0524" y="462.6995"/>
+    <!--MD5=[521bef864802ad7d6ae288788f523be7]
+reverse link types.<font color=blue>map</font>[string]RuleContent to types.RulesMap-->
+    <path d="M819.016,472.8541 C814.7188,536.4329 804.619,685.8648 800.6464,744.6412 " fill="none" id="types.&lt;font color=blue&gt;map&lt;/font&gt;[string]RuleContent&lt;-types.RulesMap" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="814.3644" y="462.6995"/>
+    <!--MD5=[c23fc798e32c07def8e33c28800c3fb4]
+reverse link types.timeTime to types.Timestamp-->
+    <path d="M1206.1323,472.8541 C1219.4145,536.4329 1250.6323,685.8648 1262.9112,744.6412 " fill="none" id="types.timeTime&lt;-types.Timestamp" style="stroke: #A80036; stroke-width: 1.0; stroke-dasharray: 7.0,7.0;"/>
+    <rect fill="#FFFFFF" height="10" style="stroke: #A80036; stroke-width: 1.5;" width="10" x="1200.0555" y="462.6995"/>
+    <!--MD5=[a71af616f445f87eae70200528bbc23f]
+link conf.ConfigStruct to conf.DependenciesConfiguration-->
+    <!--MD5=[3565366dc3bde18988b9c9e10958155d]
+link conf.DependenciesConfiguration to conf.KafkaConfiguration-->
+    <!--MD5=[576e33299d92928ecc55d1169ee6ac64]
+link conf.ConfigStruct to conf.LoggingConfiguration-->
+    <!--MD5=[638fc18e1c6fa9e09ad4906e676b7ae1]
+link conf.LoggingConfiguration to conf.NotificationsConfiguration-->
+    <!--MD5=[d43d5b9f36979704a0a8b972dfe3961e]
+link conf.NotificationsConfiguration to conf.StorageConfiguration-->
+    <!--MD5=[13d5bc33d633e3fe15c72148e6d0b4be]
+link types.CliFlags to types.ClusterEntry-->
+    <!--MD5=[80cf67ae22ebbf5092e3c7164dee8c75]
+link types.ClusterEntry to types.Digest-->
+    <!--MD5=[6f9afb8cfe010b1c58b026de42e9c7d8]
+link types.Digest to types.ErrorKeyMetadata-->
+    <!--MD5=[c2e3c76666f576dc43bf5d7da29abdaf]
+link types.ErrorKeyMetadata to types.Event-->
+    <!--MD5=[53b502866348ec47257402801cbf84f6]
+link types.CliFlags to types.GlobalRuleConfig-->
+    <!--MD5=[caa1e536a39dcd628a08bf8d68f22136]
+link types.GlobalRuleConfig to types.MissingMandatoryFile-->
+    <!--MD5=[3e33e4df076801fffeb2c123495246b2]
+link types.MissingMandatoryFile to types.NotificationMessage-->
+    <!--MD5=[c9dd4bb2ed606544b60d4cf3cfea1239]
+link types.NotificationMessage to types.NotificationRecord-->
+    <!--MD5=[58e3d0fceb3e132778ac0e95b43d0163]
+link types.NotificationRecord to types.NotificationType-->
+    <!--MD5=[e5bb7ac75577448c9db545da6a604e0e]
+link types.GlobalRuleConfig to types.NotificationTypes-->
+    <!--MD5=[b26373a4b2505baf223de1b7e75a70d2]
+link types.NotificationTypes to types.Report-->
+    <!--MD5=[f770f7e3578d0f452b630824e7bd419c]
+link types.Report to types.ReportItem-->
+    <!--MD5=[bbd314a191357a50ea5d34c80fe9a674]
+link types.ReportItem to types.RuleContent-->
+    <!--MD5=[baa0c0c7b2e9de6fab6c82d80bf80259]
+link types.RuleContent to types.RuleContentDirectory-->
+    <!--MD5=[65b9056814183c4b1ba8fbc35ea830ff]
+link types.NotificationTypes to types.RuleErrorKeyContent-->
+    <!--MD5=[e04fe91d88231e1b49d90f597445e2d9]
+link types.RuleErrorKeyContent to types.State-->
+    <!--MD5=[49ea57f9453a59b76574c49e1521ba26]
+link types.State to types.States-->
+    <!--MD5=[d8ae030101a3d3afd3225deb976c2cf0]
+@startuml
+namespace conf {
+    class ConfigStruct << (S,Aquamarine) >> {
+        + Logging LoggingConfiguration
+        + Storage StorageConfiguration
+        + Kafka KafkaConfiguration
+        + Dependencies DependenciesConfiguration
+        + Notifications NotificationsConfiguration
+
+    }
+    class DependenciesConfiguration << (S,Aquamarine) >> {
+        + ContentServiceServer string
+        + ContentServiceEndpoint string
+
+    }
+    class KafkaConfiguration << (S,Aquamarine) >> {
+        + Address string
+        + Topic string
+        + Timeout time.Duration
+
+    }
+    class LoggingConfiguration << (S,Aquamarine) >> {
+        + Debug bool
+        + LogLevel string
+
+    }
+    class NotificationsConfiguration << (S,Aquamarine) >> {
+        + InsightsAdvisorURL string
+        + ClusterDetailsURI string
+        + RuleDetailsURI string
+
+    }
+    class StorageConfiguration << (S,Aquamarine) >> {
+        + Driver string
+        + PGUsername string
+        + PGPassword string
+        + PGHost string
+        + PGPort int
+        + PGDBName string
+        + PGParams string
+        + LogSQLQueries bool
+
+    }
+}
+
+
+namespace differ {
+    class DBStorage << (S,Aquamarine) >> {
+        - connection *sql.DB
+        - dbDriverType types.DBDriver
+
+        + Close() error
+        + ReadNotificationTypes() ([]types.NotificationType, error)
+        + ReadStates() ([]types.State, error)
+        + ReadClusterList() ([]types.ClusterEntry, error)
+        + ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)
+        + ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, kafkaOffset types.KafkaOffset) (types.ClusterReport, error)
+        + ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)
+        + WriteNotificationRecord(notificationRecord types.NotificationRecord) error
+        + WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error
+        + WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error
+        + ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)
+        + CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error)
+        + CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+        + CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+
+    }
+    interface Storage  {
+        + Close() error
+        + ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)
+        + ReadClusterList() ([]types.ClusterEntry, error)
+        + ReadNotificationTypes() ([]types.NotificationType, error)
+        + ReadStates() ([]types.State, error)
+        + ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)
+        + ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, offset types.KafkaOffset) (types.ClusterReport, error)
+        + ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)
+        + WriteNotificationRecord(notificationRecord types.NotificationRecord) error
+        + WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error
+        + WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error
+        + CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+        + CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+
+    }
+}
+
+"differ.Storage" <|- - "differ.DBStorage"
+"main.Storage" <|- - "differ.DBStorage"
+
+namespace main {
+    class DBStorage << (S,Aquamarine) >> {
+        - connection *sql.DB
+        - dbDriverType types.DBDriver
+
+        + Close() error
+        + ReadNotificationTypes() ([]types.NotificationType, error)
+        + ReadStates() ([]types.State, error)
+        + ReadClusterList() ([]types.ClusterEntry, error)
+        + ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)
+        + ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, kafkaOffset types.KafkaOffset) (types.ClusterReport, error)
+        + ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)
+        + WriteNotificationRecord(notificationRecord types.NotificationRecord) error
+        + WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error
+        + WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error
+        + ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)
+
+    }
+    interface Storage  {
+        + Close() error
+        + ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)
+        + ReadClusterList() ([]types.ClusterEntry, error)
+        + ReadNotificationTypes() ([]types.NotificationType, error)
+        + ReadStates() ([]types.State, error)
+        + ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)
+        + ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, offset types.KafkaOffset) (types.ClusterReport, error)
+        + ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)
+        + WriteNotificationRecord(notificationRecord types.NotificationRecord) error
+        + WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error
+        + WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error
+
+    }
+}
+
+"main.Storage" <|- - "main.DBStorage"
+
+namespace mocks {
+    class Producer << (S,Aquamarine) >> {
+        + Close() error
+        + New(brokerCfg conf.KafkaConfiguration) (*producer.KafkaProducer, error)
+        + ProduceMessage(msg types.NotificationMessage) (int32, int64, error)
+
+    }
+    class Storage << (S,Aquamarine) >> {
+        + Close() error
+        + ReadClusterList() ([]types.ClusterEntry, error)
+        + ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)
+        + ReadNotificationTypes() ([]types.NotificationType, error)
+        + ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)
+        + ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, offset types.KafkaOffset) (types.ClusterReport, error)
+        + ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)
+        + ReadStates() ([]types.State, error)
+        + WriteNotificationRecord(notificationRecord types.NotificationRecord) error
+        + WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error
+        + WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error
+        + CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error)
+        + CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+        + CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+
+    }
+}
+"mock.Mock" *- - "mocks.Producer"
+"mock.Mock" *- - "mocks.Storage"
+
+"differ.Storage" <|- - "mocks.Storage"
+"main.Storage" <|- - "mocks.Storage"
+
+namespace producer {
+    class KafkaProducer << (S,Aquamarine) >> {
+        + Configuration conf.KafkaConfiguration
+        + Producer sarama.SyncProducer
+
+        + ProduceMessage(msg types.NotificationMessage) (int32, int64, error)
+        + Close() error
+
+    }
+    interface Producer  {
+        + New(brokerCfg conf.KafkaConfiguration) (Producer, error)
+        + ProduceMessage(msg types.NotificationMessage) (int32, int64, error)
+        + Close() error
+
+    }
+}
+
+
+namespace types {
+    class CliFlags << (S,Aquamarine) >> {
+        + InstantReports bool
+        + WeeklyReports bool
+        + ShowVersion bool
+        + ShowAuthors bool
+        + ShowConfiguration bool
+        + InstantReports bool
+        + WeeklyReports bool
+        + ShowVersion bool
+        + ShowAuthors bool
+        + ShowConfiguration bool
+
+    }
+    class ClusterEntry << (S,Aquamarine) >> {
+        + OrgID OrgID
+        + AccountNumber AccountNumber
+        + ClusterName ClusterName
+        + KafkaOffset KafkaOffset
+        + UpdatedAt Timestamp
+        + OrgID OrgID
+        + AccountNumber AccountNumber
+        + ClusterName ClusterName
+        + KafkaOffset KafkaOffset
+        + UpdatedAt Timestamp
+
+    }
+    class Digest << (S,Aquamarine) >> {
+        + ClustersAffected int
+        + CriticalNotifications int
+        + ImportantNotifications int
+        + Recommendations int
+        + Incidents int
+        + ClustersAffected int
+        + CriticalNotifications int
+        + ImportantNotifications int
+        + Recommendations int
+        + Incidents int
+
+    }
+    class ErrorKeyMetadata << (S,Aquamarine) >> {
+        + Condition string
+        + Description string
+        + Impact string
+        + Likelihood int
+        + PublishDate string
+        + Status string
+        + Tags []string
+        + Condition string
+        + Description string
+        + Impact string
+        + Likelihood int
+        + PublishDate string
+        + Status string
+        + Tags []string
+
+    }
+    class Event << (S,Aquamarine) >> {
+        + Metadata EventMetadata
+        + Payload string
+        + Metadata EventMetadata
+        + Payload string
+
+    }
+    class EventType << (S,Aquamarine) >> {
+        + String() string
+        + String() string
+
+    }
+    class GlobalRuleConfig << (S,Aquamarine) >> {
+        + Impact Impacts
+        + Impact Impacts
+
+    }
+    class MissingMandatoryFile << (S,Aquamarine) >> {
+        + FileName string
+        + FileName string
+
+        + Error() string
+        + Error() string
+
+    }
+    class NotificationMessage << (S,Aquamarine) >> {
+        + Bundle string
+        + Application string
+        + EventType string
+        + Timestamp string
+        + AccountID string
+        + Events []Event
+        + Context string
+        + Bundle string
+        + Application string
+        + EventType string
+        + Timestamp string
+        + AccountID string
+        + Events []Event
+        + Context string
+
+    }
+    class NotificationRecord << (S,Aquamarine) >> {
+        + OrgID OrgID
+        + AccountNumber AccountNumber
+        + ClusterName ClusterName
+        + UpdatedAt Timestamp
+        + NotificationTypeID NotificationTypeID
+        + StateID StateID
+        + Report ClusterReport
+        + NotifiedAt Timestamp
+        + ErrorLog string
+        + OrgID OrgID
+        + AccountNumber AccountNumber
+        + ClusterName ClusterName
+        + UpdatedAt Timestamp
+        + NotificationTypeID NotificationTypeID
+        + StateID StateID
+        + Report ClusterReport
+        + NotifiedAt Timestamp
+        + ErrorLog string
+
+    }
+    class NotificationType << (S,Aquamarine) >> {
+        + ID NotificationTypeID
+        + Value string
+        + Frequency string
+        + Comment string
+        + ID NotificationTypeID
+        + Value string
+        + Frequency string
+        + Comment string
+
+    }
+    class NotificationTypes << (S,Aquamarine) >> {
+        + Instant NotificationTypeID
+        + Weekly NotificationTypeID
+        + Instant NotificationTypeID
+        + Weekly NotificationTypeID
+
+    }
+    class Report << (S,Aquamarine) >> {
+        + Reports []ReportItem
+        + Reports []ReportItem
+
+    }
+    class ReportItem << (S,Aquamarine) >> {
+        + Type string
+        + Module RuleID
+        + ErrorKey ErrorKey
+        + Details json.RawMessage
+        + Type string
+        + Module RuleID
+        + ErrorKey ErrorKey
+        + Details json.RawMessage
+
+    }
+    class RuleContent << (S,Aquamarine) >> {
+        + Summary string
+        + Reason string
+        + Resolution string
+        + MoreInfo string
+        + ErrorKeys <font color=blue>map</font>[string]RuleErrorKeyContent
+        + HasReason bool
+        + Summary string
+        + Reason string
+        + Resolution string
+        + MoreInfo string
+        + ErrorKeys <font color=blue>map</font>[string]RuleErrorKeyContent
+        + HasReason bool
+
+    }
+    class RuleContentDirectory << (S,Aquamarine) >> {
+        + Config GlobalRuleConfig
+        + Rules RulesMap
+        + Config GlobalRuleConfig
+        + Rules RulesMap
+
+    }
+    class RuleErrorKeyContent << (S,Aquamarine) >> {
+        + Generic string
+        + Metadata ErrorKeyMetadata
+        + Reason string
+        + HasReason bool
+        + Generic string
+        + Metadata ErrorKeyMetadata
+        + Reason string
+        + HasReason bool
+
+    }
+    class State << (S,Aquamarine) >> {
+        + ID StateID
+        + Value string
+        + Comment string
+        + ID StateID
+        + Value string
+        + Comment string
+
+    }
+    class States << (S,Aquamarine) >> {
+        + SameState StateID
+        + SentState StateID
+        + LowerIssueState StateID
+        + ErrorState StateID
+        + SameState StateID
+        + SentState StateID
+        + LowerIssueState StateID
+        + ErrorState StateID
+
+    }
+    class types.AccountNumber << (T, #FF7700) >>  {
+    }
+    class types.ClusterName << (T, #FF7700) >>  {
+    }
+    class types.ClusterReport << (T, #FF7700) >>  {
+    }
+    class types.DBDriver << (T, #FF7700) >>  {
+    }
+    class types.ErrorKey << (T, #FF7700) >>  {
+    }
+    class types.EventMetadata << (T, #FF7700) >>  {
+    }
+    class types.EventPayload << (T, #FF7700) >>  {
+    }
+    class types.EventType << (T, #FF7700) >>  {
+    }
+    class types.Impacts << (T, #FF7700) >>  {
+    }
+    class types.KafkaOffset << (T, #FF7700) >>  {
+    }
+    class types.NotificationContext << (T, #FF7700) >>  {
+    }
+    class types.NotificationTypeID << (T, #FF7700) >>  {
+    }
+    class types.OrgID << (T, #FF7700) >>  {
+    }
+    class types.RuleID << (T, #FF7700) >>  {
+    }
+    class types.RulesMap << (T, #FF7700) >>  {
+    }
+    class types.StateID << (T, #FF7700) >>  {
+    }
+    class types.Timestamp << (T, #FF7700) >>  {
+    }
+    class "time.Time" as timeTime {
+    }
+}
+
+
+"__builtin__.<font color=blue>map</font>[string]int" #.. "types.Impacts"
+"__builtin__.<font color=blue>map</font>[string]string" #.. "types.EventPayload"
+"__builtin__.int" #.. "types.DBDriver"
+"__builtin__.int" #.. "types.EventType"
+"__builtin__.int" #.. "types.NotificationTypeID"
+"__builtin__.int" #.. "types.StateID"
+"__builtin__.int64" #.. "types.KafkaOffset"
+"__builtin__.string" #.. "types.ClusterName"
+"__builtin__.string" #.. "types.ClusterReport"
+"__builtin__.string" #.. "types.ErrorKey"
+"__builtin__.string" #.. "types.RuleID"
+"__builtin__.uint32" #.. "types.AccountNumber"
+"__builtin__.uint32" #.. "types.OrgID"
+"types.<font color=blue>map</font>[string]<font color=blue>interface</font>{}" #.. "types.EventMetadata"
+"types.<font color=blue>map</font>[string]<font color=blue>interface</font>{}" #.. "types.NotificationContext"
+"types.<font color=blue>map</font>[string]RuleContent" #.. "types.RulesMap"
+"types.timeTime" #.. "types.Timestamp"
+@enduml
+
+PlantUML version 1.2019.12(Sun Nov 03 11:24:54 CET 2019)
+(GPL source distribution)
+Java Runtime: OpenJDK Runtime Environment
+JVM: OpenJDK 64-Bit Server VM
+Java Version: 1.8.0_191-b12
+Operating System: Linux
+Default Encoding: UTF-8
+Language: en
+Country: US
+-->
+  </g>
+</svg>

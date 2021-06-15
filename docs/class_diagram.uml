@@ -1,0 +1,438 @@
+@startuml
+namespace conf {
+    class ConfigStruct << (S,Aquamarine) >> {
+        + Logging LoggingConfiguration
+        + Storage StorageConfiguration
+        + Kafka KafkaConfiguration
+        + Dependencies DependenciesConfiguration
+        + Notifications NotificationsConfiguration
+
+    }
+    class DependenciesConfiguration << (S,Aquamarine) >> {
+        + ContentServiceServer string
+        + ContentServiceEndpoint string
+
+    }
+    class KafkaConfiguration << (S,Aquamarine) >> {
+        + Address string
+        + Topic string
+        + Timeout time.Duration
+
+    }
+    class LoggingConfiguration << (S,Aquamarine) >> {
+        + Debug bool
+        + LogLevel string
+
+    }
+    class NotificationsConfiguration << (S,Aquamarine) >> {
+        + InsightsAdvisorURL string
+        + ClusterDetailsURI string
+        + RuleDetailsURI string
+
+    }
+    class StorageConfiguration << (S,Aquamarine) >> {
+        + Driver string
+        + PGUsername string
+        + PGPassword string
+        + PGHost string
+        + PGPort int
+        + PGDBName string
+        + PGParams string
+        + LogSQLQueries bool
+
+    }
+}
+
+
+namespace differ {
+    class DBStorage << (S,Aquamarine) >> {
+        - connection *sql.DB
+        - dbDriverType types.DBDriver
+
+        + Close() error
+        + ReadNotificationTypes() ([]types.NotificationType, error)
+        + ReadStates() ([]types.State, error)
+        + ReadClusterList() ([]types.ClusterEntry, error)
+        + ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)
+        + ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, kafkaOffset types.KafkaOffset) (types.ClusterReport, error)
+        + ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)
+        + WriteNotificationRecord(notificationRecord types.NotificationRecord) error
+        + WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error
+        + WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error
+        + ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)
+        + CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error)
+        + CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+        + CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+
+    }
+    interface Storage  {
+        + Close() error
+        + ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)
+        + ReadClusterList() ([]types.ClusterEntry, error)
+        + ReadNotificationTypes() ([]types.NotificationType, error)
+        + ReadStates() ([]types.State, error)
+        + ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)
+        + ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, offset types.KafkaOffset) (types.ClusterReport, error)
+        + ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)
+        + WriteNotificationRecord(notificationRecord types.NotificationRecord) error
+        + WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error
+        + WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error
+        + CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+        + CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+
+    }
+}
+
+"differ.Storage" <|-- "differ.DBStorage"
+"main.Storage" <|-- "differ.DBStorage"
+
+namespace main {
+    class DBStorage << (S,Aquamarine) >> {
+        - connection *sql.DB
+        - dbDriverType types.DBDriver
+
+        + Close() error
+        + ReadNotificationTypes() ([]types.NotificationType, error)
+        + ReadStates() ([]types.State, error)
+        + ReadClusterList() ([]types.ClusterEntry, error)
+        + ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)
+        + ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, kafkaOffset types.KafkaOffset) (types.ClusterReport, error)
+        + ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)
+        + WriteNotificationRecord(notificationRecord types.NotificationRecord) error
+        + WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error
+        + WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error
+        + ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)
+
+    }
+    interface Storage  {
+        + Close() error
+        + ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)
+        + ReadClusterList() ([]types.ClusterEntry, error)
+        + ReadNotificationTypes() ([]types.NotificationType, error)
+        + ReadStates() ([]types.State, error)
+        + ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)
+        + ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, offset types.KafkaOffset) (types.ClusterReport, error)
+        + ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)
+        + WriteNotificationRecord(notificationRecord types.NotificationRecord) error
+        + WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error
+        + WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error
+
+    }
+}
+
+"main.Storage" <|-- "main.DBStorage"
+
+namespace mocks {
+    class Producer << (S,Aquamarine) >> {
+        + Close() error
+        + New(brokerCfg conf.KafkaConfiguration) (*producer.KafkaProducer, error)
+        + ProduceMessage(msg types.NotificationMessage) (int32, int64, error)
+
+    }
+    class Storage << (S,Aquamarine) >> {
+        + Close() error
+        + ReadClusterList() ([]types.ClusterEntry, error)
+        + ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error)
+        + ReadNotificationTypes() ([]types.NotificationType, error)
+        + ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error)
+        + ReadReportForClusterAtOffset(orgID types.OrgID, clusterName types.ClusterName, offset types.KafkaOffset) (types.ClusterReport, error)
+        + ReadReportForClusterAtTime(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) (types.ClusterReport, error)
+        + ReadStates() ([]types.State, error)
+        + WriteNotificationRecord(notificationRecord types.NotificationRecord) error
+        + WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error
+        + WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error
+        + CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error)
+        + CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+        + CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+
+    }
+}
+"mock.Mock" *-- "mocks.Producer"
+"mock.Mock" *-- "mocks.Storage"
+
+"differ.Storage" <|-- "mocks.Storage"
+"main.Storage" <|-- "mocks.Storage"
+
+namespace producer {
+    class KafkaProducer << (S,Aquamarine) >> {
+        + Configuration conf.KafkaConfiguration
+        + Producer sarama.SyncProducer
+
+        + ProduceMessage(msg types.NotificationMessage) (int32, int64, error)
+        + Close() error
+
+    }
+    interface Producer  {
+        + New(brokerCfg conf.KafkaConfiguration) (Producer, error)
+        + ProduceMessage(msg types.NotificationMessage) (int32, int64, error)
+        + Close() error
+
+    }
+}
+
+
+namespace types {
+    class CliFlags << (S,Aquamarine) >> {
+        + InstantReports bool
+        + WeeklyReports bool
+        + ShowVersion bool
+        + ShowAuthors bool
+        + ShowConfiguration bool
+        + InstantReports bool
+        + WeeklyReports bool
+        + ShowVersion bool
+        + ShowAuthors bool
+        + ShowConfiguration bool
+
+    }
+    class ClusterEntry << (S,Aquamarine) >> {
+        + OrgID OrgID
+        + AccountNumber AccountNumber
+        + ClusterName ClusterName
+        + KafkaOffset KafkaOffset
+        + UpdatedAt Timestamp
+        + OrgID OrgID
+        + AccountNumber AccountNumber
+        + ClusterName ClusterName
+        + KafkaOffset KafkaOffset
+        + UpdatedAt Timestamp
+
+    }
+    class Digest << (S,Aquamarine) >> {
+        + ClustersAffected int
+        + CriticalNotifications int
+        + ImportantNotifications int
+        + Recommendations int
+        + Incidents int
+        + ClustersAffected int
+        + CriticalNotifications int
+        + ImportantNotifications int
+        + Recommendations int
+        + Incidents int
+
+    }
+    class ErrorKeyMetadata << (S,Aquamarine) >> {
+        + Condition string
+        + Description string
+        + Impact string
+        + Likelihood int
+        + PublishDate string
+        + Status string
+        + Tags []string
+        + Condition string
+        + Description string
+        + Impact string
+        + Likelihood int
+        + PublishDate string
+        + Status string
+        + Tags []string
+
+    }
+    class Event << (S,Aquamarine) >> {
+        + Metadata EventMetadata
+        + Payload string
+        + Metadata EventMetadata
+        + Payload string
+
+    }
+    class EventType << (S,Aquamarine) >> {
+        + String() string
+        + String() string
+
+    }
+    class GlobalRuleConfig << (S,Aquamarine) >> {
+        + Impact Impacts
+        + Impact Impacts
+
+    }
+    class MissingMandatoryFile << (S,Aquamarine) >> {
+        + FileName string
+        + FileName string
+
+        + Error() string
+        + Error() string
+
+    }
+    class NotificationMessage << (S,Aquamarine) >> {
+        + Bundle string
+        + Application string
+        + EventType string
+        + Timestamp string
+        + AccountID string
+        + Events []Event
+        + Context string
+        + Bundle string
+        + Application string
+        + EventType string
+        + Timestamp string
+        + AccountID string
+        + Events []Event
+        + Context string
+
+    }
+    class NotificationRecord << (S,Aquamarine) >> {
+        + OrgID OrgID
+        + AccountNumber AccountNumber
+        + ClusterName ClusterName
+        + UpdatedAt Timestamp
+        + NotificationTypeID NotificationTypeID
+        + StateID StateID
+        + Report ClusterReport
+        + NotifiedAt Timestamp
+        + ErrorLog string
+        + OrgID OrgID
+        + AccountNumber AccountNumber
+        + ClusterName ClusterName
+        + UpdatedAt Timestamp
+        + NotificationTypeID NotificationTypeID
+        + StateID StateID
+        + Report ClusterReport
+        + NotifiedAt Timestamp
+        + ErrorLog string
+
+    }
+    class NotificationType << (S,Aquamarine) >> {
+        + ID NotificationTypeID
+        + Value string
+        + Frequency string
+        + Comment string
+        + ID NotificationTypeID
+        + Value string
+        + Frequency string
+        + Comment string
+
+    }
+    class NotificationTypes << (S,Aquamarine) >> {
+        + Instant NotificationTypeID
+        + Weekly NotificationTypeID
+        + Instant NotificationTypeID
+        + Weekly NotificationTypeID
+
+    }
+    class Report << (S,Aquamarine) >> {
+        + Reports []ReportItem
+        + Reports []ReportItem
+
+    }
+    class ReportItem << (S,Aquamarine) >> {
+        + Type string
+        + Module RuleID
+        + ErrorKey ErrorKey
+        + Details json.RawMessage
+        + Type string
+        + Module RuleID
+        + ErrorKey ErrorKey
+        + Details json.RawMessage
+
+    }
+    class RuleContent << (S,Aquamarine) >> {
+        + Summary string
+        + Reason string
+        + Resolution string
+        + MoreInfo string
+        + ErrorKeys <font color=blue>map</font>[string]RuleErrorKeyContent
+        + HasReason bool
+        + Summary string
+        + Reason string
+        + Resolution string
+        + MoreInfo string
+        + ErrorKeys <font color=blue>map</font>[string]RuleErrorKeyContent
+        + HasReason bool
+
+    }
+    class RuleContentDirectory << (S,Aquamarine) >> {
+        + Config GlobalRuleConfig
+        + Rules RulesMap
+        + Config GlobalRuleConfig
+        + Rules RulesMap
+
+    }
+    class RuleErrorKeyContent << (S,Aquamarine) >> {
+        + Generic string
+        + Metadata ErrorKeyMetadata
+        + Reason string
+        + HasReason bool
+        + Generic string
+        + Metadata ErrorKeyMetadata
+        + Reason string
+        + HasReason bool
+
+    }
+    class State << (S,Aquamarine) >> {
+        + ID StateID
+        + Value string
+        + Comment string
+        + ID StateID
+        + Value string
+        + Comment string
+
+    }
+    class States << (S,Aquamarine) >> {
+        + SameState StateID
+        + SentState StateID
+        + LowerIssueState StateID
+        + ErrorState StateID
+        + SameState StateID
+        + SentState StateID
+        + LowerIssueState StateID
+        + ErrorState StateID
+
+    }
+    class types.AccountNumber << (T, #FF7700) >>  {
+    }
+    class types.ClusterName << (T, #FF7700) >>  {
+    }
+    class types.ClusterReport << (T, #FF7700) >>  {
+    }
+    class types.DBDriver << (T, #FF7700) >>  {
+    }
+    class types.ErrorKey << (T, #FF7700) >>  {
+    }
+    class types.EventMetadata << (T, #FF7700) >>  {
+    }
+    class types.EventPayload << (T, #FF7700) >>  {
+    }
+    class types.EventType << (T, #FF7700) >>  {
+    }
+    class types.Impacts << (T, #FF7700) >>  {
+    }
+    class types.KafkaOffset << (T, #FF7700) >>  {
+    }
+    class types.NotificationContext << (T, #FF7700) >>  {
+    }
+    class types.NotificationTypeID << (T, #FF7700) >>  {
+    }
+    class types.OrgID << (T, #FF7700) >>  {
+    }
+    class types.RuleID << (T, #FF7700) >>  {
+    }
+    class types.RulesMap << (T, #FF7700) >>  {
+    }
+    class types.StateID << (T, #FF7700) >>  {
+    }
+    class types.Timestamp << (T, #FF7700) >>  {
+    }
+    class "time.Time" as timeTime {
+        'This class was created so that we can correctly have an alias pointing to this name. Since it contains dots that can break namespaces
+    }
+}
+
+
+"__builtin__.<font color=blue>map</font>[string]int" #.. "types.Impacts"
+"__builtin__.<font color=blue>map</font>[string]string" #.. "types.EventPayload"
+"__builtin__.int" #.. "types.DBDriver"
+"__builtin__.int" #.. "types.EventType"
+"__builtin__.int" #.. "types.NotificationTypeID"
+"__builtin__.int" #.. "types.StateID"
+"__builtin__.int64" #.. "types.KafkaOffset"
+"__builtin__.string" #.. "types.ClusterName"
+"__builtin__.string" #.. "types.ClusterReport"
+"__builtin__.string" #.. "types.ErrorKey"
+"__builtin__.string" #.. "types.RuleID"
+"__builtin__.uint32" #.. "types.AccountNumber"
+"__builtin__.uint32" #.. "types.OrgID"
+"types.<font color=blue>map</font>[string]<font color=blue>interface</font>{}" #.. "types.EventMetadata"
+"types.<font color=blue>map</font>[string]<font color=blue>interface</font>{}" #.. "types.NotificationContext"
+"types.<font color=blue>map</font>[string]RuleContent" #.. "types.RulesMap"
+"types.timeTime" #.. "types.Timestamp"
+@enduml
