@@ -1,14 +1,22 @@
 ---
 layout: default
 ---
+
 # Description
 
 CCX Notification Service
 
 ## Database description
 
+* PostgreSQL database is used as a storage.
 * Database description is available [here](./db-description/index.html)
 
 ## Documentation for source files from this repository
 
 * [ccx_notification_service.go](./packages/ccx_notification_service.html)
+
+## Class diagram
+
+![class_diagram.png](class_diagram.png)
+
+[Class diagram, full scale](class_diagram.png)
