@@ -6,6 +6,12 @@ layout: default
 
 CCX Notification Service
 
+## Architecture
+
+![architecture_diagram.png](architecture_diagram.png)
+
+[Architecture diagram, full scale](architecture_diagram.png)
+
 ## Class diagram
 
 ![class_diagram.png](class_diagram.png)
