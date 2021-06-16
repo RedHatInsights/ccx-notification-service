@@ -1,0 +1,80 @@
+@startuml
+participant Cluster
+participant "Ingress\nservice"
+participant "Insights-storage-broker\nservice"
+participant "S3 bucket"
+participant "Kafka topic\nplatform.upload.buckit"
+participant "ccx-data-pipeline\nservice"
+participant "Kafka topic\nccx.ocp.results"
+participant "ccx-notification-writer\nservice"
+participant "Notification\ndatabase"
+participant "ccx-notification-service"
+participant "Kafka topic\nplatform.notifications.ingress"
+
+Cluster -> "Ingress\nservice" : send(data from IO)
+activate "Ingress\nservice"
+"Ingress\nservice" -> "Insights-storage-broker\nservice" : send(data from IO)
+activate "Insights-storage-broker\nservice"
+"Insights-storage-broker\nservice" -> "S3 bucket" : store(data from IO)
+activate "S3 bucket"
+"Insights-storage-broker\nservice" <-- "S3 bucket": stored, path to object=XYZ
+deactivate "S3 bucket"
+"Ingress\nservice" <-- "Insights-storage-broker\nservice": success, path to object=XYZ
+deactivate "Insights-storage-broker\nservice"
+"Ingress\nservice" -> "Kafka topic\nplatform.upload.buckit" : produce(new data, cluster=UUID, path=XYZ)
+activate "Kafka topic\nplatform.upload.buckit"
+"Ingress\nservice" <-- "Kafka topic\nplatform.upload.buckit": stored
+deactivate "Kafka topic\nplatform.upload.buckit"
+Cluster <-- "Ingress\nservice": accept
+deactivate "Ingress\nservice"
+loop
+"ccx-data-pipeline\nservice" -> "Kafka topic\nplatform.upload.buckit" : request(get message)
+activate "Kafka topic\nplatform.upload.buckit"
+"ccx-data-pipeline\nservice" <-- "Kafka topic\nplatform.upload.buckit": cluster=UUID, path=XYZ
+deactivate "Kafka topic\nplatform.upload.buckit"
+"ccx-data-pipeline\nservice" -> "S3 bucket" : read_object(path=XYZ)
+activate "S3 bucket"
+"ccx-data-pipeline\nservice" <-- "S3 bucket": data from IO
+deactivate "S3 bucket"
+"ccx-data-pipeline\nservice" -> "ccx-data-pipeline\nservice" : process(data from IO)
+activate "ccx-data-pipeline\nservice"
+"ccx-data-pipeline\nservice" <-- "ccx-data-pipeline\nservice": rule results
+deactivate "ccx-data-pipeline\nservice"
+"ccx-data-pipeline\nservice" -> "Kafka topic\nccx.ocp.results" : store(rule results)
+activate "Kafka topic\nccx.ocp.results"
+"ccx-data-pipeline\nservice" <-- "Kafka topic\nccx.ocp.results": stored
+deactivate "Kafka topic\nccx.ocp.results"
+end
+loop
+"ccx-notification-writer\nservice" -> "Kafka topic\nccx.ocp.results" : request(get results)
+activate "Kafka topic\nccx.ocp.results"
+"ccx-notification-writer\nservice" <-- "Kafka topic\nccx.ocp.results": here are rule results
+deactivate "Kafka topic\nccx.ocp.results"
+"ccx-notification-writer\nservice" -> "ccx-notification-writer\nservice" : validate(rule resuls)
+activate "ccx-notification-writer\nservice"
+"ccx-notification-writer\nservice" <-- "ccx-notification-writer\nservice": validated
+deactivate "ccx-notification-writer\nservice"
+"ccx-notification-writer\nservice" -> "Notification\ndatabase" : store(rule results)
+activate "Notification\ndatabase"
+"ccx-notification-writer\nservice" <-- "Notification\ndatabase": stored
+deactivate "Notification\ndatabase"
+end
+loop
+"ccx-notification-service" -> "Notification\ndatabase" : request(read new results)
+activate "Notification\ndatabase"
+"ccx-notification-service" <-- "Notification\ndatabase": here are new results
+deactivate "Notification\ndatabase"
+"ccx-notification-service" -> "Notification\ndatabase" : request(read reported results)
+activate "Notification\ndatabase"
+"ccx-notification-service" <-- "Notification\ndatabase": here are already reported results
+deactivate "Notification\ndatabase"
+"ccx-notification-service" -> "ccx-notification-service" : find_diff(reported results, new results)
+activate "ccx-notification-service"
+"ccx-notification-service" <-- "ccx-notification-service": diff
+deactivate "ccx-notification-service"
+"ccx-notification-service" -> "Kafka topic\nplatform.notifications.ingress" : notify(new reports)
+activate "Kafka topic\nplatform.notifications.ingress"
+"ccx-notification-service" <-- "Kafka topic\nplatform.notifications.ingress": accepted
+deactivate "Kafka topic\nplatform.notifications.ingress"
+end
+@enduml
