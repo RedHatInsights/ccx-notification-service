@@ -250,7 +250,7 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/differ
 	<td class="doc"><p>Messages</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">const</div> <div class="operator">(</div>
-	<div class="ident">versionMessage</div>              <div class="operator">=</div> <div class="literal">&#34;Notification writer version 1.0&#34;</div><div class="operator"></div>
+	<div class="ident">versionMessage</div>              <div class="operator">=</div> <div class="literal">&#34;Notification service version 1.0&#34;</div><div class="operator"></div>
 	<div class="ident">authorsMessage</div>              <div class="operator">=</div> <div class="literal">&#34;Pavel Tisnovsky, Red Hat Inc.&#34;</div><div class="operator"></div>
 	<div class="ident">separator</div>                   <div class="operator">=</div> <div class="literal">&#34;------------------------------------------------------------&#34;</div><div class="operator"></div>
 	<div class="ident">operationFailedMessage</div>      <div class="operator">=</div> <div class="literal">&#34;Operation failed&#34;</div><div class="operator"></div>
@@ -642,6 +642,16 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 	<div class="keyword">if</div> <div class="ident">context</div> <div class="operator">==</div> <div class="literal">&#34;&#34;</div> <div class="operator">{</div>
 		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">contextToEscapedStringError</div><div class="operator">)</div><div class="operator"></div>
 		<div class="keyword">return</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Temporal code to avoid flooding insights-qa owner's email inbox</p>
+</td>
+	<td class="code"><pre><code>	<div class="keyword">if</div> <div class="ident">accountID</div> <div class="operator">==</div> <div class="literal">&#34;6089719&#34;</div> <div class="operator">{</div>
+		<div class="ident">accountID</div> <div class="operator">=</div> <div class="literal">&#34;5910538&#34;</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
 	<div class="ident">notification</div> <div class="operator">=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationMessage</div><div class="operator">{</div>

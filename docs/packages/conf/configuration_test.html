@@ -191,17 +191,6 @@ limitations under the License.
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>TestLoadDefaultConfigurationUnknownEnvVar loads a configuration file for testing</p>
-</td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestLoadDefaultConfigurationUnknownEnvVar</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
-	<div class="ident">os</div><div class="operator">.</div><div class="ident">Clearenv</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">mustFailLoadingConfigurationIfWrongEnvVar</div><div class="operator">(</div><div class="literal">&#34;nonExistingEnvVar&#34;</div><div class="operator">)</div><div class="operator"></div>
-<div class="operator">}</div><div class="operator"></div>
-
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
 	<td class="doc"><p>TestLoadConfigurationFromEnvVariable tests loading the config. file for testing from an environment variable</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestLoadConfigurationFromEnvVariable</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
@@ -219,7 +208,7 @@ limitations under the License.
 </td>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestLoadConfigurationNonEnvVarUnknownConfigFile</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">LoadConfiguration</div><div class="operator">(</div><div class="literal">&#34;&#34;</div><div class="operator">,</div> <div class="literal">&#34;foobar&#34;</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Contains</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div> <div class="literal">`Config File &#34;foobar&#34; Not Found in`</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Nil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>

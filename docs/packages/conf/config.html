@@ -138,7 +138,7 @@ limitations under the License.</p>
       
       <tr class="section">
 	<td class="doc"><p>This source file contains definition of data type named ConfigStruct that
-represents configuration of Notification Writer service. This source file
+represents configuration of Notification service. This source file
 also contains function named LoadConfiguration that can be used to load
 configuration from provided configuration file and/or from environment
 variables. Additionally several specific functions named
@@ -190,12 +190,14 @@ TBD</p>
 </td>
 	<td class="code"><pre><code>
 <div class="keyword">import</div> <div class="operator">(</div>
+	<div class="literal">&#34;bytes&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;fmt&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;os&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;path/filepath&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;strings&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;time&#34;</div><div class="operator"></div>
 
+	<div class="literal">&#34;github.com/BurntSushi/toml&#34;</div><div class="operator"></div>
 	<div class="ident">clowder</div> <div class="literal">&#34;github.com/redhatinsights/app-common-go/pkg/api/v1&#34;</div><div class="operator"></div>
 
 	<div class="literal">&#34;github.com/rs/zerolog/log&#34;</div><div class="operator"></div>
@@ -272,7 +274,7 @@ configuration</p>
 	<td class="doc"><p>DependenciesConfiguration represents configuration of external services and other dependencies</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">DependenciesConfiguration</div> <div class="keyword">struct</div> <div class="operator">{</div>
-	<div class="ident">ContentServiceServer</div>   <div class="ident">string</div> <div class="literal">`mapstructure:&#34;content_server&#34; toml:&#34;content_endpoint&#34;`</div><div class="operator"></div>
+	<div class="ident">ContentServiceServer</div>   <div class="ident">string</div> <div class="literal">`mapstructure:&#34;content_server&#34; toml:&#34;content_server&#34;`</div><div class="operator"></div>
 	<div class="ident">ContentServiceEndpoint</div> <div class="ident">string</div> <div class="literal">`mapstructure:&#34;content_endpoint&#34; toml:&#34;content_endpoint&#34;`</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
@@ -355,9 +357,39 @@ extension</p>
 </td>
 	<td class="code"><pre><code>	<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">viper</div><div class="operator">.</div><div class="ident">ReadInConfig</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">_</div><div class="operator">,</div> <div class="ident">isNotFoundError</div> <div class="operator">:=</div> <div class="ident">err</div><div class="operator">.</div><div class="operator">(</div><div class="ident">viper</div><div class="operator">.</div><div class="ident">ConfigFileNotFoundError</div><div class="operator">)</div><div class="operator">;</div> <div class="operator">!</div><div class="ident">specified</div> <div class="operator">&amp;&amp;</div> <div class="ident">isNotFoundError</div> <div class="operator">{</div>
-		<div class="keyword">return</div> <div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>If config file is not present (which might be correct in
+some environment) we need to read configuration from
+environment variables The problem is that Viper is not smart
+enough to understand the structure of config by itself, so
+we need to read fake config file</p>
+</td>
+	<td class="code"><pre><code>		<div class="ident">fakeTomlConfigWriter</div> <div class="operator">:=</div> <div class="ident">new</div><div class="operator">(</div><div class="ident">bytes</div><div class="operator">.</div><div class="ident">Buffer</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">toml</div><div class="operator">.</div><div class="ident">NewEncoder</div><div class="operator">(</div><div class="ident">fakeTomlConfigWriter</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Encode</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="ident">fakeTomlConfig</div> <div class="operator">:=</div> <div class="ident">fakeTomlConfigWriter</div><div class="operator">.</div><div class="ident">String</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="ident">viper</div><div class="operator">.</div><div class="ident">SetConfigType</div><div class="operator">(</div><div class="literal">&#34;toml&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="ident">err</div> <div class="operator">=</div> <div class="ident">viper</div><div class="operator">.</div><div class="ident">ReadConfig</div><div class="operator">(</div><div class="ident">strings</div><div class="operator">.</div><div class="ident">NewReader</div><div class="operator">(</div><div class="ident">fakeTomlConfig</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="keyword">return</div> <div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
 	<div class="operator">}</div> <div class="keyword">else</div> <div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="keyword">return</div> <div class="ident">config</div><div class="operator">,</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Errorf</div><div class="operator">(</div><div class="literal">&#34;fatal error config file: %s&#34;</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>error is processed on caller side</p>
+</td>
+	<td class="code"><pre><code>		<div class="keyword">return</div> <div class="ident">config</div><div class="operator">,</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Errorf</div><div class="operator">(</div><div class="literal">&#34;fatal error config file: %s&#34;</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
