@@ -6,6 +6,18 @@ layout: default
 
 CCX Notification Service
 
+## Class diagram
+
+![class_diagram.png](class_diagram.png)
+
+[Class diagram, full scale](class_diagram.png)
+
+## Sequence diagram
+
+![sequence_diagram.png](sequence_diagram.png)
+
+[Sequence diagram, full scale](sequence_diagram.png)
+
 ## Database description
 
 * PostgreSQL database is used as a storage.
@@ -15,8 +27,3 @@ CCX Notification Service
 
 * [ccx_notification_service.go](./packages/ccx_notification_service.html)
 
-## Class diagram
-
-![class_diagram.png](class_diagram.png)
-
-[Class diagram, full scale](class_diagram.png)
