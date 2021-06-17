@@ -219,6 +219,14 @@ DataSource - specification of data source. The content of this parameter depends
 		<div class="ident">errorLog</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">error</div><div class="operator"></div>
 	<div class="ident">CleanupNewReportsForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">CleanupOldReportsForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">DeleteRowFromNewReports</div><div class="operator">(</div>
+		<div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div>
+		<div class="ident">clusterName</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">,</div>
+		<div class="ident">updatedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">DeleteRowFromReported</div><div class="operator">(</div>
+		<div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div>
+		<div class="ident">clusterName</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">,</div>
+		<div class="ident">notifiedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -302,6 +310,19 @@ SQLQueriesLog is log for sql queries, default is nil which means nothing is logg
 		 WHERE org_id = $1
 		   AND cluster = $2
 		   AND updated_at = $3
+`</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Delete one row from reported table for given organization ID, cluster name, and notified at timestamp</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">deleteRowFromReportedTable</div> <div class="operator">=</div> <div class="literal">`
+                DELETE
+		  FROM reported
+		 WHERE org_id = $1
+		   AND cluster = $2
+		   AND notified_at = $3
 `</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
@@ -886,6 +907,22 @@ Number of deleted rows (zero or one) is returned.</p>
 
 	<div class="ident">sqlStatement</div> <div class="operator">:=</div> <div class="ident">deleteRowFromNewReportsTable</div><div class="operator"></div>
 	<div class="keyword">return</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">deleteRowImpl</div><div class="operator">(</div><div class="ident">sqlStatement</div><div class="operator">,</div> <div class="ident">orgID</div><div class="operator">,</div> <div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">updatedAt</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>DeleteRowFromReported deletes one selected row from <code>reported</code> table.
+Number of deleted rows (zero or one) is returned.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">DeleteRowFromReported</div><div class="operator">(</div>
+	<div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div>
+	<div class="ident">clusterName</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">,</div>
+	<div class="ident">notifiedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+
+	<div class="ident">sqlStatement</div> <div class="operator">:=</div> <div class="ident">deleteRowFromReportedTable</div><div class="operator"></div>
+	<div class="keyword">return</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">deleteRowImpl</div><div class="operator">(</div><div class="ident">sqlStatement</div><div class="operator">,</div> <div class="ident">orgID</div><div class="operator">,</div> <div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">notifiedAt</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>

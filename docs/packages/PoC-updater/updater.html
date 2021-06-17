@@ -235,38 +235,24 @@ limitations under the License.</p>
 	<div class="keyword">const</div> <div class="ident">testedOrgID</div> <div class="operator">=</div> <div class="literal">1</div><div class="operator"></div>
 	<div class="keyword">const</div> <div class="ident">testedCluster</div> <div class="operator">=</div> <div class="literal">&#34;11111111-1111-1111-1111-111111111111&#34;</div><div class="operator"></div>
 
-	<div class="ident">t</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">(</div><div class="ident">time</div><div class="operator">.</div><div class="ident">Now</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">affected</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">DeleteRowFromNewReports</div><div class="operator">(</div><div class="ident">testedOrgID</div><div class="operator">,</div> <div class="ident">testedCluster</div><div class="operator">,</div> <div class="ident">t</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">println</div><div class="operator">(</div><div class="ident">affected</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">affected</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">DeleteRowFromReported</div><div class="operator">(</div><div class="ident">testedOrgID</div><div class="operator">,</div> <div class="ident">testedCluster</div><div class="operator">,</div> <div class="ident">t</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">println</div><div class="operator">(</div><div class="ident">affected</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
-	<div class="comment">/*
-
-/*[docgoseparator]*/</div>		<div class="ident">rNewAsString</div><div class="operator">,</div> <div class="ident">timestamp</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">ReadReportForCluster</div><div class="operator">(</div><div class="ident">testedOrgID</div><div class="operator">,</div> <div class="ident">testedCluster</div><div class="operator">)</div><div class="operator"></div>
-		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-			<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read report for cluster&#34;</div><div class="operator">)</div><div class="operator"></div>
-			<div class="keyword">return</div><div class="operator"></div>
-		<div class="operator">}</div><div class="operator"></div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Time</div><div class="operator">(</div><div class="literal">&#34;time&#34;</div><div class="operator">,</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Time</div><div class="operator">(</div><div class="ident">timestamp</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read&#34;</div><div class="operator">)</div><div class="operator"></div>
-
-		<div class="ident">c</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">{</div>
-			<div class="ident">OrgID</div><div class="operator">:</div>       <div class="ident">testedOrgID</div><div class="operator">,</div>
-			<div class="ident">ClusterName</div><div class="operator">:</div> <div class="ident">testedCluster</div><div class="operator">,</div>
-			<div class="ident">UpdatedAt</div><div class="operator">:</div>   <div class="ident">timestamp</div><div class="operator">,</div>
-		<div class="operator">}</div><div class="operator"></div>
-
 </code></pre></td>
       </tr>
       
       <tr class="section">
 	<td class="doc"><p>read newest report for a cluster</p>
 </td>
-	<td class="code"><pre><code>		<div class="ident">reported</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">ReadLastNNotificationRecords</div><div class="operator">(</div><div class="ident">c</div><div class="operator">,</div> <div class="literal">1</div><div class="operator">)</div><div class="operator"></div>
-		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-			<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read last n reports&#34;</div><div class="operator">)</div><div class="operator"></div>
-		<div class="operator">}</div><div class="operator"></div>
+	<td class="code"><pre><code>	<div class="ident">rNewAsString</div><div class="operator">,</div> <div class="ident">timestamp</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">ReadReportForCluster</div><div class="operator">(</div><div class="ident">testedOrgID</div><div class="operator">,</div> <div class="ident">testedCluster</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read report for cluster&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">return</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Time</div><div class="operator">(</div><div class="literal">&#34;time&#34;</div><div class="operator">,</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Time</div><div class="operator">(</div><div class="ident">timestamp</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read&#34;</div><div class="operator">)</div><div class="operator"></div>
 
-		<div class="ident">notifiedAt</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">(</div><div class="ident">time</div><div class="operator">.</div><div class="ident">Now</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">c</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">{</div>
+		<div class="ident">OrgID</div><div class="operator">:</div>       <div class="ident">testedOrgID</div><div class="operator">,</div>
+		<div class="ident">ClusterName</div><div class="operator">:</div> <div class="ident">testedCluster</div><div class="operator">,</div>
+		<div class="ident">UpdatedAt</div><div class="operator">:</div>   <div class="ident">timestamp</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
       </tr>
@@ -274,30 +260,30 @@ limitations under the License.</p>
       <tr class="section">
 	<td class="doc"><p>try to read older report for a cluster</p>
 </td>
-	<td class="code"><pre><code>		<div class="keyword">if</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">reported</div><div class="operator">)</div> <div class="operator">==</div> <div class="literal">0</div> <div class="operator">{</div>
-			<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">c</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;New cluster -&gt; send instant report&#34;</div><div class="operator">)</div><div class="operator"></div>
-			<div class="ident">processNotificationForCluster</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">,</div> <div class="ident">c</div><div class="operator">,</div> <div class="ident">rNewAsString</div><div class="operator">,</div> <div class="ident">notificationTypes</div><div class="operator">,</div> <div class="ident">states</div><div class="operator">,</div> <div class="ident">notifiedAt</div><div class="operator">)</div><div class="operator"></div>
+	<td class="code"><pre><code>	<div class="ident">reported</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">ReadLastNNotificationRecords</div><div class="operator">(</div><div class="ident">c</div><div class="operator">,</div> <div class="literal">1</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read last n reports&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="ident">notifiedAt</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">(</div><div class="ident">time</div><div class="operator">.</div><div class="ident">Now</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+
 </code></pre></td>
       </tr>
       
       <tr class="section">
 	<td class="doc"><p>check if the new result has been stored for brand new cluster</p>
 </td>
-	<td class="code"><pre><code>			<div class="keyword">return</div><div class="operator"></div>
-		<div class="operator">}</div><div class="operator"></div>
-
+	<td class="code"><pre><code>	<div class="keyword">if</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">reported</div><div class="operator">)</div> <div class="operator">==</div> <div class="literal">0</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">c</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;New cluster -&gt; send instant report&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">processNotificationForCluster</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">,</div> <div class="ident">c</div><div class="operator">,</div> <div class="ident">rNewAsString</div><div class="operator">,</div> <div class="ident">notificationTypes</div><div class="operator">,</div> <div class="ident">states</div><div class="operator">,</div> <div class="ident">notifiedAt</div><div class="operator">)</div><div class="operator"></div>
 </code></pre></td>
       </tr>
       
       <tr class="section">
 	<td class="doc"><p>and we are done!</p>
 </td>
-	<td class="code"><pre><code>		<div class="ident">rOldAsString</div> <div class="operator">:=</div> <div class="ident">reported</div><div class="operator">[</div><div class="literal">0</div><div class="operator">]</div><div class="operator">.</div><div class="ident">Report</div><div class="operator"></div>
-		<div class="ident">notify</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">CompareReports</div><div class="operator">(</div><div class="ident">rOldAsString</div><div class="operator">,</div> <div class="ident">rNewAsString</div><div class="operator">)</div><div class="operator"></div>
-		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-			<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Unable to compare old and new reports&#34;</div><div class="operator">)</div><div class="operator"></div>
-		<div class="operator">}</div><div class="operator"></div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Bool</div><div class="operator">(</div><div class="literal">&#34;resolution&#34;</div><div class="operator">,</div> <div class="ident">notify</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Should notify user&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<td class="code"><pre><code>		<div class="keyword">return</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
       </tr>
@@ -305,29 +291,41 @@ limitations under the License.</p>
       <tr class="section">
 	<td class="doc"><p>it is not a brand new cluster -&gt; compare new report with older one</p>
 </td>
-	<td class="code"><pre><code>		<div class="keyword">if</div> <div class="ident">notify</div> <div class="operator">{</div>
-			<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">c</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Different report from the last one&#34;</div><div class="operator">)</div><div class="operator"></div>
-			<div class="ident">processNotificationForCluster</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">,</div> <div class="ident">c</div><div class="operator">,</div> <div class="ident">rNewAsString</div><div class="operator">,</div> <div class="ident">notificationTypes</div><div class="operator">,</div> <div class="ident">states</div><div class="operator">,</div> <div class="ident">notifiedAt</div><div class="operator">)</div><div class="operator"></div>
+	<td class="code"><pre><code>	<div class="ident">rOldAsString</div> <div class="operator">:=</div> <div class="ident">reported</div><div class="operator">[</div><div class="literal">0</div><div class="operator">]</div><div class="operator">.</div><div class="ident">Report</div><div class="operator"></div>
+	<div class="ident">notify</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">CompareReports</div><div class="operator">(</div><div class="ident">rOldAsString</div><div class="operator">,</div> <div class="ident">rNewAsString</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Unable to compare old and new reports&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Bool</div><div class="operator">(</div><div class="literal">&#34;resolution&#34;</div><div class="operator">,</div> <div class="ident">notify</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Should notify user&#34;</div><div class="operator">)</div><div class="operator"></div>
+
 </code></pre></td>
       </tr>
       
       <tr class="section">
 	<td class="doc"><p>if new report differs from the older one -&gt; send notification</p>
 </td>
-	<td class="code"><pre><code>		<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
-			<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">c</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Same report as before&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<td class="code"><pre><code>	<div class="keyword">if</div> <div class="ident">notify</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">c</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Different report from the last one&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">processNotificationForCluster</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">,</div> <div class="ident">c</div><div class="operator">,</div> <div class="ident">rNewAsString</div><div class="operator">,</div> <div class="ident">notificationTypes</div><div class="operator">,</div> <div class="ident">states</div><div class="operator">,</div> <div class="ident">notifiedAt</div><div class="operator">)</div><div class="operator"></div>
 </code></pre></td>
       </tr>
       
       <tr class="section">
 	<td class="doc"><p>and we are done!</p>
 </td>
-	<td class="code"><pre><code>			<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">WriteNotificationRecordForCluster</div><div class="operator">(</div><div class="ident">c</div><div class="operator">,</div> <div class="ident">notificationTypes</div><div class="operator">.</div><div class="ident">Instant</div><div class="operator">,</div> <div class="ident">states</div><div class="operator">.</div><div class="ident">SameState</div><div class="operator">,</div> <div class="ident">rNewAsString</div><div class="operator">,</div> <div class="ident">notifiedAt</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">)</div><div class="operator"></div>
-			<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-				<div class="ident">writeNotificationRecordFailed</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
-			<div class="operator">}</div><div class="operator"></div>
+	<td class="code"><pre><code>	<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">c</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Same report as before&#34;</div><div class="operator">)</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>store notification info about not sending the notification</p>
+</td>
+	<td class="code"><pre><code>		<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">WriteNotificationRecordForCluster</div><div class="operator">(</div><div class="ident">c</div><div class="operator">,</div> <div class="ident">notificationTypes</div><div class="operator">.</div><div class="ident">Instant</div><div class="operator">,</div> <div class="ident">states</div><div class="operator">.</div><div class="ident">SameState</div><div class="operator">,</div> <div class="ident">rNewAsString</div><div class="operator">,</div> <div class="ident">notifiedAt</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="ident">writeNotificationRecordFailed</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
 		<div class="operator">}</div><div class="operator"></div>
-	<div class="operator">*</div><div class="operator">/</div>
+	<div class="operator">}</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 <div class="keyword">func</div> <div class="ident">processNotificationForCluster</div><div class="operator">(</div><div class="ident">storage</div> <div class="ident">Storage</div><div class="operator">,</div> <div class="ident">c</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div>
@@ -367,7 +365,7 @@ limitations under the License.</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>store notification info about not sending the notification</p>
+	<td class="doc"><p>Function issuesEqual compares two issues from reports</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">issuesEqual</div><div class="operator">(</div><div class="ident">issue1</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ReportItem</div><div class="operator">,</div> <div class="ident">issue2</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ReportItem</div><div class="operator">)</div> <div class="ident">bool</div> <div class="operator">{</div>
 	<div class="keyword">if</div> <div class="ident">issue1</div><div class="operator">.</div><div class="ident">Type</div> <div class="operator">==</div> <div class="ident">issue2</div><div class="operator">.</div><div class="ident">Type</div> <div class="operator">&amp;&amp;</div>
@@ -383,7 +381,9 @@ limitations under the License.</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>Function issuesEqual compares two issues from reports</p>
+	<td class="doc"><p>Function CompareReports compare old OCP report with the newest one and
+returns boolean flag indicating that new report contain new issues and thus
+user needs to be informed about them.</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">CompareReports</div><div class="operator">(</div>
 	<div class="ident">oldReportAsString</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterReport</div><div class="operator">,</div>
@@ -393,9 +393,7 @@ limitations under the License.</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>Function CompareReports compare old OCP report with the newest one and
-returns boolean flag indicating that new report contain new issues and thus
-user needs to be informed about them.</p>
+	<td class="doc"><p>try to unmarshal the old report</p>
 </td>
 	<td class="code"><pre><code>	<div class="ident">oldReport</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">unmarshalReport</div><div class="operator">(</div><div class="ident">oldReportAsString</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
@@ -407,7 +405,7 @@ user needs to be informed about them.</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>try to unmarshal the old report</p>
+	<td class="doc"><p>try to unmarshal the newest report</p>
 </td>
 	<td class="code"><pre><code>	<div class="ident">newReport</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">unmarshalReport</div><div class="operator">(</div><div class="ident">newReportAsString</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
@@ -419,7 +417,7 @@ user needs to be informed about them.</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>try to unmarshal the newest report</p>
+	<td class="doc"><p>check whether new report contains more issues than the older one</p>
 </td>
 	<td class="code"><pre><code>	<div class="keyword">if</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">newReport</div><div class="operator">.</div><div class="ident">Reports</div><div class="operator">)</div> <div class="operator">&gt;</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">oldReport</div><div class="operator">.</div><div class="ident">Reports</div><div class="operator">)</div> <div class="operator">{</div>
 		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;New report contains more issues&#34;</div><div class="operator">)</div><div class="operator"></div>
@@ -430,7 +428,7 @@ user needs to be informed about them.</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>check whether new report contains more issues than the older one</p>
+	<td class="doc"><p>now the number of issues is the same: time to compare them</p>
 </td>
 	<td class="code"><pre><code>	<div class="keyword">for</div> <div class="ident">_</div><div class="operator">,</div> <div class="ident">issue1</div> <div class="operator">:=</div> <div class="keyword">range</div> <div class="ident">oldReport</div><div class="operator">.</div><div class="ident">Reports</div> <div class="operator">{</div>
 		<div class="ident">found</div> <div class="operator">:=</div> <div class="ident">false</div><div class="operator"></div>
@@ -438,7 +436,7 @@ user needs to be informed about them.</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>now the number of issues is the same: time to compare them</p>
+	<td class="doc"><p>check if issue1 is found in newest report</p>
 </td>
 	<td class="code"><pre><code>		<div class="keyword">for</div> <div class="ident">_</div><div class="operator">,</div> <div class="ident">issue2</div> <div class="operator">:=</div> <div class="keyword">range</div> <div class="ident">newReport</div><div class="operator">.</div><div class="ident">Reports</div> <div class="operator">{</div>
 			<div class="keyword">if</div> <div class="ident">issuesEqual</div><div class="operator">(</div><div class="ident">issue1</div><div class="operator">,</div> <div class="ident">issue2</div><div class="operator">)</div> <div class="operator">{</div>
@@ -450,7 +448,8 @@ user needs to be informed about them.</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>check if issue1 is found in newest report</p>
+	<td class="doc"><p>issue can't be found -&gt; there must be change user needs to
+be notified about</p>
 </td>
 	<td class="code"><pre><code>		<div class="keyword">if</div> <div class="operator">!</div><div class="ident">found</div> <div class="operator">{</div>
 			<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
@@ -466,8 +465,7 @@ user needs to be informed about them.</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>issue can't be found -&gt; there must be change user needs to
-be notified about</p>
+	<td class="doc"><p>seems like both old report and new report are the same</p>
 </td>
 	<td class="code"><pre><code>	<div class="keyword">return</div> <div class="ident">false</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
@@ -503,7 +501,7 @@ be notified about</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>seems like both old report and new report are the same</p>
+	<td class="doc"><p>config has exactly the same structure as *.toml file</p>
 </td>
 	<td class="code"><pre><code>	<div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">LoadConfiguration</div><div class="operator">(</div><div class="ident">configFileEnvVariableName</div><div class="operator">,</div> <div class="ident">defaultConfigFileName</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
@@ -520,7 +518,7 @@ be notified about</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>config has exactly the same structure as *.toml file</p>
+	<td class="doc"><p>prepare the storage</p>
 </td>
 	<td class="code"><pre><code>	<div class="ident">storageConfiguration</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetStorageConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">storage</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">NewStorage</div><div class="operator">(</div><div class="ident">storageConfiguration</div><div class="operator">)</div><div class="operator"></div>
@@ -551,42 +549,6 @@ be notified about</p>
 
 	<div class="ident">log</div><div class="operator">.</div><div class="ident">Debug</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Finished&#34;</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
-
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>prepare the storage</p>
-</td>
-	<td class="code"><pre><code>	storageConfiguration := conf.GetStorageConfiguration(config)
-	storage, err := NewStorage(storageConfiguration)
-	if err != nil {
-		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusStorageError)
-	}
-
-	states, err := getStates(storage)
-	if err != nil {
-		log.Err(err).Msg("Read states")
-		return
-	}
-
-	notificationTypes, err := getNotificationTypes(storage)
-	if err != nil {
-		log.Err(err).Msg("Read notification types")
-		return
-	}
-
-	process(storage, states, notificationTypes)
-
-	err = storage.Close()
-	if err != nil {
-		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusStorageError)
-	}
-
-	log.Debug().Msg("Finished")
-}
 
 </code></pre></td>
       </tr>
