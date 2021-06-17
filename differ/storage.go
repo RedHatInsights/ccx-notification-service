@@ -33,6 +33,7 @@ package differ
 import (
 	"database/sql"
 	"fmt"
+	"strings"
 	"time"
 
 	_ "github.com/lib/pq"           // PostgreSQL database driver
@@ -524,9 +525,11 @@ func (storage DBStorage) ReadLastNNotificationRecords(clusterEntry types.Cluster
 //
 // The method return number of deleted records.
 func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error) {
+	printableStatement := getPrintableStatement(statement)
+
 	log.Info().
 		Str(MaxAgeAttribute, maxAge).
-		Str("delete statement", statement).
+		Str("delete statement", printableStatement).
 		Int(OrgIDMessage, int(orgID)).
 		Msg("Cleanup operation")
 
@@ -568,4 +571,11 @@ func (storage DBStorage) CleanupNewReportsForOrganization(orgID types.OrgID, max
 func (storage DBStorage) CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
 	sqlStatement := deleteOldRecordsFromReportedTable
 	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
+}
+
+// getPrintableStatement returns SQL statement in form prepared for logging
+func getPrintableStatement(sqlStatement string) string {
+	s := strings.Replace(sqlStatement, "\n", " ", -1)
+	s = strings.Replace(s, "\t", "", -1)
+	return strings.Trim(s, " ")
 }
