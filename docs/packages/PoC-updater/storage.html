@@ -157,6 +157,7 @@ DataSource - specification of data source. The content of this parameter depends
 	<td class="doc"><p>&quot;errors&quot;</p>
 </td>
 	<td class="code"><pre><code>	<div class="literal">&#34;fmt&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;strings&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;time&#34;</div><div class="operator"></div>
 
 	<div class="ident">_</div> <div class="literal">&#34;github.com/lib/pq&#34;</div>           <div class="operator"></div><div class="comment">// PostgreSQL database driver</div>
@@ -217,6 +218,8 @@ DataSource - specification of data source. The content of this parameter depends
 		<div class="ident">updatedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">,</div>
 		<div class="ident">notifiedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">,</div>
 		<div class="ident">errorLog</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">error</div><div class="operator"></div>
+	<div class="ident">CleanupNewReportsForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">CleanupOldReportsForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -241,6 +244,53 @@ SQLQueriesLog is log for sql queries, default is nil which means nothing is logg
 </td>
 	<td class="code"><pre><code><div class="keyword">const</div> <div class="operator">(</div>
 	<div class="ident">unableToCloseDBRowsHandle</div> <div class="operator">=</div> <div class="literal">&#34;Unable to close DB rows handle&#34;</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>other messages</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">const</div> <div class="operator">(</div>
+	<div class="ident">OrgIDMessage</div>       <div class="operator">=</div> <div class="literal">&#34;Organization ID&#34;</div><div class="operator"></div>
+	<div class="ident">ClusterNameMessage</div> <div class="operator">=</div> <div class="literal">&#34;Cluster name&#34;</div><div class="operator"></div>
+	<div class="ident">TimestampMessage</div>   <div class="operator">=</div> <div class="literal">&#34;Timestamp (notified_at/updated_at)&#34;</div><div class="operator"></div>
+	<div class="ident">MaxAgeAttribute</div>    <div class="operator">=</div> <div class="literal">&#34;max age&#34;</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>SQL statements</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">const</div> <div class="operator">(</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Delete older records from new_reports table for given organization ID</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">deleteOldRecordsFromNewReportsTable</div> <div class="operator">=</div> <div class="literal">`
+                DELETE
+		  FROM new_reports
+		 WHERE org_id = $1
+		   AND updated_at &lt; NOW() - $2::INTERVAL 
+`</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Delete older records from reported table for given organization ID</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">deleteOldRecordsFromReportedTable</div> <div class="operator">=</div> <div class="literal">`
+                DELETE
+		  FROM reported
+		 WHERE org_id = $1
+		   AND updated_at &lt; NOW() - $2::INTERVAL
+`</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
 </code></pre></td>
@@ -727,6 +777,87 @@ for given org ID and cluster name.</p>
 	<div class="operator">}</div><div class="operator"></div>
 
 	<div class="keyword">return</div> <div class="ident">notificationRecords</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>CleanupForOrganization method deletes all reports older than specified
+relative time for given organization ID.</p>
+
+<p>This method is to be used to cleanup older reports after weekly summary is
+sent.</p>
+
+<p>The method return number of deleted records.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">CleanupForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">statement</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">printableStatement</div> <div class="operator">:=</div> <div class="ident">getPrintableStatement</div><div class="operator">(</div><div class="ident">statement</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="ident">MaxAgeAttribute</div><div class="operator">,</div> <div class="ident">maxAge</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;delete statement&#34;</div><div class="operator">,</div> <div class="ident">printableStatement</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Int</div><div class="operator">(</div><div class="ident">OrgIDMessage</div><div class="operator">,</div> <div class="ident">int</div><div class="operator">(</div><div class="ident">orgID</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Cleanup operation&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>perform the SQL statement</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">result</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">connection</div><div class="operator">.</div><div class="ident">Exec</div><div class="operator">(</div><div class="ident">statement</div><div class="operator">,</div> <div class="ident">int</div><div class="operator">(</div><div class="ident">orgID</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">maxAge</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="keyword">return</div> <div class="literal">0</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>read number of affected (deleted) rows</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">affected</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">result</div><div class="operator">.</div><div class="ident">RowsAffected</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="keyword">return</div> <div class="literal">0</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="keyword">return</div> <div class="ident">int</div><div class="operator">(</div><div class="ident">affected</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>CleanupNewReportsForOrganization method deletes all reports from
+<code>new_reports</code> table older than specified relative time. Delete operation is
+restricted for given organization ID.</p>
+
+<p>This method is to be used to cleanup older reports after weekly summary is
+sent.</p>
+
+<p>The method return number of deleted records.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">CleanupNewReportsForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">sqlStatement</div> <div class="operator">:=</div> <div class="ident">deleteOldRecordsFromNewReportsTable</div><div class="operator"></div>
+	<div class="keyword">return</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">CleanupForOrganization</div><div class="operator">(</div><div class="ident">orgID</div><div class="operator">,</div> <div class="ident">maxAge</div><div class="operator">,</div> <div class="ident">sqlStatement</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>CleanupOldReportsForOrganization method deletes all reports from <code>reported</code>
+table older than specified relative time. Delete operation is restricted for
+given organization ID.</p>
+
+<p>This method is to be used to cleanup older reports after weekly summary is
+sent.</p>
+
+<p>The method return number of deleted records.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">CleanupOldReportsForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">sqlStatement</div> <div class="operator">:=</div> <div class="ident">deleteOldRecordsFromReportedTable</div><div class="operator"></div>
+	<div class="keyword">return</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">CleanupForOrganization</div><div class="operator">(</div><div class="ident">orgID</div><div class="operator">,</div> <div class="ident">maxAge</div><div class="operator">,</div> <div class="ident">sqlStatement</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
