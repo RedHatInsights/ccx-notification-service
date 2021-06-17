@@ -12,6 +12,24 @@ CCX Notification Service
 
 [Architecture diagram, full scale](architecture_diagram.png)
 
+
+## Data flow
+
+The "end-to-end" data flow is described there:
+
+1. Customer cluster with *Insights Operator* installed sends new data with info about cluster into *Ingress service*
+1. That service consumes such data, writes them into S3 Bucket and produce new message into Kafka topic named `platform.upload.buckit`.
+1. Event about new data sent by *Insights Operator* is consumed from Kafka topic `platform.upload.buckit` by *CCX Data pipeline* service.
+1. That event contains (among other things) an URL to S3 Bucket.
+1. Insights operator data is read from S3 Bucket and *insights rules* are applied to that data in `ccx-data-pipeline` service.
+1. Results (basically `organization ID` + `cluster name` + `insights results JSON`) are stored back into Kafka, but into different topic named `ccx.ocp.results`.
+1. That results are consumed by `ccx-notification-writer` service.
+1. `ccx-notification-writer` service stores insights results into AWS RDS database into `new_reports` table.
+1. Content of that table is consumed by `ccx-notification-service` periodically.
+1. Newest results from `new_reports` table is compared with results stored in `reported` table.
+1. If changes (new issues) has been found, notification message is sent into Kafka topic named `platform.notifications.ingress`.
+1. The newest result is stored into `reported` table to be used in the next `ccx-notification-service` iteration.
+
 ## Class diagram
 
 ![class_diagram.png](class_diagram.png)
