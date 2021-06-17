@@ -122,6 +122,14 @@ const (
 		 WHERE org_id = $1
 		   AND updated_at < NOW() - $2::INTERVAL
 `
+	// Delete one row from new_reports table for given organization ID, cluster name, and updated at timestamp
+	deleteRowFromNewReportsTable = `
+                DELETE
+		  FROM new_reports
+		 WHERE org_id = $1
+		   AND cluster = $2
+		   AND updated_at = $3
+`
 )
 
 // NewStorage function creates and initializes a new instance of Storage interface
@@ -571,9 +579,51 @@ func (storage DBStorage) CleanupOldReportsForOrganization(orgID types.OrgID, max
 	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
 }
 
+// DeleteRowFromNewReports deletes one selected row from `new_reports` table.
+// Number of deleted rows (zero or one) is returned.
+func (storage DBStorage) DeleteRowFromNewReports(
+	orgID types.OrgID,
+	clusterName types.ClusterName,
+	updatedAt types.Timestamp) (int, error) {
+
+	sqlStatement := deleteRowFromNewReportsTable
+	return storage.deleteRowImpl(sqlStatement, orgID, clusterName, updatedAt)
+}
+
 // getPrintableStatement returns SQL statement in form prepared for logging
 func getPrintableStatement(sqlStatement string) string {
 	s := strings.Replace(sqlStatement, "\n", " ", -1)
 	s = strings.Replace(s, "\t", "", -1)
 	return strings.Trim(s, " ")
+}
+
+// deleteRowImpl method deletes one row from selected table.
+// Number of deleted rows (zero or one) is returned.
+func (storage DBStorage) deleteRowImpl(
+	sqlStatement string,
+	orgID types.OrgID,
+	clusterName types.ClusterName,
+	timestamp types.Timestamp) (int, error) {
+
+	printableStatement := getPrintableStatement(sqlStatement)
+
+	log.Info().
+		Str("delete one row", printableStatement).
+		Int(OrgIDMessage, int(orgID)).
+		Str(ClusterNameMessage, string(clusterName)).
+		Str(TimestampMessage, time.Time(timestamp).String()).
+		Msg("Selected row cleanup")
+
+	// perform the SQL statement to delete one row
+	result, err := storage.connection.Exec(sqlStatement, int(orgID), string(clusterName), time.Time(timestamp))
+	if err != nil {
+		return 0, err
+	}
+
+	// read number of affected (deleted) rows
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
 }
