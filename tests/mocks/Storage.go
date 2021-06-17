@@ -242,3 +242,19 @@ func (_m *Storage) CleanupNewReportsForOrganization(orgID types.OrgID, maxAge st
 func (_m *Storage) CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
 	return 0, nil
 }
+
+// DeleteRowFromReported is just a stub for a proper mock method
+func (_m *Storage) DeleteRowFromReported(
+	orgID types.OrgID,
+	clusterName types.ClusterName,
+	updatedAt types.Timestamp) (int, error) {
+	return 0, nil
+}
+
+// DeleteRowFromNewReports is just a stub for a proper mock method
+func (_m *Storage) DeleteRowFromNewReports(
+	orgID types.OrgID,
+	clusterName types.ClusterName,
+	notifiedAt types.Timestamp) (int, error) {
+	return 0, nil
+}
