@@ -484,3 +484,10 @@ func (storage DBStorage) ReadLastNNotificationRecords(clusterEntry types.Cluster
 
 	return notificationRecords, nil
 }
+
+// getPrintableStatement returns SQL statement in form prepared for logging
+func getPrintableStatement(sqlStatement string) string {
+	s := strings.Replace(sqlStatement, "\n", " ", -1)
+	s = strings.Replace(s, "\t", "", -1)
+	return strings.Trim(s, " ")
+}
