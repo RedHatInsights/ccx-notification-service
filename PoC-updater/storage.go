@@ -81,6 +81,14 @@ type Storage interface {
 		errorLog string) error
 	CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
 	CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
+	DeleteRowFromNewReports(
+		orgID types.OrgID,
+		clusterName types.ClusterName,
+		updatedAt types.Timestamp) (int, error)
+	DeleteRowFromReported(
+		orgID types.OrgID,
+		clusterName types.ClusterName,
+		notifiedAt types.Timestamp) (int, error)
 }
 
 // DBStorage is an implementation of Storage interface that use selected SQL like database
@@ -129,6 +137,14 @@ const (
 		 WHERE org_id = $1
 		   AND cluster = $2
 		   AND updated_at = $3
+`
+	// Delete one row from reported table for given organization ID, cluster name, and notified at timestamp
+	deleteRowFromReportedTable = `
+                DELETE
+		  FROM reported
+		 WHERE org_id = $1
+		   AND cluster = $2
+		   AND notified_at = $3
 `
 )
 
@@ -588,6 +604,17 @@ func (storage DBStorage) DeleteRowFromNewReports(
 
 	sqlStatement := deleteRowFromNewReportsTable
 	return storage.deleteRowImpl(sqlStatement, orgID, clusterName, updatedAt)
+}
+
+// DeleteRowFromReported deletes one selected row from `reported` table.
+// Number of deleted rows (zero or one) is returned.
+func (storage DBStorage) DeleteRowFromReported(
+	orgID types.OrgID,
+	clusterName types.ClusterName,
+	notifiedAt types.Timestamp) (int, error) {
+
+	sqlStatement := deleteRowFromReportedTable
+	return storage.deleteRowImpl(sqlStatement, orgID, clusterName, notifiedAt)
 }
 
 // getPrintableStatement returns SQL statement in form prepared for logging
