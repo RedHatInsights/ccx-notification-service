@@ -117,7 +117,23 @@
       
       <tr class="section">
 	<td class="doc"></td>
-	<td class="code"><pre><code><div class="keyword">package</div> <div class="ident">mocks</div><div class="operator"></div>
+	<td class="code"><pre><code><div class="comment">/*
+Copyright © 2021 Red Hat, Inc.
+
+Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/</div>
+
+<div class="keyword">package</div> <div class="ident">mocks</div><div class="operator"></div>
 
 <div class="keyword">import</div> <div class="operator">(</div>
 	<div class="ident">types</div> <div class="literal">&#34;github.com/RedHatInsights/ccx-notification-service/types&#34;</div><div class="operator"></div>
@@ -434,6 +450,32 @@
 	<td class="doc"><p>CleanupOldReportsForOrganization is just a stub for a proper mock method</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">_m</div> <div class="operator">*</div><div class="ident">Storage</div><div class="operator">)</div> <div class="ident">CleanupOldReportsForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="keyword">return</div> <div class="literal">0</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>DeleteRowFromReported is just a stub for a proper mock method</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">_m</div> <div class="operator">*</div><div class="ident">Storage</div><div class="operator">)</div> <div class="ident">DeleteRowFromReported</div><div class="operator">(</div>
+	<div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div>
+	<div class="ident">clusterName</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">,</div>
+	<div class="ident">updatedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="keyword">return</div> <div class="literal">0</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>DeleteRowFromNewReports is just a stub for a proper mock method</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">_m</div> <div class="operator">*</div><div class="ident">Storage</div><div class="operator">)</div> <div class="ident">DeleteRowFromNewReports</div><div class="operator">(</div>
+	<div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div>
+	<div class="ident">clusterName</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">,</div>
+	<div class="ident">notifiedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="keyword">return</div> <div class="literal">0</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
