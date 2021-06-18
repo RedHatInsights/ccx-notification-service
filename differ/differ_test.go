@@ -189,15 +189,6 @@ func TestGenerateInstantReportNotificationMessage(t *testing.T) {
 	assert.Equal(t, accountID, notificationMsg.AccountID, "Generated notifications does not have expected account ID")
 }
 
-func TestGenerateRuleDetailsUri(t *testing.T) {
-	clusterID := "a-given-cluster-id"
-	moduleName := "ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report"
-	errorKey := "CLUSTER_WIDE_PROXY_AUTH_CHECK"
-	uriTemplate := "https://a_given_uri/{cluster}/insights/{module}/{error}"
-	expectedUri := "https://a_given_uri/a-given-cluster-id/insights/ccx_rules_ocp|external|rules|cluster_wide_proxy_auth_check|report/CLUSTER_WIDE_PROXY_AUTH_CHECK"
-	assert.Equal(t, expectedUri, generateRuleDetailsUri(uriTemplate, clusterID, moduleName, errorKey))
-}
-
 func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	clusterURI := "the_cluster_uri_in_ocm"
 	accountID := "a_stringified_account_id"
