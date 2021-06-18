@@ -194,7 +194,8 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 		notificationMsg := generateInstantNotificationMessage(notificationConfig.ClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), string(cluster.ClusterName))
 
 		for i, r := range deserialized.Reports {
-			ruleName := moduleToRuleName(string(r.Module))
+			module := string(r.Module)
+			ruleName := moduleToRuleName(module)
 			errorKey := string(r.ErrorKey)
 			likelihood, impact, totalRisk := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
 
@@ -208,8 +209,9 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 				Int(totalRiskAttribute, totalRisk).
 				Msg("Report")
 			if totalRisk >= totalRiskThreshold {
+				ruleDetailsURI := generateRuleDetailsUri(notificationConfig.RuleDetailsURI, string(cluster.ClusterName), module, errorKey)
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-				appendEventToNotificationMessage(notificationConfig.RuleDetailsURI, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
+				appendEventToNotificationMessage(ruleDetailsURI, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
 			}
 		}
 
@@ -354,6 +356,7 @@ func printClusters(clusters []types.ClusterEntry) {
 			Int(organizationIDAttribute, int(cluster.OrgID)).
 			Int(AccountNumberAttribute, int(cluster.AccountNumber)).
 			Str(clusterAttribute, string(cluster.ClusterName)).
+			Str(clusterAttribute, string(cluster.ClusterName)).
 			Msg(clusterEntryMessage)
 	}
 }
@@ -446,7 +449,7 @@ func generateWeeklyNotificationMessage(advisorURI string, accountID string, dige
 func appendEventToNotificationMessage(ruleURI string, notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) {
 	payload := toJSONEscapedString(types.EventPayload{
 		notificationPayloadRuleDescription: ruleName,
-		notificationPayloadRuleURL:         strings.Replace(ruleURI, "{rule}", ruleName, 1),
+		notificationPayloadRuleURL:         ruleURI,
 		notificationPayloadTotalRisk:       fmt.Sprint(totalRisk),
 		notificationPayloadPublishDate:     publishDate,
 	})
@@ -471,6 +474,15 @@ func toJSONEscapedString(i interface{}) string {
 	}
 	s := string(b)
 	return s
+}
+
+func generateRuleDetailsUri(uriTemplate string, clusterName, module string, errorKey string) string {
+	log.Info().Msgf("%s - %s - %s", uriTemplate, module, errorKey)
+	uri := strings.Replace(uriTemplate, "{cluster}", clusterName, 1)
+	uri = strings.Replace(uri, "{module}", strings.Replace(module, ".", "|", -1), 1)
+	uri = strings.Replace(uri, "{error}", errorKey, 1)
+	log.Info().Msgf("Generated rule details URI - %s", uri)
+	return uri
 }
 
 // checkArgs function handles command line options passed to the process

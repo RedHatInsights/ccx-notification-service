@@ -189,6 +189,15 @@ func TestGenerateInstantReportNotificationMessage(t *testing.T) {
 	assert.Equal(t, accountID, notificationMsg.AccountID, "Generated notifications does not have expected account ID")
 }
 
+func TestGenerateRuleDetailsUri(t *testing.T) {
+	clusterID := "a-given-cluster-id"
+	moduleName := "ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report"
+	errorKey := "CLUSTER_WIDE_PROXY_AUTH_CHECK"
+	uriTemplate := "https://a_given_uri/{cluster}/insights/{module}/{error}"
+	expectedUri := "https://a_given_uri/a-given-cluster-id/insights/ccx_rules_ocp|external|rules|cluster_wide_proxy_auth_check|report/CLUSTER_WIDE_PROXY_AUTH_CHECK"
+	assert.Equal(t, expectedUri, generateRuleDetailsUri(uriTemplate, clusterID, moduleName, errorKey))
+}
+
 func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	clusterURI := "the_cluster_uri_in_ocm"
 	accountID := "a_stringified_account_id"
@@ -205,7 +214,6 @@ func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	assert.Equal(t, len(notificationMsg.Events), 1, "the notification message should have 1 event")
 	assert.Equal(t, notificationMsg.Events[0].Metadata, types.EventMetadata{}, "All notification messages should have empty metadata")
 
-	ruleURI = "a_given_uri_without_expected_format" // the function only does a basic strings.Replace, no check for if it went well or not
 	appendEventToNotificationMessage(ruleURI, &notificationMsg, ruleName, totalRisk, publishDate)
 	assert.Equal(t, len(notificationMsg.Events), 2, "the notification message should have 2 events")
 	assert.Equal(t, notificationMsg.Events[1].Metadata, types.EventMetadata{}, "All notification messages should have empty metadata")
