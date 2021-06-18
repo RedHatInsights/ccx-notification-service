@@ -209,9 +209,8 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 				Int(totalRiskAttribute, totalRisk).
 				Msg("Report")
 			if totalRisk >= totalRiskThreshold {
-				ruleDetailsURI := generateRuleDetailsUri(notificationConfig.RuleDetailsURI, string(cluster.ClusterName), module, errorKey)
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-				appendEventToNotificationMessage(ruleDetailsURI, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
+				appendEventToNotificationMessage(notificationConfig.RuleDetailsURI, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
 			}
 		}
 
@@ -356,7 +355,6 @@ func printClusters(clusters []types.ClusterEntry) {
 			Int(organizationIDAttribute, int(cluster.OrgID)).
 			Int(AccountNumberAttribute, int(cluster.AccountNumber)).
 			Str(clusterAttribute, string(cluster.ClusterName)).
-			Str(clusterAttribute, string(cluster.ClusterName)).
 			Msg(clusterEntryMessage)
 	}
 }
@@ -378,16 +376,11 @@ func generateInstantNotificationMessage(clusterURI string, accountID string, clu
 	events := []types.Event{}
 	context := toJSONEscapedString(types.NotificationContext{
 		notificationContextDisplayName: clusterID,
-		notificationContextHostURL:     strings.Replace(clusterURI, "{cluster}", clusterID, 1),
+		notificationContextHostURL:     clusterURI,
 	})
 	if context == "" {
 		log.Error().Msg(contextToEscapedStringError)
 		return
-	}
-
-	//Temporal code to avoid flooding insights-qa owner's email inbox
-	if accountID == "6089719" {
-		accountID = "5910538"
 	}
 
 	notification = types.NotificationMessage{
@@ -474,15 +467,6 @@ func toJSONEscapedString(i interface{}) string {
 	}
 	s := string(b)
 	return s
-}
-
-func generateRuleDetailsUri(uriTemplate string, clusterName, module string, errorKey string) string {
-	log.Info().Msgf("%s - %s - %s", uriTemplate, module, errorKey)
-	uri := strings.Replace(uriTemplate, "{cluster}", clusterName, 1)
-	uri = strings.Replace(uri, "{module}", strings.Replace(module, ".", "|", -1), 1)
-	uri = strings.Replace(uri, "{error}", errorKey, 1)
-	log.Info().Msgf("Generated rule details URI - %s", uri)
-	return uri
 }
 
 // checkArgs function handles command line options passed to the process
