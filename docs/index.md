@@ -34,7 +34,7 @@ The "end-to-end" data flow is described there (including Notification Writer ser
 
 1. Steps 1 to  5 are shared with the CCX Data pipeline
 1. Steps 7 and 8 are performed by `ccx-notification-writer` service.
-1. Steps 9 to 12 are performed by `ccx-notification-writer` service.
+1. Steps 9 to 12 are performed by `ccx-notification-service` service.
 
 ## Class diagram
 
