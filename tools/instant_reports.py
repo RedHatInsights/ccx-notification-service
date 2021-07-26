@@ -51,7 +51,7 @@ def instant_reports(c):
             with service.find_differences("reported result", "new result"):
                 c.ret("new rules")
             with service.filter("new rules", "total_risk_threshold"):
-                c.note("currently any new rule\\nwith any total risk is reported")
+                c.note("currently any new rule\\nwith total_risk>3 is reported")
                 c.ret("filtered\\nnew rules")
             with service.prepare_notification_message("filtered new rules"):
                 c.ret("notification\\nmessage")

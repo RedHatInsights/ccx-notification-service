@@ -28,7 +28,7 @@ activate "ccx-notification-service"
 deactivate "ccx-notification-service"
 "ccx-notification-service" -> "ccx-notification-service" : filter(new rules, total_risk_threshold)
 activate "ccx-notification-service"
-note over "ccx-notification-service" : currently any new rule\nwith any total risk is reported
+note over "ccx-notification-service" : currently any new rule\nwith total_risk>3 is reported
 "ccx-notification-service" <-- "ccx-notification-service": filtered\nnew rules
 deactivate "ccx-notification-service"
 "ccx-notification-service" -> "ccx-notification-service" : prepare_notification_message(filtered new rules)
