@@ -42,11 +42,17 @@ The "end-to-end" data flow is described there (including Notification Writer ser
 
 [Class diagram, full scale](class_diagram.png)
 
-## Sequence diagram
+## Sequence diagram for the whole pipeline
 
 ![sequence_diagram.png](sequence_diagram.png)
 
 [Sequence diagram, full scale](sequence_diagram.png)
+
+## Sequence diagram for instant reports
+
+![instant_reports.png](instant_reports.png)
+
+[Full scale](instant_reports.png)
 
 ## Database description
 
