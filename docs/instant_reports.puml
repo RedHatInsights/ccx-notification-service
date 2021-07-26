@@ -1,0 +1,45 @@
+@startuml
+participant Timer
+participant "ccx-notification-service"
+participant "Notification\ndatabase"
+participant "Kafka topic\nplatform.notifications.ingress"
+
+note over Timer : CRON rule
+note over "ccx-notification-service" : CRON job configured and\ndeployed to OpenShift
+note over "Notification\ndatabase" : AWS RDS\nor regular PostgreSQL
+note over "Kafka topic\nplatform.notifications.ingress" : Notification\nservice gateway
+Timer -> "ccx-notification-service" : notify(tick)
+"ccx-notification-service" -> "Notification\ndatabase" : request(read list of new results)
+activate "Notification\ndatabase"
+"ccx-notification-service" <-- "Notification\ndatabase": list of new results
+deactivate "Notification\ndatabase"
+loop iterate over all new results
+"ccx-notification-service" -> "Notification\ndatabase" : request(read new result, cluster UUID)
+activate "Notification\ndatabase"
+"ccx-notification-service" <-- "Notification\ndatabase": here are new result for cluster UUID
+deactivate "Notification\ndatabase"
+"ccx-notification-service" -> "Notification\ndatabase" : request(read reported result, cluster UUID)
+activate "Notification\ndatabase"
+"ccx-notification-service" <-- "Notification\ndatabase": here are already reported result for cluster UUID
+deactivate "Notification\ndatabase"
+"ccx-notification-service" -> "ccx-notification-service" : find_differences(reported result, new result)
+activate "ccx-notification-service"
+"ccx-notification-service" <-- "ccx-notification-service": new rules
+deactivate "ccx-notification-service"
+"ccx-notification-service" -> "ccx-notification-service" : filter(new rules, total_risk_threshold)
+activate "ccx-notification-service"
+note over "ccx-notification-service" : currently any new rule\nwith any total risk is reported
+"ccx-notification-service" <-- "ccx-notification-service": filtered\nnew rules
+deactivate "ccx-notification-service"
+"ccx-notification-service" -> "ccx-notification-service" : prepare_notification_message(filtered new rules)
+activate "ccx-notification-service"
+"ccx-notification-service" <-- "ccx-notification-service": notification\nmessage
+deactivate "ccx-notification-service"
+group New rules were found
+"ccx-notification-service" -> "Kafka topic\nplatform.notifications.ingress" : notify(notification message)
+activate "Kafka topic\nplatform.notifications.ingress"
+"ccx-notification-service" <-- "Kafka topic\nplatform.notifications.ingress": accepted
+deactivate "Kafka topic\nplatform.notifications.ingress"
+end
+end
+@enduml
