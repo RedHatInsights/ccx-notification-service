@@ -582,20 +582,23 @@ func Run() {
 
 	printClusters(clusters)
 	log.Info().Int("clusters", len(clusters)).Msg("Read cluster list: done")
-	log.Info().Msg(separator)
-	log.Info().Msg("Checking new issues for all new reports")
+	if len(clusters) == 0 {
+		log.Info().Msg("Differ finished")
+		os.Exit(ExitStatusOK)
+	}
+
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
-
 	setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
-
 	log.Info().Msg("Kafka producer ready")
 	log.Info().Msg(separator)
 
+	log.Info().Msg("Checking new issues for all new reports")
 	processClusters(ruleContent, impacts, storage, clusters, config)
 
 	closeStorage(storage)
+	log.Info().Msg(separator)
 	closeNotifier()
-
+	log.Info().Msg(separator)
 	log.Info().Msg("Differ finished")
 }

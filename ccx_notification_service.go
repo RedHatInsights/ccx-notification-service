@@ -35,10 +35,5 @@ import (
 
 func main() {
 	log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-
-	log.Info().Msg("Started")
-
 	differ.Run()
-
-	log.Info().Msg("Finished")
 }

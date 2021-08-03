@@ -99,7 +99,6 @@ func shouldNotify(storage Storage, cluster types.ClusterEntry, report types.Repo
 
 func updateNotificationRecordSameState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp) {
 	log.Info().Msgf("No new issues to notify for cluster %s", cluster.ClusterName)
-	log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Same report as before")
 	// store notification info about not sending the notification
 	err := storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SameState, report, notifiedAt, "")
 	if err != nil {
