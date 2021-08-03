@@ -81,6 +81,7 @@ func (producer *KafkaProducer) ProduceMessage(msg types.NotificationMessage) (pa
 
 // Close allow the Sarama producer to be gracefully closed
 func (producer *KafkaProducer) Close() error {
+	log.Info().Msg("Shutting down kafka producer")
 	if err := producer.Producer.Close(); err != nil {
 		log.Error().Err(err).Msg("unable to close Kafka producer")
 		return err

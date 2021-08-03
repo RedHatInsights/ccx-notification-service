@@ -1108,9 +1108,7 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 	processClusters(ruleContent, impacts, &storage, clusters, config)
 
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster first_cluster\"}\n", "Notification already sent for first_cluster's report, but corresponding log not found.")
-	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"cluster\":\"first_cluster\",\"message\":\"Same report as before\"}\n")
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster second_cluster\"}\n", "Notification already sent for second_cluster's report, but corresponding log not found.")
-	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"cluster\":\"second_cluster\",\"message\":\"Same report as before\"}\n")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 }
