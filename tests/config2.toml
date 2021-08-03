@@ -20,3 +20,8 @@ log_level = ""
 
 [dependencies]
 content_endpoint = ":8081"
+
+[notifications]
+insights_advisor_url = "url_to_advisor"
+cluster_details_uri = "url_to_specific_cluster"
+rule_details_uri = "url_to_specific_rule"

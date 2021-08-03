@@ -165,6 +165,21 @@ func TestLoadDependenciesConfiguration(t *testing.T) {
 	assert.Equal(t, ":8081", depsCfg.ContentServiceEndpoint)
 }
 
+// TestLoadNotificationsConfiguration tests loading the notifications configuration sub-tree
+func TestLoadNotificationsConfiguration(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+
+	mustSetEnv(t, envVar, "../tests/config2")
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	conf := conf.GetNotificationsConfiguration(config)
+
+	assert.Equal(t, "url_to_specific_rule", conf.RuleDetailsURI)
+	assert.Equal(t, "url_to_advisor", conf.InsightsAdvisorURL)
+	assert.Equal(t, "url_to_specific_cluster", conf.ClusterDetailsURI)
+}
+
 // TestLoadConfigurationFromEnvVariableClowderEnabled tests loading the config.
 // file for testing from an environment variable. Clowder config is enabled in
 // this case.
