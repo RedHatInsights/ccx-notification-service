@@ -54,6 +54,12 @@ The "end-to-end" data flow is described there (including Notification Writer ser
 
 [Full scale](instant_reports.png)
 
+## Sequence diagram for weekly reports
+
+![weekly_reports.png](weekly_reports.png)
+
+[Full scale](weekly_reports.png)
+
 ## Database description
 
 * PostgreSQL database is used as a storage.

@@ -1,0 +1,33 @@
+@startuml
+participant Timer
+participant "ccx-notification-service"
+participant "Notification\ndatabase"
+participant "Kafka topic\nplatform.notifications.ingress"
+
+note over Timer : CRON rule
+note over "ccx-notification-service" : CRON job configured and\ndeployed to OpenShift
+note over "Notification\ndatabase" : AWS RDS\nor regular PostgreSQL
+note over "Kafka topic\nplatform.notifications.ingress" : Notification\nservice gateway
+Timer -> "ccx-notification-service" : notify(tick)
+"ccx-notification-service" -> "Notification\ndatabase" : request(read results, cluster UUID, -7 days to today)
+activate "Notification\ndatabase"
+"ccx-notification-service" <-- "Notification\ndatabase": list of results for cluster UUID
+deactivate "Notification\ndatabase"
+loop iterate over all results
+"ccx-notification-service" -> "ccx-notification-service" : filter(new rules, total_risk_threshold)
+activate "ccx-notification-service"
+note over "ccx-notification-service" : currently any new rule will be reported,\nbut filtering can be changed in future
+"ccx-notification-service" <-- "ccx-notification-service": filtered\nrules
+deactivate "ccx-notification-service"
+group At least one rule was found
+"ccx-notification-service" -> "ccx-notification-service" : prepare_notification_message(filtered rules, weekly report template)
+activate "ccx-notification-service"
+"ccx-notification-service" <-- "ccx-notification-service": notification\nmessage
+deactivate "ccx-notification-service"
+"ccx-notification-service" -> "Kafka topic\nplatform.notifications.ingress" : notify(notification message)
+activate "Kafka topic\nplatform.notifications.ingress"
+"ccx-notification-service" <-- "Kafka topic\nplatform.notifications.ingress": accepted
+deactivate "Kafka topic\nplatform.notifications.ingress"
+end
+end
+@enduml
