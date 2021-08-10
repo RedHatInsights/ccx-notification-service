@@ -36,6 +36,14 @@ The "end-to-end" data flow is described there (including Notification Writer ser
 1. Steps 7 and 8 are performed by `ccx-notification-writer` service.
 1. Steps 9 to 12 are performed by `ccx-notification-service` service.
 
+## Notification templates
+
+Notification templates used to send e-mails etc. to customers are stored in different repository:
+[https://github.com/RedHatInsights/notifications-backend/](https://github.com/RedHatInsights/notifications-backend/)
+
+Templates used by this notification service are available at:
+[https://github.com/RedHatInsights/notifications-backend/tree/master/backend/src/main/resources/templates/AdvisorOpenshift](https://github.com/RedHatInsights/notifications-backend/tree/master/backend/src/main/resources/templates/AdvisorOpenshift)
+
 ## Class diagram
 
 ![class_diagram.png](class_diagram.png)
