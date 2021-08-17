@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: default clean build fmt lint vet cyclo ineffassign shellcheck errcheck goconst gosec abcgo json-check openapi-check style run test test-postgres cover integration_tests rest_api_tests sqlite_db license before_commit bdd_tests help godoc install_docgo install_addlicense
+.PHONY: default clean build fmt lint vet cyclo ineffassign shellcheck errcheck goconst gosec abcgo style run test test-postgres cover integration_tests rest_api_tests sqlite_db license before_commit bdd_tests help godoc install_docgo install_addlicense
 
 SOURCES:=$(shell find . -name '*.go')
 BINARY:=ccx-notification-service
@@ -55,14 +55,7 @@ abcgo: ## Run ABC metrics checker
 	@echo "Run ABC metrics checker"
 	./abcgo.sh ${VERBOSE}
 
-json-check: ## Check all JSONs for basic syntax
-	@echo "Run JSON checker"
-	python3 utils/json_check.py
-
-openapi-check:
-	./check_openapi.sh
-
-style: fmt vet lint cyclo shellcheck errcheck goconst gosec ineffassign abcgo json-check ## Run all the formatting related commands (fmt, vet, lint, cyclo) + check shell scripts
+style: fmt vet lint cyclo shellcheck errcheck goconst gosec ineffassign abcgo ## Run all the formatting related commands (fmt, vet, lint, cyclo) + check shell scripts
 
 run: ${BINARY} ## Build the project and executes the binary
 	./$^
@@ -83,7 +76,7 @@ bdd_tests: ## Run BDD tests
 	@echo "Run BDD tests"
 	pushd bdd_tests/ && ./run_tests.sh && popd
 
-before_commit: style test test-postgres integration_tests openapi-check license ## Checks done before commit
+before_commit: style test test-postgres integration_tests license ## Checks done before commit
 	./check_coverage.sh
 
 help: ## Show this help screen
