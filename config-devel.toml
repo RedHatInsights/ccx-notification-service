@@ -1,0 +1,28 @@
+[logging]
+debug = true
+log_level = "info"
+
+[kafka_broker]
+address = "kafka:29092" #provide in deployment env or as secret
+topic = "platform.notifications.ingress" #provide in deployment env or as secret
+timeout = "60s"
+
+[storage]
+db_driver = "postgres"
+pg_username = "user" #provide in deployment env or as secret
+pg_password = "password" #provide in deployment env or as secret
+pg_host = "localhost" #provide in deployment env or as secret
+pg_port = 5432 #provide in deployment env or as secret
+pg_db_name = "notification" #provide in deployment env or as secret
+pg_params = "sslmode=disable"
+log_sql_queries = true
+
+[dependencies]
+content_server = "localhost:8082" #provide in deployment env or as secret
+content_endpoint = "/api/v1/content" #provide in deployment env or as secret
+
+[notifications]
+insights_advisor_url = "https://console.redhat.com/beta/openshift/insights/advisor/clusters/{cluster_id}"
+cluster_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}#insights"
+rule_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}/insights/{module}/{error_key}"
+
