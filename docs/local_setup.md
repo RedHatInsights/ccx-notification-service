@@ -68,7 +68,7 @@ The idea is:
 2. Read those messages with `ccx-notification-writer` and save them to a PostgreSQL database.
 3. Consume those messages from `ccx-notification-service` and publish the generated notifications to another topic.
 
-So it is necessary to clone the rest of the repos before using the `ccx-notification-service`. 
+So it is necessary to clone the rest of the repositories before using the `ccx-notification-service`. 
 
 ### Insights results aggregator data and utils
 
@@ -86,7 +86,7 @@ This script will publish all `.json` files in the folder. These messages can be 
 kafkacat -C -b kafka:29092 -t ccx.ocp.results
 ```
 
-### Inisights content service
+### Insights content service
 
 Clone [insights-content-service](https://github.com/RedHatInsights/insights-results-aggregator-data) and run `./update_rules_content.sh` in order to generate the folder with the rules. Then run the REST API with:
 
@@ -94,7 +94,7 @@ Clone [insights-content-service](https://github.com/RedHatInsights/insights-resu
 INSIGHTS_CONTENT_SERVICE_CONFIG_FILE=/path/to/insights-content-service/config-devel.toml ./insights-content-service
 ``` 
 
-This service will be consummed by `ccx-notification-service`just for getting the templates.
+This service will be consumed by `ccx-notification-service` just for getting the templates.
 
 ### Notification writer
 
