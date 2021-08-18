@@ -22,7 +22,7 @@ content_server = "localhost:8082" #provide in deployment env or as secret
 content_endpoint = "/api/v1/content" #provide in deployment env or as secret
 
 [notifications]
-insights_advisor_url = "https://console.redhat.com/beta/openshift/insights/advisor/clusters/{cluster_id}"
+insights_advisor_url = "https://console.redhat.com/openshift/insights/advisor/clusters/{cluster_id}"
 cluster_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}#insights"
 rule_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}/insights/{module}/{error_key}"
 
