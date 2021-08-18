@@ -18,6 +18,14 @@ package differ
 
 import (
 	"bytes"
+	"encoding/json"
+	"fmt"
+	"io"
+	"os"
+	"os/exec"
+	"testing"
+	"time"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/producer"
 	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
@@ -26,11 +34,6 @@ import (
 	samara_mocks "github.com/Shopify/sarama/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"io"
-	"os"
-	"os/exec"
-	"testing"
-	"time"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -47,6 +50,13 @@ var (
 	testPartitionID = 0
 	testOffset      = 0
 )
+
+type Payload struct {
+	PublishDate     string `json:"publish_date"`
+	RuleDescription string `json:"rule_description"`
+	RuleURL         string `json:"rule_url"`
+	TotalRisk       string `json:"total_risk"`
+}
 
 func init() {
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
@@ -174,7 +184,7 @@ func TestToJSONEscapedStringInvalidJSON(t *testing.T) {
 
 //---------------------------------------------------------------------------------------
 func TestGenerateInstantReportNotificationMessage(t *testing.T) {
-	clusterURI := "the_cluster_uri_in_ocm"
+	clusterURI := "the_cluster_uri_in_ocm_for_{cluster_id}"
 	accountID := "a_stringified_account_id"
 	clusterID := "the_displayed_cluster_ID"
 
@@ -183,7 +193,7 @@ func TestGenerateInstantReportNotificationMessage(t *testing.T) {
 	assert.NotEmpty(t, notificationMsg, "the generated notification message is empty")
 	assert.Empty(t, notificationMsg.Events, "the generated notification message should not have any events")
 	assert.Equal(t, types.InstantNotif.String(), notificationMsg.EventType, "the generated notification message should be for instant notifications")
-	assert.Equal(t, "{\"display_name\":\"the_displayed_cluster_ID\",\"host_url\":\"the_cluster_uri_in_ocm\"}", notificationMsg.Context, "Notification context is different from expected.")
+	assert.Equal(t, "{\"display_name\":\"the_displayed_cluster_ID\",\"host_url\":\"the_cluster_uri_in_ocm_for_the_displayed_cluster_ID\"}", notificationMsg.Context, "Notification context is different from expected.")
 	assert.Equal(t, notificationBundleName, notificationMsg.Bundle, "Generated notifications should indicate 'openshift' as bundle")
 	assert.Equal(t, notificationApplicationName, notificationMsg.Application, "Generated notifications should indicate 'openshift' as application name")
 	assert.Equal(t, accountID, notificationMsg.AccountID, "Generated notifications does not have expected account ID")
@@ -197,15 +207,24 @@ func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 
 	assert.Empty(t, notificationMsg.Events, "the generated notification message should not have any events")
 
-	ruleURI := "a_given_uri/{rule}/details"
+	ruleURI := "a_given_uri/{cluster_id}/{module}/{error_key}"
 	ruleName := "a_given_rule_name"
 	publishDate := "the_date_of_today"
 	totalRisk := 1
-	appendEventToNotificationMessage(ruleURI, &notificationMsg, ruleName, totalRisk, publishDate)
+	module := "a.module"
+	errorKey := "an_error_key"
+
+	notificationPayloadURL := generateNotificationPayloadURL(ruleURI, clusterID, module, errorKey)
+	appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleName, totalRisk, publishDate)
 	assert.Equal(t, len(notificationMsg.Events), 1, "the notification message should have 1 event")
 	assert.Equal(t, notificationMsg.Events[0].Metadata, types.EventMetadata{}, "All notification messages should have empty metadata")
 
-	appendEventToNotificationMessage(ruleURI, &notificationMsg, ruleName, totalRisk, publishDate)
+	payload := Payload{}
+	err := json.Unmarshal([]byte(notificationMsg.Events[0].Payload), &payload)
+	assert.Nil(t, err, fmt.Sprintf("Unexpected behavior: Cannot unmarshall notification payload %q", notificationMsg.Events[0].Payload))
+	assert.Equal(t, payload.RuleURL, "a_given_uri/the_displayed_cluster_ID/a|module/an_error_key", fmt.Sprintf("The rule URL %s is not correct", payload.RuleURL))
+
+	appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleName, totalRisk, publishDate)
 	assert.Equal(t, len(notificationMsg.Events), 2, "the notification message should have 2 events")
 	assert.Equal(t, notificationMsg.Events[1].Metadata, types.EventMetadata{}, "All notification messages should have empty metadata")
 }

@@ -210,7 +210,8 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 				Msg("Report")
 			if totalRisk >= totalRiskThreshold {
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
-				appendEventToNotificationMessage(notificationConfig.RuleDetailsURI, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
+				notificationPayloadURL := generateNotificationPayloadURL(notificationConfig.RuleDetailsURI, string(cluster.ClusterName), module, errorKey)
+				appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
 			}
 		}
 
@@ -376,7 +377,7 @@ func generateInstantNotificationMessage(clusterURI string, accountID string, clu
 	events := []types.Event{}
 	context := toJSONEscapedString(types.NotificationContext{
 		notificationContextDisplayName: clusterID,
-		notificationContextHostURL:     clusterURI,
+		notificationContextHostURL:     strings.Replace(clusterURI, "{cluster_id}", clusterID, 1),
 	})
 	if context == "" {
 		log.Error().Msg(contextToEscapedStringError)
@@ -438,11 +439,19 @@ func generateWeeklyNotificationMessage(advisorURI string, accountID string, dige
 	return
 }
 
+func generateNotificationPayloadURL(ruleURI string, clusterID string, module string, errorKey string) (notificationPayloadURL string) {
+	parsedModule := strings.Replace(module, ".", "|", -1)
+	replacer := strings.NewReplacer("{cluster_id}", clusterID, "{module}", parsedModule, "{error_key}", errorKey)
+	notificationPayloadURL = replacer.Replace(ruleURI)
+	return
+}
+
 // appendEventToNotificationMessage function adds a new event to the given notification message after constructing the payload string
-func appendEventToNotificationMessage(ruleURI string, notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) {
+func appendEventToNotificationMessage(notificationPayloadURL string, notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) {
+
 	payload := toJSONEscapedString(types.EventPayload{
 		notificationPayloadRuleDescription: ruleName,
-		notificationPayloadRuleURL:         ruleURI,
+		notificationPayloadRuleURL:         notificationPayloadURL,
 		notificationPayloadTotalRisk:       fmt.Sprint(totalRisk),
 		notificationPayloadPublishDate:     publishDate,
 	})
