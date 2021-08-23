@@ -143,14 +143,16 @@ func moduleToRuleName(module string) string {
 	return result
 }
 
-func findRuleByNameAndErrorKey(ruleContent types.RulesMap, impacts types.Impacts, ruleName string, errorKey string) (int, int, int) {
+func findRuleByNameAndErrorKey(ruleContent types.RulesMap, impacts types.Impacts, ruleName string, errorKey string) (int, int, int, string) {
 	rc := ruleContent[ruleName]
 	ek := rc.ErrorKeys
 	val := ek[errorKey]
 	likelihood := val.Metadata.Likelihood
+	description := val.Metadata.Description
 	impact := impacts[val.Metadata.Impact]
 	totalRisk := calculateTotalRisk(likelihood, impact)
-	return likelihood, impact, totalRisk
+
+	return likelihood, impact, totalRisk, description
 }
 
 func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, storage Storage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration) {
@@ -197,7 +199,7 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 			module := string(r.Module)
 			ruleName := moduleToRuleName(module)
 			errorKey := string(r.ErrorKey)
-			likelihood, impact, totalRisk := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
+			likelihood, impact, totalRisk, description := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
 
 			log.Info().
 				Int("#", i).
@@ -211,7 +213,7 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 			if totalRisk >= totalRiskThreshold {
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
 				notificationPayloadURL := generateNotificationPayloadURL(notificationConfig.RuleDetailsURI, string(cluster.ClusterName), module, errorKey)
-				appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleName, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
+				appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
 			}
 		}
 
@@ -296,7 +298,7 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, impacts types.
 		for i, r := range deserialized.Reports {
 			ruleName := moduleToRuleName(string(r.Module))
 			errorKey := string(r.ErrorKey)
-			likelihood, impact, totalRisk := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
+			likelihood, impact, totalRisk, _ := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
 
 			log.Info().
 				Int("#", i).
@@ -447,10 +449,10 @@ func generateNotificationPayloadURL(ruleURI string, clusterID string, module str
 }
 
 // appendEventToNotificationMessage function adds a new event to the given notification message after constructing the payload string
-func appendEventToNotificationMessage(notificationPayloadURL string, notification *types.NotificationMessage, ruleName string, totalRisk int, publishDate string) {
+func appendEventToNotificationMessage(notificationPayloadURL string, notification *types.NotificationMessage, ruleDescription string, totalRisk int, publishDate string) {
 
 	payload := toJSONEscapedString(types.EventPayload{
-		notificationPayloadRuleDescription: ruleName,
+		notificationPayloadRuleDescription: ruleDescription,
 		notificationPayloadRuleURL:         notificationPayloadURL,
 		notificationPayloadTotalRisk:       fmt.Sprint(totalRisk),
 		notificationPayloadPublishDate:     publishDate,
