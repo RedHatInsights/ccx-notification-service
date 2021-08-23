@@ -208,14 +208,14 @@ func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	assert.Empty(t, notificationMsg.Events, "the generated notification message should not have any events")
 
 	ruleURI := "a_given_uri/{cluster_id}/{module}/{error_key}"
-	ruleName := "a_given_rule_name"
+	ruleDescription := "a_given_rule_name"
 	publishDate := "the_date_of_today"
 	totalRisk := 1
 	module := "a.module"
 	errorKey := "an_error_key"
 
 	notificationPayloadURL := generateNotificationPayloadURL(ruleURI, clusterID, module, errorKey)
-	appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleName, totalRisk, publishDate)
+	appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleDescription, totalRisk, publishDate)
 	assert.Equal(t, len(notificationMsg.Events), 1, "the notification message should have 1 event")
 	assert.Equal(t, notificationMsg.Events[0].Metadata, types.EventMetadata{}, "All notification messages should have empty metadata")
 
@@ -224,7 +224,7 @@ func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	assert.Nil(t, err, fmt.Sprintf("Unexpected behavior: Cannot unmarshall notification payload %q", notificationMsg.Events[0].Payload))
 	assert.Equal(t, payload.RuleURL, "a_given_uri/the_displayed_cluster_ID/a|module/an_error_key", fmt.Sprintf("The rule URL %s is not correct", payload.RuleURL))
 
-	appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleName, totalRisk, publishDate)
+	appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleDescription, totalRisk, publishDate)
 	assert.Equal(t, len(notificationMsg.Events), 2, "the notification message should have 2 events")
 	assert.Equal(t, notificationMsg.Events[1].Metadata, types.EventMetadata{}, "All notification messages should have empty metadata")
 }
