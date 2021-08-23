@@ -143,16 +143,17 @@ func moduleToRuleName(module string) string {
 	return result
 }
 
-func findRuleByNameAndErrorKey(ruleContent types.RulesMap, impacts types.Impacts, ruleName string, errorKey string) (int, int, int, string) {
+func findRuleByNameAndErrorKey(
+	ruleContent types.RulesMap, impacts types.Impacts, ruleName string, errorKey string) (
+	likelihood int, impact int, totalRisk int, description string) {
 	rc := ruleContent[ruleName]
 	ek := rc.ErrorKeys
 	val := ek[errorKey]
-	likelihood := val.Metadata.Likelihood
-	description := val.Metadata.Description
-	impact := impacts[val.Metadata.Impact]
-	totalRisk := calculateTotalRisk(likelihood, impact)
-
-	return likelihood, impact, totalRisk, description
+	likelihood = val.Metadata.Likelihood
+	description = val.Metadata.Description
+	impact = impacts[val.Metadata.Impact]
+	totalRisk = calculateTotalRisk(likelihood, impact)
+	return
 }
 
 func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, storage Storage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration) {
