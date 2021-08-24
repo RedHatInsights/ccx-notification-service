@@ -132,23 +132,23 @@ func calculateTotalRisk(impact, likelihood int) int {
 // ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report
 // ->
 // cluster_wide_proxy_auth_check
-func moduleToRuleName(module string) string {
-	result := strings.TrimSuffix(module, ".report")
+func moduleToRuleName(module types.ModuleName) types.RuleName {
+	result := strings.TrimSuffix(string(module), ".report")
 	result = strings.TrimPrefix(result, "ccx_rules_ocp.")
 	result = strings.TrimPrefix(result, "external.")
 	result = strings.TrimPrefix(result, "rules.")
 	result = strings.TrimPrefix(result, "bug_rules.")
 	result = strings.TrimPrefix(result, "ocs.")
 
-	return result
+	return types.RuleName(result)
 }
 
 func findRuleByNameAndErrorKey(
-	ruleContent types.RulesMap, impacts types.Impacts, ruleName string, errorKey string) (
+	ruleContent types.RulesMap, impacts types.Impacts, ruleName types.RuleName, errorKey types.ErrorKey) (
 	likelihood int, impact int, totalRisk int, description string) {
-	rc := ruleContent[ruleName]
+	rc := ruleContent[string(ruleName)]
 	ek := rc.ErrorKeys
-	val := ek[errorKey]
+	val := ek[string(errorKey)]
 	likelihood = val.Metadata.Likelihood
 	description = val.Metadata.Description
 	impact = impacts[val.Metadata.Impact]
@@ -197,16 +197,16 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 		notificationMsg := generateInstantNotificationMessage(notificationConfig.ClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), string(cluster.ClusterName))
 
 		for i, r := range deserialized.Reports {
-			module := string(r.Module)
+			module := types.ModuleName(r.Module)
 			ruleName := moduleToRuleName(module)
-			errorKey := string(r.ErrorKey)
+			errorKey := r.ErrorKey
 			likelihood, impact, totalRisk, description := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
 
 			log.Info().
 				Int("#", i).
 				Str("type", r.Type).
-				Str("rule", ruleName).
-				Str("error key", errorKey).
+				Str("rule", string(ruleName)).
+				Str("error key", string(errorKey)).
 				Int("likelihood", likelihood).
 				Int("impact", impact).
 				Int(totalRiskAttribute, totalRisk).
@@ -297,15 +297,16 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, impacts types.
 		digest.Recommendations += numReports
 
 		for i, r := range deserialized.Reports {
-			ruleName := moduleToRuleName(string(r.Module))
-			errorKey := string(r.ErrorKey)
+			moduleName := types.ModuleName(r.Module)
+			ruleName := moduleToRuleName(moduleName)
+			errorKey := r.ErrorKey
 			likelihood, impact, totalRisk, _ := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
 
 			log.Info().
 				Int("#", i).
 				Str("type", r.Type).
-				Str("rule", ruleName).
-				Str("error key", errorKey).
+				Str("rule", string(ruleName)).
+				Str("error key", string(errorKey)).
 				Int("likelihood", likelihood).
 				Int("impact", impact).
 				Int(totalRiskAttribute, totalRisk).
@@ -442,9 +443,9 @@ func generateWeeklyNotificationMessage(advisorURI string, accountID string, dige
 	return
 }
 
-func generateNotificationPayloadURL(ruleURI string, clusterID string, module string, errorKey string) (notificationPayloadURL string) {
-	parsedModule := strings.Replace(module, ".", "|", -1)
-	replacer := strings.NewReplacer("{cluster_id}", clusterID, "{module}", parsedModule, "{error_key}", errorKey)
+func generateNotificationPayloadURL(ruleURI string, clusterID string, module types.ModuleName, errorKey types.ErrorKey) (notificationPayloadURL string) {
+	parsedModule := strings.Replace(string(module), ".", "|", -1)
+	replacer := strings.NewReplacer("{cluster_id}", clusterID, "{module}", parsedModule, "{error_key}", string(errorKey))
 	notificationPayloadURL = replacer.Replace(ruleURI)
 	return
 }

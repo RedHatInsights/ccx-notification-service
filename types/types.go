@@ -169,6 +169,12 @@ type Report struct {
 // RuleID represents type for rule id
 type RuleID string
 
+// RuleName represents type for rule name
+type RuleName string
+
+// ModuleName represents type for module name
+type ModuleName string
+
 // ErrorKey represents type for error key
 type ErrorKey string
 
