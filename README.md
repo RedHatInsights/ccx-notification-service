@@ -10,6 +10,21 @@ CCX notification service
 
 ## Description
 
+The purpose of this service is to enable automatic email notifications to
+users for all serious issues found in their OpenShift clusters. The "instant"
+mode of this service runs as a cronjob every fifteen minutes, and it sends a
+sequence of events to the configured Kafka topic so that the
+[notification-backend](https://github.com/RedHatInsights/notifications-backend)
+can process them and create email notifications based on the provided events.
+The events are only created for the **important** issues found in the 
+`new_reports` table of the configured PostgreSQL database. Once the reports are
+processed, the DB is updated with info about sent events by populating the
+`reported` table with the corresponding information. For more info about 
+initialising the database, take a look at the [ccx-notification-writer repository](https://github.com/RedHatInsights/ccx-notification-writer).
+
+In the instant notification mode, one email will be received for each cluster 
+with important or critical issues.
+
 ## Building
 
 Use `make build` to build executable file with this service.
@@ -41,6 +56,10 @@ bdd_tests            Run BDD tests
 before_commit        Checks done before commit
 help                 Show this help screen
 ```
+
+## Usage
+
+Provided a valid configuration, you can start the service with `./ccx-notification-service --instant-reports` 
 
 ## Database
 
