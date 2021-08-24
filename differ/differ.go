@@ -148,7 +148,7 @@ func findRuleByNameAndErrorKey(
 	likelihood int, impact int, totalRisk int, description string) {
 	rc := ruleContent[string(ruleName)]
 	ek := rc.ErrorKeys
-	val := ek[string(errorKey)]
+	val := ek[errorKey]
 	likelihood = val.Metadata.Likelihood
 	description = val.Metadata.Description
 	impact = impacts[val.Metadata.Impact]
