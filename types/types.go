@@ -106,11 +106,11 @@ type States struct {
 
 // RuleContent wraps all the content available for a rule into a single structure.
 type RuleContent struct {
-	Summary    string                         `json:"summary"`
-	Reason     string                         `json:"reason"`
-	Resolution string                         `json:"resolution"`
-	MoreInfo   string                         `json:"more_info"`
-	ErrorKeys  map[string]RuleErrorKeyContent `json:"error_keys"`
+	Summary    string                           `json:"summary"`
+	Reason     string                           `json:"reason"`
+	Resolution string                           `json:"resolution"`
+	MoreInfo   string                           `json:"more_info"`
+	ErrorKeys  map[ErrorKey]RuleErrorKeyContent `json:"error_keys"`
 	HasReason  bool
 }
 
@@ -181,7 +181,7 @@ type ErrorKey string
 // ReportItem represents a single (hit) rule of the string encoded report
 type ReportItem struct {
 	Type     string          `json:"type"`
-	Module   RuleID          `json:"component"`
+	Module   ModuleName      `json:"component"`
 	ErrorKey ErrorKey        `json:"key"`
 	Details  json.RawMessage `json:"details"`
 }
