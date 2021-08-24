@@ -456,7 +456,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 		},
 	}
 
-	errorKeys := map[string]types.RuleErrorKeyContent{
+	errorKeys := map[types.ErrorKey]types.RuleErrorKeyContent{
 		"RULE_1": {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
@@ -628,7 +628,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 		},
 	}
 
-	errorKeys := map[string]types.RuleErrorKeyContent{
+	errorKeys := map[types.ErrorKey]types.RuleErrorKeyContent{
 		"RULE_1": {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
@@ -820,7 +820,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 		},
 	}
 
-	errorKeys := map[string]types.RuleErrorKeyContent{
+	errorKeys := map[types.ErrorKey]types.RuleErrorKeyContent{
 		"RULE_1": {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
@@ -1014,7 +1014,7 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 		},
 	}
 
-	errorKeys := map[string]types.RuleErrorKeyContent{
+	errorKeys := map[types.ErrorKey]types.RuleErrorKeyContent{
 		"RULE_1": {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
@@ -1168,7 +1168,7 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 		},
 	}
 
-	errorKeys := map[string]types.RuleErrorKeyContent{
+	errorKeys := map[types.ErrorKey]types.RuleErrorKeyContent{
 		"RULE_1": {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
@@ -1364,7 +1364,7 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 		},
 	}
 
-	errorKeys := map[string]types.RuleErrorKeyContent{
+	errorKeys := map[types.ErrorKey]types.RuleErrorKeyContent{
 		"RULE_1": {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",

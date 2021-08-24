@@ -148,7 +148,7 @@ func findRuleByNameAndErrorKey(
 	likelihood int, impact int, totalRisk int, description string) {
 	rc := ruleContent[string(ruleName)]
 	ek := rc.ErrorKeys
-	val := ek[string(errorKey)]
+	val := ek[errorKey]
 	likelihood = val.Metadata.Likelihood
 	description = val.Metadata.Description
 	impact = impacts[val.Metadata.Impact]
@@ -197,7 +197,7 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 		notificationMsg := generateInstantNotificationMessage(notificationConfig.ClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), string(cluster.ClusterName))
 
 		for i, r := range deserialized.Reports {
-			module := types.ModuleName(r.Module)
+			module := r.Module
 			ruleName := moduleToRuleName(module)
 			errorKey := r.ErrorKey
 			likelihood, impact, totalRisk, description := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
@@ -297,7 +297,7 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, impacts types.
 		digest.Recommendations += numReports
 
 		for i, r := range deserialized.Reports {
-			moduleName := types.ModuleName(r.Module)
+			moduleName := r.Module
 			ruleName := moduleToRuleName(moduleName)
 			errorKey := r.ErrorKey
 			likelihood, impact, totalRisk, _ := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
