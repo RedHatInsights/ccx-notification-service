@@ -214,7 +214,7 @@ func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	module := "a.module"
 	errorKey := "an_error_key"
 
-	notificationPayloadURL := generateNotificationPayloadURL(ruleURI, clusterID, module, errorKey)
+	notificationPayloadURL := generateNotificationPayloadURL(ruleURI, clusterID, types.ModuleName(module), types.ErrorKey(errorKey))
 	appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleDescription, totalRisk, publishDate)
 	assert.Equal(t, len(notificationMsg.Events), 1, "the notification message should have 1 event")
 	assert.Equal(t, notificationMsg.Events[0].Metadata, types.EventMetadata{}, "All notification messages should have empty metadata")
@@ -321,8 +321,8 @@ func TestTotalRiskCalculation(t *testing.T) {
 }
 
 func TestModuleNameToRuleNameValidRuleName(t *testing.T) {
-	moduleName := "ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report"
-	ruleName := "cluster_wide_proxy_auth_check"
+	moduleName := types.ModuleName("ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report")
+	ruleName := types.RuleName("cluster_wide_proxy_auth_check")
 	assert.Equal(t, ruleName, moduleToRuleName(moduleName))
 }
 
