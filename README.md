@@ -8,6 +8,17 @@ CCX notification service
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/RedHatInsights/ccx-notification-service)
 [![License](https://img.shields.io/badge/license-Apache-blue)](https://github.com/RedHatInsights/ccx-notification-service/blob/master/LICENSE)
 
+<!-- vim-markdown-toc GFM -->
+
+* [Description](#description)
+* [Building](#building)
+* [Usage](#usage)
+* [Database](#database)
+* [Schema description](#schema-description)
+* [Notification templates](#notification-templates)
+
+<!-- vim-markdown-toc -->
+
 ## Description
 
 The purpose of this service is to enable automatic email notifications to
