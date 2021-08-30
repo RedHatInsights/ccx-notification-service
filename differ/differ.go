@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -33,6 +34,7 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/producer"
 	"github.com/RedHatInsights/ccx-notification-service/types"
+	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -64,12 +66,14 @@ const (
 	ExitStatusKafkaProducerError
 	// ExitStatusKafkaConnectionNotClosedError is raised when connection cannot be closed
 	ExitStatusKafkaConnectionNotClosedError
+	// ExitStatusHTTPServerError is raised when HTTP server cannot be started
+	ExitStatusHTTPServerError
 )
 
 // Messages
 const (
 	versionMessage              = "Notification service version 1.0"
-	authorsMessage              = "Pavel Tisnovsky, Red Hat Inc."
+	authorsMessage              = "Pavel Tisnovsky, Papa Bakary Camara, Red Hat Inc."
 	separator                   = "------------------------------------------------------------"
 	operationFailedMessage      = "Operation failed"
 	clusterEntryMessage         = "cluster entry"
@@ -167,15 +171,16 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 
 		report, reportedAt, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
 		if err != nil {
+			ReadReportForClusterErrors.Inc()
 			log.Err(err).Msg(operationFailedMessage)
 			os.Exit(ExitStatusStorageError)
 		}
 
 		log.Info().Time("time", time.Time(reportedAt)).Msg("Read")
 		var deserialized types.Report
-
 		err = json.Unmarshal([]byte(report), &deserialized)
 		if err != nil {
+			DeserializeReportErrors.Inc()
 			log.Err(err).Msg("Deserialization error - Couldn't create report object")
 			os.Exit(ExitStatusStorageError)
 		}
@@ -212,6 +217,7 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 				Int(totalRiskAttribute, totalRisk).
 				Msg("Report")
 			if totalRisk >= totalRiskThreshold {
+				ReportWithHighImpact.Inc()
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
 				notificationPayloadURL := generateNotificationPayloadURL(notificationConfig.RuleDetailsURI, string(cluster.ClusterName), module, errorKey)
 				appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
@@ -233,7 +239,6 @@ func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, 
 			os.Exit(ExitStatusKafkaProducerError)
 		}
 		updateNotificationRecordSentState(storage, cluster, report, notifiedAt)
-
 	}
 }
 
@@ -368,6 +373,7 @@ func printClusters(clusters []types.ClusterEntry) {
 func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) {
 	producer, err := producer.New(brokerConfig)
 	if err != nil {
+		ProducerSetupErrors.Inc()
 		log.Error().
 			Str(errorStr, err.Error()).
 			Msg("Couldn't initialize Kafka producer with the provided config.")
@@ -523,6 +529,22 @@ func setupNotificationStates(storage *DBStorage) {
 	}
 }
 
+// startMetricsServer server starts HTTP server with exposed metrics
+func startMetricsServer(address string) error {
+	// setup handlers
+	http.Handle("/metrics", promhttp.Handler())
+
+	// start the server
+	go func() {
+		log.Info().Str("HTTP server address", address).Msg("Starting HTTP server")
+		err := http.ListenAndServe(address, nil)
+		if err != nil {
+			log.Error().Err(err).Msg("Listen and serve")
+		}
+	}()
+	return nil
+}
+
 func closeStorage(storage *DBStorage) {
 	err := storage.Close()
 	if err != nil {
@@ -564,10 +586,27 @@ func Run() {
 
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
+	// configure metrics
+	metricsConfig := GetMetricsConfiguration(config)
+	if metricsConfig.Namespace != "" {
+		log.Info().Str("namespace", metricsConfig.Namespace).Msg("Setting metrics namespace")
+		AddMetricsWithNamespace(metricsConfig.Namespace)
+	}
+
+	// prepare HTTP server with metrics exposed
+	err = startMetricsServer(metricsConfig.Address)
+	if err != nil {
+		log.Error().Err(err)
+		os.Exit(ExitStatusHTTPServerError)
+	}
+
+	log.Info().Msg(separator)
+
 	log.Info().Msg("Getting rule content and impacts from content service")
 
 	ruleContent, impacts, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
 	if err != nil {
+		FetchContentErrors.Inc()
 		os.Exit(ExitStatusFetchContentError)
 	}
 
@@ -578,6 +617,7 @@ func Run() {
 	storageConfiguration := conf.GetStorageConfiguration(config)
 	storage, err := NewStorage(storageConfiguration)
 	if err != nil {
+		StorageSetupErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
 		os.Exit(ExitStatusStorageError)
 	}
@@ -589,6 +629,7 @@ func Run() {
 
 	clusters, err := storage.ReadClusterList()
 	if err != nil {
+		ReadClusterListErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
 		os.Exit(ExitStatusStorageError)
 	}
