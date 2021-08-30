@@ -75,6 +75,7 @@ type ConfigStruct struct {
 	Kafka         KafkaConfiguration         `mapstructure:"kafka_broker" toml:"kafka_broker"`
 	Dependencies  DependenciesConfiguration  `mapstructure:"dependencies" toml:"dependencies"`
 	Notifications NotificationsConfiguration `mapstructure:"notifications" toml:"notifications"`
+	Metrics       MetricsConfiguration       `mapstructure:"metrics" toml:"metrics"`
 }
 
 // LoggingConfiguration represents configuration for logging in general
@@ -123,6 +124,12 @@ type NotificationsConfiguration struct {
 	InsightsAdvisorURL string `mapstructure:"insights_advisor_url" toml:"insights_advisor_url"`
 	ClusterDetailsURI  string `mapstructure:"cluster_details_uri" toml:"cluster_details_uri"`
 	RuleDetailsURI     string `mapstructure:"rule_details_uri"    toml:"rule_details_uri"`
+}
+
+// MetricsConfiguration holds metrics related configuration
+type MetricsConfiguration struct {
+	Namespace string `mapstructure:"namespace" toml:"namespace"`
+	Address   string `mapstructure:"address" toml:"address"`
 }
 
 // LoadConfiguration loads configuration from defaultConfigFile, file set in
@@ -225,4 +232,9 @@ func GetDependenciesConfiguration(config ConfigStruct) DependenciesConfiguration
 // GetNotificationsConfiguration returns configuration related with notification content
 func GetNotificationsConfiguration(config ConfigStruct) NotificationsConfiguration {
 	return config.Notifications
+}
+
+// GetMetricsConfiguration returns metrics configuration
+func GetMetricsConfiguration(config ConfigStruct) MetricsConfiguration {
+	return config.Metrics
 }

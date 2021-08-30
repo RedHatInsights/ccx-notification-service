@@ -99,6 +99,7 @@ func shouldNotify(storage Storage, cluster types.ClusterEntry, report types.Repo
 
 func updateNotificationRecordSameState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp) {
 	log.Info().Msgf("No new issues to notify for cluster %s", cluster.ClusterName)
+	NotificationNotSentSameState.Inc()
 	// store notification info about not sending the notification
 	err := storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SameState, report, notifiedAt, "")
 	if err != nil {
@@ -108,6 +109,7 @@ func updateNotificationRecordSameState(storage Storage, cluster types.ClusterEnt
 
 func updateNotificationRecordSentState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp) {
 	log.Info().Msgf("New issues notified for cluster %s", string(cluster.ClusterName))
+	NotificationSent.Inc()
 	err := storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SentState, report, notifiedAt, "")
 	if err != nil {
 		writeNotificationRecordFailed(err)
@@ -116,6 +118,7 @@ func updateNotificationRecordSentState(storage Storage, cluster types.ClusterEnt
 
 func updateNotificationRecordErrorState(storage Storage, err error, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp) {
 	log.Info().Msgf("New issues couldn't be notified for cluster %s", string(cluster.ClusterName))
+	NotificationNotSentErrorState.Inc()
 	err = storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.ErrorState, report, notifiedAt, err.Error())
 	if err != nil {
 		writeNotificationRecordFailed(err)
