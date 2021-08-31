@@ -545,6 +545,20 @@ func startMetricsServer(address string) error {
 	return nil
 }
 
+func setupMetrics(metricsConfig conf.MetricsConfiguration) {
+	// configure metrics
+	if metricsConfig.Namespace != "" {
+		log.Info().Str("namespace", metricsConfig.Namespace).Msg("Setting metrics namespace")
+		AddMetricsWithNamespace(metricsConfig.Namespace)
+	}
+
+	// prepare HTTP server with metrics exposed
+	err := startMetricsServer(metricsConfig.Address)
+	if err != nil {
+		log.Error().Err(err)
+		os.Exit(ExitStatusHTTPServerError)
+	}
+}
 func closeStorage(storage *DBStorage) {
 	err := storage.Close()
 	if err != nil {
@@ -586,19 +600,8 @@ func Run() {
 
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
-	// configure metrics
-	metricsConfig := GetMetricsConfiguration(config)
-	if metricsConfig.Namespace != "" {
-		log.Info().Str("namespace", metricsConfig.Namespace).Msg("Setting metrics namespace")
-		AddMetricsWithNamespace(metricsConfig.Namespace)
-	}
 
-	// prepare HTTP server with metrics exposed
-	err = startMetricsServer(metricsConfig.Address)
-	if err != nil {
-		log.Error().Err(err)
-		os.Exit(ExitStatusHTTPServerError)
-	}
+	setupMetrics(conf.GetMetricsConfiguration(config))
 
 	log.Info().Msg(separator)
 
