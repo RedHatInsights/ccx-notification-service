@@ -530,7 +530,7 @@ func setupNotificationStates(storage *DBStorage) {
 }
 
 // startMetricsServer server starts HTTP server with exposed metrics
-func startMetricsServer(metricsConfig conf.MetricsConfiguration) error {
+func startMetricsServer(metricsConfig conf.MetricsConfiguration) {
 	// configure metrics in provided namespace, if any
 	if metricsConfig.Namespace != "" {
 		log.Info().Str("namespace", metricsConfig.Namespace).Msg("Setting metrics namespace")
@@ -549,7 +549,6 @@ func startMetricsServer(metricsConfig conf.MetricsConfiguration) error {
 			os.Exit(ExitStatusHTTPServerError)
 		}
 	}()
-	return nil
 }
 
 func closeStorage(storage *DBStorage) {
