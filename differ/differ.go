@@ -530,35 +530,28 @@ func setupNotificationStates(storage *DBStorage) {
 }
 
 // startMetricsServer server starts HTTP server with exposed metrics
-func startMetricsServer(address string) error {
-	// setup handlers
-	http.Handle("/metrics", promhttp.Handler())
-
-	// start the server
-	go func() {
-		log.Info().Str("HTTP server address", address).Msg("Starting HTTP server")
-		err := http.ListenAndServe(address, nil)
-		if err != nil {
-			log.Error().Err(err).Msg("Listen and serve")
-		}
-	}()
-	return nil
-}
-
-func setupMetrics(metricsConfig conf.MetricsConfiguration) {
-	// configure metrics
+func startMetricsServer(metricsConfig conf.MetricsConfiguration) error {
+	// configure metrics in provided namespace, if any
 	if metricsConfig.Namespace != "" {
 		log.Info().Str("namespace", metricsConfig.Namespace).Msg("Setting metrics namespace")
 		AddMetricsWithNamespace(metricsConfig.Namespace)
 	}
 
-	// prepare HTTP server with metrics exposed
-	err := startMetricsServer(metricsConfig.Address)
-	if err != nil {
-		log.Error().Err(err)
-		os.Exit(ExitStatusHTTPServerError)
-	}
+	// setup handlers
+	http.Handle("/metrics", promhttp.Handler())
+
+	// start the HTTP server
+	go func() {
+		log.Info().Str("HTTP server address", metricsConfig.Address).Msg("Starting HTTP server")
+		err := http.ListenAndServe(metricsConfig.Address, nil)
+		if err != nil {
+			log.Error().Err(err).Msg("Listen and serve")
+			os.Exit(ExitStatusHTTPServerError)
+		}
+	}()
+	return nil
 }
+
 func closeStorage(storage *DBStorage) {
 	err := storage.Close()
 	if err != nil {
@@ -601,7 +594,7 @@ func Run() {
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
 
-	setupMetrics(conf.GetMetricsConfiguration(config))
+	startMetricsServer(conf.GetMetricsConfiguration(config))
 
 	log.Info().Msg(separator)
 
