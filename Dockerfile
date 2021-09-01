@@ -23,7 +23,7 @@ RUN umask 0022 && \
     make build && \
     chmod a+x ccx-notification-service
 
-FROM registry.redhat.io/ubi8-minimal
+FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
 COPY --from=builder /opt/app-root/src/ccx-notification-service .
 
