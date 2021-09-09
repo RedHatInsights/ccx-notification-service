@@ -13,6 +13,7 @@ CCX notification service
 * [Description](#description)
 * [Building](#building)
 * [Usage](#usage)
+    * [All command line options](#all-command-line-options)
 * [Database](#database)
 * [Schema description](#schema-description)
 * [Notification templates](#notification-templates)
@@ -71,6 +72,23 @@ help                 Show this help screen
 ## Usage
 
 Provided a valid configuration, you can start the service with `./ccx-notification-service --instant-reports` 
+
+### All command line options
+
+List of all available command line options:
+
+```
+  -instant-reports
+    	create instant reports
+  -show-authors
+    	show authors and exit
+  -show-configuration
+    	show configuration
+  -show-version
+    	show version and exit
+  -weekly-reports
+    	create weekly reports
+```
 
 ## Database
 
