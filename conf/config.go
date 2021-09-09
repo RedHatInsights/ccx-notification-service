@@ -21,8 +21,10 @@ package conf
 // also contains function named LoadConfiguration that can be used to load
 // configuration from provided configuration file and/or from environment
 // variables. Additionally several specific functions named
-// GetStorageConfiguration, GetLoggingConfiguration, and GetBrokerConfiguration
-// are to be used to return specific configuration options.
+// GetStorageConfiguration, GetLoggingConfiguration,
+// GetKafkaBrokerConfiguration, GetNotificationsConfiguration and
+// GetMetricsConfiguration are to be used to return specific configuration
+// options.
 
 // Generated documentation is available at:
 // https://pkg.go.dev/github.com/RedHatInsights/ccx-notification-service/conf
