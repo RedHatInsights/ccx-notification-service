@@ -129,6 +129,46 @@ func showAuthors() {
 	fmt.Println(authorsMessage)
 }
 
+// showConfiguration function displays actual configuration.
+func showConfiguration(config conf.ConfigStruct) {
+	brokerConfig := conf.GetKafkaBrokerConfiguration(config)
+	log.Info().
+		Str("Address", brokerConfig.Address).
+		Str("Topic", brokerConfig.Topic).
+		Str("Timeout", fmt.Sprintf("%s", brokerConfig.Timeout)).
+		Msg("Broker configuration")
+
+	storageConfig := conf.GetStorageConfiguration(config)
+	log.Info().
+		Str("Driver", storageConfig.Driver).
+		Str("DB Name", storageConfig.PGDBName).
+		Str("Username", storageConfig.PGUsername). // password is omitted on purpose
+		Str("Host", storageConfig.PGHost).
+		Int("Port", storageConfig.PGPort).
+		Bool("LogSQLQueries", storageConfig.LogSQLQueries).
+		Str("Parameters", storageConfig.PGParams).
+		Msg("Storage configuration")
+
+	loggingConfig := conf.GetLoggingConfiguration(config)
+	log.Info().
+		Str("Level", loggingConfig.LogLevel).
+		Bool("Pretty colored debug logging", loggingConfig.Debug).
+		Msg("Logging configuration")
+
+	notificationConfig := conf.GetNotificationsConfiguration(config)
+	log.Info().
+		Str("Insights Advisor URL", notificationConfig.InsightsAdvisorURL).
+		Str("Cluster details URI", notificationConfig.ClusterDetailsURI).
+		Str("Rule details URI", notificationConfig.RuleDetailsURI).
+		Msg("Notifications configuration")
+
+	metricsConfig := conf.GetMetricsConfiguration(config)
+	log.Info().
+		Str("Namespace", metricsConfig.Namespace).
+		Str("Address", metricsConfig.Address).
+		Msg("Metrics configuration")
+}
+
 func calculateTotalRisk(impact, likelihood int) int {
 	return (impact + likelihood) / 2
 }
@@ -497,6 +537,10 @@ func checkArgs(args *types.CliFlags) {
 	case args.ShowAuthors:
 		showAuthors()
 		os.Exit(ExitStatusOK)
+	case args.ShowConfiguration:
+		// config not loaded yet, just skip the rest of function for
+		// now
+		return
 	default:
 	}
 
@@ -576,6 +620,7 @@ func Run() {
 	flag.BoolVar(&cliFlags.WeeklyReports, "weekly-reports", false, "create weekly reports")
 	flag.BoolVar(&cliFlags.ShowVersion, "show-version", false, "show version and exit")
 	flag.BoolVar(&cliFlags.ShowAuthors, "show-authors", false, "show authors and exit")
+	flag.BoolVar(&cliFlags.ShowConfiguration, "show-configuration", false, "show configuration")
 	flag.Parse()
 	checkArgs(&cliFlags)
 
@@ -584,6 +629,13 @@ func Run() {
 	if err != nil {
 		log.Err(err).Msg("Load configuration")
 		os.Exit(ExitStatusConfiguration)
+	}
+
+	// configuration is loaded, so it would be possible to display it if
+	// asked by user
+	if cliFlags.ShowConfiguration {
+		showConfiguration(config)
+		os.Exit(ExitStatusOK)
 	}
 
 	if config.Logging.Debug {
