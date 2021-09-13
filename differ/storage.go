@@ -35,6 +35,7 @@ package differ
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -95,6 +96,8 @@ type Storage interface {
 		orgID types.OrgID,
 		clusterName types.ClusterName,
 		notifiedAt types.Timestamp) (int, error)
+	PrintNewReportsForCleanup(maxAge string) error
+	PrintOldReportsForCleanup(maxAge string) error
 }
 
 // DBStorage is an implementation of Storage interface that use selected SQL like database
@@ -151,6 +154,22 @@ const (
 		 WHERE org_id = $1
 		   AND cluster = $2
 		   AND notified_at = $3
+`
+
+	// Display older records from new_reports table
+	displayOldRecordsFromNewReportsTable = `
+                SELECT org_id, account_number, cluster, updated_at, kafka_offset
+		  FROM new_reports
+		 WHERE updated_at < NOW() - $1::INTERVAL
+		 ORDER BY updated_at
+`
+
+	// Display older records from reported table
+	displayOldRecordsFromReportedTable = `
+                SELECT org_id, account_number, cluster, updated_at, 0
+		  FROM reported
+		 WHERE updated_at < NOW() - $1::INTERVAL
+		 ORDER BY updated_at
 `
 )
 
@@ -659,4 +678,68 @@ func (storage DBStorage) deleteRowImpl(
 		return 0, err
 	}
 	return int(affected), nil
+}
+
+// PrintNewReports method prints all reports from selected table older than
+// specified relative time
+func (storage DBStorage) PrintNewReports(maxAge string, query string, tableName string) error {
+	log.Info().
+		Str(MaxAgeAttribute, maxAge).
+		Str("select statement", query).
+		Msg("PrintReportsForCleanup operation")
+
+	rows, err := storage.connection.Query(query, maxAge)
+	if err != nil {
+		return err
+	}
+	// used to compute a real record age
+	now := time.Now()
+
+	// iterate over all old records
+	for rows.Next() {
+		var (
+			orgID         int
+			accountNumber int
+			clusterName   string
+			updatedAt     time.Time
+			kafkaOffset   int64
+		)
+
+		// read one old record from the report table
+		if err := rows.Scan(&orgID, &accountNumber, &clusterName, &updatedAt, &kafkaOffset); err != nil {
+			// close the result set in case of any error
+			if closeErr := rows.Close(); closeErr != nil {
+				log.Error().Err(closeErr).Msg(unableToCloseDBRowsHandle)
+			}
+			return err
+		}
+
+		// compute the real record age
+		age := int(math.Ceil(now.Sub(updatedAt).Hours() / 24)) // in days
+
+		// prepare for the report
+		updatedAtF := updatedAt.Format(time.RFC3339)
+
+		// just print the report
+		log.Info().
+			Int(OrgIDMessage, orgID).
+			Int(AccountNumberMessage, accountNumber).
+			Str(ClusterNameMessage, clusterName).
+			Str(UpdatedAtMessage, updatedAtF).
+			Int(AgeMessage, age).
+			Msg("Old report from `" + tableName + "` table")
+	}
+	return nil
+}
+
+// PrintNewReportsForCleanup method prints all reports from `new_reports` table
+// older than specified relative time
+func (storage DBStorage) PrintNewReportsForCleanup(maxAge string) error {
+	return storage.PrintNewReports(maxAge, displayOldRecordsFromNewReportsTable, "new_reports")
+}
+
+// PrintOldReportsForCleanup method prints all reports from `reported` table
+// older than specified relative time
+func (storage DBStorage) PrintOldReportsForCleanup(maxAge string) error {
+	return storage.PrintNewReports(maxAge, displayOldRecordsFromReportedTable, "reported")
 }
