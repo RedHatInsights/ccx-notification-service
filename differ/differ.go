@@ -613,6 +613,13 @@ func closeNotifier() {
 	}
 }
 
+func deleteOperationSpecified(cliFlags types.CliFlags) bool {
+	return cliFlags.PrintNewReportsForCleanup ||
+		cliFlags.PerformNewReportsCleanup ||
+		cliFlags.PrintOldReportsForCleanup ||
+		cliFlags.PerformOldReportsCleanup
+}
+
 // Run function is entry point to the differ
 func Run() {
 	var cliFlags types.CliFlags
@@ -658,10 +665,7 @@ func Run() {
 		os.Exit(ExitStatusStorageError)
 	}
 
-	if cliFlags.PrintNewReportsForCleanup ||
-		cliFlags.PerformNewReportsCleanup ||
-		cliFlags.PrintOldReportsForCleanup ||
-		cliFlags.PerformOldReportsCleanup {
+	if deleteOperationSpecified(cliFlags) {
 		err := PerformCleanupOperation(storage, cliFlags)
 		if err != nil {
 			os.Exit(ExitStatusCleanerError)
