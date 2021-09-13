@@ -68,6 +68,8 @@ const (
 	ExitStatusKafkaConnectionNotClosedError
 	// ExitStatusHTTPServerError is raised when HTTP server cannot be started
 	ExitStatusHTTPServerError
+	// ExitStatusCleanerError is raised when clean operation is not successful
+	ExitStatusCleanerError
 )
 
 // Messages
@@ -621,6 +623,11 @@ func Run() {
 	flag.BoolVar(&cliFlags.ShowVersion, "show-version", false, "show version and exit")
 	flag.BoolVar(&cliFlags.ShowAuthors, "show-authors", false, "show authors and exit")
 	flag.BoolVar(&cliFlags.ShowConfiguration, "show-configuration", false, "show configuration")
+	flag.BoolVar(&cliFlags.PrintNewReportsForCleanup, "print-new-reports-for-cleanup", false, "print new reports to be cleaned up")
+	flag.BoolVar(&cliFlags.PerformNewReportsCleanup, "new-reports-cleanup", false, "perform new reports clean up")
+	flag.BoolVar(&cliFlags.PrintOldReportsForCleanup, "print-old-reports-for-cleanup", false, "print old reports to be cleaned up")
+	flag.BoolVar(&cliFlags.PerformOldReportsCleanup, "old-reports-cleanup", false, "perform old reports clean up")
+	flag.StringVar(&cliFlags.MaxAge, "max-age", "", "max age for displaying/cleaning old records")
 	flag.Parse()
 	checkArgs(&cliFlags)
 
@@ -642,6 +649,27 @@ func Run() {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
+	// prepare the storage
+	storageConfiguration := conf.GetStorageConfiguration(config)
+	storage, err := NewStorage(storageConfiguration)
+	if err != nil {
+		StorageSetupErrors.Inc()
+		log.Err(err).Msg(operationFailedMessage)
+		os.Exit(ExitStatusStorageError)
+	}
+
+	if cliFlags.PrintNewReportsForCleanup ||
+		cliFlags.PerformNewReportsCleanup ||
+		cliFlags.PrintOldReportsForCleanup ||
+		cliFlags.PerformOldReportsCleanup {
+		err := PerformCleanupOperation(storage, cliFlags)
+		if err != nil {
+			os.Exit(ExitStatusCleanerError)
+		} else {
+			os.Exit(ExitStatusOK)
+		}
+	}
+
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
 
@@ -659,15 +687,6 @@ func Run() {
 
 	log.Info().Msg(separator)
 	log.Info().Msg("Read cluster list")
-
-	// prepare the storage
-	storageConfiguration := conf.GetStorageConfiguration(config)
-	storage, err := NewStorage(storageConfiguration)
-	if err != nil {
-		StorageSetupErrors.Inc()
-		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusStorageError)
-	}
 
 	//TODO: Set notificationConfig global variables here to avoid passing so much parameters
 
