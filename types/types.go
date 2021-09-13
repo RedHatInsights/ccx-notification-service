@@ -154,11 +154,16 @@ func (err MissingMandatoryFile) Error() string {
 
 // CliFlags represents structure holding all command line arguments/flags.
 type CliFlags struct {
-	InstantReports    bool
-	WeeklyReports     bool
-	ShowVersion       bool
-	ShowAuthors       bool
-	ShowConfiguration bool
+	InstantReports            bool
+	WeeklyReports             bool
+	ShowVersion               bool
+	ShowAuthors               bool
+	ShowConfiguration         bool
+	PrintNewReportsForCleanup bool
+	PerformNewReportsCleanup  bool
+	PrintOldReportsForCleanup bool
+	PerformOldReportsCleanup  bool
+	MaxAge                    string
 }
 
 // Report represents report send in a message consumed from any broker

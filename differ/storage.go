@@ -35,6 +35,7 @@ package differ
 import (
 	"database/sql"
 	"fmt"
+	"math"
 	"strings"
 	"time"
 
@@ -95,6 +96,10 @@ type Storage interface {
 		orgID types.OrgID,
 		clusterName types.ClusterName,
 		notifiedAt types.Timestamp) (int, error)
+	PrintNewReportsForCleanup(maxAge string) error
+	CleanupNewReports(maxAge string) (int, error)
+	PrintOldReportsForCleanup(maxAge string) error
+	CleanupOldReports(maxAge string) (int, error)
 }
 
 // DBStorage is an implementation of Storage interface that use selected SQL like database
@@ -113,29 +118,48 @@ const (
 
 // other messages
 const (
-	OrgIDMessage       = "Organization ID"
-	ClusterNameMessage = "Cluster name"
-	TimestampMessage   = "Timestamp (notified_at/updated_at)"
-	MaxAgeAttribute    = "max age"
+	OrgIDMessage         = "Organization ID"
+	ClusterNameMessage   = "Cluster name"
+	TimestampMessage     = "Timestamp (notified_at/updated_at)"
+	AccountNumberMessage = "Account number"
+	UpdatedAtMessage     = "Updated at"
+	AgeMessage           = "Age"
+	MaxAgeAttribute      = "max age"
+	DeleteStatement      = "delete statement"
 )
 
 // SQL statements
 const (
-	// Delete older records from new_reports table for given organization ID
+	// Delete older records from new_reports table
 	deleteOldRecordsFromNewReportsTable = `
+                DELETE
+		  FROM new_reports
+		 WHERE updated_at < NOW() - $1::INTERVAL
+`
+
+	// Delete older records from new_reports table for given organization ID
+	deleteOldRecordsFromNewReportsTableForOrganization = `
                 DELETE
 		  FROM new_reports
 		 WHERE org_id = $1
 		   AND updated_at < NOW() - $2::INTERVAL 
 `
 
-	// Delete older records from reported table for given organization ID
+	// Delete older records from reported table
 	deleteOldRecordsFromReportedTable = `
+                DELETE
+		  FROM reported
+		 WHERE updated_at < NOW() - $1::INTERVAL
+`
+
+	// Delete older records from reported table for given organization ID
+	deleteOldRecordsFromReportedTableForOrganization = `
                 DELETE
 		  FROM reported
 		 WHERE org_id = $1
 		   AND updated_at < NOW() - $2::INTERVAL
 `
+
 	// Delete one row from new_reports table for given organization ID, cluster name, and updated at timestamp
 	deleteRowFromNewReportsTable = `
                 DELETE
@@ -144,6 +168,7 @@ const (
 		   AND cluster = $2
 		   AND updated_at = $3
 `
+
 	// Delete one row from reported table for given organization ID, cluster name, and notified at timestamp
 	deleteRowFromReportedTable = `
                 DELETE
@@ -151,6 +176,22 @@ const (
 		 WHERE org_id = $1
 		   AND cluster = $2
 		   AND notified_at = $3
+`
+
+	// Display older records from new_reports table
+	displayOldRecordsFromNewReportsTable = `
+                SELECT org_id, account_number, cluster, updated_at, kafka_offset
+		  FROM new_reports
+		 WHERE updated_at < NOW() - $1::INTERVAL
+		 ORDER BY updated_at
+`
+
+	// Display older records from reported table
+	displayOldRecordsFromReportedTable = `
+                SELECT org_id, account_number, cluster, updated_at, 0
+		  FROM reported
+		 WHERE updated_at < NOW() - $1::INTERVAL
+		 ORDER BY updated_at
 `
 )
 
@@ -557,9 +598,9 @@ func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string
 
 	log.Info().
 		Str(MaxAgeAttribute, maxAge).
-		Str("delete statement", printableStatement).
+		Str(DeleteStatement, printableStatement).
 		Int(OrgIDMessage, int(orgID)).
-		Msg("Cleanup operation")
+		Msg("Cleanup operation for organization")
 
 	// perform the SQL statement
 	result, err := storage.connection.Exec(statement, int(orgID), maxAge)
@@ -584,7 +625,7 @@ func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string
 //
 // The method return number of deleted records.
 func (storage DBStorage) CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
-	sqlStatement := deleteOldRecordsFromNewReportsTable
+	sqlStatement := deleteOldRecordsFromNewReportsTableForOrganization
 	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
 }
 
@@ -597,7 +638,7 @@ func (storage DBStorage) CleanupNewReportsForOrganization(orgID types.OrgID, max
 //
 // The method return number of deleted records.
 func (storage DBStorage) CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
-	sqlStatement := deleteOldRecordsFromReportedTable
+	sqlStatement := deleteOldRecordsFromReportedTableForOrganization
 	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
 }
 
@@ -659,4 +700,102 @@ func (storage DBStorage) deleteRowImpl(
 		return 0, err
 	}
 	return int(affected), nil
+}
+
+// PrintNewReports method prints all reports from selected table older than
+// specified relative time
+func (storage DBStorage) PrintNewReports(maxAge string, query string, tableName string) error {
+	log.Info().
+		Str(MaxAgeAttribute, maxAge).
+		Str("select statement", query).
+		Msg("PrintReportsForCleanup operation")
+
+	rows, err := storage.connection.Query(query, maxAge)
+	if err != nil {
+		return err
+	}
+	// used to compute a real record age
+	now := time.Now()
+
+	// iterate over all old records
+	for rows.Next() {
+		var (
+			orgID         int
+			accountNumber int
+			clusterName   string
+			updatedAt     time.Time
+			kafkaOffset   int64
+		)
+
+		// read one old record from the report table
+		if err := rows.Scan(&orgID, &accountNumber, &clusterName, &updatedAt, &kafkaOffset); err != nil {
+			// close the result set in case of any error
+			if closeErr := rows.Close(); closeErr != nil {
+				log.Error().Err(closeErr).Msg(unableToCloseDBRowsHandle)
+			}
+			return err
+		}
+
+		// compute the real record age
+		age := int(math.Ceil(now.Sub(updatedAt).Hours() / 24)) // in days
+
+		// prepare for the report
+		updatedAtF := updatedAt.Format(time.RFC3339)
+
+		// just print the report
+		log.Info().
+			Int(OrgIDMessage, orgID).
+			Int(AccountNumberMessage, accountNumber).
+			Str(ClusterNameMessage, clusterName).
+			Str(UpdatedAtMessage, updatedAtF).
+			Int(AgeMessage, age).
+			Msg("Old report from `" + tableName + "` table")
+	}
+	return nil
+}
+
+// PrintNewReportsForCleanup method prints all reports from `new_reports` table
+// older than specified relative time
+func (storage DBStorage) PrintNewReportsForCleanup(maxAge string) error {
+	return storage.PrintNewReports(maxAge, displayOldRecordsFromNewReportsTable, "new_reports")
+}
+
+// PrintOldReportsForCleanup method prints all reports from `reported` table
+// older than specified relative time
+func (storage DBStorage) PrintOldReportsForCleanup(maxAge string) error {
+	return storage.PrintNewReports(maxAge, displayOldRecordsFromReportedTable, "reported")
+}
+
+// Cleanup method deletes all reports older than specified
+// relative time
+func (storage DBStorage) Cleanup(maxAge string, statement string) (int, error) {
+	log.Info().
+		Str(MaxAgeAttribute, maxAge).
+		Str(DeleteStatement, statement).
+		Msg("Cleanup operation for all organizations")
+
+	// perform the SQL statement
+	result, err := storage.connection.Exec(statement, maxAge)
+	if err != nil {
+		return 0, err
+	}
+
+	// read number of affected (deleted) rows
+	affected, err := result.RowsAffected()
+	if err != nil {
+		return 0, err
+	}
+	return int(affected), nil
+}
+
+// CleanupNewReports method deletes all reports from `new_reports` table older
+// than specified relative time
+func (storage DBStorage) CleanupNewReports(maxAge string) (int, error) {
+	return storage.Cleanup(maxAge, deleteOldRecordsFromNewReportsTable)
+}
+
+// CleanupOldReports method deletes all reports from `reported` table older
+// than specified relative time
+func (storage DBStorage) CleanupOldReports(maxAge string) (int, error) {
+	return storage.Cleanup(maxAge, deleteOldRecordsFromReportedTable)
 }

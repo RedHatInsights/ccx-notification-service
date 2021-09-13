@@ -88,6 +88,16 @@ List of all available command line options:
     	show version and exit
   -weekly-reports
     	create weekly reports
+  -max-age string
+    	max age for displaying/cleaning old records
+  -new-reports-cleanup
+    	perform new reports clean up
+  -old-reports-cleanup
+    	perform old reports clean up
+  -print-new-reports-for-cleanup
+    	print new reports to be cleaned up
+  -print-old-reports-for-cleanup
+    	print old reports to be cleaned up
 ```
 
 ## Database

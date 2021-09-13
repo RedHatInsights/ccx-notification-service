@@ -274,3 +274,27 @@ func (_m *Storage) DeleteRowFromNewReports(
 	notifiedAt types.Timestamp) (int, error) {
 	return 0, nil
 }
+
+// PrintNewReportsForCleanup is a mocked reimplementation of the real
+// PrintNewReportsForCleanup method.
+func (_m *Storage) PrintNewReportsForCleanup(maxAge string) error {
+	return nil
+}
+
+// CleanupNewReports is a mocked reimplementation of the real CleanupNewReports
+// method.
+func (_m *Storage) CleanupNewReports(maxAge string) (int, error) {
+	return 1, nil
+}
+
+// PrintOldReportsForCleanup is a mocked reimplementation of the real
+// PrintOldReportsForCleanup method.
+func (_m *Storage) PrintOldReportsForCleanup(maxAge string) error {
+	return nil
+}
+
+// CleanupOldReports is a mocked reimplementation of the real CleanupOldReports
+// method.
+func (_m *Storage) CleanupOldReports(maxAge string) (int, error) {
+	return 1, nil
+}
