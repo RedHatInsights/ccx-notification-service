@@ -598,7 +598,7 @@ func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string
 
 	log.Info().
 		Str(MaxAgeAttribute, maxAge).
-		Str("DeleteStatement", printableStatement).
+		Str(DeleteStatement, printableStatement).
 		Int(OrgIDMessage, int(orgID)).
 		Msg("Cleanup operation for organization")
 
@@ -771,7 +771,7 @@ func (storage DBStorage) PrintOldReportsForCleanup(maxAge string) error {
 func (storage DBStorage) Cleanup(maxAge string, statement string) (int, error) {
 	log.Info().
 		Str(MaxAgeAttribute, maxAge).
-		Str("DeleteStatement", statement).
+		Str(DeleteStatement, statement).
 		Msg("Cleanup operation for all organizations")
 
 	// perform the SQL statement
