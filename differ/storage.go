@@ -125,25 +125,41 @@ const (
 	UpdatedAtMessage     = "Updated at"
 	AgeMessage           = "Age"
 	MaxAgeAttribute      = "max age"
+	DeleteStatement      = "delete statement"
 )
 
 // SQL statements
 const (
-	// Delete older records from new_reports table for given organization ID
+	// Delete older records from new_reports table
 	deleteOldRecordsFromNewReportsTable = `
+                DELETE
+		  FROM new_reports
+		 WHERE updated_at < NOW() - $1::INTERVAL
+`
+
+	// Delete older records from new_reports table for given organization ID
+	deleteOldRecordsFromNewReportsTableForOrganization = `
                 DELETE
 		  FROM new_reports
 		 WHERE org_id = $1
 		   AND updated_at < NOW() - $2::INTERVAL 
 `
 
-	// Delete older records from reported table for given organization ID
+	// Delete older records from reported table
 	deleteOldRecordsFromReportedTable = `
+                DELETE
+		  FROM reported
+		 WHERE updated_at < NOW() - $1::INTERVAL
+`
+
+	// Delete older records from reported table for given organization ID
+	deleteOldRecordsFromReportedTableForOrganization = `
                 DELETE
 		  FROM reported
 		 WHERE org_id = $1
 		   AND updated_at < NOW() - $2::INTERVAL
 `
+
 	// Delete one row from new_reports table for given organization ID, cluster name, and updated at timestamp
 	deleteRowFromNewReportsTable = `
                 DELETE
@@ -152,6 +168,7 @@ const (
 		   AND cluster = $2
 		   AND updated_at = $3
 `
+
 	// Delete one row from reported table for given organization ID, cluster name, and notified at timestamp
 	deleteRowFromReportedTable = `
                 DELETE
@@ -581,9 +598,9 @@ func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string
 
 	log.Info().
 		Str(MaxAgeAttribute, maxAge).
-		Str("delete statement", printableStatement).
+		Str("DeleteStatement", printableStatement).
 		Int(OrgIDMessage, int(orgID)).
-		Msg("Cleanup operation")
+		Msg("Cleanup operation for organization")
 
 	// perform the SQL statement
 	result, err := storage.connection.Exec(statement, int(orgID), maxAge)
@@ -608,7 +625,7 @@ func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string
 //
 // The method return number of deleted records.
 func (storage DBStorage) CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
-	sqlStatement := deleteOldRecordsFromNewReportsTable
+	sqlStatement := deleteOldRecordsFromNewReportsTableForOrganization
 	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
 }
 
@@ -621,7 +638,7 @@ func (storage DBStorage) CleanupNewReportsForOrganization(orgID types.OrgID, max
 //
 // The method return number of deleted records.
 func (storage DBStorage) CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
-	sqlStatement := deleteOldRecordsFromReportedTable
+	sqlStatement := deleteOldRecordsFromReportedTableForOrganization
 	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
 }
 
@@ -754,8 +771,8 @@ func (storage DBStorage) PrintOldReportsForCleanup(maxAge string) error {
 func (storage DBStorage) Cleanup(maxAge string, statement string) (int, error) {
 	log.Info().
 		Str(MaxAgeAttribute, maxAge).
-		Str("delete statement", statement).
-		Msg("Cleanup operation")
+		Str("DeleteStatement", statement).
+		Msg("Cleanup operation for all organizations")
 
 	// perform the SQL statement
 	result, err := storage.connection.Exec(statement, maxAge)
