@@ -634,6 +634,7 @@ func Run() {
 	flag.BoolVar(&cliFlags.PerformNewReportsCleanup, "new-reports-cleanup", false, "perform new reports clean up")
 	flag.BoolVar(&cliFlags.PrintOldReportsForCleanup, "print-old-reports-for-cleanup", false, "print old reports to be cleaned up")
 	flag.BoolVar(&cliFlags.PerformOldReportsCleanup, "old-reports-cleanup", false, "perform old reports clean up")
+	flag.BoolVar(&cliFlags.CleanupOnStartup, "cleanup-on-startup", false, "perform database clean up on startup")
 	flag.StringVar(&cliFlags.MaxAge, "max-age", "", "max age for displaying/cleaning old records")
 	flag.Parse()
 	checkArgs(&cliFlags)
@@ -650,6 +651,11 @@ func Run() {
 	if cliFlags.ShowConfiguration {
 		showConfiguration(config)
 		os.Exit(ExitStatusOK)
+	}
+
+	// override default value by one read from configuration file
+	if cliFlags.MaxAge == "" {
+		cliFlags.MaxAge = config.Cleaner.MaxAge
 	}
 
 	if config.Logging.Debug {
@@ -672,6 +678,15 @@ func Run() {
 		} else {
 			os.Exit(ExitStatusOK)
 		}
+	}
+
+	// perform database cleanup on startup if specified on command line
+	if cliFlags.CleanupOnStartup {
+		err := PerformCleanupOnStartup(storage, cliFlags)
+		if err != nil {
+			os.Exit(ExitStatusCleanerError)
+		}
+		// if previous operation is correct, just continue
 	}
 
 	log.Info().Msg("Differ started")
