@@ -26,8 +26,12 @@ package differ
 // https://redhatinsights.github.io/ccx-notification-service/packages/differ/metrics.html
 
 import (
+	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
+	"github.com/prometheus/client_golang/prometheus/push"
+	"github.com/rs/zerolog/log"
+	"net/http"
 )
 
 // Metrics names
@@ -58,8 +62,25 @@ const (
 	NotificationSentHelp              = "The total number of notifications sent"
 )
 
+// PushGatewayClient is a simple wrapper over http.Client so that prometheus
+// can do HTTP requests with the given authentication header
+type PushGatewayClient struct {
+	AuthToken    string
+
+	httpClient  http.Client
+}
+
+func (pgc *PushGatewayClient) Do(request *http.Request) (*http.Response, error) {
+	if pgc.AuthToken != "" {
+		request.Header.Set("Authorization", "Basic " + pgc.AuthToken)
+	}
+	log.Debug().Str("request", request.URL.String()).Msg("Pushing metrics to Prometheus push gateway")
+	resp, err := pgc.httpClient.Do(request)
+	return resp, err
+}
+
 // FetchContentErrors shows number of errors during fetch from content service
-var FetchContentErrors = promauto.NewCounter(prometheus.CounterOpts{
+var FetchContentErrors = prometheus.NewCounter(prometheus.CounterOpts{
 	Name: FetchContentErrorsName,
 	Help: FetchContentErrorsHelp,
 })
@@ -203,4 +224,31 @@ func AddMetricsWithNamespace(namespace string) {
 		Name:      NotificationSentName,
 		Help:      NotificationSentHelp,
 	})
+}
+
+//PushMetrics pushes the metrics to the configured prometheus push gateway
+func PushMetrics(gatewayUrl string, gatewayAuthToken string, jobName string, metricsGroups conf.MetricsGroups) error {
+	client := PushGatewayClient{gatewayAuthToken, http.Client{}}
+
+	// Creates a pusher to the gateway "$PUSHGW_URL/metrics/job/$(job_name)
+	rer :=  push.New(gatewayUrl, jobName).
+		Collector(FetchContentErrors).
+		Collector(ReadClusterListErrors).
+		Collector(ProducerSetupErrors).
+		Collector(StorageSetupErrors).
+		Collector(ReadReportForClusterErrors).
+		Collector(DeserializeReportErrors).
+		Collector(ReportWithHighImpact).
+		Collector(NotificationNotSentSameState).
+		Collector(NotificationNotSentErrorState).
+		Collector(NotificationSent).
+		Client(&client)
+
+	// Turn gateway URL into "$PUSHGW_URL/metrics/job/$(job_name)/saas_file_name/$(saas_file_name)/env_name/$(env_name)"
+	// This is needed to meet app-sre's requirements
+	for _, group := range metricsGroups {
+		rer = rer.Grouping(group.Name, group.Value)
+	}
+
+	return rer.Push()
 }
