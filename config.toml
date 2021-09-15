@@ -3,28 +3,40 @@ debug = true
 log_level = "info"
 
 [kafka_broker]
-address = "" #provide in deployment env or as secret
-topic = "" #provide in deployment env or as secret
+address = "kafka:9092" #provide in deployment env or as secret
+topic = "platform.notifications.ingress" #provide in deployment env or as secret
 timeout = "60s"
 
 [storage]
 db_driver = "postgres"
-pg_username = "" #provide in deployment env or as secret
-pg_password = "" #provide in deployment env or as secret
-pg_host = "" #provide in deployment env or as secret
-pg_port = 0 #provide in deployment env or as secret
-pg_db_name = "" #provide in deployment env or as secret
+pg_username = "postgres" #provide in deployment env or as secret
+pg_password = "34ebad34" #provide in deployment env or as secret
+pg_host = "localhost" #provide in deployment env or as secret
+pg_port = 5432 #provide in deployment env or as secret
+pg_db_name = "ccx-notification-db2" #provide in deployment env or as secret
 pg_params = "sslmode=disable"
 log_sql_queries = true
 
 [dependencies]
-content_server = "" #provide in deployment env or as secret
-content_endpoint = "" #provide in deployment env or as secret
+content_server = "localhost:8080" #provide in deployment env or as secret
+content_endpoint = "/api/v1/content" #provide in deployment env or as secret
 
 [notifications]
-insights_advisor_url = "" #provide in deployment env or as secret
-cluster_details_uri = "" #provide in deployment env or as secret
-rule_details_uri = "" #provide in deployment env or as secret
+insights_advisor_url = "https://console.redhat.com/openshift/insights/advisor/clusters/{cluster_id}"
+cluster_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}#insights"
+rule_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}/insights/{module}/{error_key}"
+
+[metrics]
+job_name = "ccx_notification_service_local"
+namespace = "ccx_notification_service_namespace__"
+gateway_url = "localhost:9091"
+auth_token = ""
+[[metrics.grouping]]
+name = "saas_file_name"
+value = "saas_file_name_value"
+[[metrics.grouping]]
+name = "env_name"
+value = "env_name_value"
 
 [cleaner]
 max_age = "90 days"

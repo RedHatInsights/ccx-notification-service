@@ -26,7 +26,6 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"net/http"
 	"os"
 	"strings"
 	"time"
@@ -34,7 +33,6 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/producer"
 	"github.com/RedHatInsights/ccx-notification-service/types"
-	"github.com/prometheus/client_golang/prometheus/promhttp"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 )
@@ -66,10 +64,10 @@ const (
 	ExitStatusKafkaProducerError
 	// ExitStatusKafkaConnectionNotClosedError is raised when connection cannot be closed
 	ExitStatusKafkaConnectionNotClosedError
-	// ExitStatusHTTPServerError is raised when HTTP server cannot be started
-	ExitStatusHTTPServerError
 	// ExitStatusCleanerError is raised when clean operation is not successful
 	ExitStatusCleanerError
+	// ExitStatusMetricsError is raised when prometheus metrics cannot be pushed
+	ExitStatusMetricsError
 )
 
 // Messages
@@ -86,6 +84,7 @@ const (
 	errorStr                    = "Error:"
 	invalidJSONContent          = "The provided content cannot be encoded as JSON."
 	contextToEscapedStringError = "Notification message will not be generated as context couldn't be converted to escaped string."
+	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
 )
 
 // Constants for notification message top level fields
@@ -575,26 +574,12 @@ func setupNotificationStates(storage *DBStorage) {
 	}
 }
 
-// startMetricsServer server starts HTTP server with exposed metrics
-func startMetricsServer(metricsConfig conf.MetricsConfiguration) {
-	// configure metrics in provided namespace, if any
+// registerMetrics registers metrics using the provided namespace, if any
+func registerMetrics(metricsConfig conf.MetricsConfiguration) {
 	if metricsConfig.Namespace != "" {
 		log.Info().Str("namespace", metricsConfig.Namespace).Msg("Setting metrics namespace")
 		AddMetricsWithNamespace(metricsConfig.Namespace)
 	}
-
-	// setup handlers
-	http.Handle("/metrics", promhttp.Handler())
-
-	// start the HTTP server
-	go func() {
-		log.Info().Str("HTTP server address", metricsConfig.Address).Msg("Starting HTTP server")
-		err := http.ListenAndServe(metricsConfig.Address, nil)
-		if err != nil {
-			log.Error().Err(err).Msg("Listen and serve")
-			os.Exit(ExitStatusHTTPServerError)
-		}
-	}()
 }
 
 func closeStorage(storage *DBStorage) {
@@ -692,7 +677,7 @@ func Run() {
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
 
-	startMetricsServer(conf.GetMetricsConfiguration(config))
+	registerMetrics(conf.GetMetricsConfiguration(config))
 
 	log.Info().Msg(separator)
 
@@ -725,19 +710,26 @@ func Run() {
 		log.Info().Msg("Differ finished")
 		os.Exit(ExitStatusOK)
 	}
-
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
 	setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
 	log.Info().Msg("Kafka producer ready")
 	log.Info().Msg(separator)
-
 	log.Info().Msg("Checking new issues for all new reports")
 	processClusters(ruleContent, impacts, storage, clusters, config)
-
+	log.Info().Msg(separator)
 	closeStorage(storage)
 	log.Info().Msg(separator)
 	closeNotifier()
 	log.Info().Msg(separator)
-	log.Info().Msg("Differ finished")
+	log.Info().Msg("Differ finished. Pushing metrics to the configured prometheus gateway.")
+	metricsConf := conf.GetMetricsConfiguration(config)
+	log.Debug().Msgf("%v", metricsConf.Groups)
+	err = PushMetrics(metricsConf.GatewayURL, metricsConf.AuthToken, metricsConf.Job, metricsConf.Groups)
+	if err != nil {
+		log.Err(err).Msg(metricsPushFailedMessage)
+		os.Exit(ExitStatusMetricsError)
+	}
+	log.Info().Msg(separator)
+	log.Info().Msg("Metrics pushed successfully. Terminating notification service successfully.")
 }
