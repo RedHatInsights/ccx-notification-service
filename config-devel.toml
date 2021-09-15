@@ -26,3 +26,5 @@ insights_advisor_url = "https://console.redhat.com/openshift/insights/advisor/cl
 cluster_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}#insights"
 rule_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}/insights/{module}/{error_key}"
 
+[cleaner]
+max_age = "90 days"

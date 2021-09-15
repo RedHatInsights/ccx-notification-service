@@ -14,7 +14,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 
-threshold=85
+threshold=90
 
 BLUE=$(tput setaf 4)
 RED_BG=$(tput setab 1)

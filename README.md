@@ -80,6 +80,8 @@ List of all available command line options:
 ```
   -instant-reports
     	create instant reports
+  -cleanup-on-startup
+        perform database clean up on startup
   -show-authors
     	show authors and exit
   -show-configuration

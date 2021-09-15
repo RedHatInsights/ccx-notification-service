@@ -49,6 +49,15 @@ func PerformCleanupOperation(storage *DBStorage, cliFlags types.CliFlags) error 
 	}
 }
 
+// PerformCleanupOnStartup function cleans up the database before differ is started
+func PerformCleanupOnStartup(storage *DBStorage, cliFlags types.CliFlags) error {
+	err := performNewReportsCleanup(storage, cliFlags)
+	if err != nil {
+		return err
+	}
+	return performOldReportsCleanup(storage, cliFlags)
+}
+
 // printNewReportsForCleanup function print all reports for `new_reports` table
 // that are older than specified max age.
 func printNewReportsForCleanup(storage *DBStorage, cliFlags types.CliFlags) error {

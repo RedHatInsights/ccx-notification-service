@@ -26,3 +26,5 @@ insights_advisor_url = "" #provide in deployment env or as secret
 cluster_details_uri = "" #provide in deployment env or as secret
 rule_details_uri = "" #provide in deployment env or as secret
 
+[cleaner]
+max_age = "90 days"

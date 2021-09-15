@@ -78,6 +78,7 @@ type ConfigStruct struct {
 	Dependencies  DependenciesConfiguration  `mapstructure:"dependencies" toml:"dependencies"`
 	Notifications NotificationsConfiguration `mapstructure:"notifications" toml:"notifications"`
 	Metrics       MetricsConfiguration       `mapstructure:"metrics" toml:"metrics"`
+	Cleaner       CleanerConfiguration       `mapstructure:"cleaner" toml:"cleaner"`
 }
 
 // LoggingConfiguration represents configuration for logging in general
@@ -112,6 +113,12 @@ type StorageConfiguration struct {
 type DependenciesConfiguration struct {
 	ContentServiceServer   string `mapstructure:"content_server" toml:"content_server"`
 	ContentServiceEndpoint string `mapstructure:"content_endpoint" toml:"content_endpoint"`
+}
+
+// CleanerConfiguration represents configuration for the main cleaner
+type CleanerConfiguration struct {
+	// MaxAge is specification of max age for records to be cleaned
+	MaxAge string `mapstructure:"max_age" toml:"max_age"`
 }
 
 // KafkaConfiguration represents configuration of Kafka brokers and topics
@@ -239,4 +246,9 @@ func GetNotificationsConfiguration(config ConfigStruct) NotificationsConfigurati
 // GetMetricsConfiguration returns metrics configuration
 func GetMetricsConfiguration(config ConfigStruct) MetricsConfiguration {
 	return config.Metrics
+}
+
+// GetCleanerConfiguration returns cleaner configuration
+func GetCleanerConfiguration(config ConfigStruct) CleanerConfiguration {
+	return config.Cleaner
 }

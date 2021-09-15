@@ -163,6 +163,7 @@ type CliFlags struct {
 	PerformNewReportsCleanup  bool
 	PrintOldReportsForCleanup bool
 	PerformOldReportsCleanup  bool
+	CleanupOnStartup          bool
 	MaxAge                    string
 }
 
