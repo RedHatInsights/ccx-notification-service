@@ -31,11 +31,11 @@ max_age = "90 days"
 
 [metrics]
 namespace ="ccx_notification_service_namespace"
-gateway_url = "localhost:9091"
+gateway_url = ":9091"
 auth_token = ""
 [[metrics.grouping]]
-name = "saas_file_name"
-value = "saas_file_name_value"
+name = "first_grouping_name"
+value = "first_grouping_value"
 [[metrics.grouping]]
-name = "env_name"
-value = "env_name_value"
+name = "second_grouping_name"
+value = "second_grouping_value"

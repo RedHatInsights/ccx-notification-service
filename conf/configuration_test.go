@@ -190,3 +190,22 @@ func TestLoadConfigurationFromEnvVariableClowderEnabled(t *testing.T) {
 	mustSetEnv(t, "ACG_CONFIG", "tests/clowder_config.json")
 	mustLoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE")
 }
+
+// TestLoadNotificationsConfiguration tests loading the notifications configuration sub-tree
+func TestLoadMetricsConfiguration(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+
+	mustSetEnv(t, envVar, "../tests/config2")
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	conf := conf.GetMetricsConfiguration(config)
+
+	assert.Equal(t, "ccx_notification_service_namespace", conf.Namespace)
+	assert.Equal(t, ":9091", conf.GatewayURL)
+	assert.Equal(t, "", conf.AuthToken)
+	assert.Equal(t, "first_grouping_name", conf.Groups[0].Name)
+	assert.Equal(t, "first_grouping_value", conf.Groups[0].Value)
+	assert.Equal(t, "second_grouping_name", conf.Groups[1].Name)
+	assert.Equal(t, "second_grouping_value", conf.Groups[1].Value)
+}
