@@ -164,9 +164,19 @@ func showConfiguration(config conf.ConfigStruct) {
 		Msg("Notifications configuration")
 
 	metricsConfig := conf.GetMetricsConfiguration(config)
+
+	//Authentication token and metrics groups value is omitted on purpose
+	metricsGroups := []string{}
+	if len(metricsConfig.Groups) > 0 {
+		for _, item := range metricsConfig.Groups {
+			metricsGroups = append(metricsGroups, item.Name)
+		}
+	}
+
 	log.Info().
 		Str("Namespace", metricsConfig.Namespace).
-		Str("Address", metricsConfig.Address).
+		Str("Push Gateway", metricsConfig.GatewayURL).
+		Strs("Grouping", metricsGroups).
 		Msg("Metrics configuration")
 }
 

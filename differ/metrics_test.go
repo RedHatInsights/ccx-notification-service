@@ -44,3 +44,5 @@ func TestAddMetricsWithNamespace(t *testing.T) {
 	assert.NotNil(t, differ.NotificationNotSentErrorState)
 	assert.NotNil(t, differ.NotificationSent)
 }
+
+// TODO: TestPushMetrics
