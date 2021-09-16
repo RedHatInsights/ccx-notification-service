@@ -203,7 +203,7 @@ func TestLoadMetricsConfiguration(t *testing.T) {
 
 	assert.Equal(t, "ccx_notification_service_namespace", conf.Namespace)
 	assert.Equal(t, ":9091", conf.GatewayURL)
-	assert.Equal(t, "", conf.AuthToken)
+	assert.Equal(t, "", conf.GatewayAuthToken)
 	assert.Equal(t, "first_grouping_name", conf.Groups[0].Name)
 	assert.Equal(t, "first_grouping_value", conf.Groups[0].Value)
 	assert.Equal(t, "second_grouping_name", conf.Groups[1].Name)
