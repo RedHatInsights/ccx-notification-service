@@ -141,8 +141,6 @@ type MetricsConfiguration struct {
 	Namespace        string `mapstructure:"namespace" toml:"namespace"`
 	GatewayURL       string `mapstructure:"gateway_url" toml:"gateway_url"`
 	GatewayAuthToken string `mapstructure:"gateway_auth_token" toml:"gateway_auth_token"`
-	GroupingSaasFile string `mapstructure:"grouping_saas_file_name" toml:"grouping_saas_file_name"`
-	GroupingEnvName  string `mapstructure:"grouping_env_name" toml:"grouping_env_name"`
 }
 
 // LoadConfiguration loads configuration from defaultConfigFile, file set in

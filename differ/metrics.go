@@ -250,8 +250,6 @@ func PushMetrics(metricsConf conf.MetricsConfiguration) error {
 		Collector(NotificationNotSentSameState).
 		Collector(NotificationNotSentErrorState).
 		Collector(NotificationSent).
-		Grouping(saasFileNameGroup, metricsConf.GroupingSaasFile).
-		Grouping(envNameGroup, metricsConf.GroupingEnvName).
 		Client(&client).
 		Push()
 }
