@@ -82,7 +82,7 @@ func (pgc *PushGatewayClient) Do(request *http.Request) (*http.Response, error) 
 }
 
 // FetchContentErrors shows number of errors during fetch from content service
-var FetchContentErrors = prometheus.NewCounter(prometheus.CounterOpts{
+var FetchContentErrors = promauto.NewCounter(prometheus.CounterOpts{
 	Name: FetchContentErrorsName,
 	Help: FetchContentErrorsHelp,
 })
