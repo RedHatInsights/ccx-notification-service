@@ -146,11 +146,11 @@ type MetricsGroups []MetricsGroup
 
 // MetricsConfiguration holds metrics related configuration
 type MetricsConfiguration struct {
-	Job        string        `mapstructure:"job_name" toml:"job_name"`
-	Namespace  string        `mapstructure:"namespace" toml:"namespace"`
-	GatewayURL string        `mapstructure:"gateway_url" toml:"gateway_url"`
-	AuthToken  string        `mapstructure:"auth_token" toml:"auth_token"`
-	Groups     MetricsGroups `mapstructure:"grouping" toml:"grouping"`
+	Job              string        `mapstructure:"job_name" toml:"job_name"`
+	Namespace        string        `mapstructure:"namespace" toml:"namespace"`
+	GatewayURL       string        `mapstructure:"gateway_url" toml:"gateway_url"`
+	GatewayAuthToken string        `mapstructure:"gateway_auth_token" toml:"gateway_auth_token"`
+	Groups           MetricsGroups `mapstructure:"grouping" toml:"grouping"`
 }
 
 // LoadConfiguration loads configuration from defaultConfigFile, file set in

@@ -609,7 +609,7 @@ func closeNotifier() {
 }
 
 func pushMetrics(metricsConf conf.MetricsConfiguration) {
-	err := PushMetrics(metricsConf.GatewayURL, metricsConf.AuthToken, metricsConf.Job, metricsConf.Groups)
+	err := PushMetrics(metricsConf.GatewayURL, metricsConf.GatewayAuthToken, metricsConf.Job, metricsConf.Groups)
 	if err != nil {
 		log.Err(err).Msg(metricsPushFailedMessage)
 		os.Exit(ExitStatusMetricsError)

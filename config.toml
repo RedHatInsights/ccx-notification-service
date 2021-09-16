@@ -27,10 +27,10 @@ cluster_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}
 rule_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}/insights/{module}/{error_key}"
 
 [metrics]
-job_name = "ccx_notification_service_local"
-namespace = "ccx_notification_service_namespace__"
+job_name = "ccx_notification_service"
+namespace = "ccx_notification_service"
 gateway_url = "localhost:9091"
-auth_token = ""
+gateway_auth_token = ""
 [[metrics.grouping]]
 name = "saas_file_name"
 value = "saas_file_name_value"
