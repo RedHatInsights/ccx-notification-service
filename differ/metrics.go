@@ -80,10 +80,16 @@ type PushGatewayClient struct {
 // the authentication header configured in the PushGatewayClient instance
 func (pgc *PushGatewayClient) Do(request *http.Request) (*http.Response, error) {
 	if pgc.AuthToken != "" {
+		log.Debug().Msg("Adding authorization header to HTTP request")
 		request.Header.Set("Authorization", "Basic "+pgc.AuthToken)
+	} else {
+		log.Debug().Msg("No authorization token provided. Making HTTP request without credentials.")
 	}
-	log.Debug().Str("request", request.URL.String()).Msg("Pushing metrics to Prometheus push gateway")
+	log.Debug().Str("request", request.URL.String()).Str("method", request.Method).Msg("Pushing metrics to Prometheus push gateway")
 	resp, err := pgc.httpClient.Do(request)
+	if resp != nil {
+		log.Debug().Int("code", resp.StatusCode).Msg("Returned status code")
+	}
 	return resp, err
 }
 
