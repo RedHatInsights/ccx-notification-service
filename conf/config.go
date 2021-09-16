@@ -135,22 +135,14 @@ type NotificationsConfiguration struct {
 	RuleDetailsURI     string `mapstructure:"rule_details_uri"    toml:"rule_details_uri"`
 }
 
-// MetricsGroup represents the config used to group the exported prometheus metrics
-type MetricsGroup struct {
-	Name  string
-	Value string
-}
-
-// MetricsGroups represents a slice of MetricsGroup objects
-type MetricsGroups []MetricsGroup
-
 // MetricsConfiguration holds metrics related configuration
 type MetricsConfiguration struct {
-	Job              string        `mapstructure:"job_name" toml:"job_name"`
-	Namespace        string        `mapstructure:"namespace" toml:"namespace"`
-	GatewayURL       string        `mapstructure:"gateway_url" toml:"gateway_url"`
-	GatewayAuthToken string        `mapstructure:"gateway_auth_token" toml:"gateway_auth_token"`
-	Groups           MetricsGroups `mapstructure:"grouping" toml:"grouping"`
+	Job              string `mapstructure:"job_name" toml:"job_name"`
+	Namespace        string `mapstructure:"namespace" toml:"namespace"`
+	GatewayURL       string `mapstructure:"gateway_url" toml:"gateway_url"`
+	GatewayAuthToken string `mapstructure:"gateway_auth_token" toml:"gateway_auth_token"`
+	GroupingSaasFile string `mapstructure:"grouping_saas_file_name" toml:"grouping_saas_file_name"`
+	GroupingEnvName  string `mapstructure:"grouping_env_name" toml:"grouping_env_name"`
 }
 
 // LoadConfiguration loads configuration from defaultConfigFile, file set in
