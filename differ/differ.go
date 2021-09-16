@@ -608,11 +608,74 @@ func closeNotifier() {
 	}
 }
 
+func pushMetrics(metricsConf conf.MetricsConfiguration) {
+	err := PushMetrics(metricsConf.GatewayURL, metricsConf.AuthToken, metricsConf.Job, metricsConf.Groups)
+	if err != nil {
+		log.Err(err).Msg(metricsPushFailedMessage)
+		os.Exit(ExitStatusMetricsError)
+	}
+	log.Info().Msg("Metrics pushed successfully. Terminating notification service successfully.")
+}
+
 func deleteOperationSpecified(cliFlags types.CliFlags) bool {
 	return cliFlags.PrintNewReportsForCleanup ||
 		cliFlags.PerformNewReportsCleanup ||
 		cliFlags.PrintOldReportsForCleanup ||
 		cliFlags.PerformOldReportsCleanup
+}
+
+func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
+	log.Info().Msg("Differ started")
+	log.Info().Msg(separator)
+
+	registerMetrics(conf.GetMetricsConfiguration(config))
+
+	log.Info().Msg(separator)
+
+	log.Info().Msg("Getting rule content and impacts from content service")
+
+	ruleContent, impacts, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
+	if err != nil {
+		FetchContentErrors.Inc()
+		os.Exit(ExitStatusFetchContentError)
+	}
+
+	log.Info().Msg(separator)
+	log.Info().Msg("Read cluster list")
+
+	//TODO: Set notificationConfig global variables here to avoid passing so much parameters
+
+	setupNotificationStates(storage)
+	setupNotificationTypes(storage)
+
+	clusters, err := storage.ReadClusterList()
+	if err != nil {
+		ReadClusterListErrors.Inc()
+		log.Err(err).Msg(operationFailedMessage)
+		os.Exit(ExitStatusStorageError)
+	}
+
+	printClusters(clusters)
+	log.Info().Int("clusters", len(clusters)).Msg("Read cluster list: done")
+	if len(clusters) == 0 {
+		log.Info().Msg("Differ finished")
+		os.Exit(ExitStatusOK)
+	}
+	log.Info().Msg(separator)
+	log.Info().Msg("Preparing Kafka producer")
+	setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
+	log.Info().Msg("Kafka producer ready")
+	log.Info().Msg(separator)
+	log.Info().Msg("Checking new issues for all new reports")
+	processClusters(ruleContent, impacts, storage, clusters, config)
+	log.Info().Msg(separator)
+	closeStorage(storage)
+	log.Info().Msg(separator)
+	closeNotifier()
+	log.Info().Msg(separator)
+	log.Info().Msg("Differ finished. Pushing metrics to the configured prometheus gateway.")
+	pushMetrics(conf.GetMetricsConfiguration(config))
+	log.Info().Msg(separator)
 }
 
 // Run function is entry point to the differ
@@ -684,62 +747,6 @@ func Run() {
 		// if previous operation is correct, just continue
 	}
 
-	log.Info().Msg("Differ started")
-	log.Info().Msg(separator)
+	startDiffer(config, storage)
 
-	registerMetrics(conf.GetMetricsConfiguration(config))
-
-	log.Info().Msg(separator)
-
-	log.Info().Msg("Getting rule content and impacts from content service")
-
-	ruleContent, impacts, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
-	if err != nil {
-		FetchContentErrors.Inc()
-		os.Exit(ExitStatusFetchContentError)
-	}
-
-	log.Info().Msg(separator)
-	log.Info().Msg("Read cluster list")
-
-	//TODO: Set notificationConfig global variables here to avoid passing so much parameters
-
-	setupNotificationStates(storage)
-	setupNotificationTypes(storage)
-
-	clusters, err := storage.ReadClusterList()
-	if err != nil {
-		ReadClusterListErrors.Inc()
-		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusStorageError)
-	}
-
-	printClusters(clusters)
-	log.Info().Int("clusters", len(clusters)).Msg("Read cluster list: done")
-	if len(clusters) == 0 {
-		log.Info().Msg("Differ finished")
-		os.Exit(ExitStatusOK)
-	}
-	log.Info().Msg(separator)
-	log.Info().Msg("Preparing Kafka producer")
-	setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
-	log.Info().Msg("Kafka producer ready")
-	log.Info().Msg(separator)
-	log.Info().Msg("Checking new issues for all new reports")
-	processClusters(ruleContent, impacts, storage, clusters, config)
-	log.Info().Msg(separator)
-	closeStorage(storage)
-	log.Info().Msg(separator)
-	closeNotifier()
-	log.Info().Msg(separator)
-	log.Info().Msg("Differ finished. Pushing metrics to the configured prometheus gateway.")
-	metricsConf := conf.GetMetricsConfiguration(config)
-	log.Debug().Msgf("%v", metricsConf.Groups)
-	err = PushMetrics(metricsConf.GatewayURL, metricsConf.AuthToken, metricsConf.Job, metricsConf.Groups)
-	if err != nil {
-		log.Err(err).Msg(metricsPushFailedMessage)
-		os.Exit(ExitStatusMetricsError)
-	}
-	log.Info().Msg(separator)
-	log.Info().Msg("Metrics pushed successfully. Terminating notification service successfully.")
 }

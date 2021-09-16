@@ -65,14 +65,16 @@ const (
 // PushGatewayClient is a simple wrapper over http.Client so that prometheus
 // can do HTTP requests with the given authentication header
 type PushGatewayClient struct {
-	AuthToken    string
+	AuthToken string
 
-	httpClient  http.Client
+	httpClient http.Client
 }
 
+// Do is a simple wrapper over http.Client.Do method that includes
+// the authentication header configured in the PushGatewayClient instance
 func (pgc *PushGatewayClient) Do(request *http.Request) (*http.Response, error) {
 	if pgc.AuthToken != "" {
-		request.Header.Set("Authorization", "Basic " + pgc.AuthToken)
+		request.Header.Set("Authorization", "Basic "+pgc.AuthToken)
 	}
 	log.Debug().Str("request", request.URL.String()).Msg("Pushing metrics to Prometheus push gateway")
 	resp, err := pgc.httpClient.Do(request)
@@ -227,11 +229,11 @@ func AddMetricsWithNamespace(namespace string) {
 }
 
 //PushMetrics pushes the metrics to the configured prometheus push gateway
-func PushMetrics(gatewayUrl string, gatewayAuthToken string, jobName string, metricsGroups conf.MetricsGroups) error {
+func PushMetrics(gatewayURL string, gatewayAuthToken string, jobName string, metricsGroups conf.MetricsGroups) error {
 	client := PushGatewayClient{gatewayAuthToken, http.Client{}}
 
 	// Creates a pusher to the gateway "$PUSHGW_URL/metrics/job/$(job_name)
-	rer :=  push.New(gatewayUrl, jobName).
+	pusher := push.New(gatewayURL, jobName).
 		Collector(FetchContentErrors).
 		Collector(ReadClusterListErrors).
 		Collector(ProducerSetupErrors).
@@ -247,8 +249,8 @@ func PushMetrics(gatewayUrl string, gatewayAuthToken string, jobName string, met
 	// Turn gateway URL into "$PUSHGW_URL/metrics/job/$(job_name)/saas_file_name/$(saas_file_name)/env_name/$(env_name)"
 	// This is needed to meet app-sre's requirements
 	for _, group := range metricsGroups {
-		rer = rer.Grouping(group.Name, group.Value)
+		pusher = pusher.Grouping(group.Name, group.Value)
 	}
 
-	return rer.Push()
+	return pusher.Push()
 }
