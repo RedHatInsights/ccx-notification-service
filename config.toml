@@ -31,12 +31,8 @@ job_name = "ccx_notification_service"
 namespace = "ccx_notification_service"
 gateway_url = "localhost:9091"
 gateway_auth_token = ""
-[[metrics.grouping]]
-name = "saas_file_name"
-value = "saas_file_name_value"
-[[metrics.grouping]]
-name = "env_name"
-value = "env_name_value"
+grouping_saas_file_name = "saas_file_name_value"
+grouping_env_name = "env_name_value"
 
 [cleaner]
 max_age = "90 days"

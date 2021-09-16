@@ -165,18 +165,10 @@ func showConfiguration(config conf.ConfigStruct) {
 
 	metricsConfig := conf.GetMetricsConfiguration(config)
 
-	//Authentication token and metrics groups value is omitted on purpose
-	metricsGroups := []string{}
-	if len(metricsConfig.Groups) > 0 {
-		for _, item := range metricsConfig.Groups {
-			metricsGroups = append(metricsGroups, item.Name)
-		}
-	}
-
+	//Authentication token and metrics groups values are omitted on purpose
 	log.Info().
 		Str("Namespace", metricsConfig.Namespace).
 		Str("Push Gateway", metricsConfig.GatewayURL).
-		Strs("Grouping", metricsGroups).
 		Msg("Metrics configuration")
 }
 
@@ -609,7 +601,7 @@ func closeNotifier() {
 }
 
 func pushMetrics(metricsConf conf.MetricsConfiguration) {
-	err := PushMetrics(metricsConf.GatewayURL, metricsConf.GatewayAuthToken, metricsConf.Job, metricsConf.Groups)
+	err := PushMetrics(metricsConf)
 	if err != nil {
 		log.Err(err).Msg(metricsPushFailedMessage)
 		os.Exit(ExitStatusMetricsError)

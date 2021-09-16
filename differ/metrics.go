@@ -62,6 +62,12 @@ const (
 	NotificationSentHelp              = "The total number of notifications sent"
 )
 
+// Metrics groups
+const (
+	saasFileNameGroup = "saas_file_name"
+	envNameGroup      = "env_name"
+)
+
 // PushGatewayClient is a simple wrapper over http.Client so that prometheus
 // can do HTTP requests with the given authentication header
 type PushGatewayClient struct {
@@ -229,11 +235,11 @@ func AddMetricsWithNamespace(namespace string) {
 }
 
 //PushMetrics pushes the metrics to the configured prometheus push gateway
-func PushMetrics(gatewayURL string, gatewayAuthToken string, jobName string, metricsGroups conf.MetricsGroups) error {
-	client := PushGatewayClient{gatewayAuthToken, http.Client{}}
+func PushMetrics(metricsConf conf.MetricsConfiguration) error {
+	client := PushGatewayClient{metricsConf.GatewayAuthToken, http.Client{}}
 
 	// Creates a pusher to the gateway "$PUSHGW_URL/metrics/job/$(job_name)
-	pusher := push.New(gatewayURL, jobName).
+	return push.New(metricsConf.GatewayURL, metricsConf.Job).
 		Collector(FetchContentErrors).
 		Collector(ReadClusterListErrors).
 		Collector(ProducerSetupErrors).
@@ -244,13 +250,8 @@ func PushMetrics(gatewayURL string, gatewayAuthToken string, jobName string, met
 		Collector(NotificationNotSentSameState).
 		Collector(NotificationNotSentErrorState).
 		Collector(NotificationSent).
-		Client(&client)
-
-	// Turn gateway URL into "$PUSHGW_URL/metrics/job/$(job_name)/saas_file_name/$(saas_file_name)/env_name/$(env_name)"
-	// This is needed to meet app-sre's requirements
-	for _, group := range metricsGroups {
-		pusher = pusher.Grouping(group.Name, group.Value)
-	}
-
-	return pusher.Push()
+		Grouping(saasFileNameGroup, metricsConf.GroupingSaasFile).
+		Grouping(envNameGroup, metricsConf.GroupingEnvName).
+		Client(&client).
+		Push()
 }

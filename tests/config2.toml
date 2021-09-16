@@ -33,9 +33,5 @@ max_age = "90 days"
 namespace ="ccx_notification_service_namespace"
 gateway_url = ":9091"
 auth_token = ""
-[[metrics.grouping]]
-name = "first_grouping_name"
-value = "first_grouping_value"
-[[metrics.grouping]]
-name = "second_grouping_name"
-value = "second_grouping_value"
+grouping_saas_file_name = "saas_file_name_value"
+grouping_env_name = "env_name_value"
