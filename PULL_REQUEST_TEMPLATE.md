@@ -15,6 +15,7 @@ Please delete options that are not relevant.
 - Refactor (refactoring code, removing useless files)
 - Unit tests (no changes in the code)
 - Behavioral tests (no changes in the code)
+- Bump-up dependent library (no changes in the code)
 - Benchmarks (no changes in the code)
 - Documentation update
 
