@@ -136,7 +136,7 @@ type RuleContentDirectory struct {
 type ErrorKeyMetadata struct {
 	Condition   string   `yaml:"condition" json:"condition"`
 	Description string   `yaml:"description" json:"description"`
-	Impact      string   `yaml:"impact" json:"impact"`
+	Impact      int      `yaml:"impact" json:"impact"`
 	Likelihood  int      `yaml:"likelihood" json:"likelihood"`
 	PublishDate string   `yaml:"publish_date" json:"publish_date"`
 	Status      string   `yaml:"status" json:"status"`
