@@ -127,8 +127,7 @@ type RulesMap map[string]RuleContent
 
 // RuleContentDirectory contains content for all available rules in a directory.
 type RuleContentDirectory struct {
-	Config GlobalRuleConfig
-	Rules  RulesMap
+	Rules RulesMap
 }
 
 // ErrorKeyMetadata is a Go representation of the `metadata.yaml`
@@ -190,15 +189,6 @@ type ReportItem struct {
 	Module   ModuleName      `json:"component"`
 	ErrorKey ErrorKey        `json:"key"`
 	Details  json.RawMessage `json:"details"`
-}
-
-// Impacts represents the impacts parsed from the global config file
-type Impacts map[string]int
-
-// GlobalRuleConfig represents the file that contains
-// metadata globally applicable to any/all rule content.
-type GlobalRuleConfig struct {
-	Impact Impacts `yaml:"impact" json:"impact"`
 }
 
 // EventType represents the allowed event types in notification messages
