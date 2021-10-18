@@ -493,7 +493,7 @@ func generateWeeklyNotificationMessage(advisorURI string, accountID string, dige
 }
 
 func generateNotificationPayloadURL(ruleURI string, clusterID string, module types.ModuleName, errorKey types.ErrorKey) (notificationPayloadURL string) {
-	parsedModule := strings.Replace(string(module), ".", "|", -1)
+	parsedModule := strings.ReplaceAll(string(module), ".", "|")
 	replacer := strings.NewReplacer("{cluster_id}", clusterID, "{module}", parsedModule, "{error_key}", string(errorKey))
 	notificationPayloadURL = replacer.Replace(ruleURI)
 	return
