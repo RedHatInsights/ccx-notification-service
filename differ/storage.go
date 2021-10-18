@@ -666,8 +666,8 @@ func (storage DBStorage) DeleteRowFromReported(
 
 // getPrintableStatement returns SQL statement in form prepared for logging
 func getPrintableStatement(sqlStatement string) string {
-	s := strings.Replace(sqlStatement, "\n", " ", -1)
-	s = strings.Replace(s, "\t", "", -1)
+	s := strings.ReplaceAll(sqlStatement, "\n", " ")
+	s = strings.ReplaceAll(s, "\t", "")
 	return strings.Trim(s, " ")
 }
 
