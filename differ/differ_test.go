@@ -62,7 +62,8 @@ func init() {
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 }
 
-//Can't redirect zerolog/log to buffer directly in some tests due to clowder init
+// Can't redirect zerolog/log to buffer directly in some tests due to clowder
+// init
 func captureStdout(f func()) string {
 	originalStdOutFile := os.Stdout
 	r, w, _ := os.Pipe()
@@ -169,7 +170,7 @@ func TestToJSONEscapedStringValidJSON(t *testing.T) {
 func TestToJSONEscapedStringInvalidJSON(t *testing.T) {
 	type testStruct struct {
 		ID           int64
-		InvalidField chan int //A value that cannot be represented in JSON
+		InvalidField chan int // A value that cannot be represented in JSON
 	}
 
 	tested := testStruct{
@@ -279,7 +280,7 @@ func TestGenerateWeeklyDigestNotificationMessage(t *testing.T) {
 	assert.Equal(t, accountID, notificationMsg.AccountID, "Generated notifications does not have expected account ID")
 	assert.Equal(t, "{\"advisor_url\":\"the_uri_to_advisor_tab_in_ocm\"}", notificationMsg.Context, "Notification context is different from expected.")
 
-	assert.Equal(t, 1, len(notificationMsg.Events)) //Only one event, always, with the digest's content
+	assert.Equal(t, 1, len(notificationMsg.Events)) // Only one event, always, with the digest's content
 	expectedEvent := types.Event{
 		Metadata: types.EventMetadata{},
 		Payload:  "{\"total_clusters\":\"0\",\"total_critical\":\"0\",\"total_important\":\"0\",\"total_incidents\":\"0\",\"total_recommendations\":\"0\"}",
@@ -1220,7 +1221,9 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 	)
 	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
-			//We return three reports, one of them is in the report, and the others are not -> issues should be notified
+			// We return three reports, one of them is in the
+			// report, and the others are not -> issues should be
+			// notified
 			return []types.NotificationRecord{
 				{
 					OrgID:              3,
