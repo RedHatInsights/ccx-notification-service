@@ -95,12 +95,12 @@ const (
 
 // Constants for notification event expected fields
 const (
-	//INSTANT NOTIFICATION PAYLOAD FIELDS
+	// INSTANT NOTIFICATION PAYLOAD FIELDS
 	notificationPayloadRuleDescription = "rule_description"
 	notificationPayloadRuleURL         = "rule_url"
 	notificationPayloadTotalRisk       = "total_risk"
 	notificationPayloadPublishDate     = "publish_date"
-	//WEEKLY NOTIFICATION PAYLOAD FIELDS
+	// WEEKLY NOTIFICATION PAYLOAD FIELDS
 	notificationPayloadTotalClusters        = "total_clusters"
 	notificationPayloadTotalRecommendations = "total_recommendations"
 	notificationPayloadTotalCritical        = "total_critical"
@@ -165,7 +165,8 @@ func showConfiguration(config conf.ConfigStruct) {
 
 	metricsConfig := conf.GetMetricsConfiguration(config)
 
-	//Authentication token and metrics groups values are omitted on purpose
+	// Authentication token and metrics groups values are omitted on
+	// purpose
 	log.Info().
 		Str("Namespace", metricsConfig.Namespace).
 		Str("Push Gateway", metricsConfig.GatewayURL).
@@ -473,9 +474,12 @@ func generateWeeklyNotificationMessage(advisorURI string, accountID string, dige
 
 	events := []types.Event{
 		{
-			//The insights Notifications backend expects this field to be an empty object in the received JSON
+			// The insights Notifications backend expects this
+			// field to be an empty object in the received JSON
 			Metadata: types.EventMetadata{},
-			//The insights Notifications backend expects to receive the payload as a string with all its fields as escaped strings
+			// The insights Notifications backend expects to
+			// receive the payload as a string with all its fields
+			// as escaped strings
 			Payload: payload,
 		},
 	}
@@ -513,9 +517,11 @@ func appendEventToNotificationMessage(notificationPayloadURL string, notificatio
 		return
 	}
 	event := types.Event{
-		//The insights Notifications backend expects this field to be an empty object in the received JSON
+		// The insights Notifications backend expects this field to be
+		// an empty object in the received JSON
 		Metadata: types.EventMetadata{},
-		//The insights Notifications backend expects to receive the payload as a string with all its fields as escaped strings
+		// The insights Notifications backend expects to receive the
+		// payload as a string with all its fields as escaped strings
 		Payload: payload,
 	}
 	notification.Events = append(notification.Events, event)
