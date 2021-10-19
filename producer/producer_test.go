@@ -223,7 +223,7 @@ func TestProducerSendNotificationMessageEventContentNotValidJson(t *testing.T) {
 		},
 		{
 			Metadata: map[string]interface{}{
-				"foo": make(chan int), //A value that cannot be represented in JSON
+				"foo": make(chan int), // A value that cannot be represented in JSON
 			},
 			Payload: "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\", \"more_random_data\": \"why not...\"}",
 		},
