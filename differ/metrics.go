@@ -240,7 +240,8 @@ func AddMetricsWithNamespace(namespace string) {
 	})
 }
 
-//PushMetrics pushes the metrics to the configured prometheus push gateway
+// PushMetrics function pushes the metrics to the configured prometheus push
+// gateway
 func PushMetrics(metricsConf conf.MetricsConfiguration) error {
 	client := PushGatewayClient{metricsConf.GatewayAuthToken, http.Client{}}
 

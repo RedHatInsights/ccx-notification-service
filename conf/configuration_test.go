@@ -108,7 +108,7 @@ func TestLoadBrokerConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	expectedTimeout, _ := time.ParseDuration("20s")
 
-	//helpers.FailOnError(t, os.Chdir(".."))
+	// helpers.FailOnError(t, os.Chdir(".."))
 
 	mustSetEnv(t, envVar, "../tests/config2")
 	config, err := conf.LoadConfiguration(envVar, "")
