@@ -40,7 +40,8 @@ import (
 func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.RulesMap, err error) {
 	contentURL := config.ContentServiceServer + config.ContentServiceEndpoint
 	if !strings.HasPrefix(config.ContentServiceServer, "http") {
-		//if no protocol is specified in given URL, assume it is not needed to use https
+		// if no protocol is specified in given URL, assume it is not
+		// needed to use https
 		contentURL = "http://" + contentURL
 	}
 	log.Info().Msgf("Fetching rules content from %s", contentURL)
