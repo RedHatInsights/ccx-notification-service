@@ -49,7 +49,7 @@ func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.Ru
 	client := &http.Client{
 		Timeout: time.Second * 10,
 	}
-	req, err := http.NewRequest("GET", contentURL, nil)
+	req, err := http.NewRequest("GET", contentURL, http.NoBody)
 	if err != nil {
 		log.Error().Msgf("Got error while setting up HTTP request -  %s", err.Error())
 		return nil, err
