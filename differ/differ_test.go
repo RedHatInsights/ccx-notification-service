@@ -462,7 +462,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
-				Impact:      1,
+				Impact:      "impact_1",
 				Likelihood:  2,
 			},
 			Reason:    "rule 1 reason",
@@ -472,7 +472,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
-				Impact:      2,
+				Impact:      "impact_2",
 				Likelihood:  3,
 			},
 			HasReason: false,
@@ -496,6 +496,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 			ErrorKeys:  errorKeys,
 			HasReason:  false,
 		},
+	}
+
+	impacts := types.Impacts{
+		"impact_1": 3,
+		"impact_2": 2,
 	}
 
 	clusters := []types.ClusterEntry{
@@ -579,7 +584,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 	notifier, _ = producerMock.New(config.Kafka)
 
 	notificationType = types.InstantNotif
-	processClusters(ruleContent, &storage, clusters, config)
+	processClusters(ruleContent, impacts, &storage, clusters, config)
 
 	assert.Contains(t, buf.String(), "No new issues to notify for cluster first_cluster", "processClusters shouldn't generate any notification for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "No new issues to notify for cluster second_cluster", "processClusters shouldn't generate any notification for 'second_cluster' with given data")
@@ -629,7 +634,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
-				Impact:      3,
+				Impact:      "impact_1",
 				Likelihood:  4,
 			},
 			Reason:    "rule 1 reason",
@@ -639,7 +644,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
-				Impact:      3,
+				Impact:      "impact_2",
 				Likelihood:  3,
 			},
 			HasReason: false,
@@ -663,6 +668,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			ErrorKeys:  errorKeys,
 			HasReason:  false,
 		},
+	}
+
+	impacts := types.Impacts{
+		"impact_1": 3,
+		"impact_2": 3,
 	}
 
 	clusters := []types.ClusterEntry{
@@ -763,7 +773,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 
 	notificationType = types.InstantNotif
 
-	processClusters(ruleContent, &storage, clusters, config)
+	processClusters(ruleContent, impacts, &storage, clusters, config)
 
 	assert.Contains(t, buf.String(), "Report with high impact detected", "processClusters should calculate a totalRisk of 3 for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "Producing instant notification for cluster first_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
@@ -816,7 +826,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
-				Impact:      4,
+				Impact:      "impact_1",
 				Likelihood:  4,
 			},
 			Reason:    "rule 1 reason",
@@ -826,7 +836,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
-				Impact:      4,
+				Impact:      "impact_2",
 				Likelihood:  4,
 			},
 			HasReason: false,
@@ -850,6 +860,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			ErrorKeys:  errorKeys,
 			HasReason:  false,
 		},
+	}
+
+	impacts := types.Impacts{
+		"impact_1": 4,
+		"impact_2": 4,
 	}
 
 	clusters := []types.ClusterEntry{
@@ -949,7 +964,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 
 	notificationType = types.InstantNotif
 
-	processClusters(ruleContent, &storage, clusters, config)
+	processClusters(ruleContent, impacts, &storage, clusters, config)
 
 	assert.Contains(t, buf.String(), "{\"level\":\"warn\",\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
 
@@ -1005,7 +1020,7 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
-				Impact:      1,
+				Impact:      "impact_1",
 				Likelihood:  4,
 			},
 			Reason:    "rule 1 reason",
@@ -1015,7 +1030,7 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
-				Impact:      2,
+				Impact:      "impact_2",
 				Likelihood:  3,
 			},
 			HasReason: false,
@@ -1039,6 +1054,11 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 			ErrorKeys:  errorKeys,
 			HasReason:  false,
 		},
+	}
+
+	impacts := types.Impacts{
+		"impact_1": 3,
+		"impact_2": 3,
 	}
 
 	clusters := []types.ClusterEntry{
@@ -1105,7 +1125,7 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 
 	notificationType = types.InstantNotif
 
-	processClusters(ruleContent, &storage, clusters, config)
+	processClusters(ruleContent, impacts, &storage, clusters, config)
 
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster first_cluster\"}\n", "Notification already sent for first_cluster's report, but corresponding log not found.")
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster second_cluster\"}\n", "Notification already sent for second_cluster's report, but corresponding log not found.")
@@ -1154,7 +1174,7 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
-				Impact:      4,
+				Impact:      "impact_1",
 				Likelihood:  4,
 			},
 			Reason:    "rule 1 reason",
@@ -1164,7 +1184,7 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
-				Impact:      4,
+				Impact:      "impact_2",
 				Likelihood:  4,
 			},
 			HasReason: false,
@@ -1188,6 +1208,11 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 			ErrorKeys:  errorKeys,
 			HasReason:  false,
 		},
+	}
+
+	impacts := types.Impacts{
+		"impact_1": 4,
+		"impact_2": 4,
 	}
 
 	clusters := []types.ClusterEntry{
@@ -1290,7 +1315,7 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 
 	notificationType = types.InstantNotif
 
-	processClusters(ruleContent, &storage, clusters, config)
+	processClusters(ruleContent, impacts, &storage, clusters, config)
 
 	assert.Contains(t, buf.String(), "{\"level\":\"warn\",\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
 
@@ -1347,7 +1372,7 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
-				Impact:      1,
+				Impact:      "impact_1",
 				Likelihood:  2,
 			},
 			Reason:    "rule 1 reason",
@@ -1357,7 +1382,7 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
-				Impact:      2,
+				Impact:      "impact_2",
 				Likelihood:  3,
 			},
 			HasReason: false,
@@ -1381,6 +1406,11 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 			ErrorKeys:  errorKeys,
 			HasReason:  false,
 		},
+	}
+
+	impacts := types.Impacts{
+		"impact_1": 3,
+		"impact_2": 2,
 	}
 
 	clusters := []types.ClusterEntry{
@@ -1434,7 +1464,7 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	notifier, _ = producerMock.New(config.Kafka)
 
 	notificationType = types.WeeklyDigest
-	processClusters(ruleContent, &storage, clusters, config)
+	processClusters(ruleContent, impacts, &storage, clusters, config)
 
 	print(buf.String())
 

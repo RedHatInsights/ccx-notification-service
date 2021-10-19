@@ -192,19 +192,19 @@ func moduleToRuleName(module types.ModuleName) types.RuleName {
 }
 
 func findRuleByNameAndErrorKey(
-	ruleContent types.RulesMap, ruleName types.RuleName, errorKey types.ErrorKey) (
+	ruleContent types.RulesMap, impacts types.Impacts, ruleName types.RuleName, errorKey types.ErrorKey) (
 	likelihood int, impact int, totalRisk int, description string) {
 	rc := ruleContent[string(ruleName)]
 	ek := rc.ErrorKeys
 	val := ek[errorKey]
 	likelihood = val.Metadata.Likelihood
 	description = val.Metadata.Description
-	impact = val.Metadata.Impact
+	impact = impacts[val.Metadata.Impact]
 	totalRisk = calculateTotalRisk(likelihood, impact)
 	return
 }
 
-func processReportsByCluster(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration) {
+func processReportsByCluster(ruleContent types.RulesMap, impacts types.Impacts, storage Storage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration) {
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
@@ -249,7 +249,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			module := r.Module
 			ruleName := moduleToRuleName(module)
 			errorKey := r.ErrorKey
-			likelihood, impact, totalRisk, description := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
+			likelihood, impact, totalRisk, description := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
 
 			log.Info().
 				Int("#", i).
@@ -310,7 +310,7 @@ func updateDigestNotificationCounters(digest *types.Digest, totalRisk int) {
 }
 
 // processAllReportsFromCurrentWeek function creates weekly digest with for all the clusters corresponding to each user account
-func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration) {
+func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, impacts types.Impacts, storage Storage, clusters []types.ClusterEntry, notificationConfig conf.NotificationsConfiguration) {
 	digestByAccount := map[types.AccountNumber]types.Digest{}
 	digest := types.Digest{}
 
@@ -349,7 +349,7 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storag
 			moduleName := r.Module
 			ruleName := moduleToRuleName(moduleName)
 			errorKey := r.ErrorKey
-			likelihood, impact, totalRisk, _ := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
+			likelihood, impact, totalRisk, _ := findRuleByNameAndErrorKey(ruleContent, impacts, ruleName, errorKey)
 
 			log.Info().
 				Int("#", i).
@@ -391,13 +391,13 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storag
 }
 
 // processClusters function creates desired notification messages for all the clusters obtained from the database
-func processClusters(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry, config conf.ConfigStruct) {
+func processClusters(ruleContent types.RulesMap, impacts types.Impacts, storage Storage, clusters []types.ClusterEntry, config conf.ConfigStruct) {
 	notificationConfig := conf.GetNotificationsConfiguration(config)
 
 	if notificationType == types.InstantNotif {
-		processReportsByCluster(ruleContent, storage, clusters, notificationConfig)
+		processReportsByCluster(ruleContent, impacts, storage, clusters, notificationConfig)
 	} else if notificationType == types.WeeklyDigest {
-		processAllReportsFromCurrentWeek(ruleContent, storage, clusters, notificationConfig)
+		processAllReportsFromCurrentWeek(ruleContent, impacts, storage, clusters, notificationConfig)
 	}
 }
 
@@ -632,7 +632,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 
 	log.Info().Msg("Getting rule content and impacts from content service")
 
-	ruleContent, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
+	ruleContent, impacts, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
 	if err != nil {
 		FetchContentErrors.Inc()
 		os.Exit(ExitStatusFetchContentError)
@@ -665,7 +665,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	log.Info().Msg("Kafka producer ready")
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
-	processClusters(ruleContent, storage, clusters, config)
+	processClusters(ruleContent, impacts, storage, clusters, config)
 	log.Info().Msg(separator)
 	closeStorage(storage)
 	log.Info().Msg(separator)

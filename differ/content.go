@@ -37,7 +37,7 @@ import (
 )
 
 // fetchAllRulesContent fetches the parsed rules provided by the content-service
-func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.RulesMap, err error) {
+func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.RulesMap, impacts types.Impacts, err error) {
 	contentURL := config.ContentServiceServer + config.ContentServiceEndpoint
 	if !strings.HasPrefix(config.ContentServiceServer, "http") {
 		// if no protocol is specified in given URL, assume it is not
@@ -52,20 +52,20 @@ func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.Ru
 	req, err := http.NewRequest("GET", contentURL, http.NoBody)
 	if err != nil {
 		log.Error().Msgf("Got error while setting up HTTP request -  %s", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
 	response, err := client.Do(req)
 	if err != nil {
 		log.Error().Msgf("Got error while making the HTTP request - %s", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
 	// Read body from response
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		log.Error().Msgf("Got error while reading the response's body - %s", err.Error())
-		return nil, err
+		return nil, nil, err
 	}
 
 	err = response.Body.Close()
@@ -82,8 +82,10 @@ func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.Ru
 	}
 
 	rules = receivedContent.Rules
+	impacts = receivedContent.Config.Impact
 
 	log.Info().Msgf("Retrieved %d rules from content service", len(rules))
+	log.Info().Msgf("Retrieved %d impact factors from content service", len(impacts))
 
 	return
 }
