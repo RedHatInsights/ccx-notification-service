@@ -193,14 +193,14 @@ func moduleToRuleName(module types.ModuleName) types.RuleName {
 
 func findRuleByNameAndErrorKey(
 	ruleContent types.RulesMap, ruleName types.RuleName, errorKey types.ErrorKey) (
-	likelihood int, impact int, totalRisk int, description string) {
+	likelihood int, impact types.Impact, totalRisk int, description string) {
 	rc := ruleContent[string(ruleName)]
 	ek := rc.ErrorKeys
 	val := ek[errorKey]
 	likelihood = val.Metadata.Likelihood
 	description = val.Metadata.Description
 	impact = val.Metadata.Impact
-	totalRisk = calculateTotalRisk(likelihood, impact)
+	totalRisk = calculateTotalRisk(likelihood, impact.Impact)
 	return
 }
 
@@ -257,7 +257,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 				Str("rule", string(ruleName)).
 				Str("error key", string(errorKey)).
 				Int("likelihood", likelihood).
-				Int("impact", impact).
+				Int("impact", impact.Impact).
 				Int(totalRiskAttribute, totalRisk).
 				Msg("Report")
 			if totalRisk >= totalRiskThreshold {
@@ -357,7 +357,7 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storag
 				Str("rule", string(ruleName)).
 				Str("error key", string(errorKey)).
 				Int("likelihood", likelihood).
-				Int("impact", impact).
+				Int("impact", impact.Impact).
 				Int(totalRiskAttribute, totalRisk).
 				Msg("Report")
 			updateDigestNotificationCounters(&digest, totalRisk)

@@ -462,8 +462,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
-				Impact:      1,
-				Likelihood:  2,
+				Impact: types.Impact{
+					Name:   "impact1",
+					Impact: 1,
+				},
+				Likelihood: 2,
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
@@ -472,8 +475,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
-				Impact:      2,
-				Likelihood:  3,
+				Impact: types.Impact{
+					Name:   "impact2",
+					Impact: 2,
+				},
+				Likelihood: 3,
 			},
 			HasReason: false,
 		},
@@ -629,8 +635,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
-				Impact:      3,
-				Likelihood:  4,
+				Impact: types.Impact{
+					Name:   "impact3",
+					Impact: 3,
+				},
+				Likelihood: 4,
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
@@ -639,8 +648,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
-				Impact:      3,
-				Likelihood:  3,
+				Impact: types.Impact{
+					Impact: 3,
+					Name:   "impact3",
+				},
+				Likelihood: 3,
 			},
 			HasReason: false,
 		},
@@ -816,8 +828,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
-				Impact:      4,
-				Likelihood:  4,
+				Impact: types.Impact{
+					Impact: 4,
+					Name:   "impact4",
+				},
+				Likelihood: 4,
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
@@ -826,8 +841,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
-				Impact:      4,
-				Likelihood:  4,
+				Impact: types.Impact{
+					Impact: 4,
+					Name:   "impact4",
+				},
+				Likelihood: 4,
 			},
 			HasReason: false,
 		},
@@ -1005,8 +1023,11 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
-				Impact:      1,
-				Likelihood:  4,
+				Impact: types.Impact{
+					Impact: 1,
+					Name:   "impact1",
+				},
+				Likelihood: 4,
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
@@ -1015,8 +1036,11 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
-				Impact:      2,
-				Likelihood:  3,
+				Impact: types.Impact{
+					Impact: 2,
+					Name:   "impact2",
+				},
+				Likelihood: 3,
 			},
 			HasReason: false,
 		},
@@ -1154,8 +1178,11 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
-				Impact:      4,
-				Likelihood:  4,
+				Impact: types.Impact{
+					Impact: 4,
+					Name:   "impact4",
+				},
+				Likelihood: 4,
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
@@ -1164,8 +1191,11 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
-				Impact:      4,
-				Likelihood:  4,
+				Impact: types.Impact{
+					Impact: 4,
+					Name:   "impact4",
+				},
+				Likelihood: 4,
 			},
 			HasReason: false,
 		},
@@ -1347,8 +1377,11 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 1 error key condition",
 				Description: "rule 1 error key description",
-				Impact:      1,
-				Likelihood:  2,
+				Impact: types.Impact{
+					Impact: 1,
+					Name:   "impact1",
+				},
+				Likelihood: 2,
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
@@ -1357,8 +1390,11 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 			Metadata: types.ErrorKeyMetadata{
 				Condition:   "rule 2 error key condition",
 				Description: "rule 2 error key description",
-				Impact:      2,
-				Likelihood:  3,
+				Impact: types.Impact{
+					Name:   "impact2",
+					Impact: 2,
+				},
+				Likelihood: 3,
 			},
 			HasReason: false,
 		},

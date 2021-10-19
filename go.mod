@@ -4,7 +4,7 @@ go 1.14
 
 require (
 	github.com/BurntSushi/toml v0.3.1
-	github.com/RedHatInsights/insights-operator-utils v1.19.2
+	github.com/RedHatInsights/insights-operator-utils v1.21.2
 	github.com/Shopify/sarama v1.27.1
 	github.com/lib/pq v1.7.0
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible

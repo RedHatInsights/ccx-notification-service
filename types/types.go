@@ -135,11 +135,17 @@ type RuleContentDirectory struct {
 type ErrorKeyMetadata struct {
 	Condition   string   `yaml:"condition" json:"condition"`
 	Description string   `yaml:"description" json:"description"`
-	Impact      int      `yaml:"impact" json:"impact"`
+	Impact      Impact   `yaml:"impact" json:"impact"`
 	Likelihood  int      `yaml:"likelihood" json:"likelihood"`
 	PublishDate string   `yaml:"publish_date" json:"publish_date"`
 	Status      string   `yaml:"status" json:"status"`
 	Tags        []string `yaml:"tags" json:"tags"`
+}
+
+// Impact is contained in ErrorKeyMetadata
+type Impact struct {
+	Name   string `yaml:"name" json:"name"`
+	Impact int    `yaml:"impact" json:"impact"`
 }
 
 // MissingMandatoryFile is an error raised while parsing, when a mandatory file is missing
