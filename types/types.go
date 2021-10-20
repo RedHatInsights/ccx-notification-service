@@ -25,6 +25,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/RedHatInsights/insights-operator-utils/types"
 	"time"
 )
 
@@ -104,44 +105,8 @@ type States struct {
 	ErrorState      StateID
 }
 
-// RuleContent wraps all the content available for a rule into a single structure.
-type RuleContent struct {
-	Summary    string                           `json:"summary"`
-	Reason     string                           `json:"reason"`
-	Resolution string                           `json:"resolution"`
-	MoreInfo   string                           `json:"more_info"`
-	ErrorKeys  map[ErrorKey]RuleErrorKeyContent `json:"error_keys"`
-	HasReason  bool
-}
-
-// RuleErrorKeyContent wraps content of a single error key.
-type RuleErrorKeyContent struct {
-	Generic   string           `json:"generic"`
-	Metadata  ErrorKeyMetadata `json:"metadata"`
-	Reason    string           `json:"reason"`
-	HasReason bool
-}
-
 // RulesMap contains a map of RuleContent objects accesible indexed by rule names
-type RulesMap map[string]RuleContent
-
-// RuleContentDirectory contains content for all available rules in a directory.
-type RuleContentDirectory struct {
-	Config GlobalRuleConfig
-	Rules  RulesMap
-}
-
-// ErrorKeyMetadata is a Go representation of the `metadata.yaml`
-// file inside of an error key content directory.
-type ErrorKeyMetadata struct {
-	Condition   string   `yaml:"condition" json:"condition"`
-	Description string   `yaml:"description" json:"description"`
-	Impact      string   `yaml:"impact" json:"impact"`
-	Likelihood  int      `yaml:"likelihood" json:"likelihood"`
-	PublishDate string   `yaml:"publish_date" json:"publish_date"`
-	Status      string   `yaml:"status" json:"status"`
-	Tags        []string `yaml:"tags" json:"tags"`
-}
+type RulesMap map[string]types.RuleContent
 
 // MissingMandatoryFile is an error raised while parsing, when a mandatory file is missing
 type MissingMandatoryFile struct {
@@ -190,15 +155,6 @@ type ReportItem struct {
 	Module   ModuleName      `json:"component"`
 	ErrorKey ErrorKey        `json:"key"`
 	Details  json.RawMessage `json:"details"`
-}
-
-// Impacts represents the impacts parsed from the global config file
-type Impacts map[string]int
-
-// GlobalRuleConfig represents the file that contains
-// metadata globally applicable to any/all rule content.
-type GlobalRuleConfig struct {
-	Impact Impacts `yaml:"impact" json:"impact"`
 }
 
 // EventType represents the allowed event types in notification messages
