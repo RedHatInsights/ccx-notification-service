@@ -4,6 +4,7 @@ CCX notification service
 [![GoDoc](https://godoc.org/github.com/RedHatInsights/ccx-notification-service?status.svg)](https://godoc.org/github.com/RedHatInsights/ccx-notification-service)
 [![GitHub Pages](https://img.shields.io/badge/%20-GitHub%20Pages-informational)](https://redhatinsights.github.io/ccx-notification-service/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/RedHatInsights/ccx-notification-service)](https://goreportcard.com/report/github.com/RedHatInsights/ccx-notification-service)
+[![Build Status](https://ci.ext.devshift.net/buildStatus/icon?job=RedHatInsights-ccx-notification-service-gh-build-master)](https://ci.ext.devshift.net/job/RedHatInsights-ccx-notification-service-gh-build-master/)
 [![Build Status](https://travis-ci.com/RedHatInsights/ccx-notification-service.svg?branch=master)](https://travis-ci.com/RedHatInsights/ccx-notification-service)
 ![GitHub go.mod Go version](https://img.shields.io/github/go-mod/go-version/RedHatInsights/ccx-notification-service)
 [![License](https://img.shields.io/badge/license-Apache-blue)](https://github.com/RedHatInsights/ccx-notification-service/blob/master/LICENSE)
