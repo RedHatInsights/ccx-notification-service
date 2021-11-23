@@ -213,14 +213,13 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			Str(clusterAttribute, string(cluster.ClusterName)).
 			Msg(clusterEntryMessage)
 
-		report, reportedAt, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
+		report, err := storage.ReadReportForClusterAtTime(cluster.OrgID, cluster.ClusterName, cluster.UpdatedAt)
 		if err != nil {
 			ReadReportForClusterErrors.Inc()
 			log.Err(err).Msg(operationFailedMessage)
 			os.Exit(ExitStatusStorageError)
 		}
 
-		log.Info().Time("time", time.Time(reportedAt)).Msg("Read")
 		var deserialized types.Report
 		err = json.Unmarshal([]byte(report), &deserialized)
 		if err != nil {
@@ -264,7 +263,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 				ReportWithHighImpact.Inc()
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
 				notificationPayloadURL := generateNotificationPayloadURL(notificationConfig.RuleDetailsURI, string(cluster.ClusterName), module, errorKey)
-				appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(reportedAt).UTC().Format(time.RFC3339Nano))
+				appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano))
 			}
 		}
 
@@ -550,6 +549,12 @@ func checkArgs(args *types.CliFlags) {
 		// config not loaded yet, just skip the rest of function for
 		// now
 		return
+	case args.PrintNewReportsForCleanup,
+		args.PerformNewReportsCleanup,
+		args.PrintOldReportsForCleanup,
+		args.PerformOldReportsCleanup:
+		// DB only operations, no need for additional args
+		return
 	default:
 	}
 
@@ -685,7 +690,7 @@ func Run() {
 	flag.BoolVar(&cliFlags.WeeklyReports, "weekly-reports", false, "create weekly reports")
 	flag.BoolVar(&cliFlags.ShowVersion, "show-version", false, "show version and exit")
 	flag.BoolVar(&cliFlags.ShowAuthors, "show-authors", false, "show authors and exit")
-	flag.BoolVar(&cliFlags.ShowConfiguration, "show-configuration", false, "show configuration")
+	flag.BoolVar(&cliFlags.ShowConfiguration, "show-configuration", false, "show configuration and exit")
 	flag.BoolVar(&cliFlags.PrintNewReportsForCleanup, "print-new-reports-for-cleanup", false, "print new reports to be cleaned up")
 	flag.BoolVar(&cliFlags.PerformNewReportsCleanup, "new-reports-cleanup", false, "perform new reports clean up")
 	flag.BoolVar(&cliFlags.PrintOldReportsForCleanup, "print-old-reports-for-cleanup", false, "print old reports to be cleaned up")
