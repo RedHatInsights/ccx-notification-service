@@ -46,7 +46,7 @@ def connect_to_database(context, database, user, password):
 
 @then(u"I should be able to connect to such database")
 def check_connection(context):
-    """Chck the connection to database."""
+    """Check the connection to database."""
     assert context.connection is not None, "connection should be established"
 
 
@@ -64,7 +64,6 @@ def check_disconnection(context):
 
 
 @given(u"CCX Notification database is created for user {user} with password {password}")
-@when(u"CCX Notification database is created for user {user} with password {password}")
 def database_is_created(context, user, password):
     """Perform connection to CCX Notification database to check its ability."""
     connect_to_database(context, "notification", user, password)
