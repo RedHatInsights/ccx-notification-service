@@ -25,7 +25,7 @@ def check_content_service_availability(context, host, port):
 
     if not str(host).startswith("http"):
         host = "http://" + host
-    x = requests.get(f'{host}:{port}//api/v1/openapi.json')
+    x = requests.get(f'{host}:{port}/api/v1/openapi.json')
     assert x.status_code == 200
     context.content_service_available = True
 

@@ -522,14 +522,14 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 	}
 
 	storage := mocks.Storage{}
-	storage.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
-		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
+	storage.On("ReadReportForClusterAtTime",
+		mock.AnythingOfType("types.OrgID"),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) types.ClusterReport {
 			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":\"some details\"},{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_2.report\",\"type\":\"rule\",\"key\":\"RULE_2\",\"details\":\"some details\"},{\"rule_id\":\"rule_5|RULE_5\",\"component\":\"ccx_rules_ocp.external.rules.rule_5.report\",\"type\":\"rule\",\"key\":\"RULE_3\",\"details\":\"some details\"}]}"
 		},
-		func(orgID types.OrgID, clusterName types.ClusterName) types.Timestamp {
-			return types.Timestamp(testTimestamp)
-		},
-		func(orgID types.OrgID, clusterName types.ClusterName) error {
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
 			return nil
 		},
 	)
@@ -692,14 +692,14 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 	}
 
 	storage := mocks.Storage{}
-	storage.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
-		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
+	storage.On("ReadReportForClusterAtTime",
+		mock.AnythingOfType("types.OrgID"),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) types.ClusterReport {
 			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}"
 		},
-		func(orgID types.OrgID, clusterName types.ClusterName) types.Timestamp {
-			return types.Timestamp(testTimestamp)
-		},
-		func(orgID types.OrgID, clusterName types.ClusterName) error {
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
 			return nil
 		},
 	)
@@ -883,14 +883,14 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 	}
 
 	storage := mocks.Storage{}
-	storage.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
-		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
+	storage.On("ReadReportForClusterAtTime",
+		mock.AnythingOfType("types.OrgID"),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) types.ClusterReport {
 			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}"
 		},
-		func(orgID types.OrgID, clusterName types.ClusterName) types.Timestamp {
-			return types.Timestamp(testTimestamp)
-		},
-		func(orgID types.OrgID, clusterName types.ClusterName) error {
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
 			return nil
 		},
 	)
@@ -1076,14 +1076,14 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 	}
 
 	storage := mocks.Storage{}
-	storage.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
-		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
+	storage.On("ReadReportForClusterAtTime",
+		mock.AnythingOfType("types.OrgID"),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) types.ClusterReport {
 			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}"
 		},
-		func(orgID types.OrgID, clusterName types.ClusterName) types.Timestamp {
-			return types.Timestamp(testTimestamp)
-		},
-		func(orgID types.OrgID, clusterName types.ClusterName) error {
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
 			return nil
 		},
 	)
@@ -1229,14 +1229,14 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 	}
 
 	storage := mocks.Storage{}
-	storage.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
-		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
+	storage.On("ReadReportForClusterAtTime",
+		mock.AnythingOfType("types.OrgID"),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) types.ClusterReport {
 			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}"
 		},
-		func(orgID types.OrgID, clusterName types.ClusterName) types.Timestamp {
-			return types.Timestamp(testTimestamp)
-		},
-		func(orgID types.OrgID, clusterName types.ClusterName) error {
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
 			return nil
 		},
 	)
@@ -1426,7 +1426,9 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	}
 
 	storage := mocks.Storage{}
-	storage.On("ReadReportForCluster", mock.AnythingOfType("types.OrgID"), mock.AnythingOfType("types.ClusterName")).Return(
+	storage.On("ReadReportForCluster",
+		mock.AnythingOfType("types.OrgID"),
+		mock.AnythingOfType("types.ClusterName")).Return(
 		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
 			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}"
 		},
