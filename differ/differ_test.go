@@ -18,9 +18,12 @@ package differ
 
 import (
 	"bytes"
+	"context"
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"testing"
@@ -1473,4 +1476,126 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	notifier = originalNotifier
+}
+
+func TestPushMetricsGatewayNotFailingWithRetries(t *testing.T) {
+	var (
+		pushes          int
+		expectedPushes  = 1
+		timeBetweenPush = 100 * time.Millisecond // 0.1s
+		totalTime       = 500 * time.Millisecond // give enough time
+	)
+
+	testServer := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", `text/plain; charset=utf-8`)
+			w.WriteHeader(http.StatusOK)
+			pushes++
+		}),
+	)
+	defer testServer.Close()
+
+	_, cancel := context.WithTimeout(context.Background(), totalTime)
+
+	metricsConf := conf.MetricsConfiguration{
+		Job:        "ccx_notification_service",
+		Namespace:  "ccx_notification_service",
+		GatewayURL: testServer.URL,
+		RetryAfter: timeBetweenPush,
+		Retries:    10,
+	}
+
+	go pushMetrics(metricsConf)
+
+	time.Sleep(totalTime)
+	cancel()
+
+	log.Info().Int("pushes", pushes).Msg("debug")
+
+	assert.Equal(t, expectedPushes, pushes,
+		fmt.Sprintf("expected exactly %d retries, but received %d", expectedPushes, pushes))
+}
+
+func TestPushMetricsGatewayNotFailingWithRetriesThenOk(t *testing.T) {
+	var (
+		pushes          int
+		expectedPushes  = 6
+		timeBetweenPush = 200 * time.Millisecond // 0.5s
+		totalTime       = 2 * time.Second        // give enough time
+	)
+
+	testServer := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", `text/plain; charset=utf-8`)
+			if pushes >= 5 {
+				w.WriteHeader(http.StatusOK)
+			} else {
+				w.WriteHeader(http.StatusBadGateway)
+			}
+			pushes++
+		}),
+	)
+	defer testServer.Close()
+
+	_, cancel := context.WithTimeout(context.Background(), totalTime)
+
+	metricsConf := conf.MetricsConfiguration{
+		Job:        "ccx_notification_service",
+		Namespace:  "ccx_notification_service",
+		GatewayURL: testServer.URL,
+		RetryAfter: timeBetweenPush,
+		Retries:    10,
+	}
+
+	go pushMetrics(metricsConf)
+
+	time.Sleep(totalTime)
+	cancel()
+
+	log.Info().Int("pushes", pushes).Msg("debug")
+
+	assert.Equal(t, expectedPushes, pushes,
+		fmt.Sprintf("expected exactly %d retries, but received %d", expectedPushes, pushes))
+}
+
+func TestPushMetricsGatewayFailing(t *testing.T) {
+	if os.Getenv("GATEWAY_502_FAIL_ALL_RETRIES") == "1" {
+		var (
+			timeBetweenPush = 100 * time.Millisecond // 0.1s
+			totalTime       = 1 * time.Second        // give enough time
+		)
+
+		testServer := httptest.NewServer(
+			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				w.Header().Set("Content-Type", `text/plain; charset=utf-8`)
+				w.WriteHeader(http.StatusBadGateway)
+			}),
+		)
+		defer testServer.Close()
+
+		_, cancel := context.WithTimeout(context.Background(), totalTime)
+
+		metricsConf := conf.MetricsConfiguration{
+			Job:        "ccx_notification_service",
+			Namespace:  "ccx_notification_service",
+			GatewayURL: testServer.URL,
+			RetryAfter: timeBetweenPush,
+			Retries:    10,
+		}
+
+		go pushMetrics(metricsConf)
+
+		time.Sleep(totalTime)
+		cancel()
+	}
+
+	cmd := exec.Command(os.Args[0], "-test.run=TestPushMetricsGatewayFailing")
+	cmd.Env = append(os.Environ(), "GATEWAY_502_FAIL_ALL_RETRIES=1")
+	err := cmd.Run()
+	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != ExitStatusMetricsError {
+		t.Fatalf(
+			"Should exit with status ExitStatusMetricsError(%d). Got status %d",
+			ExitStatusMetricsError,
+			e.ExitCode())
+	}
 }
