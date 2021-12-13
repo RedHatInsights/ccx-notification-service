@@ -137,10 +137,12 @@ type NotificationsConfiguration struct {
 
 // MetricsConfiguration holds metrics related configuration
 type MetricsConfiguration struct {
-	Job              string `mapstructure:"job_name" toml:"job_name"`
-	Namespace        string `mapstructure:"namespace" toml:"namespace"`
-	GatewayURL       string `mapstructure:"gateway_url" toml:"gateway_url"`
-	GatewayAuthToken string `mapstructure:"gateway_auth_token" toml:"gateway_auth_token"`
+	Job              string        `mapstructure:"job_name" toml:"job_name"`
+	Namespace        string        `mapstructure:"namespace" toml:"namespace"`
+	GatewayURL       string        `mapstructure:"gateway_url" toml:"gateway_url"`
+	GatewayAuthToken string        `mapstructure:"gateway_auth_token" toml:"gateway_auth_token"`
+	Retries          int           `mapstructure:"retries" toml:"retries"`
+	RetryAfter       time.Duration `mapstructure:"retry_after" toml:"retry_after"`
 }
 
 // LoadConfiguration loads configuration from defaultConfigFile, file set in

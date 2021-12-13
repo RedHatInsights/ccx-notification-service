@@ -3,7 +3,7 @@ debug = true
 log_level = "info"
 
 [kafka_broker]
-address = "kafka:9092" #provide in deployment env or as secret
+address = "kafka:29092" #provide in deployment env or as secret
 topic = "platform.notifications.ingress" #provide in deployment env or as secret
 timeout = "60s"
 
@@ -31,6 +31,8 @@ job_name = "ccx_notification_service"
 namespace = "ccx_notification_service"
 gateway_url = "localhost:9091"
 gateway_auth_token = ""
+retries = 3
+retry_after = "60s"
 
 [cleaner]
 max_age = "90 days"
