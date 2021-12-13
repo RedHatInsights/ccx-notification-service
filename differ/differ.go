@@ -623,8 +623,8 @@ func pushMetrics(metricsConf conf.MetricsConfiguration) {
 				log.Info().Msg("Metrics pushed successfully. Terminating notification service successfully.")
 				return
 			}
+			log.Err(err).Msg(metricsPushFailedMessage)
 		}
-		log.Err(err).Msg(metricsPushFailedMessage)
 		os.Exit(ExitStatusMetricsError)
 	}
 	log.Info().Msg("Metrics pushed successfully. Terminating notification service successfully.")
