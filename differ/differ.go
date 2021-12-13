@@ -615,6 +615,9 @@ func pushMetrics(metricsConf conf.MetricsConfiguration) {
 	err := PushMetrics(metricsConf)
 	if err != nil {
 		log.Err(err).Msg(metricsPushFailedMessage)
+		if metricsConf.RetryAfter == 0 || metricsConf.Retries == 0 {
+			os.Exit(ExitStatusMetricsError)
+		}
 		for i := metricsConf.Retries; i > 0; i-- {
 			time.Sleep(metricsConf.RetryAfter)
 			log.Info().Msgf("Push metrics. Retrying (%d/%d attempts left)", i, metricsConf.Retries)
