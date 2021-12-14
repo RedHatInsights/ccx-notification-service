@@ -173,10 +173,6 @@ func showConfiguration(config conf.ConfigStruct) {
 		Msg("Metrics configuration")
 }
 
-func calculateTotalRisk(impact, likelihood int) int {
-	return (impact + likelihood) / 2
-}
-
 // ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report
 // ->
 // cluster_wide_proxy_auth_check
@@ -195,12 +191,11 @@ func findRuleByNameAndErrorKey(
 	ruleContent types.RulesMap, ruleName types.RuleName, errorKey types.ErrorKey) (
 	likelihood int, impact int, totalRisk int, description string) {
 	rc := ruleContent[string(ruleName)]
-	ek := rc.ErrorKeys
-	val := ek[string(errorKey)]
-	likelihood = val.Metadata.Likelihood
-	description = val.Metadata.Description
-	impact = val.Metadata.Impact.Impact
-	totalRisk = calculateTotalRisk(likelihood, impact)
+	ek := rc.ErrorKeys[string(errorKey)]
+	likelihood = ek.Metadata.Likelihood
+	description = ek.Metadata.Description
+	impact = ek.Metadata.Impact.Impact
+	totalRisk = ek.TotalRisk
 	return
 }
 
