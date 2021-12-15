@@ -67,32 +67,28 @@ func getNotificationType(notificationTypes []types.NotificationType, value strin
 	return -1
 }
 
-func shouldNotify(storage Storage, cluster types.ClusterEntry, report types.Report) bool {
-	// try to read older report for a cluster
+func shouldNotify(storage Storage, cluster types.ClusterEntry, issue types.ReportItem) bool {
+	// check if the issue of the given cluster has previously be reported
 	reported, err := storage.ReadLastNNotificationRecords(cluster, 1)
 	if err != nil {
-		log.Error().Err(err).Msg("Read last n reports")
+		log.Error().Err(err).Str(clusterName, string(cluster.ClusterName)).Msg("Read last report failed")
 	}
-
-	// check if the new result has been stored for brand new cluster
 	if len(reported) == 0 {
-		log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("New cluster -> send instant report")
+		log.Info().Bool("resolution", true).Msg("Should notify user")
 		return true
 	}
 
-	// it is not a brand new cluster -> compare new report with older one
+	// it is not a brand new cluster -> check if issue was included in older report
 	var oldReport types.Report
 	err = json.Unmarshal([]byte(reported[0].Report), &oldReport)
 	if err != nil {
 		log.Err(err).Msgf(
-			"Deserialization error - Couldn't create report object for older report\n %s",
+			"Deserialization error - Couldn't create issue object for older issue\n %s",
 			string(reported[0].Report))
 		os.Exit(ExitStatusStorageError)
 	}
-	notify, err := CompareReports(oldReport, report)
-	if err != nil {
-		log.Error().Err(err).Msg("Unable to compare old and new reports")
-	}
+
+	notify := IssueNotInReport(oldReport, issue)
 	log.Info().Bool("resolution", notify).Msg("Should notify user")
 	return notify
 }
@@ -140,56 +136,18 @@ func issuesEqual(issue1 types.ReportItem, issue2 types.ReportItem) bool {
 	return false
 }
 
-// CompareReports compares old OCP report with the newest one and
-// returns boolean flag indicating that new report contain new issues and thus
-// user needs to be informed about them.
-func CompareReports(
-	oldReport types.Report,
-	newReport types.Report) (bool, error) {
-
-	// check whether new report contains more issues than the older one
-	if len(newReport.Reports) > len(oldReport.Reports) {
-		log.Info().Msg("New report contains more issues")
-		return true, nil
+// IssueNotInReport searches for a specific issue in given OCP report.
+// It returns a boolean flag indicating that the report does not
+// contain the issue and thus user needs to be informed about it.
+func IssueNotInReport(oldReport types.Report, issue types.ReportItem) bool {
+	for _, oldIssue := range oldReport.Reports {
+		if issuesEqual(oldIssue, issue) {
+			return false
+		}
 	}
 
-	// now the number of issues is the same: time to compare them
-	notFoundIssues := len(newReport.Reports)
-	for _, issue1 := range oldReport.Reports {
-		found := false
-		// check if issue1 is found in newest report
-		for _, issue2 := range newReport.Reports {
-			if issuesEqual(issue1, issue2) {
-				found = true
-				notFoundIssues--
-				break
-			}
-		}
-		// all issues in newReports have been found in oldReports -> return false
-		if notFoundIssues == 0 {
-			log.Info().Msg("New report does not contain new issues")
-			return false, nil
-		}
-		// issue can't be found in this old report -> there might be change user needs to
-		// be notified about. Let's keep the log for now, might help for debug
-		if !found {
-			log.Info().
-				Str("Type", string(issue1.Type)).
-				Str("Module", string(issue1.Module)).
-				Str("ErrorKey", string(issue1.ErrorKey)).
-				Str("Details", string(issue1.Details)).
-				Msg("Not found")
-			return true, nil
-		}
-	}
-	// Some issues can't be found -> there must be change user needs to
-	// be notified about
-	if notFoundIssues > 0 {
-		log.Info().Msg("All issues in new report have already been reported")
-		return true, nil
-	}
-	// seems like both old report and new report are the same
-	return false, nil
+	log.Info().Msg("New report does not contain the new issue")
+	return true
 }
 
 func getNotificationTypes(storage Storage) error {
