@@ -235,16 +235,11 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			continue
 		}
 
-		notifiedAt := types.Timestamp(time.Now())
-		if !shouldNotify(storage, cluster, deserialized) {
-			updateNotificationRecordSameState(storage, cluster, report, notifiedAt)
-			continue
-		}
-
 		// if new report differs from the older one -> send notification
 		log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Different report from the last one")
 
 		notificationMsg := generateInstantNotificationMessage(&notificationClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), string(cluster.ClusterName))
+		notifiedAt := types.Timestamp(time.Now())
 
 		for i, r := range deserialized.Reports {
 			module := r.Module
@@ -262,6 +257,9 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 				Int(totalRiskAttribute, totalRisk).
 				Msg("Report")
 			if totalRisk >= totalRiskThreshold {
+				if !shouldNotify(storage, cluster, r) {
+					continue
+				}
 				ReportWithHighImpact.Inc()
 				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
 				notificationPayloadURL := generateNotificationPayloadURL(&notificationRuleDetailsURI, string(cluster.ClusterName), module, errorKey)
