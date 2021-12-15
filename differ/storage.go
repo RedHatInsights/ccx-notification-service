@@ -341,7 +341,11 @@ func (storage DBStorage) ReadStates() ([]types.State, error) {
 func (storage DBStorage) ReadClusterList() ([]types.ClusterEntry, error) {
 	var clusterList = make([]types.ClusterEntry, 0)
 
-	rows, err := storage.connection.Query("SELECT org_id, account_number, cluster, kafka_offset, updated_at FROM new_reports ORDER BY updated_at")
+	rows, err := storage.connection.Query( `
+		SELECT DISTINCT ON (cluster)
+		org_id, account_number, cluster, kafka_offset, updated_at
+		FROM new_reports
+		ORDER BY cluster, updated_at DESC`)
 	if err != nil {
 		return clusterList, err
 	}
