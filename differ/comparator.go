@@ -34,6 +34,8 @@ import (
 // Messages
 const (
 	clusterName = "cluster"
+	resolutionKey = "resolution"
+	resolutionMsg = "Should notify user"
 
 	notificationTypeInstant = "instant"
 	notificationTypeWeekly  = "weekly"
@@ -74,7 +76,7 @@ func shouldNotify(storage Storage, cluster types.ClusterEntry, issue types.Repor
 		log.Error().Err(err).Str(clusterName, string(cluster.ClusterName)).Msg("Read last report failed")
 	}
 	if len(reported) == 0 {
-		log.Info().Bool("resolution", true).Msg("Should notify user")
+		log.Info().Bool(resolutionKey, true).Msg(resolutionMsg)
 		return true
 	}
 
@@ -89,7 +91,7 @@ func shouldNotify(storage Storage, cluster types.ClusterEntry, issue types.Repor
 	}
 
 	notify := IssueNotInReport(oldReport, issue)
-	log.Info().Bool("resolution", notify).Msg("Should notify user")
+	log.Info().Bool(resolutionKey, notify).Msg(resolutionMsg)
 	return notify
 }
 

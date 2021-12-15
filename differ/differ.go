@@ -241,27 +241,25 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 		notificationMsg := generateInstantNotificationMessage(&notificationClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), string(cluster.ClusterName))
 		notifiedAt := types.Timestamp(time.Now())
 
-		for i, r := range deserialized.Reports {
+		for _, r := range deserialized.Reports {
 			module := r.Module
 			ruleName := moduleToRuleName(module)
 			errorKey := r.ErrorKey
 			likelihood, impact, totalRisk, description := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
 
-			log.Info().
-				Int("#", i).
-				Str("type", r.Type).
-				Str("rule", string(ruleName)).
-				Str("error key", string(errorKey)).
-				Int("likelihood", likelihood).
-				Int("impact", impact).
-				Int(totalRiskAttribute, totalRisk).
-				Msg("Report")
 			if totalRisk >= totalRiskThreshold {
+				log.Warn().
+					Str("type", r.Type).
+					Str("rule", string(ruleName)).
+					Str("error key", string(errorKey)).
+					Int("likelihood", likelihood).
+					Int("impact", impact).
+					Int(totalRiskAttribute, totalRisk).
+					Msg("Report with high impact detected")
 				if !shouldNotify(storage, cluster, r) {
 					continue
 				}
 				ReportWithHighImpact.Inc()
-				log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Report with high impact detected")
 				notificationPayloadURL := generateNotificationPayloadURL(&notificationRuleDetailsURI, string(cluster.ClusterName), module, errorKey)
 				appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano))
 			}
@@ -395,18 +393,6 @@ func processClusters(ruleContent types.RulesMap, storage Storage, clusters []typ
 		processReportsByCluster(ruleContent, storage, clusters)
 	} else if notificationType == types.WeeklyDigest {
 		processAllReportsFromCurrentWeek(ruleContent, storage, clusters)
-	}
-}
-
-// printClusters function displays information of all clusters in the given list
-func printClusters(clusters []types.ClusterEntry) {
-	for i, cluster := range clusters {
-		log.Info().
-			Int("#", i).
-			Int(organizationIDAttribute, int(cluster.OrgID)).
-			Int(AccountNumberAttribute, int(cluster.AccountNumber)).
-			Str(clusterAttribute, string(cluster.ClusterName)).
-			Msg(clusterEntryMessage)
 	}
 }
 
@@ -673,20 +659,21 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 		log.Err(err).Msg(operationFailedMessage)
 		os.Exit(ExitStatusStorageError)
 	}
-
-	printClusters(clusters)
-	log.Info().Int("clusters", len(clusters)).Msg("Read cluster list: done")
-	if len(clusters) == 0 {
+	entries := len(clusters)
+	if entries == 0 {
 		log.Info().Msg("Differ finished")
 		os.Exit(ExitStatusOK)
 	}
+	log.Info().Int("clusters", entries).Msg("Read cluster list: done")
 	log.Info().Msg(separator)
+
 	log.Info().Msg("Preparing Kafka producer")
 	setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
 	log.Info().Msg("Kafka producer ready")
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
 	processClusters(ruleContent, storage, clusters)
+	log.Info().Int("clusters", entries).Msg("Process Clusters Entries: done")
 	log.Info().Msg(separator)
 	closeStorage(storage)
 	log.Info().Msg(separator)
