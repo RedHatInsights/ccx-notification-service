@@ -33,7 +33,7 @@ import (
 
 // Messages
 const (
-	clusterName = "cluster"
+	clusterName   = "cluster"
 	resolutionKey = "resolution"
 	resolutionMsg = "Should notify user"
 
@@ -148,7 +148,7 @@ func IssueNotInReport(oldReport types.Report, issue types.ReportItem) bool {
 		}
 	}
 
-	log.Info().Msg("New report does not contain the new issue")
+	log.Info().Msg("Old report does not contain the new issue")
 	return true
 }
 

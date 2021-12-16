@@ -194,7 +194,7 @@ func TestGenerateInstantReportNotificationMessage(t *testing.T) {
 	accountID := "a_stringified_account_id"
 	clusterID := "the_displayed_cluster_ID"
 
-	notificationMsg := generateInstantNotificationMessage(clusterURI, accountID, clusterID)
+	notificationMsg := generateInstantNotificationMessage(&clusterURI, accountID, clusterID)
 
 	assert.NotEmpty(t, notificationMsg, "the generated notification message is empty")
 	assert.Empty(t, notificationMsg.Events, "the generated notification message should not have any events")
@@ -209,7 +209,7 @@ func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	clusterURI := "the_cluster_uri_in_ocm"
 	accountID := "a_stringified_account_id"
 	clusterID := "the_displayed_cluster_ID"
-	notificationMsg := generateInstantNotificationMessage(clusterURI, accountID, clusterID)
+	notificationMsg := generateInstantNotificationMessage(&clusterURI, accountID, clusterID)
 
 	assert.Empty(t, notificationMsg.Events, "the generated notification message should not have any events")
 
@@ -220,7 +220,7 @@ func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	module := "a.module"
 	errorKey := "an_error_key"
 
-	notificationPayloadURL := generateNotificationPayloadURL(ruleURI, clusterID, types.ModuleName(module), types.ErrorKey(errorKey))
+	notificationPayloadURL := generateNotificationPayloadURL(&ruleURI, clusterID, types.ModuleName(module), types.ErrorKey(errorKey))
 	appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleDescription, totalRisk, publishDate)
 	assert.Equal(t, len(notificationMsg.Events), 1, "the notification message should have 1 event")
 	assert.Equal(t, notificationMsg.Events[0].Metadata, types.EventMetadata{}, "All notification messages should have empty metadata")
@@ -275,7 +275,7 @@ func TestGenerateWeeklyDigestNotificationMessage(t *testing.T) {
 	accountID := "a_stringified_account_id"
 	digest := types.Digest{}
 
-	notificationMsg := generateWeeklyNotificationMessage(advisorURI, accountID, digest)
+	notificationMsg := generateWeeklyNotificationMessage(&advisorURI, accountID, digest)
 
 	assert.NotEmpty(t, notificationMsg, "the generated notification message is empty")
 	assert.NotEmpty(t, notificationMsg.Events, "the generated notification message should have 1 event with digest's content")
@@ -302,63 +302,71 @@ func TestShowAuthors(t *testing.T) {
 	assert.Contains(t, captureStdout(showAuthors), authorsMessage, "showAuthors function is not displaying the expected content")
 }
 
-//---------------------------------------------------------------------------------------
-func TestTotalRiskCalculation(t *testing.T) {
-	type testStruct struct {
-		impact       int
-		likelihood   int
-		expectedRisk int
-	}
-	testVals := []testStruct{
-		{0, 0, 0},
-		{3, 1, 2},
-		{1, 0, 0},
-		{0, 3, 1},
-		{2, 2, 2},
-		{3, 1, 2},
-		{2, 3, 2},
-		{3, 3, 3},
-		{4, 3, 3},
-		{3, 4, 3},
-	}
-	for _, item := range testVals {
-		assert.Equal(t, item.expectedRisk, calculateTotalRisk(item.impact, item.likelihood))
-	}
-}
+func TestShowConfiguration(t *testing.T) {
+	brokerAddr := "localhost:29092"
+	brokerTopic := "test_topic"
+	db := "db"
+	driver := "test_driver"
+	advisorURL := "an uri"
+	clustersURI := "a {cluster} details uri"
+	ruleURI := "a {rule} details uri"
+	metricsJob := "ccx"
+	metricsNamespace := "notification"
+	metricsGateway := "localhost:12345"
 
-func TestModuleNameToRuleNameValidRuleName(t *testing.T) {
-	moduleName := types.ModuleName("ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report")
-	ruleName := types.RuleName("cluster_wide_proxy_auth_check")
-	assert.Equal(t, ruleName, moduleToRuleName(moduleName))
-}
-
-func TestPrintClusters(t *testing.T) {
-	clusters := []types.ClusterEntry{
-		{
-			OrgID:         1,
-			AccountNumber: 1,
-			ClusterName:   "first_cluster",
-			KafkaOffset:   0,
-			UpdatedAt:     types.Timestamp(testTimestamp),
+	config := conf.ConfigStruct{
+		Logging: conf.LoggingConfiguration{
+			Debug:    true,
+			LogLevel: "info",
 		},
-		{
-			OrgID:         2,
-			AccountNumber: 2,
-			ClusterName:   "second_cluster",
-			KafkaOffset:   100,
-			UpdatedAt:     types.Timestamp(testTimestamp),
+		Storage: conf.StorageConfiguration{
+			Driver:   driver,
+			PGDBName: db,
+		},
+		Kafka: conf.KafkaConfiguration{
+			Address: brokerAddr,
+			Topic:   brokerTopic,
+			Timeout: 0,
+		},
+		Dependencies: conf.DependenciesConfiguration{},
+		Notifications: conf.NotificationsConfiguration{
+			InsightsAdvisorURL: advisorURL,
+			ClusterDetailsURI:  clustersURI,
+			RuleDetailsURI:     ruleURI,
+		},
+		Metrics: conf.MetricsConfiguration{
+			Job:        metricsJob,
+			Namespace:  metricsNamespace,
+			GatewayURL: metricsGateway,
+			Retries:    4,
+			RetryAfter: 1,
+		},
+		Cleaner: conf.CleanerConfiguration{
+			MaxAge: "70 days",
 		},
 	}
-
-	expectedList := "{\"level\":\"info\",\"#\":0,\"org id\":1,\"account number\":1,\"cluster\":\"first_cluster\",\"message\":\"cluster entry\"}\n{\"level\":\"info\",\"#\":1,\"org id\":2,\"account number\":2,\"cluster\":\"second_cluster\",\"message\":\"cluster entry\"}"
 
 	buf := new(bytes.Buffer)
 	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	printClusters(clusters)
-	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	//TODO: Look for a way to disable log filtering for a specific test. I thought disable sampling would do it...
-	assert.Contains(t, buf.String(), expectedList, "printClusters function is not displaying the expected content")
+
+	showConfiguration(config)
+	output := buf.String()
+
+	//Assert that at least one item of each struct is shown
+	assert.Contains(t, output, brokerAddr)
+	assert.Contains(t, output, clustersURI)
+	assert.Contains(t, output, db)
+	assert.Contains(t, output, driver)
+	assert.Contains(t, output, "\"Pretty colored debug logging\":true")
+	assert.Contains(t, output, metricsGateway)
+}
+
+//---------------------------------------------------------------------------------------
+func TestModuleNameToRuleNameValidRuleName(t *testing.T) {
+	moduleName := types.ModuleName("ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report")
+	ruleName := types.RuleName("cluster_wide_proxy_auth_check")
+	assert.Equal(t, ruleName, moduleToRuleName(moduleName))
 }
 
 //---------------------------------------------------------------------------------------
@@ -474,6 +482,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
+			TotalRisk: 2,
 		},
 		"RULE_2": {
 			Metadata: utypes.ErrorKeyMetadata{
@@ -485,6 +494,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 				Likelihood: 3,
 			},
 			HasReason: false,
+			TotalRisk: 2,
 		},
 	}
 
@@ -588,7 +598,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 	notifier, _ = producerMock.New(config.Kafka)
 
 	notificationType = types.InstantNotif
-	processClusters(ruleContent, &storage, clusters, config)
+	processClusters(ruleContent, &storage, clusters)
 
 	assert.Contains(t, buf.String(), "No new issues to notify for cluster first_cluster", "processClusters shouldn't generate any notification for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "No new issues to notify for cluster second_cluster", "processClusters shouldn't generate any notification for 'second_cluster' with given data")
@@ -645,6 +655,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
+			TotalRisk: 3,
 		},
 		"RULE_2": {
 			Metadata: utypes.ErrorKeyMetadata{
@@ -652,9 +663,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 				Impact: utypes.Impact{
 					Name:   "impact_2",
 					Impact: 3,
-				}, Likelihood: 3,
+				},
+				Likelihood: 3,
 			},
 			HasReason: false,
+			TotalRisk: 3,
 		},
 	}
 
@@ -775,11 +788,10 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 
 	notificationType = types.InstantNotif
 
-	processClusters(ruleContent, &storage, clusters, config)
+	processClusters(ruleContent, &storage, clusters)
 
-	assert.Contains(t, buf.String(), "Report with high impact detected", "processClusters should calculate a totalRisk of 3 for 'first_cluster' with given data")
+	assert.Contains(t, buf.String(), "Report with high impact detected", "processClusters should create a notification for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "Producing instant notification for cluster first_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
-	assert.Contains(t, buf.String(), "Report with high impact detected", "processClusters should calculate a totalRisk of 3 for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "Producing instant notification for cluster second_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "message sent to partition")
 
@@ -835,6 +847,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
+			TotalRisk: 4,
 		},
 		"RULE_2": {
 			Metadata: utypes.ErrorKeyMetadata{
@@ -846,6 +859,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 				Likelihood: 4,
 			},
 			HasReason: false,
+			TotalRisk: 4,
 		},
 	}
 
@@ -965,13 +979,10 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 
 	notificationType = types.InstantNotif
 
-	processClusters(ruleContent, &storage, clusters, config)
+	processClusters(ruleContent, &storage, clusters)
 
-	assert.Contains(t, buf.String(), "{\"level\":\"warn\",\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
-
-	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"cluster\":\"first_cluster\",\"message\":\"Different report from the last one\"}\n")
-	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"cluster\":\"second_cluster\",\"message\":\"Different report from the last one\"}\n")
-
+	assert.Contains(t, buf.String(), "{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
+	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"Old report does not contain the new issue\"}\n")
 	assert.Contains(t, buf.String(), "Producing instant notification for cluster first_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "Producing instant notification for cluster second_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "message sent to partition")
@@ -1002,19 +1013,6 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 			"OffsetFetchRequest": sarama.NewMockOffsetFetchResponse(t).
 				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
 		})
-
-	config := conf.ConfigStruct{
-		Kafka: conf.KafkaConfiguration{
-			Address: mockBroker.Addr(),
-			Topic:   brokerCfg.Topic,
-			Timeout: 0,
-		},
-		Notifications: conf.NotificationsConfiguration{
-			InsightsAdvisorURL: "an uri",
-			ClusterDetailsURI:  "a {cluster} details uri",
-			RuleDetailsURI:     "a {rule} details uri",
-		},
-	}
 
 	errorKeys := map[string]utypes.RuleErrorKeyContent{
 		"RULE_1": {
@@ -1125,7 +1123,7 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 
 	notificationType = types.InstantNotif
 
-	processClusters(ruleContent, &storage, clusters, config)
+	processClusters(ruleContent, &storage, clusters)
 
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster first_cluster\"}\n", "Notification already sent for first_cluster's report, but corresponding log not found.")
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster second_cluster\"}\n", "Notification already sent for second_cluster's report, but corresponding log not found.")
@@ -1181,6 +1179,7 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
+			TotalRisk: 4,
 		},
 		"RULE_2": {
 			Metadata: utypes.ErrorKeyMetadata{
@@ -1192,6 +1191,7 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 				Likelihood: 4,
 			},
 			HasReason: false,
+			TotalRisk: 4,
 		},
 	}
 
@@ -1314,13 +1314,10 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 
 	notificationType = types.InstantNotif
 
-	processClusters(ruleContent, &storage, clusters, config)
+	processClusters(ruleContent, &storage, clusters)
 
-	assert.Contains(t, buf.String(), "{\"level\":\"warn\",\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
-
-	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"cluster\":\"first_cluster\",\"message\":\"Different report from the last one\"}\n")
-	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"cluster\":\"second_cluster\",\"message\":\"Different report from the last one\"}\n")
-
+	assert.Contains(t, buf.String(), "{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
+	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"Old report does not contain the new issue\"}\n")
 	assert.Contains(t, buf.String(), "Producing instant notification for cluster first_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "Producing instant notification for cluster second_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "message sent to partition")
@@ -1464,7 +1461,7 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	notifier, _ = producerMock.New(config.Kafka)
 
 	notificationType = types.WeeklyDigest
-	processClusters(ruleContent, &storage, clusters, config)
+	processClusters(ruleContent, &storage, clusters)
 
 	print(buf.String())
 

@@ -166,10 +166,6 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Rule details URI", notificationConfig.RuleDetailsURI).
 		Msg("Notifications configuration")
 
-	notificationClusterDetailsURI = notificationConfig.ClusterDetailsURI
-	notificationRuleDetailsURI = notificationConfig.RuleDetailsURI
-	notificationInsightsAdvisorURL = notificationConfig.InsightsAdvisorURL
-
 	metricsConfig := conf.GetMetricsConfiguration(config)
 
 	// Authentication token and metrics groups values are omitted on
@@ -177,6 +173,8 @@ func showConfiguration(config conf.ConfigStruct) {
 	log.Info().
 		Str("Namespace", metricsConfig.Namespace).
 		Str("Push Gateway", metricsConfig.GatewayURL).
+		Int("Retries", metricsConfig.Retries).
+		Str("Retry after", metricsConfig.RetryAfter.String()).
 		Msg("Metrics configuration")
 }
 
@@ -648,7 +646,10 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	log.Info().Msg(separator)
 	log.Info().Msg("Read cluster list")
 
-	//TODO: Set notificationConfig global variables here to avoid passing so much parameters
+	notifConfig := conf.GetNotificationsConfiguration(config)
+	notificationClusterDetailsURI = notifConfig.ClusterDetailsURI
+	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
+	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
 
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)
