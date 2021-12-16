@@ -17,11 +17,9 @@ limitations under the License.
 package differ
 
 import (
-	"bytes"
 	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
@@ -175,7 +173,7 @@ func TestIssuesEqualDifferentModule(t *testing.T) {
 	assert.False(t, issuesEqual(issue1, issue2), "Compared issues should not be equal")
 }
 
-func TestCompareReportsMoreItemsInNewReport(t *testing.T) {
+func TestNewIssueNotInOldReport(t *testing.T) {
 	oldReport := types.Report{
 		Reports: []types.ReportItem{
 			{
@@ -186,35 +184,22 @@ func TestCompareReportsMoreItemsInNewReport(t *testing.T) {
 			},
 		},
 	}
-	newReport := types.Report{
-		Reports: []types.ReportItem{
-			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
-				ErrorKey: "SOME_ERROR_KEY",
-				Details:  []byte("details of the issue"),
-			},
-			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_2.report",
-				ErrorKey: "SOME_OTHER_ERROR_KEY",
-				Details:  []byte("details of the other issue"),
-			},
-		},
+
+	issue := types.ReportItem{
+		Type:     "rule",
+		Module:   "ccx_rules_ocp.external.rules.rule_2.report",
+		ErrorKey: "SOME_OTHER_ERROR_KEY",
+		Details:  []byte("details of the other issue"),
 	}
 
-	buf := new(bytes.Buffer)
-	log.Logger = zerolog.New(buf)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	assert.True(t,
+		IssueNotInReport(oldReport, issue),
+		"New issue not in old report old report, so result should be true.",
+	)
 
-	result, err := CompareReports(oldReport, newReport)
-	assert.True(t, result, "New report ha more items than old report, so comparison result should be true.")
-	assert.Nil(t, err)
-	assert.Contains(t, buf.String(), "New report contains more issues")
-	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 }
 
-func TestCompareReportsSameItemsInNewReport(t *testing.T) {
+func TestIssueNotInReportSameItemsInNewReport(t *testing.T) {
 	oldReport := types.Report{
 		Reports: []types.ReportItem{
 			{
@@ -248,18 +233,15 @@ func TestCompareReportsSameItemsInNewReport(t *testing.T) {
 		},
 	}
 
-	buf := new(bytes.Buffer)
-	log.Logger = zerolog.New(buf)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-
-	result, err := CompareReports(oldReport, newReport)
-	assert.False(t, result, "New report has the same items than old report, so comparison result should be false.")
-	assert.Nil(t, err)
-	assert.Contains(t, buf.String(), "New report does not contain new issues")
-	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	for _, issue := range newReport.Reports {
+		assert.False(t,
+			IssueNotInReport(oldReport, issue),
+			"New report has the same items than old report, so comparison result should be false.",
+		)
+	}
 }
 
-func TestCompareReportsSameLengthDifferentItemsInNewReport(t *testing.T) {
+func TestIssueNotInReportSameLengthDifferentItemsInNewReport(t *testing.T) {
 	oldReport := types.Report{
 		Reports: []types.ReportItem{
 			{
@@ -293,12 +275,15 @@ func TestCompareReportsSameLengthDifferentItemsInNewReport(t *testing.T) {
 		},
 	}
 
-	result, err := CompareReports(oldReport, newReport)
-	assert.True(t, result, "New and olf report have different items, so comparison result should be true.")
-	assert.Nil(t, err)
+	for _, issue := range newReport.Reports {
+		assert.True(t,
+			IssueNotInReport(oldReport, issue),
+			"New and old report have different items, so result should be true.",
+		)
+	}
 }
 
-func TestCompareReportsLessItemsInNewReportAndIssueNotFoundInOldReports(t *testing.T) {
+func TestIssueNotInReportLessItemsInNewReportAndIssueNotFoundInOldReports(t *testing.T) {
 	oldReport := types.Report{
 		Reports: []types.ReportItem{
 			{
@@ -326,12 +311,15 @@ func TestCompareReportsLessItemsInNewReportAndIssueNotFoundInOldReports(t *testi
 		},
 	}
 
-	result, err := CompareReports(oldReport, newReport)
-	assert.True(t, result, "New report's issue has not been found in old report, so comparison result should be true.")
-	assert.Nil(t, err)
+	for _, issue := range newReport.Reports {
+		assert.True(t,
+			IssueNotInReport(oldReport, issue),
+			"New report's issue has not been found in old report, so result should be true.",
+		)
+	}
 }
 
-func TestCompareReportsLessItemsInNewReportAndIssueFoundInOldReports(t *testing.T) {
+func TestIssueNotInReportLessItemsInNewReportAndIssueFoundInOldReports(t *testing.T) {
 	oldReport := types.Report{
 		Reports: []types.ReportItem{
 			{
@@ -359,9 +347,12 @@ func TestCompareReportsLessItemsInNewReportAndIssueFoundInOldReports(t *testing.
 		},
 	}
 
-	result, err := CompareReports(oldReport, newReport)
-	assert.False(t, result, "New report's issue has been found in old report, so comparison result should be false.")
-	assert.Nil(t, err)
+	for _, issue := range newReport.Reports {
+		assert.False(t,
+			IssueNotInReport(oldReport, issue),
+			"New report's issue has been found in old report, so result should be false.",
+		)
+	}
 }
 
 func TestShouldNotifyNoPreviousRecord(t *testing.T) {
@@ -386,7 +377,10 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 			},
 		},
 	}
-	assert.True(t, shouldNotify(&storage, testCluster, newReport))
+
+	for _, issue := range newReport.Reports {
+		assert.True(t, shouldNotify(&storage, testCluster, issue))
+	}
 }
 
 func TestShouldNotifyPreviousRecordForGivenClusterIsIdentical(t *testing.T) {
@@ -423,7 +417,9 @@ func TestShouldNotifyPreviousRecordForGivenClusterIsIdentical(t *testing.T) {
 			},
 		},
 	}
-	assert.False(t, shouldNotify(&storage, testCluster, newReport))
+	for _, issue := range newReport.Reports {
+		assert.False(t, shouldNotify(&storage, testCluster, issue))
+	}
 }
 
 func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
@@ -460,7 +456,9 @@ func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 			},
 		},
 	}
-	assert.True(t, shouldNotify(&storage, testCluster, newReport))
+	for _, issue := range newReport.Reports {
+		assert.True(t, shouldNotify(&storage, testCluster, issue))
+	}
 }
 
 func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
@@ -497,5 +495,8 @@ func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 			},
 		},
 	}
-	assert.True(t, shouldNotify(&storage, testCluster, newReport))
+
+	for _, issue := range newReport.Reports {
+		assert.True(t, shouldNotify(&storage, testCluster, issue))
+	}
 }
