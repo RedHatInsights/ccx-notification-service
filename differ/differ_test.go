@@ -363,6 +363,29 @@ func TestShowConfiguration(t *testing.T) {
 }
 
 //---------------------------------------------------------------------------------------
+func TestTotalRiskCalculation(t *testing.T) {
+	type testStruct struct {
+		impact       int
+		likelihood   int
+		expectedRisk int
+	}
+	testVals := []testStruct{
+		{0, 0, 0},
+		{3, 1, 2},
+		{1, 0, 0},
+		{0, 3, 1},
+		{2, 2, 2},
+		{3, 1, 2},
+		{2, 3, 2},
+		{3, 3, 3},
+		{4, 3, 3},
+		{3, 4, 3},
+	}
+    for _, item := range testVals {
+		assert.Equal(t, item.expectedRisk, calculateTotalRisk(item.impact, item.likelihood))
+    }
+}
+
 func TestModuleNameToRuleNameValidRuleName(t *testing.T) {
 	moduleName := types.ModuleName("ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report")
 	ruleName := types.RuleName("cluster_wide_proxy_auth_check")
