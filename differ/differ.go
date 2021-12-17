@@ -139,7 +139,7 @@ func showConfiguration(config conf.ConfigStruct) {
 	log.Info().
 		Str("Address", brokerConfig.Address).
 		Str("Topic", brokerConfig.Topic).
-		Str("Timeout", fmt.Sprintf("%s", brokerConfig.Timeout)).
+		Str("Timeout", brokerConfig.Timeout.String()).
 		Msg("Broker configuration")
 
 	storageConfig := conf.GetStorageConfiguration(config)
