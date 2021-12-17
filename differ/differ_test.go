@@ -353,7 +353,7 @@ func TestShowConfiguration(t *testing.T) {
 	showConfiguration(config)
 	output := buf.String()
 
-	//Assert that at least one item of each struct is shown
+	// Assert that at least one item of each struct is shown
 	assert.Contains(t, output, brokerAddr)
 	assert.Contains(t, output, clustersURI)
 	assert.Contains(t, output, db)
