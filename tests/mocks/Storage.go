@@ -47,10 +47,8 @@ func (_m *Storage) ReadClusterList() ([]types.ClusterEntry, error) {
 	var r0 []types.ClusterEntry
 	if rf, ok := ret.Get(0).(func() []types.ClusterEntry); ok {
 		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]types.ClusterEntry)
-		}
+	} else if ret.Get(0) != nil {
+		r0 = ret.Get(0).([]types.ClusterEntry)
 	}
 
 	var r1 error
@@ -70,10 +68,8 @@ func (_m *Storage) ReadLastNNotificationRecords(clusterEntry types.ClusterEntry,
 	var r0 []types.NotificationRecord
 	if rf, ok := ret.Get(0).(func(types.ClusterEntry, int) []types.NotificationRecord); ok {
 		r0 = rf(clusterEntry, numberOfRecords)
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]types.NotificationRecord)
-		}
+	} else if ret.Get(0) != nil {
+		r0 = ret.Get(0).([]types.NotificationRecord)
 	}
 
 	var r1 error
@@ -93,10 +89,8 @@ func (_m *Storage) ReadNotificationTypes() ([]types.NotificationType, error) {
 	var r0 []types.NotificationType
 	if rf, ok := ret.Get(0).(func() []types.NotificationType); ok {
 		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]types.NotificationType)
-		}
+	} else if ret.Get(0) != nil {
+		r0 = ret.Get(0).([]types.NotificationType)
 	}
 
 	var r1 error
@@ -186,10 +180,8 @@ func (_m *Storage) ReadStates() ([]types.State, error) {
 	var r0 []types.State
 	if rf, ok := ret.Get(0).(func() []types.State); ok {
 		r0 = rf()
-	} else {
-		if ret.Get(0) != nil {
-			r0 = ret.Get(0).([]types.State)
-		}
+	} else if ret.Get(0) != nil {
+		r0 = ret.Get(0).([]types.State)
 	}
 
 	var r1 error
