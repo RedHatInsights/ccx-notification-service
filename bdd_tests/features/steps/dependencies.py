@@ -18,8 +18,8 @@ import requests
 from behave import given, then, when
 
 
-@when(u"I retrieve data from insights-content-service on {host:w}:{port:d}")
-@given(u"insights-content service is available on {host:w}:{port:d}")
+@when("I retrieve data from insights-content-service on {host:w}:{port:d}")
+@given("insights-content service is available on {host:w}:{port:d}")
 def check_content_service_availability(context, host, port):
     """Check if insights-content-service is available at given address."""
 
@@ -30,15 +30,15 @@ def check_content_service_availability(context, host, port):
     context.content_service_available = True
 
 
-@then(u"I should get data from insights-content-service")
+@then("I should get data from insights-content-service")
 def content_service_is_available(context):
     if not hasattr(context, "content_service_available"):
         raise Exception("Content service is not available")
     assert context.content_service_available
 
 
-@when(u"I retrieve metrics from the gateway on {host:w}:{port:d}")
-@given(u"prometheus push gateway is available on {host:w}:{port:d}")
+@when("I retrieve metrics from the gateway on {host:w}:{port:d}")
+@given("prometheus push gateway is available on {host:w}:{port:d}")
 def check_push_gateway_availability(context, host, port):
     """Check if prometheus push gateway is available at given address."""
 
@@ -49,7 +49,7 @@ def check_push_gateway_availability(context, host, port):
     context.push_gateway_available = True
 
 
-@then(u"I should get data from the gateway")
+@then("I should get data from the gateway")
 def prom_push_gateway_is_available(context):
     if not hasattr(context, "push_gateway_available"):
         raise Exception("Push gateway is not available")
