@@ -210,6 +210,7 @@ func findRuleByNameAndErrorKey(
 }
 
 func processReportsByCluster(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
+	notifiedIssues := 0
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
@@ -238,9 +239,6 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			continue
 		}
 
-		// if new report differs from the older one -> send notification
-		log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Different report from the last one")
-
 		notificationMsg := generateInstantNotificationMessage(&notificationClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), string(cluster.ClusterName))
 		notifiedAt := types.Timestamp(time.Now())
 
@@ -262,6 +260,8 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 				if !shouldNotify(storage, cluster, r) {
 					continue
 				}
+				// if new report differs from the older one -> send notification
+				log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Different report from the last one")
 				ReportWithHighImpact.Inc()
 				notificationPayloadURL := generateNotificationPayloadURL(&notificationRuleDetailsURI, string(cluster.ClusterName), module, errorKey)
 				appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano))
@@ -283,7 +283,9 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			os.Exit(ExitStatusKafkaProducerError)
 		}
 		updateNotificationRecordSentState(storage, cluster, report, notifiedAt)
+		notifiedIssues += len(notificationMsg.Events)
 	}
+	log.Info().Msgf("Number of high impact issues notified: %d", notifiedIssues)
 }
 
 // getNotificationDigestForCurrentAccount function returns new digest object if none has been previously created for given account

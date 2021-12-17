@@ -381,9 +381,9 @@ func TestTotalRiskCalculation(t *testing.T) {
 		{4, 3, 3},
 		{3, 4, 3},
 	}
-    for _, item := range testVals {
+	for _, item := range testVals {
 		assert.Equal(t, item.expectedRisk, calculateTotalRisk(item.impact, item.likelihood))
-    }
+	}
 }
 
 func TestModuleNameToRuleNameValidRuleName(t *testing.T) {
@@ -505,7 +505,6 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
-			TotalRisk: 2,
 		},
 		"RULE_2": {
 			Metadata: utypes.ErrorKeyMetadata{
@@ -517,7 +516,6 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 				Likelihood: 3,
 			},
 			HasReason: false,
-			TotalRisk: 2,
 		},
 	}
 
@@ -678,7 +676,6 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
-			TotalRisk: 3,
 		},
 		"RULE_2": {
 			Metadata: utypes.ErrorKeyMetadata{
@@ -690,7 +687,6 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 				Likelihood: 3,
 			},
 			HasReason: false,
-			TotalRisk: 3,
 		},
 	}
 
@@ -870,7 +866,6 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
-			TotalRisk: 4,
 		},
 		"RULE_2": {
 			Metadata: utypes.ErrorKeyMetadata{
@@ -882,7 +877,6 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 				Likelihood: 4,
 			},
 			HasReason: false,
-			TotalRisk: 4,
 		},
 	}
 
@@ -1202,7 +1196,6 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 			},
 			Reason:    "rule 1 reason",
 			HasReason: true,
-			TotalRisk: 4,
 		},
 		"RULE_2": {
 			Metadata: utypes.ErrorKeyMetadata{
@@ -1214,7 +1207,6 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 				Likelihood: 4,
 			},
 			HasReason: false,
-			TotalRisk: 4,
 		},
 	}
 
