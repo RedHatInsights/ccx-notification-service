@@ -66,19 +66,19 @@ def process_ccx_notification_service_output(context, out, return_codes):
     context.returncode = out.returncode
 
 
-@when(u"max-age {age:Age} command line flag is specified")
+@when("max-age {age:Age} command line flag is specified")
 def store_max_age_flag(context, age):
     # update context
     context.max_age = age
 
 
-@when(u"cleanup-on-startup command line flag is specified")
+@when("cleanup-on-startup command line flag is specified")
 def store_cleanup_flag(context):
     # update context
     context.cleanup_on_startup = "--cleanup-on-startup"
 
 
-@when(u"I start the CCX Notification Service with the {flag} command line flag")
+@when("I start the CCX Notification Service with the {flag} command line flag")
 def start_ccx_notification_service_with_flag(context, flag):
     """Start the CCX Notification Service with given command-line flag."""
     params = ["ccx-notification-service", flag]
@@ -101,7 +101,7 @@ def start_ccx_notification_service_with_flag(context, flag):
     process_ccx_notification_service_output(context, out, context.return_codes)
 
 
-@then(u"I should see help messages displayed on standard output")
+@then("I should see help messages displayed on standard output")
 def check_help_from_ccx_notification_service(context):
     """Check if help is displayed by CCX Notification Service."""
     expected_output = ["  -cleanup-on-startup", "  -instant-reports", "  -max-age string", "  -new-reports-cleanup",
@@ -115,7 +115,8 @@ def check_help_from_ccx_notification_service(context):
     for item in expected_output:
         assert item in context.output, f"{item} not in {context.output}"
 
-@then(u"I should see version info displayed on standard output")
+
+@then("I should see version info displayed on standard output")
 def check_version_from_ccx_notification_service(context):
     """Check if version info is displayed by CCX Notification Service."""
     # preliminary checks
@@ -127,7 +128,7 @@ def check_version_from_ccx_notification_service(context):
         "Caught output: {}".format(context.output)
 
 
-@then(u"I should see info about authors displayed on standard output")
+@then("I should see info about authors displayed on standard output")
 def check_authors_info_from_ccx_notification_service(context):
     """Check if information about authors is displayed by CCX Notification Service."""
     # preliminary checks
@@ -139,7 +140,7 @@ def check_authors_info_from_ccx_notification_service(context):
         "Caught output: {}".format(context.output)
 
 
-@then(u"I should see the current configuration displayed on standard output")
+@then("I should see the current configuration displayed on standard output")
 def check_configuration_info_from_ccx_notification_service(context):
     """Check if information about authors is displayed by CCX Notification Service."""
     # preliminary checks
@@ -165,7 +166,7 @@ def check_configuration_info_from_ccx_notification_service(context):
         assert item in stdout, "Caught output: {}".format(stdout)
 
 
-@then(u"I should see info about not notified reports older than {max_age:Age} displayed on standard output")
+@then("I should see info about not notified reports older than {max_age:Age} displayed on standard output")
 def check_print_new_reports_for_cleanup(context, max_age):
     """Check if information about new reports for cleanup is displayed by CCX Notification Service."""
     # preliminary checks
@@ -181,7 +182,7 @@ def check_print_new_reports_for_cleanup(context, max_age):
     assert max_age in stdout, "Caught output: {}".format(stdout)
 
 
-@then(u"I should see info about cleaned up not notified reports older than {max_age:Age} displayed on standard output")
+@then("I should see info about cleaned up not notified reports older than {max_age:Age} displayed on standard output")
 def check_new_reports_cleanup(context, max_age):
     """Check if information about not notified reports cleanup is displayed by CCX Notification Service."""
     # preliminary checks
@@ -198,7 +199,7 @@ def check_new_reports_cleanup(context, max_age):
     assert "Cleanup `new_reports` finished" in stdout, "Caught output: {}".format(stdout)
 
 
-@then(u"I should see info about notified reports older than {max_age:d} {age_unit:w} displayed on standard output")
+@then("I should see info about notified reports older than {max_age:d} {age_unit:w} displayed on standard output")
 def check_print_old_reports_for_cleanup(context, max_age, age_unit):
     """Check if information about notified reports for cleanup is displayed by CCX Notification Service."""
     # preliminary checks
@@ -214,8 +215,7 @@ def check_print_old_reports_for_cleanup(context, max_age, age_unit):
     assert str(max_age) + " " + age_unit in stdout, "Caught output: {}".format(stdout)
 
 
-@then(
-    u"I should see info about cleaned up notified reports older than {max_age:d} {age_unit:w} displayed on standard output")
+@then("I should see info about cleaned up notified reports older than {max_age:d} {age_unit:w} displayed on standard output")
 def check_old_reports_cleanup(context, max_age, age_unit):
     """Check if information about notified reports for cleanup is displayed by CCX Notification Service."""
     # preliminary checks
@@ -232,7 +232,7 @@ def check_old_reports_cleanup(context, max_age, age_unit):
     assert "Cleanup `reported` finished" in stdout, "Caught output: {}".format(stdout)
 
 
-@then(u"I should see old reports from {table:w} for the following clusters")
+@then("I should see old reports from {table:w} for the following clusters")
 def check_old_reports_in_table(context, table):
     """Check the old reports displayed for the given table"""
 
@@ -251,7 +251,7 @@ def check_old_reports_in_table(context, table):
         assert row["cluster name"] in stdout, "Caught output: {}".format(stdout)
 
 
-@then(u"I should not see any old reports from {table:w}")
+@then("I should not see any old reports from {table:w}")
 def check_no_old_reports_in_table(context, table):
     """Check the old reports displayed for the given table"""
 
@@ -267,7 +267,7 @@ def check_no_old_reports_in_table(context, table):
     assert "ClusterName" not in stdout
 
 
-@then(u"the process should exit with status code set to {expected_code:d}")
+@then("the process should exit with status code set to {expected_code:d}")
 def check_status_code(context, expected_code):
     """Check the status code of the last started process."""
     # check the return code of a process
@@ -275,7 +275,7 @@ def check_status_code(context, expected_code):
         "Return code is {}, but {} is expected".format(context.returncode, expected_code)
 
 
-@then(u"It should clean items in {table:w} table older than {max_age:Age}")
+@then("It should clean items in {table:w} table older than {max_age:Age}")
 def check_cleaned_items_on_standard_output(context, table, max_age):
     """Check stdout for cleaned report after CCX Notification Service execution."""
     # preliminary checks
@@ -291,7 +291,7 @@ def check_cleaned_items_on_standard_output(context, table, max_age):
     assert max_age in stdout, "Caught output: {}".format(stdout)
 
 
-@then(u"it should have sent the following {num_event:d} notification events")
+@then("it should have sent the following {num_event:d} notification events")
 def retrieve_notification_events(context, num_event):
     """Get events from kafka topic and check they are the expected"""
     """Use the Kafkacat tool to retrieve metadata from Kafka broker."""

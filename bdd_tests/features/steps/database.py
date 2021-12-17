@@ -23,7 +23,7 @@ from psycopg2.errors import UndefinedTable
 from behave import given, when, then
 
 
-@given(u"Postgres is running")
+@given("Postgres is running")
 def check_if_postgres_is_running(context):
     """Check if Postgresql service is active."""
     p = subprocess.Popen(["systemctl", "is-active", "--quiet", "postgresql"])
@@ -37,45 +37,45 @@ def check_if_postgres_is_running(context):
         "Postgresql service not running: got return code {code}".format(code=p.returncode)
 
 
-@when(u"I connect to database named {database} as user {user} with password {password}")
+@when("I connect to database named {database} as user {user} with password {password}")
 def connect_to_database(context, database, user, password):
     """Perform connection to selected database."""
     connection_string = "dbname={} user={} password={}".format(database, user, password)
     context.connection = psycopg2.connect(connection_string)
 
 
-@then(u"I should be able to connect to such database")
+@then("I should be able to connect to such database")
 def check_connection(context):
     """Check the connection to database."""
     assert context.connection is not None, "connection should be established"
 
 
-@when(u"I close database connection")
+@when("I close database connection")
 def disconnect_from_database(context):
     """Close the connection to database."""
     context.connection.close()
     context.connection = None
 
 
-@then(u"I should be disconnected")
+@then("I should be disconnected")
 def check_disconnection(context):
     """Check that the connection has been closed."""
     assert context.connection is None, "connection should be closed"
 
 
-@given(u"CCX Notification database is created for user {user} with password {password}")
+@given("CCX Notification database is created for user {user} with password {password}")
 def database_is_created(context, user, password):
     """Perform connection to CCX Notification database to check its ability."""
     connect_to_database(context, "notification", user, password)
 
 
-@given(u"CXX Notification Writer database contains all required tables")
+@given("CXX Notification Writer database contains all required tables")
 def database_contains_all_tables(context):
     """Check if CCX Notification database contains all required tables."""
     raise NotImplementedError(u'STEP: Given CXX Notification Writer database contains all tables')
 
 
-@given(u"CCX Notification Service database is set up")
+@given("CCX Notification Service database is set up")
 def ensure_database_is_set_up(context):
     """Check that the tables exist in the DB."""
     # at least following tables should exist
@@ -97,7 +97,7 @@ def ensure_database_is_set_up(context):
     pass
 
 
-@given(u"CCX Notification database is empty")
+@given("CCX Notification database is empty")
 def notification_db_empty(context):
     """Ensure that the CCX Notification database has no reports, but has all tables."""
     # We actually only want `new_reports` and `reported` table to be empty, so let's clean up
@@ -111,7 +111,7 @@ def notification_db_empty(context):
         raise e
 
 
-@when(u"I select all rows from table {table}")
+@when("I select all rows from table {table}")
 def select_all_rows_from_table(context, table):
     """Select number of all rows from given table."""
     cursor = context.connection.cursor()
@@ -124,8 +124,8 @@ def select_all_rows_from_table(context, table):
         raise e
 
 
-@then(u"I should get {expected_count:d} row")
-@then(u"I should get {expected_count:d} rows")
+@then("I should get {expected_count:d} row")
+@then("I should get {expected_count:d} rows")
 def check_rows_count(context, expected_count):
     """Check if expected number of rows were returned."""
     assert context.query_count == expected_count, \
@@ -133,8 +133,8 @@ def check_rows_count(context, expected_count):
                 context.query_count, expected_count)
 
 
-@given(u"I insert following row into table reported")
-@given(u"I insert following rows into table reported")
+@given("I insert following row into table reported")
+@given("I insert following rows into table reported")
 def insert_rows_into_reported_table(context):
     """Insert rows into table reported."""
     cursor = context.connection.cursor()
@@ -183,8 +183,8 @@ def insert_rows_into_reported_table(context):
         raise e
 
 
-@given(u"I insert following row into table new_reports")
-@given(u"I insert following rows into table new_reports")
+@given("I insert following row into table new_reports")
+@given("I insert following rows into table new_reports")
 def insert_rows_into_new_reports_table(context):
     """Insert rows into table new_reports."""
     cursor = context.connection.cursor()
@@ -218,7 +218,7 @@ def insert_rows_into_new_reports_table(context):
         raise e
 
 
-@when(u"I insert 1 report with {risk:w} total risk for the following clusters")
+@when("I insert 1 report with {risk:w} total risk for the following clusters")
 def insert_report_with_risk_in_new_reports_table(context, risk):
     report = '{"analysis_metadata":{"metadata":"some metadata"},"reports":[{"rule_id":"test_rule|<replace_me>","component":"ccx_rules_ocp.external.rules.test_rule.report","type":"rule","key":"<replace_me>","details":"some details"}]}'
     if risk == "critical":
