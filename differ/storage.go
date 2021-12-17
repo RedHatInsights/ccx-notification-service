@@ -226,7 +226,7 @@ func NewFromConnection(connection *sql.DB, dbDriverType types.DBDriver) *DBStora
 
 // initAndGetDriver initializes driver(with logs if logSQLQueries is true),
 // checks if it's supported and returns driver type, driver name, dataSource and error
-func initAndGetDriver(configuration conf.StorageConfiguration) (driverType types.DBDriver, driverName string, dataSource string, err error) {
+func initAndGetDriver(configuration conf.StorageConfiguration) (driverType types.DBDriver, driverName, dataSource string, err error) {
 	driverName = configuration.Driver
 
 	switch driverName {
@@ -593,7 +593,7 @@ func (storage DBStorage) ReadLastNNotificationRecords(clusterEntry types.Cluster
 // sent.
 //
 // The method return number of deleted records.
-func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error) {
+func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge, statement string) (int, error) {
 	printableStatement := getPrintableStatement(statement)
 
 	log.Info().
@@ -704,7 +704,7 @@ func (storage DBStorage) deleteRowImpl(
 
 // PrintNewReports method prints all reports from selected table older than
 // specified relative time
-func (storage DBStorage) PrintNewReports(maxAge string, query string, tableName string) error {
+func (storage DBStorage) PrintNewReports(maxAge, query, tableName string) error {
 	log.Info().
 		Str(MaxAgeAttribute, maxAge).
 		Str("select statement", query).
@@ -768,7 +768,7 @@ func (storage DBStorage) PrintOldReportsForCleanup(maxAge string) error {
 
 // Cleanup method deletes all reports older than specified
 // relative time
-func (storage DBStorage) Cleanup(maxAge string, statement string) (int, error) {
+func (storage DBStorage) Cleanup(maxAge, statement string) (int, error) {
 	log.Info().
 		Str(MaxAgeAttribute, maxAge).
 		Str(DeleteStatement, statement).
