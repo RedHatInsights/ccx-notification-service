@@ -223,7 +223,7 @@ func (_m *Storage) WriteNotificationRecordForCluster(clusterEntry types.ClusterE
 }
 
 // WriteNotificationRecordImpl provides a mock function with given fields: orgID, accountNumber, clusterName, notificationTypeID, stateID, report, updatedAt, notifiedAt, errorLog
-func (_m *Storage) WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error {
+func (_m *Storage) WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt, notifiedAt types.Timestamp, errorLog string) error {
 	ret := _m.Called(orgID, accountNumber, clusterName, notificationTypeID, stateID, report, updatedAt, notifiedAt, errorLog)
 
 	var r0 error
@@ -237,7 +237,7 @@ func (_m *Storage) WriteNotificationRecordImpl(orgID types.OrgID, accountNumber 
 }
 
 // CleanupForOrganization is just a stub for a proper mock method
-func (_m *Storage) CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error) {
+func (_m *Storage) CleanupForOrganization(orgID types.OrgID, maxAge, statement string) (int, error) {
 	return 0, nil
 }
 
