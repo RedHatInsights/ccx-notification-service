@@ -128,7 +128,7 @@ func writeNotificationRecordFailed(err error) {
 }
 
 // Function issuesEqual compares two issues from reports
-func issuesEqual(issue1 types.ReportItem, issue2 types.ReportItem) bool {
+func issuesEqual(issue1, issue2 types.ReportItem) bool {
 	if issue1.Type == issue2.Type &&
 		issue1.Module == issue2.Module &&
 		issue1.ErrorKey == issue2.ErrorKey &&
