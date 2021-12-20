@@ -26,6 +26,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"os"
+	"time"
 
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/rs/zerolog/log"
@@ -90,7 +91,8 @@ func shouldNotify(storage Storage, cluster types.ClusterEntry, issue types.Repor
 		os.Exit(ExitStatusStorageError)
 	}
 
-	notify := IssueNotInReport(oldReport, issue)
+	canNotify := time.Now().Sub(time.Time(cluster.UpdatedAt)) >= notificationCooldown
+	notify := IssueNotInReport(oldReport, issue) && canNotify
 	log.Info().Bool(resolutionKey, notify).Msg(resolutionMsg)
 	return notify
 }

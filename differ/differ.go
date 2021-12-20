@@ -121,6 +121,7 @@ var (
 	notificationClusterDetailsURI  string
 	notificationRuleDetailsURI     string
 	notificationInsightsAdvisorURL string
+	notificationCooldown           time.Duration
 )
 
 // showVersion function displays version information.
@@ -657,6 +658,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	notificationClusterDetailsURI = notifConfig.ClusterDetailsURI
 	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
 	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
+	notificationCooldown = notifConfig.Cooldown
 
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)
