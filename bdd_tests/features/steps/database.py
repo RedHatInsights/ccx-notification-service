@@ -219,7 +219,7 @@ def insert_rows_into_new_reports_table(context):
 
 
 @when("I insert 1 report with {risk:w} total risk for the following clusters")
-def insert_report_with_risk_in_new_reports_table(context, risk):
+def insert_report_with_risk_in_new_reports_table(context, risk, updated_at=None):
     report = '{"analysis_metadata":{"metadata":"some metadata"},"reports":[{"rule_id":"test_rule|<replace_me>","component":"ccx_rules_ocp.external.rules.test_rule.report","type":"rule","key":"<replace_me>","details":"some details"}]}'
     if risk == "critical":
         report = report.replace("<replace_me>", "TEST_RULE_CRITICAL_IMPACT")
@@ -232,6 +232,8 @@ def insert_report_with_risk_in_new_reports_table(context, risk):
     else:
         raise ValueError(f"Invalid category of total risk {risk}. Expected one of ['low', 'moderate', 'important', 'critical']")
 
+    if not updated_at:
+        updated_at = datetime.now()
     cursor = context.connection.cursor()
 
     try:
@@ -244,8 +246,14 @@ def insert_report_with_risk_in_new_reports_table(context, risk):
                                     (org_id, account_number, cluster, report, updated_at, kafka_offset)
                                     VALUES(%s, %s, %s, %s, %s, %s);"""
             cursor.execute(insertStatement, (
-                org_id, account_number, cluster_name, report, datetime.now(), 0))
+                org_id, account_number, cluster_name, report, updated_at, 0))
         context.connection.commit()
     except Exception as e:
         context.connection.rollback()
         raise e
+
+
+@when("I insert 1 report with {risk:w} total risk after cooldown has passed for the following clusters")
+def insert_report_with_risk_and_cooldown_in_new_reports_table(context, risk):
+    timestamp_after_cooldown = datetime.now() + timedelta(minutes=1)
+    insert_report_with_risk_in_new_reports_table(context, risk, updated_at=timestamp_after_cooldown)
