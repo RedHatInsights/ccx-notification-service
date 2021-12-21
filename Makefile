@@ -72,9 +72,15 @@ coverage:
 license: install_addlicense
 	addlicense -c "Red Hat, Inc" -l "apache" -v ./
 
-bdd_tests: ## Run BDD tests
-	@echo "Run BDD tests"
+bdd_tests: ## Run BDD tests (needs real dependencies)
+	@echo "Run BDD tests with real dependencies"
+	cp ./config-devel.toml bdd_tests/config.toml
 	pushd bdd_tests/ && ./run_tests.sh && popd
+
+bdd_tests_mock: ## Run BDD tests with mocked dependencies
+	@echo "Run BDD tests with mocked dependencies"
+	cp ./config-devel.toml bdd_tests/config.toml
+	pushd bdd_tests/ && WITHMOCK=1 ./run_tests.sh && popd
 
 before_commit: style test test-postgres integration_tests license ## Checks done before commit
 	./check_coverage.sh

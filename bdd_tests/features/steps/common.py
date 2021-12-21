@@ -13,10 +13,6 @@
 # limitations under the License.
 
 from shutil import which
-import psycopg2
-from psycopg2.errors import UndefinedTable
-
-
 from behave import given, then, when
 
 
@@ -37,4 +33,4 @@ def look_for_executable_file(context, filename):
 def file_was_found(context):
     """Check if the file was found on PATH."""
     assert context.found is not None, \
-        "executable filaname '{}' is not on PATH".format(context.filename)
+        "executable filename '{}' is not on PATH".format(context.filename)
