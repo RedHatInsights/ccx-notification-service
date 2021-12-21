@@ -3,7 +3,7 @@ debug = true
 log_level = "info"
 
 [kafka_broker]
-address = "kafka:9092"
+address = "kafka:29092"
 topic = "platform.notifications.ingress"
 timeout = "60s"
 
