@@ -91,7 +91,7 @@ func shouldNotify(storage Storage, cluster types.ClusterEntry, issue types.Repor
 		os.Exit(ExitStatusStorageError)
 	}
 
-	canNotify := time.Now().Sub(time.Time(cluster.UpdatedAt)) >= notificationCooldown
+	canNotify := time.Now().Sub(time.Time(reported[0].NotifiedAt)) >= notificationCooldown
 	notify := IssueNotInReport(oldReport, issue) && canNotify
 	log.Info().Bool(resolutionKey, notify).Msg(resolutionMsg)
 	return notify
