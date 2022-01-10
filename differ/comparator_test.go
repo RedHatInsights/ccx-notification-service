@@ -23,6 +23,7 @@ import (
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 	"testing"
+	"time"
 )
 
 var (
@@ -383,7 +384,7 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 	}
 }
 
-func TestShouldNotifyPreviousRecordForGivenClusterIsIdentical(t *testing.T) {
+func TestShouldNotifyPreviousRecordForGivenClusterIsIdenticalCooldownNotPassed(t *testing.T) {
 	storage := mocks.Storage{}
 	storage.On("ReadLastNNotificationRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
@@ -394,11 +395,11 @@ func TestShouldNotifyPreviousRecordForGivenClusterIsIdentical(t *testing.T) {
 					OrgID:              testCluster.OrgID,
 					AccountNumber:      testCluster.AccountNumber,
 					ClusterName:        testCluster.ClusterName,
-					UpdatedAt:          types.Timestamp(testTimestamp.Add(-2)),
+					UpdatedAt:          types.Timestamp(time.Now().Add(1 * time.Hour)),
 					NotificationTypeID: 1,
 					StateID:            1,
 					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":\"the same details\",\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}}]}",
-					NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
+					NotifiedAt:         types.Timestamp(time.Now().Add(1 * time.Hour)),
 					ErrorLog:           "",
 				},
 			}
@@ -433,11 +434,11 @@ func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 					OrgID:              testCluster.OrgID,
 					AccountNumber:      testCluster.AccountNumber,
 					ClusterName:        testCluster.ClusterName,
-					UpdatedAt:          types.Timestamp(testTimestamp.Add(-2)),
+					UpdatedAt:          types.Timestamp(time.Now().Add(-1 * time.Hour)),
 					NotificationTypeID: 1,
 					StateID:            1,
 					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}}]}",
-					NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
+					NotifiedAt:         types.Timestamp(time.Now().Add(-1 * time.Hour)),
 					ErrorLog:           "",
 				},
 			}
@@ -472,11 +473,11 @@ func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 					OrgID:              testCluster.OrgID,
 					AccountNumber:      testCluster.AccountNumber,
 					ClusterName:        testCluster.ClusterName,
-					UpdatedAt:          types.Timestamp(testTimestamp.Add(-2)),
+					UpdatedAt:          types.Timestamp(time.Now().Add(-1 * time.Hour)),
 					NotificationTypeID: 1,
 					StateID:            1,
 					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}}]}",
-					NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
+					NotifiedAt:         types.Timestamp(time.Now().Add(-1 * time.Hour)),
 					ErrorLog:           "",
 				},
 			}
@@ -499,4 +500,88 @@ func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 	for _, issue := range newReport.Reports {
 		assert.True(t, shouldNotify(&storage, testCluster, issue))
 	}
+}
+
+func TestGetNotificationResolutionIssueNotInOldRecord(t *testing.T) {
+	record := types.NotificationRecord{
+		OrgID:              testCluster.OrgID,
+		AccountNumber:      testCluster.AccountNumber,
+		ClusterName:        testCluster.ClusterName,
+		NotificationTypeID: 1,
+		StateID:            1,
+		Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":\"some details\"}]}",
+		ErrorLog:           "",
+	}
+
+	issue := types.ReportItem{
+		Type:     "rule",
+		Module:   "ccx_rules_ocp.external.rules.new_rule.report",
+		ErrorKey: "NEW_RULE_NOT_PREVIOUSLY_REPORTED",
+		Details:  []byte("New rule with bunch of details"),
+	}
+
+	assert.True(t, getNotificationResolution(issue, record))
+}
+
+func TestGetNotificationResolutionIssueInOldRecordDifferentDetails(t *testing.T) {
+	record := types.NotificationRecord{
+		OrgID:              testCluster.OrgID,
+		AccountNumber:      testCluster.AccountNumber,
+		ClusterName:        testCluster.ClusterName,
+		NotificationTypeID: 1,
+		StateID:            1,
+		Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":\"some details\"}]}",
+		ErrorLog:           "",
+	}
+
+	issue := types.ReportItem{
+		Type:     "rule",
+		Module:   "ccx_rules_ocp.external.rules.rule_4.report",
+		ErrorKey: "RULE_4",
+		Details:  []byte("Previously reported rule with difference in details"),
+	}
+
+	assert.True(t, getNotificationResolution(issue, record))
+}
+
+func TestGetNotificationResolutionIssueInOldRecord(t *testing.T) {
+	notificationCooldown = time.Duration(time.Hour)
+
+	record := types.NotificationRecord{
+		OrgID:              testCluster.OrgID,
+		AccountNumber:      testCluster.AccountNumber,
+		ClusterName:        testCluster.ClusterName,
+		UpdatedAt:          types.Timestamp(time.Now()),
+		NotificationTypeID: 1,
+		StateID:            1,
+		Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":\"some details\"}]}",
+		NotifiedAt:         types.Timestamp(time.Now()),
+		ErrorLog:           "",
+	}
+
+	issue := types.ReportItem{
+		Type:     "rule",
+		Module:   "ccx_rules_ocp.external.rules.rule_4.report",
+		ErrorKey: "RULE_4",
+		Details:  []byte("\"some details\""),
+	}
+
+	assert.False(t, getNotificationResolution(issue, record))
+
+	// Test what happens when cooldown time has passed
+	record = types.NotificationRecord{
+		OrgID:              testCluster.OrgID,
+		AccountNumber:      testCluster.AccountNumber,
+		ClusterName:        testCluster.ClusterName,
+		UpdatedAt:          types.Timestamp(time.Now()),
+		NotificationTypeID: 1,
+		StateID:            1,
+		Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":\"some details\"}]}",
+		NotifiedAt:         types.Timestamp(time.Now().Add(-2 * time.Hour)),
+		ErrorLog:           "",
+	}
+
+	assert.True(t, getNotificationResolution(issue, record))
+
+	notificationCooldown = 0
 }

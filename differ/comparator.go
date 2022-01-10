@@ -25,11 +25,10 @@ package differ
 import (
 	"bytes"
 	"encoding/json"
-	"os"
-	"time"
-
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/rs/zerolog/log"
+	"os"
+	"time"
 )
 
 // Messages
@@ -70,6 +69,25 @@ func getNotificationType(notificationTypes []types.NotificationType, value strin
 	return -1
 }
 
+func getNotificationResolution(issue types.ReportItem, record types.NotificationRecord) (resolution bool) {
+	// it is not a brand new cluster -> check if issue was included in older report
+	var oldReport types.Report
+	err := json.Unmarshal([]byte(record.Report), &oldReport)
+	if err != nil {
+		log.Err(err).Msgf(
+			"Deserialization error - Couldn't create issue object for older issue\n %s",
+			string(record.Report))
+		os.Exit(ExitStatusStorageError)
+	}
+
+	resolution = IssueNotInReport(oldReport, issue)
+	if !resolution {
+		// Issue is in previous report, let's see if we should notify again since cooldown has passed
+		resolution = time.Now().Sub(time.Time(record.NotifiedAt)) >= notificationCooldown
+	}
+	return
+}
+
 func shouldNotify(storage Storage, cluster types.ClusterEntry, issue types.ReportItem) bool {
 	// check if the issue of the given cluster has previously be reported
 	reported, err := storage.ReadLastNNotificationRecords(cluster, 1)
@@ -81,18 +99,7 @@ func shouldNotify(storage Storage, cluster types.ClusterEntry, issue types.Repor
 		return true
 	}
 
-	// it is not a brand new cluster -> check if issue was included in older report
-	var oldReport types.Report
-	err = json.Unmarshal([]byte(reported[0].Report), &oldReport)
-	if err != nil {
-		log.Err(err).Msgf(
-			"Deserialization error - Couldn't create issue object for older issue\n %s",
-			string(reported[0].Report))
-		os.Exit(ExitStatusStorageError)
-	}
-
-	canNotify := time.Now().Sub(time.Time(reported[0].NotifiedAt)) >= notificationCooldown
-	notify := IssueNotInReport(oldReport, issue) && canNotify
+	notify := getNotificationResolution(issue, reported[0])
 	log.Info().Bool(resolutionKey, notify).Msg(resolutionMsg)
 	return notify
 }

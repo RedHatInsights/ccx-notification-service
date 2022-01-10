@@ -1113,11 +1113,11 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 					OrgID:              3,
 					AccountNumber:      4,
 					ClusterName:        "a cluster",
-					UpdatedAt:          types.Timestamp(testTimestamp),
+					UpdatedAt:          types.Timestamp(time.Now().Add(1 * time.Hour)),
 					NotificationTypeID: 0,
 					StateID:            0,
 					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}",
-					NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
+					NotifiedAt:         types.Timestamp(time.Now().Add(1 * time.Hour)),
 					ErrorLog:           "",
 				},
 			}
