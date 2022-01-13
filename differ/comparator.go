@@ -82,8 +82,14 @@ func getNotificationResolution(issue types.ReportItem, record types.Notification
 
 	resolution = IssueNotInReport(oldReport, issue)
 	if !resolution {
+		log.Info().Msg("Issue already notified in previous report")
 		// Issue is in previous report, let's see if we should notify again since cooldown has passed
-		resolution = time.Now().Sub(time.Time(record.NotifiedAt)) >= notificationCooldown
+		elapsedSinceLastNotification := time.Now().Sub(time.Time(record.NotifiedAt))
+		resolution = elapsedSinceLastNotification >= notificationCooldown
+		log.Info().
+			Time("Last notification", time.Time(record.NotifiedAt)).
+			Time("Current time", time.Now()).
+			Msgf("Notify again if elapsed time (%s) >= cooldown (%s)", elapsedSinceLastNotification, notificationCooldown)
 	}
 	return
 }
