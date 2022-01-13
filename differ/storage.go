@@ -64,7 +64,7 @@ type Storage interface {
 		orgID types.OrgID, clusterName types.ClusterName,
 		offset types.KafkaOffset) (types.ClusterReport, error,
 	)
-	ReadLastNNotificationRecords(
+	ReadLastNNotifiedRecords(
 		clusterEntry types.ClusterEntry,
 		numberOfRecords int) ([]types.NotificationRecord, error)
 	WriteNotificationRecord(
@@ -523,16 +523,15 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 		notifiedAt, errorLog)
 }
 
-// ReadLastNNotificationRecords method returns the last N notification records
-// for given org ID and cluster name.
-func (storage DBStorage) ReadLastNNotificationRecords(clusterEntry types.ClusterEntry,
+// ReadLastNNotifiedRecords method returns the last N notification records
+// with state = 'sent' for given org ID and cluster name.
+func (storage DBStorage) ReadLastNNotifiedRecords(clusterEntry types.ClusterEntry,
 	numberOfRecords int) ([]types.NotificationRecord, error) {
 	var notificationRecords = make([]types.NotificationRecord, 0)
 
-	query := `
-                  select org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log
+	query := `select org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log
 		    from reported
-		   where org_id = $1 and cluster = $2
+		   where org_id = $1 and cluster = $2 and state = 1
 		   order by notified_at desc
 		   limit $3;
 		   `

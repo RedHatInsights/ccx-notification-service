@@ -567,7 +567,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 			return nil
 		},
 	)
-	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+	storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
 			return []types.NotificationRecord{
 				{
@@ -738,7 +738,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			return nil
 		},
 	)
-	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+	storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
 			// Return a record that is different from the one that will be processed so notification is sent
 			return []types.NotificationRecord{
@@ -928,7 +928,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			return nil
 		},
 	)
-	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+	storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
 			return []types.NotificationRecord{
 				{
@@ -1105,7 +1105,7 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 			return nil
 		},
 	)
-	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+	storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
 			// Return the same record, therefore notification message should not beproduced
 			return []types.NotificationRecord{
@@ -1115,7 +1115,7 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 					ClusterName:        "a cluster",
 					UpdatedAt:          types.Timestamp(time.Now().Add(1 * time.Hour)),
 					NotificationTypeID: 0,
-					StateID:            0,
+					StateID:            1,
 					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}",
 					NotifiedAt:         types.Timestamp(time.Now().Add(1 * time.Hour)),
 					ErrorLog:           "",
@@ -1139,16 +1139,16 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 	)
 
 	notificationType = types.InstantNotif
-
+	notificationCooldown = 24 * time.Hour
 	processClusters(ruleContent, &storage, clusters)
-
+	notificationCooldown = 0
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster first_cluster\"}\n", "Notification already sent for first_cluster's report, but corresponding log not found.")
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster second_cluster\"}\n", "Notification already sent for second_cluster's report, but corresponding log not found.")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 }
 
-func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
+func TestProcessClustersSomeIssuesAlreadyNotified(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
@@ -1258,7 +1258,7 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 			return nil
 		},
 	)
-	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+	storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
 			// We return three reports, one of them is in the
 			// report, and the others are not -> issues should be
@@ -1270,7 +1270,7 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 					ClusterName:        "a cluster",
 					UpdatedAt:          types.Timestamp(testTimestamp),
 					NotificationTypeID: 0,
-					StateID:            0,
+					StateID:            1,
 					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":\"some details\"}]}",
 					NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
 					ErrorLog:           "",

@@ -358,7 +358,7 @@ func TestIssueNotInReportLessItemsInNewReportAndIssueFoundInOldReports(t *testin
 
 func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 	storage := mocks.Storage{}
-	storage.On("ReadLastNNotificationRecords",
+	storage.On("ReadLastNNotifiedRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
@@ -386,7 +386,7 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 
 func TestShouldNotifyPreviousRecordForGivenClusterIsIdenticalCooldownNotPassed(t *testing.T) {
 	storage := mocks.Storage{}
-	storage.On("ReadLastNNotificationRecords",
+	storage.On("ReadLastNNotifiedRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
@@ -418,14 +418,17 @@ func TestShouldNotifyPreviousRecordForGivenClusterIsIdenticalCooldownNotPassed(t
 			},
 		},
 	}
+
+	notificationCooldown = 61 * time.Minute
 	for _, issue := range newReport.Reports {
 		assert.False(t, shouldNotify(&storage, testCluster, issue))
 	}
+	notificationCooldown = 0
 }
 
 func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 	storage := mocks.Storage{}
-	storage.On("ReadLastNNotificationRecords",
+	storage.On("ReadLastNNotifiedRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
@@ -464,7 +467,7 @@ func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 
 func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 	storage := mocks.Storage{}
-	storage.On("ReadLastNNotificationRecords",
+	storage.On("ReadLastNNotifiedRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
@@ -545,7 +548,7 @@ func TestGetNotificationResolutionIssueInOldRecordDifferentDetails(t *testing.T)
 }
 
 func TestGetNotificationResolutionIssueInOldRecord(t *testing.T) {
-	notificationCooldown = time.Duration(time.Hour)
+	notificationCooldown = 61 * time.Minute
 
 	record := types.NotificationRecord{
 		OrgID:              testCluster.OrgID,
