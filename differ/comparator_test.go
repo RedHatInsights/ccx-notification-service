@@ -418,9 +418,12 @@ func TestShouldNotifyPreviousRecordForGivenClusterIsIdenticalCooldownNotPassed(t
 			},
 		},
 	}
+
+	notificationCooldown = 61 * time.Minute
 	for _, issue := range newReport.Reports {
 		assert.False(t, shouldNotify(&storage, testCluster, issue))
 	}
+	notificationCooldown = 0
 }
 
 func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
@@ -545,7 +548,7 @@ func TestGetNotificationResolutionIssueInOldRecordDifferentDetails(t *testing.T)
 }
 
 func TestGetNotificationResolutionIssueInOldRecord(t *testing.T) {
-	notificationCooldown = time.Duration(time.Hour)
+	notificationCooldown = 61 * time.Minute
 
 	record := types.NotificationRecord{
 		OrgID:              testCluster.OrgID,
