@@ -95,8 +95,8 @@ func getNotificationResolution(issue types.ReportItem, record types.Notification
 }
 
 func shouldNotify(storage Storage, cluster types.ClusterEntry, issue types.ReportItem) bool {
-	// check if the issue of the given cluster has previously be reported
-	reported, err := storage.ReadLastNNotificationRecords(cluster, 1)
+	// check if the issue of the given cluster has previously been reported
+	reported, err := storage.ReadLastNNotifiedRecords(cluster, 1)
 	if err != nil {
 		log.Error().Err(err).Str(clusterName, string(cluster.ClusterName)).Msg("Read last report failed")
 	}

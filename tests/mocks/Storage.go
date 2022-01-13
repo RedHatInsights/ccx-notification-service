@@ -61,8 +61,8 @@ func (_m *Storage) ReadClusterList() ([]types.ClusterEntry, error) {
 	return r0, r1
 }
 
-// ReadLastNNotificationRecords provides a mock function with given fields: clusterEntry, numberOfRecords
-func (_m *Storage) ReadLastNNotificationRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error) {
+// ReadLastNNotifiedRecords provides a mock function with given fields: clusterEntry, numberOfRecords
+func (_m *Storage) ReadLastNNotifiedRecords(clusterEntry types.ClusterEntry, numberOfRecords int) ([]types.NotificationRecord, error) {
 	ret := _m.Called(clusterEntry, numberOfRecords)
 
 	var r0 []types.NotificationRecord

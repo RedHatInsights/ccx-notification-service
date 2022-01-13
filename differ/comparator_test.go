@@ -358,7 +358,7 @@ func TestIssueNotInReportLessItemsInNewReportAndIssueFoundInOldReports(t *testin
 
 func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 	storage := mocks.Storage{}
-	storage.On("ReadLastNNotificationRecords",
+	storage.On("ReadLastNNotifiedRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
@@ -386,7 +386,7 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 
 func TestShouldNotifyPreviousRecordForGivenClusterIsIdenticalCooldownNotPassed(t *testing.T) {
 	storage := mocks.Storage{}
-	storage.On("ReadLastNNotificationRecords",
+	storage.On("ReadLastNNotifiedRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
@@ -425,7 +425,7 @@ func TestShouldNotifyPreviousRecordForGivenClusterIsIdenticalCooldownNotPassed(t
 
 func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 	storage := mocks.Storage{}
-	storage.On("ReadLastNNotificationRecords",
+	storage.On("ReadLastNNotifiedRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
@@ -464,7 +464,7 @@ func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 
 func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 	storage := mocks.Storage{}
-	storage.On("ReadLastNNotificationRecords",
+	storage.On("ReadLastNNotifiedRecords",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {

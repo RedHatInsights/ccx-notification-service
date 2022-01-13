@@ -567,7 +567,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 			return nil
 		},
 	)
-	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+	storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
 			return []types.NotificationRecord{
 				{
@@ -738,7 +738,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			return nil
 		},
 	)
-	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+	storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
 			// Return a record that is different from the one that will be processed so notification is sent
 			return []types.NotificationRecord{
@@ -928,7 +928,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			return nil
 		},
 	)
-	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+	storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
 			return []types.NotificationRecord{
 				{
@@ -1105,7 +1105,7 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 			return nil
 		},
 	)
-	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+	storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
 			// Return the same record, therefore notification message should not beproduced
 			return []types.NotificationRecord{
@@ -1258,7 +1258,7 @@ func TestProcessClustersSomeIssuesAlreadyReported(t *testing.T) {
 			return nil
 		},
 	)
-	storage.On("ReadLastNNotificationRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+	storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
 			// We return three reports, one of them is in the
 			// report, and the others are not -> issues should be
