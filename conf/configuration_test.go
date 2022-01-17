@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Red Hat, Inc.
+Copyright © 2021, 2022 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -107,8 +107,6 @@ func TestLoadingConfigurationEnvVariableBadValueDefaultConfigFailure(t *testing.
 func TestLoadBrokerConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	expectedTimeout, _ := time.ParseDuration("20s")
-
-	// helpers.FailOnError(t, os.Chdir(".."))
 
 	mustSetEnv(t, envVar, "../tests/config2")
 	config, err := conf.LoadConfiguration(envVar, "")
