@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Red Hat, Inc.
+Copyright © 2021, 2022 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -25,7 +25,7 @@ package differ
 import (
 	"bytes"
 	"encoding/gob"
-	"io/ioutil"
+	"io"
 	"net/http"
 	"os"
 	"strings"
@@ -63,7 +63,7 @@ func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.Ru
 	}
 
 	// Read body from response
-	body, err := ioutil.ReadAll(response.Body)
+	body, err := io.ReadAll(response.Body)
 	if err != nil {
 		log.Error().Msgf("Got error while reading the response's body - %s", err.Error())
 		return nil, err
