@@ -70,7 +70,7 @@ coverage:
 	@go tool cover -func=coverage.out
 
 license: install_addlicense
-	addlicense -c "Red Hat, Inc" -l "apache" -v ./
+	addlicense -c "Red Hat, Inc" -l "apache" -ignore "docs/**" -v ./
 
 bdd_tests: ## Run BDD tests (needs real dependencies)
 	@echo "Run BDD tests with real dependencies"
