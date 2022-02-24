@@ -40,18 +40,6 @@ func mustLoadConfiguration(envVar string) {
 	}
 }
 
-func mustFailLoadingConfigurationIfWrongEnvVar(envVar string) {
-	_, err := conf.LoadConfiguration(envVar, "ANonExistingDefaultConfigPath")
-	if err == nil {
-		panic(err)
-	}
-}
-
-func removeFile(t *testing.T, filename string) {
-	err := os.Remove(filename)
-	helpers.FailOnError(t, err)
-}
-
 func mustSetEnv(t *testing.T, key, val string) {
 	err := os.Setenv(key, val)
 	helpers.FailOnError(t, err)
