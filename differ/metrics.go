@@ -62,12 +62,6 @@ const (
 	NotificationSentHelp              = "The total number of notifications sent"
 )
 
-// Metrics groups
-const (
-	saasFileNameGroup = "saas_file_name"
-	envNameGroup      = "env_name"
-)
-
 // PushGatewayClient is a simple wrapper over http.Client so that prometheus
 // can do HTTP requests with the given authentication header
 type PushGatewayClient struct {
