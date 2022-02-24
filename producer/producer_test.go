@@ -36,8 +36,6 @@ var (
 		Topic:   "platform.notifications.ingress",
 		Timeout: time.Duration(30*10 ^ 9),
 	}
-	// Base UNIX time plus approximately 50 years (not long before year 2020).
-	testTimestamp = time.Unix(50*365*24*60*60, 0)
 )
 
 func init() {
