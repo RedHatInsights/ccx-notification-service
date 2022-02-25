@@ -362,7 +362,7 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("int")).Return(
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
-			return make([]types.NotificationRecord, 0, 0)
+			return make([]types.NotificationRecord, 0)
 		},
 		func(clusterEntry types.ClusterEntry, numberOfRecords int) error {
 			return nil
