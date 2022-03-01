@@ -32,6 +32,8 @@ objects:
     failedJobsHistoryLimit: 3
     jobTemplate:
       spec:
+        # In PROD 1 cronjob takes around 45 min. Deadline set to 60 mins.
+        activeDeadlineSeconds: 3600
         template:
           spec:
             containers:
