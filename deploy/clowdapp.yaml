@@ -125,7 +125,7 @@ parameters:
   required: true
 - description: Determines Clowder deployment
   name: CLOWDER_ENABLED
-  value: "true"
+  value: 'true'
 - description: ClowdEnv Name
   name: ENV_NAME
   required: true
