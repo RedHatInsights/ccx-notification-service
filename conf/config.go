@@ -209,14 +209,9 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 		return config, err
 	}
 
-	if clowder.IsClowderEnabled() {
-		// can not use Zerolog at this moment!
-		fmt.Println("Clowder is enabled")
-
-		// TODO: insert logic to replace SELECTED configuration variables
-	} else {
-		// can not use Zerolog at this moment!
-		fmt.Println("Clowder is disabled")
+	if err := updateConfigFromClowder(&config); err != nil {
+		fmt.Println("error loading clowder configuration")
+		return config, err
 	}
 
 	// everything's should be ok
@@ -256,4 +251,34 @@ func GetMetricsConfiguration(config ConfigStruct) MetricsConfiguration {
 // GetCleanerConfiguration returns cleaner configuration
 func GetCleanerConfiguration(config ConfigStruct) CleanerConfiguration {
 	return config.Cleaner
+}
+
+// updateConfigFromClowder updates the current config with the values defined in clowder
+func updateConfigFromClowder(c *ConfigStruct) error {
+	if !clowder.IsClowderEnabled() || clowder.LoadedConfig == nil {
+		fmt.Println("Clowder is disabled")
+		return nil
+	}
+
+	fmt.Println("Clowder is enabled")
+	if clowder.LoadedConfig.Kafka == nil {
+		fmt.Println("No Kafka configuration available in Clowder, using default one")
+	} else {
+		broker := clowder.LoadedConfig.Kafka.Brokers[0]
+		// port can be empty in clowder, so taking it into account
+		if broker.Port != nil {
+			c.Kafka.Address = fmt.Sprintf("%s:%d", broker.Hostname, *broker.Port)
+		} else {
+			c.Kafka.Address = broker.Hostname
+		}
+
+		// get DB configuration from clowder
+		c.Storage.PGDBName = clowder.LoadedConfig.Database.Name
+		c.Storage.PGHost = clowder.LoadedConfig.Database.Hostname
+		c.Storage.PGPort = clowder.LoadedConfig.Database.Port
+		c.Storage.PGUsername = clowder.LoadedConfig.Database.Username
+		c.Storage.PGPassword = clowder.LoadedConfig.Database.Password
+	}
+
+	return nil
 }
