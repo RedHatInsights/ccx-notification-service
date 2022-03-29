@@ -106,7 +106,9 @@ objects:
             - -c
             - ./ccx-notification-service --instant-reports --cleanup-on-startup --max-age '8 days'
     database:
-      sharedDbAppName: ccx-notification-writer
+      # the DB name should match to app-interface DB name without specifying environment
+      name: ccx-notification-db
+      version: 12
 
 
 parameters:
