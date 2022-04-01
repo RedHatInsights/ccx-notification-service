@@ -14,7 +14,7 @@ objects:
     testing:
       iqePlugin: ccx
     jobs:
-      - name: ccx-notification-service
+      - name: instance
         schedule: ${JOB_SCHEDULE}
         restartPolicy: Never
         concurrencyPolicy: Forbid
