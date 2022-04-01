@@ -11,6 +11,10 @@ objects:
     name: ccx-notification-service
   spec:
     envName: ${ENV_NAME}
+    dependencies:
+      - ccx-notification-writer
+    database:
+      sharedDbAppName: ccx-notification-writer
     testing:
       iqePlugin: ccx
     jobs:
@@ -105,10 +109,6 @@ objects:
             - /bin/sh
             - -c
             - ./ccx-notification-service --instant-reports --cleanup-on-startup --max-age '8 days'
-    database:
-      # the DB name should match to app-interface DB name without specifying environment
-      name: ccx-notification-db
-      version: 12
 
 
 parameters:
