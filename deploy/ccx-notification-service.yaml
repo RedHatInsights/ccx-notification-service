@@ -89,11 +89,11 @@ objects:
               - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_ENDPOINT
                 value: content
               - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__INSIGHTS_ADVISOR_URL
-                value: "https://${PLATFORM_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}"
+                value: "https://${CONSOLE_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}"
               - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__CLUSTER_DETAILS_URI
-                value: "https://${PLATFORM_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}"
+                value: "https://${CONSOLE_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}"
               - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__RULE_DETAILS_URI
-                value: "https://${PLATFORM_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}?first={module}|{error_key}"
+                value: "https://${CONSOLE_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}?first={module}|{error_key}"
               - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__COOLDOWN
                 value: ${NOTIFICATION_RESEND_COOLDOWN}
               - name: CCX_NOTIFICATION_SERVICE__METRICS__JOB_NAME
@@ -160,7 +160,7 @@ parameters:
 - name: DATABASE_SERVICE_NAME
   required: true
   value: ccx-notification-db
-- name: PLATFORM_HOSTNAME
+- name: CONSOLE_HOSTNAME
 - name: CONTENT_SERVICE_PORT
 - name: NOTIFICATION_RESEND_COOLDOWN
   value: 24h
