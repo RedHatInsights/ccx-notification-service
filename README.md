@@ -130,3 +130,4 @@ Templates used by this notification service are available at:
 ## Package manifest
 
 Package manifest is available at [docs/manifest.txt](docs/manifest.txt).
+
