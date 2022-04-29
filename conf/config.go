@@ -271,7 +271,9 @@ func updateConfigFromClowder(c *ConfigStruct) error {
 		} else {
 			c.Kafka.Address = broker.Hostname
 		}
+	}
 
+	if clowder.LoadedConfig.Database != nil {
 		// get DB configuration from clowder
 		c.Storage.PGDBName = clowder.LoadedConfig.Database.Name
 		c.Storage.PGHost = clowder.LoadedConfig.Database.Hostname
