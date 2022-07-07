@@ -229,3 +229,9 @@ type NotificationRecord struct {
 	NotifiedAt         Timestamp
 	ErrorLog           string
 }
+
+// ClusterOrgKey is a slice with two items: an organization ID and a cluster UUID
+type ClusterOrgKey [2]interface{}
+
+// NotifiedRecordsPerCluster maps a given [orgID + clusterName] to a NotificationRecord
+type NotifiedRecordsPerCluster map[ClusterOrgKey]NotificationRecord
