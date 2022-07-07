@@ -122,6 +122,7 @@ var (
 	notificationRuleDetailsURI     string
 	notificationInsightsAdvisorURL string
 	notificationCooldown           time.Duration
+	previouslyReported             types.NotifiedRecordsPerCluster
 )
 
 // showVersion function displays version information.
@@ -258,7 +259,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 					Int("impact", impact).
 					Int(totalRiskAttribute, totalRisk).
 					Msg("Report with high impact detected")
-				if !shouldNotify(storage, cluster, r) {
+				if !shouldNotify(cluster, r) {
 					continue
 				}
 				// if new report differs from the older one -> send notification
@@ -675,6 +676,15 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 		os.Exit(ExitStatusOK)
 	}
 	log.Info().Int("clusters", entries).Msg("Read cluster list: done")
+	log.Info().Msg(separator)
+	log.Info().Msg("Read previously reported issues for cluster list")
+	previouslyReported, err = storage.ReadLastNotifiedRecordForClusterList(clusters)
+	if err != nil {
+		ReadReportedErrors.Inc()
+		log.Err(err).Msg(operationFailedMessage)
+		os.Exit(ExitStatusStorageError)
+	}
+	log.Info().Int("previously reported issues", len(previouslyReported)).Msg("Get previously reported issues: done")
 	log.Info().Msg(separator)
 
 	log.Info().Msg("Preparing Kafka producer")

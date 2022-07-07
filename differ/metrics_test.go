@@ -35,6 +35,7 @@ func TestAddMetricsWithNamespace(t *testing.T) {
 	// check the registration
 	assert.NotNil(t, differ.FetchContentErrors)
 	assert.NotNil(t, differ.ReadClusterListErrors)
+	assert.NotNil(t, differ.ReadReportedErrors)
 	assert.NotNil(t, differ.ProducerSetupErrors)
 	assert.NotNil(t, differ.StorageSetupErrors)
 	assert.NotNil(t, differ.ReadReportForClusterErrors)

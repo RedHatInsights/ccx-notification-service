@@ -95,18 +95,16 @@ func getNotificationResolution(issue types.ReportItem, record types.Notification
 	return
 }
 
-func shouldNotify(storage Storage, cluster types.ClusterEntry, issue types.ReportItem) bool {
+func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem) bool {
 	// check if the issue of the given cluster has previously been reported
-	reported, err := storage.ReadLastNNotifiedRecords(cluster, 1)
-	if err != nil {
-		log.Error().Err(err).Str(clusterName, string(cluster.ClusterName)).Msg("Read last report failed")
-	}
-	if len(reported) == 0 {
+	key := types.ClusterOrgKey{cluster.OrgID, cluster.ClusterName}
+	reported, ok := previouslyReported[key]
+	if !ok {
 		log.Info().Bool(resolutionKey, true).Msg(resolutionMsg)
 		return true
 	}
 
-	notify := getNotificationResolution(issue, reported[0])
+	notify := getNotificationResolution(issue, reported)
 	log.Info().Bool(resolutionKey, notify).Msg(resolutionMsg)
 	return notify
 }

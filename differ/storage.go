@@ -36,6 +36,7 @@ import (
 	"database/sql"
 	"fmt"
 	"math"
+	"strconv"
 	"strings"
 	"time"
 
@@ -64,9 +65,8 @@ type Storage interface {
 		orgID types.OrgID, clusterName types.ClusterName,
 		offset types.KafkaOffset) (types.ClusterReport, error,
 	)
-	ReadLastNNotifiedRecords(
-		clusterEntry types.ClusterEntry,
-		numberOfRecords int) ([]types.NotificationRecord, error)
+	ReadLastNotifiedRecordForClusterList(
+		clusterEntries []types.ClusterEntry) (types.NotifiedRecordsPerCluster, error)
 	WriteNotificationRecord(
 		notificationRecord types.NotificationRecord) error
 	WriteNotificationRecordForCluster(
@@ -194,6 +194,17 @@ const (
 		 ORDER BY updated_at
 `
 )
+
+// inClauseFromSlice is a helper function to construct `in` clause for SQL
+// statement from a given slice of items. The received slice must be []string
+// or any other type that can be asserted to []string, or else '1=1' will be
+// returned, making the IN clause act like a wildcard.
+func inClauseFromSlice(slice interface{}) string {
+	if slice, ok := slice.([]string); ok {
+		return "'" + strings.Join(slice, `','`) + `'`
+	}
+	return "1=1"
+}
 
 // NewStorage function creates and initializes a new instance of Storage interface
 func NewStorage(configuration conf.StorageConfiguration) (*DBStorage, error) {
@@ -523,22 +534,30 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 		notifiedAt, errorLog)
 }
 
-// ReadLastNNotifiedRecords method returns the last N notification records
-// with state = 'sent' for given org ID and cluster name.
-func (storage DBStorage) ReadLastNNotifiedRecords(clusterEntry types.ClusterEntry,
-	numberOfRecords int) ([]types.NotificationRecord, error) {
-	var notificationRecords = make([]types.NotificationRecord, 0)
+// ReadLastNotifiedRecordForClusterList method returns the last notification
+// with state = 'sent' for given org IDs and clusters.
+func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []types.ClusterEntry) (types.NotifiedRecordsPerCluster, error) {
+	var orgIDs = make([]string, len(clusterEntries))
+	var clusterIDs = make([]string, len(clusterEntries))
 
-	query := `select org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log
-		    from reported
-		   where org_id = $1 and cluster = $2 and state = 1
-		   order by notified_at desc
-		   limit $3;
-		   `
+	for idx, entry := range clusterEntries {
+		//log.Info().Msgf("%v - %v", entry.OrgID, entry.ClusterName)
+		orgIDs[idx] = strconv.FormatUint(uint64(entry.OrgID), 10)
+		clusterIDs[idx] = string(entry.ClusterName)
+	}
 
-	rows, err := storage.connection.Query(query, clusterEntry.OrgID, clusterEntry.ClusterName, numberOfRecords)
+	whereClause := fmt.Sprintf(` WHERE org_id IN (%v) AND cluster IN (%v) AND state = 1 `,
+		inClauseFromSlice(orgIDs), inClauseFromSlice(clusterIDs))
+
+	query := `SELECT * FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
+		whereClause +
+		`ORDER BY cluster, updated_at DESC) t ORDER BY updated_at DESC;`
+
+	log.Info().Int("orgs", len(orgIDs)).Int("clusters", len(clusterIDs)).Str("query", query).Msg("debug")
+
+	rows, err := storage.connection.Query(query)
 	if err != nil {
-		return notificationRecords, err
+		return nil, err
 	}
 
 	defer func() {
@@ -547,6 +566,8 @@ func (storage DBStorage) ReadLastNNotifiedRecords(clusterEntry types.ClusterEntr
 			log.Error().Err(err).Msg(unableToCloseDBRowsHandle)
 		}
 	}()
+
+	notificationRecords := make(types.NotifiedRecordsPerCluster)
 
 	for rows.Next() {
 		var (
@@ -569,7 +590,9 @@ func (storage DBStorage) ReadLastNNotifiedRecords(clusterEntry types.ClusterEntr
 			}
 			return notificationRecords, err
 		}
-		notificationRecords = append(notificationRecords, types.NotificationRecord{
+		key := types.ClusterOrgKey{orgID, clusterName}
+		//TODO: get only the necessary columns when selecting (e.g state is not needed, errorLog is not needed, I already have cluster and org, etc.
+		notificationRecords[key] = types.NotificationRecord{
 			OrgID:              orgID,
 			AccountNumber:      accountNumber,
 			ClusterName:        clusterName,
@@ -579,7 +602,7 @@ func (storage DBStorage) ReadLastNNotifiedRecords(clusterEntry types.ClusterEntr
 			Report:             report,
 			NotifiedAt:         notifiedAt,
 			ErrorLog:           errorLog,
-		})
+		}
 	}
 
 	return notificationRecords, nil
