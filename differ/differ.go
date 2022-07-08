@@ -434,7 +434,7 @@ func generateInstantNotificationMessage(
 	notification = types.NotificationMessage{
 		Bundle:      notificationBundleName,
 		Application: notificationApplicationName,
-		EventType:   types.InstantNotif.String(),
+		EventType:   types.InstantNotif.ToString(),
 		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		AccountID:   accountID,
 		Events:      events,
@@ -480,7 +480,7 @@ func generateWeeklyNotificationMessage(advisorURI *string, accountID string, dig
 	notification = types.NotificationMessage{
 		Bundle:      notificationBundleName,
 		Application: notificationApplicationName,
-		EventType:   types.WeeklyDigest.String(),
+		EventType:   types.WeeklyDigest.ToString(),
 		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		AccountID:   accountID,
 		Events:      events,

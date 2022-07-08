@@ -23,10 +23,10 @@ package types
 // https://redhatinsights.github.io/ccx-notification-service/packages/types/types.html
 
 import (
-	"encoding/json"
-	"fmt"
-	"github.com/RedHatInsights/insights-operator-utils/types"
-	"time"
+    "encoding/json"
+    "fmt"
+    "github.com/RedHatInsights/insights-operator-utils/types"
+    "time"
 )
 
 // Timestamp represents any timestamp in a form gathered from database
@@ -59,50 +59,50 @@ type NotificationTypeID int
 type StateID int
 
 const (
-	// DBDriverSQLite3 shows that db driver is sqlite
-	DBDriverSQLite3 DBDriver = iota
-	// DBDriverPostgres shows that db driver is postgres
-	DBDriverPostgres
-	// DBDriverGeneral general sql(used for mock now)
-	DBDriverGeneral
+    // DBDriverSQLite3 shows that db driver is sqlite
+    DBDriverSQLite3 DBDriver = iota
+    // DBDriverPostgres shows that db driver is postgres
+    DBDriverPostgres
+    // DBDriverGeneral general sql(used for mock now)
+    DBDriverGeneral
 )
 
 // ClusterEntry represents the entries retrieved from the DB
 type ClusterEntry struct {
-	OrgID         OrgID
-	AccountNumber AccountNumber
-	ClusterName   ClusterName
-	KafkaOffset   KafkaOffset
-	UpdatedAt     Timestamp
+    OrgID         OrgID
+    AccountNumber AccountNumber
+    ClusterName   ClusterName
+    KafkaOffset   KafkaOffset
+    UpdatedAt     Timestamp
 }
 
 // NotificationType represents one record from `notification_types` table.
 type NotificationType struct {
-	ID        NotificationTypeID
-	Value     string
-	Frequency string
-	Comment   string
+    ID        NotificationTypeID
+    Value     string
+    Frequency string
+    Comment   string
 }
 
 // NotificationTypes contains all IDs for all possible notification types
 type NotificationTypes struct {
-	Instant NotificationTypeID
-	Weekly  NotificationTypeID
+    Instant NotificationTypeID
+    Weekly  NotificationTypeID
 }
 
 // State represents one record from `states` table.
 type State struct {
-	ID      StateID
-	Value   string
-	Comment string
+    ID      StateID
+    Value   string
+    Comment string
 }
 
 // States contains all IDs for all possible states
 type States struct {
-	SameState       StateID
-	SentState       StateID
-	LowerIssueState StateID
-	ErrorState      StateID
+    SameState       StateID
+    SentState       StateID
+    LowerIssueState StateID
+    ErrorState      StateID
 }
 
 // RulesMap contains a map of RuleContent objects accesible indexed by rule names
@@ -110,31 +110,31 @@ type RulesMap map[string]types.RuleContent
 
 // MissingMandatoryFile is an error raised while parsing, when a mandatory file is missing
 type MissingMandatoryFile struct {
-	FileName string
+    FileName string
 }
 
 func (err MissingMandatoryFile) Error() string {
-	return fmt.Sprintf("Missing required file: %s", err.FileName)
+    return fmt.Sprintf("Missing required file: %s", err.FileName)
 }
 
 // CliFlags represents structure holding all command line arguments/flags.
 type CliFlags struct {
-	InstantReports            bool
-	WeeklyReports             bool
-	ShowVersion               bool
-	ShowAuthors               bool
-	ShowConfiguration         bool
-	PrintNewReportsForCleanup bool
-	PerformNewReportsCleanup  bool
-	PrintOldReportsForCleanup bool
-	PerformOldReportsCleanup  bool
-	CleanupOnStartup          bool
-	MaxAge                    string
+    InstantReports            bool
+    WeeklyReports             bool
+    ShowVersion               bool
+    ShowAuthors               bool
+    ShowConfiguration         bool
+    PrintNewReportsForCleanup bool
+    PerformNewReportsCleanup  bool
+    PrintOldReportsForCleanup bool
+    PerformOldReportsCleanup  bool
+    CleanupOnStartup          bool
+    MaxAge                    string
 }
 
 // Report represents report send in a message consumed from any broker
 type Report struct {
-	Reports []ReportItem `json:"reports"`
+    Reports []ReportItem `json:"reports"`
 }
 
 // RuleID represents type for rule id
@@ -151,10 +151,10 @@ type ErrorKey string
 
 // ReportItem represents a single (hit) rule of the string encoded report
 type ReportItem struct {
-	Type     string          `json:"type"`
-	Module   ModuleName      `json:"component"`
-	ErrorKey ErrorKey        `json:"key"`
-	Details  json.RawMessage `json:"details"`
+    Type     string          `json:"type"`
+    Module   ModuleName      `json:"component"`
+    ErrorKey ErrorKey        `json:"key"`
+    Details  json.RawMessage `json:"details"`
 }
 
 // EventType represents the allowed event types in notification messages
@@ -162,19 +162,19 @@ type EventType int
 
 // Event types as enum
 const (
-	InstantNotif EventType = iota
-	WeeklyDigest
+    InstantNotif EventType = iota
+    WeeklyDigest
 )
 
 // Event types string representation
 const (
-	eventTypeInstant = "new-recommendation"
-	eventTypeWeekly  = "weekly-digest"
+    eventTypeInstant = "new-recommendation"
+    eventTypeWeekly  = "weekly-digest"
 )
 
-// String function returns string representation of given event type
-func (e EventType) String() string {
-	return [...]string{eventTypeInstant, eventTypeWeekly}[e]
+// ToString function returns string representation of given event type
+func (e EventType) ToString() string {
+    return [...]string{eventTypeInstant, eventTypeWeekly}[e]
 }
 
 // EventMetadata represents the metadata of the sent payload.
@@ -187,17 +187,17 @@ type EventPayload map[string]string
 
 // Event is a structure containing the payload and its metadata.
 type Event struct {
-	Metadata EventMetadata `json:"metadata"`
-	Payload  string        `json:"payload"`
+    Metadata EventMetadata `json:"metadata"`
+    Payload  string        `json:"payload"`
 }
 
 // Digest is a structure containing the counters for weekly digest
 type Digest struct {
-	ClustersAffected       int
-	CriticalNotifications  int
-	ImportantNotifications int
-	Recommendations        int
-	Incidents              int // We don't have this info, AFAIK
+    ClustersAffected       int
+    CriticalNotifications  int
+    ImportantNotifications int
+    Recommendations        int
+    Incidents              int // We don't have this info, AFAIK
 }
 
 // NotificationContext represents the extra information
@@ -208,30 +208,35 @@ type NotificationContext map[string]interface{}
 // NotificationMessage represents content of messages
 // sent to the notification platform topic in Kafka.
 type NotificationMessage struct {
-	Bundle      string  `json:"bundle"`
-	Application string  `json:"application"`
-	EventType   string  `json:"event_type"`
-	Timestamp   string  `json:"timestamp"`
-	AccountID   string  `json:"account_id"`
-	Events      []Event `json:"events"`
-	Context     string  `json:"context"`
+    Bundle      string  `json:"bundle"`
+    Application string  `json:"application"`
+    EventType   string  `json:"event_type"`
+    Timestamp   string  `json:"timestamp"`
+    AccountID   string  `json:"account_id"`
+    Events      []Event `json:"events"`
+    Context     string  `json:"context"`
 }
 
 // NotificationRecord structure represents one record stored in `reported` table.
 type NotificationRecord struct {
-	OrgID              OrgID
-	AccountNumber      AccountNumber
-	ClusterName        ClusterName
-	UpdatedAt          Timestamp
-	NotificationTypeID NotificationTypeID
-	StateID            StateID
-	Report             ClusterReport
-	NotifiedAt         Timestamp
-	ErrorLog           string
+    OrgID              OrgID
+    AccountNumber      AccountNumber
+    ClusterName        ClusterName
+    UpdatedAt          Timestamp
+    NotificationTypeID NotificationTypeID
+    StateID            StateID
+    Report             ClusterReport
+    NotifiedAt         Timestamp
+    ErrorLog           string
 }
 
 // ClusterOrgKey is a slice with two items: an organization ID and a cluster UUID
 type ClusterOrgKey [2]interface{}
 
-// NotifiedRecordsPerCluster maps a given [orgID + clusterName] to a NotificationRecord
-type NotifiedRecordsPerCluster map[ClusterOrgKey]NotificationRecord
+// ToString function returns string representation of given ClusterOrgKey
+func (k ClusterOrgKey) ToString() string {
+    return fmt.Sprintf("%q", k)
+}
+
+// NotifiedRecordsPerCluster maps a string representation of ClusterOrgKey to a NotificationRecord
+type NotifiedRecordsPerCluster map[string]NotificationRecord

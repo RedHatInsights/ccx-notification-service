@@ -590,7 +590,7 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 			}
 			return notificationRecords, err
 		}
-		key := types.ClusterOrgKey{orgID, clusterName}
+		key := types.ClusterOrgKey{orgID, clusterName}.ToString()
 		//TODO: get only the necessary columns when selecting (e.g state is not needed, errorLog is not needed, I already have cluster and org, etc.
 		notificationRecords[key] = types.NotificationRecord{
 			OrgID:              orgID,

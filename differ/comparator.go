@@ -97,7 +97,7 @@ func getNotificationResolution(issue types.ReportItem, record types.Notification
 
 func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem) bool {
 	// check if the issue of the given cluster has previously been reported
-	key := types.ClusterOrgKey{cluster.OrgID, cluster.ClusterName}
+	key := types.ClusterOrgKey{cluster.OrgID, cluster.ClusterName}.ToString()
 	reported, ok := previouslyReported[key]
 	if !ok {
 		log.Info().Bool(resolutionKey, true).Msg(resolutionMsg)
