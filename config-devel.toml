@@ -25,8 +25,8 @@ content_endpoint = "/api/v1/content"
 insights_advisor_url = "https://console.redhat.com/openshift/insights/advisor/clusters/{cluster_id}"
 cluster_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}#insights"
 rule_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}/insights/{module}/{error_key}"
-# Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
-cooldown = "1m"
+# valid units are SQL epoch time units: months days hours minutes seconds"
+cooldown = "1 minutes"
 
 [metrics]
 job_name = "ccx_notification_service"
@@ -35,4 +35,5 @@ gateway_url = "localhost:9091"
 gateway_auth_token = ""
 
 [cleaner]
+# valid units are SQL epoch time units: months days hours minutes seconds"
 max_age = "90 days"

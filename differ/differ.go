@@ -121,7 +121,6 @@ var (
 	notificationClusterDetailsURI  string
 	notificationRuleDetailsURI     string
 	notificationInsightsAdvisorURL string
-	notificationCooldown           time.Duration
 	previouslyReported             types.NotifiedRecordsPerCluster
 )
 
@@ -659,7 +658,6 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	notificationClusterDetailsURI = notifConfig.ClusterDetailsURI
 	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
 	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
-	notificationCooldown = notifConfig.Cooldown
 
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)
@@ -678,15 +676,14 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	log.Info().Int("clusters", entries).Msg("Read cluster list: done")
 	log.Info().Msg(separator)
 	log.Info().Msg("Read previously reported issues for cluster list")
-	previouslyReported, err = storage.ReadLastNotifiedRecordForClusterList(clusters)
+	previouslyReported, err = storage.ReadLastNotifiedRecordForClusterList(clusters, notifConfig.Cooldown)
 	if err != nil {
 		ReadReportedErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
 		os.Exit(ExitStatusStorageError)
 	}
-	log.Info().Int("previously reported issues", len(previouslyReported)).Msg("Get previously reported issues: done")
+	log.Info().Int("previously reported issues to notify again", len(previouslyReported)).Msg("Get previously reported issues: done")
 	log.Info().Msg(separator)
-
 	log.Info().Msg("Preparing Kafka producer")
 	setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
 	log.Info().Msg("Kafka producer ready")

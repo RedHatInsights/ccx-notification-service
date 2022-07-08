@@ -66,7 +66,7 @@ type Storage interface {
 		offset types.KafkaOffset) (types.ClusterReport, error,
 	)
 	ReadLastNotifiedRecordForClusterList(
-		clusterEntries []types.ClusterEntry) (types.NotifiedRecordsPerCluster, error)
+		clusterEntries []types.ClusterEntry, timeOffset string) (types.NotifiedRecordsPerCluster, error)
 	WriteNotificationRecord(
 		notificationRecord types.NotificationRecord) error
 	WriteNotificationRecordForCluster(
@@ -536,7 +536,7 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 
 // ReadLastNotifiedRecordForClusterList method returns the last notification
 // with state = 'sent' for given org IDs and clusters.
-func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []types.ClusterEntry) (types.NotifiedRecordsPerCluster, error) {
+func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []types.ClusterEntry, timeOffset string) (types.NotifiedRecordsPerCluster, error) {
 	var orgIDs = make([]string, len(clusterEntries))
 	var clusterIDs = make([]string, len(clusterEntries))
 
@@ -551,11 +551,11 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 
 	query := `SELECT * FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
 		whereClause +
-		`ORDER BY cluster, updated_at DESC) t ORDER BY updated_at DESC;`
+		` ORDER BY cluster, updated_at DESC) t WHERE notified_at < NOW() - $1::INTERVAL;`
 
 	log.Info().Int("orgs", len(orgIDs)).Int("clusters", len(clusterIDs)).Str("query", query).Msg("debug")
 
-	rows, err := storage.connection.Query(query)
+	rows, err := storage.connection.Query(query, timeOffset)
 	if err != nil {
 		return nil, err
 	}
@@ -590,7 +590,7 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 			}
 			return notificationRecords, err
 		}
-		key := types.ClusterOrgKey{orgID, clusterName}.ToString()
+		key := types.ClusterOrgKey{OrgID: orgID, ClusterName: clusterName}
 		//TODO: get only the necessary columns when selecting (e.g state is not needed, errorLog is not needed, I already have cluster and org, etc.
 		notificationRecords[key] = types.NotificationRecord{
 			OrgID:              orgID,
