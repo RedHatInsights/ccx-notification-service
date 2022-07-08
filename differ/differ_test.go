@@ -65,6 +65,7 @@ type Payload struct {
 
 func init() {
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+	previouslyReported = make(types.NotifiedRecordsPerCluster)
 }
 
 // Can't redirect zerolog/log to buffer directly in some tests due to clowder
@@ -198,7 +199,7 @@ func TestGenerateInstantReportNotificationMessage(t *testing.T) {
 
 	assert.NotEmpty(t, notificationMsg, "the generated notification message is empty")
 	assert.Empty(t, notificationMsg.Events, "the generated notification message should not have any events")
-	assert.Equal(t, types.InstantNotif.String(), notificationMsg.EventType, "the generated notification message should be for instant notifications")
+	assert.Equal(t, types.InstantNotif.ToString(), notificationMsg.EventType, "the generated notification message should be for instant notifications")
 	assert.Equal(t, "{\"display_name\":\"the_displayed_cluster_ID\",\"host_url\":\"the_cluster_uri_in_ocm_for_the_displayed_cluster_ID\"}", notificationMsg.Context, "Notification context is different from expected.")
 	assert.Equal(t, notificationBundleName, notificationMsg.Bundle, "Generated notifications should indicate 'openshift' as bundle")
 	assert.Equal(t, notificationApplicationName, notificationMsg.Application, "Generated notifications should indicate 'openshift' as application name")
@@ -279,7 +280,7 @@ func TestGenerateWeeklyDigestNotificationMessage(t *testing.T) {
 
 	assert.NotEmpty(t, notificationMsg, "the generated notification message is empty")
 	assert.NotEmpty(t, notificationMsg.Events, "the generated notification message should have 1 event with digest's content")
-	assert.Equal(t, types.WeeklyDigest.String(), notificationMsg.EventType, "the generated notification message should be for weekly digest")
+	assert.Equal(t, types.WeeklyDigest.ToString(), notificationMsg.EventType, "the generated notification message should be for weekly digest")
 	assert.Equal(t, notificationBundleName, notificationMsg.Bundle, "Generated notifications should indicate 'openshift' as bundle")
 	assert.Equal(t, notificationApplicationName, notificationMsg.Application, "Generated notifications should indicate 'openshift' as application name")
 	assert.Equal(t, accountID, notificationMsg.AccountID, "Generated notifications does not have expected account ID")
@@ -928,26 +929,6 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			return nil
 		},
 	)
-	storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
-		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
-			return []types.NotificationRecord{
-				{
-					OrgID:              3,
-					AccountNumber:      4,
-					ClusterName:        "a cluster",
-					UpdatedAt:          types.Timestamp(testTimestamp),
-					NotificationTypeID: 0,
-					StateID:            0,
-					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":\"some details\"}]}",
-					NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
-					ErrorLog:           "",
-				},
-			}
-		},
-		func(clusterEntry types.ClusterEntry, numberOfRecords int) error {
-			return nil
-		},
-	)
 	storage.On("WriteNotificationRecordForCluster",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("types.NotificationTypeID"),
@@ -991,15 +972,13 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 		},
 	)
 
+	notificationType = types.InstantNotif
 	originalNotifier := notifier
 	notifier, _ = producerMock.New(config.Kafka)
-
-	notificationType = types.InstantNotif
 
 	processClusters(ruleContent, &storage, clusters)
 
 	assert.Contains(t, buf.String(), "{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
-	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"Old report does not contain the new issue\"}\n")
 	assert.Contains(t, buf.String(), "Producing instant notification for cluster first_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "Producing instant notification for cluster second_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
 	assert.Contains(t, buf.String(), "message sent to partition")
@@ -1105,27 +1084,27 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 			return nil
 		},
 	)
-	storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
-		func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
-			// Return the same record, therefore notification message should not beproduced
-			return []types.NotificationRecord{
-				{
-					OrgID:              3,
-					AccountNumber:      4,
-					ClusterName:        "a cluster",
-					UpdatedAt:          types.Timestamp(time.Now().Add(1 * time.Hour)),
-					NotificationTypeID: 0,
-					StateID:            1,
-					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}",
-					NotifiedAt:         types.Timestamp(time.Now().Add(1 * time.Hour)),
-					ErrorLog:           "",
-				},
-			}
-		},
-		func(clusterEntry types.ClusterEntry, numberOfRecords int) error {
-			return nil
-		},
-	)
+	//storage.On("ReadLastNNotifiedRecords", mock.AnythingOfType("types.ClusterEntry"), mock.AnythingOfType("int")).Return(
+	//    func(clusterEntry types.ClusterEntry, numberOfRecords int) []types.NotificationRecord {
+	//        // Return the same record, therefore notification message should not beproduced
+	//        return []types.NotificationRecord{
+	//            {
+	//                OrgID:              3,
+	//                AccountNumber:      4,
+	//                ClusterName:        "a cluster",
+	//                UpdatedAt:          types.Timestamp(time.Now().Add(1 * time.Hour)),
+	//                NotificationTypeID: 0,
+	//                StateID:            1,
+	//                Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}",
+	//                NotifiedAt:         types.Timestamp(time.Now().Add(1 * time.Hour)),
+	//                ErrorLog:           "",
+	//            },
+	//        }
+	//    },
+	//    func(clusterEntry types.ClusterEntry, numberOfRecords int) error {
+	//        return nil
+	//    },
+	//)
 	storage.On("WriteNotificationRecordForCluster",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("types.NotificationTypeID"),
@@ -1140,6 +1119,31 @@ func TestProcessClustersAllIssuesAlreadyNotified(t *testing.T) {
 
 	notificationType = types.InstantNotif
 	notificationCooldown = 24 * time.Hour
+
+	previouslyReported[types.ClusterOrgKey{types.OrgID(1), "first cluster"}.ToString()] = types.NotificationRecord{
+		OrgID:              1,
+		AccountNumber:      4,
+		ClusterName:        "first cluster",
+		UpdatedAt:          types.Timestamp(testTimestamp),
+		NotificationTypeID: 0,
+		StateID:            0,
+		Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}",
+		NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
+		ErrorLog:           "",
+	}
+
+	previouslyReported[types.ClusterOrgKey{types.OrgID(2), "second cluster"}.ToString()] = types.NotificationRecord{
+		OrgID:              2,
+		AccountNumber:      4,
+		ClusterName:        "second cluster",
+		UpdatedAt:          types.Timestamp(testTimestamp),
+		NotificationTypeID: 0,
+		StateID:            0,
+		Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}",
+		NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
+		ErrorLog:           "",
+	}
+
 	processClusters(ruleContent, &storage, clusters)
 	notificationCooldown = 0
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster first_cluster\"}\n", "Notification already sent for first_cluster's report, but corresponding log not found.")
