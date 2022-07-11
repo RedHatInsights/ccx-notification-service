@@ -242,9 +242,9 @@ func AddMetricsWithNamespace(namespace string) {
 	})
 }
 
-// PushMetrics function pushes the metrics to the configured prometheus push
+// PushCollectedMetrics function pushes the metrics to the configured prometheus push
 // gateway
-func PushMetrics(metricsConf conf.MetricsConfiguration) error {
+func PushCollectedMetrics(metricsConf conf.MetricsConfiguration) error {
 	client := PushGatewayClient{metricsConf.GatewayAuthToken, http.Client{}}
 
 	// Creates a pusher to the gateway "$PUSHGW_URL/metrics/job/$(job_name)

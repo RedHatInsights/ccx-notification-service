@@ -195,15 +195,14 @@ const (
 `
 )
 
-// inClauseFromSlice is a helper function to construct `in` clause for SQL
-// statement from a given slice of items. The received slice must be []string
-// or any other type that can be asserted to []string, or else '1=1' will be
-// returned, making the IN clause act like a wildcard.
-func inClauseFromSlice(slice interface{}) string {
-	if slice, ok := slice.([]string); ok {
-		return "'" + strings.Join(slice, `','`) + `'`
+// inClauseFromStringSlice is a helper function to construct `in` clause for SQL
+// statement from a given slice of string items. If the slice is empty, an
+// empty string will be returned, making the in clause fail.
+func inClauseFromStringSlice(slice []string) string {
+	if len(slice) == 0 {
+		return ""
 	}
-	return "1=1"
+	return "'" + strings.Join(slice, `','`) + `'`
 }
 
 // NewStorage function creates and initializes a new instance of Storage interface
@@ -537,23 +536,23 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 // ReadLastNotifiedRecordForClusterList method returns the last notification
 // with state = 'sent' for given org IDs and clusters.
 func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []types.ClusterEntry, timeOffset string) (types.NotifiedRecordsPerCluster, error) {
+	if len(clusterEntries) == 0 {
+		return types.NotifiedRecordsPerCluster{}, nil
+	}
 	var orgIDs = make([]string, len(clusterEntries))
 	var clusterIDs = make([]string, len(clusterEntries))
 
 	for idx, entry := range clusterEntries {
-		//log.Info().Msgf("%v - %v", entry.OrgID, entry.ClusterName)
 		orgIDs[idx] = strconv.FormatUint(uint64(entry.OrgID), 10)
 		clusterIDs[idx] = string(entry.ClusterName)
 	}
 
 	whereClause := fmt.Sprintf(` WHERE org_id IN (%v) AND cluster IN (%v) AND state = 1 `,
-		inClauseFromSlice(orgIDs), inClauseFromSlice(clusterIDs))
+		inClauseFromStringSlice(orgIDs), inClauseFromStringSlice(clusterIDs))
 
 	query := `SELECT * FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
 		whereClause +
 		` ORDER BY cluster, updated_at DESC) t WHERE notified_at < NOW() - $1::INTERVAL;`
-
-	log.Info().Int("orgs", len(orgIDs)).Int("clusters", len(clusterIDs)).Str("query", query).Msg("debug")
 
 	rows, err := storage.connection.Query(query, timeOffset)
 	if err != nil {

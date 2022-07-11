@@ -80,6 +80,7 @@ const (
 	organizationIDAttribute     = "org id"
 	AccountNumberAttribute      = "account number"
 	clusterAttribute            = "cluster"
+	clustersAttribute           = "clusters"
 	totalRiskAttribute          = "totalRisk"
 	errorStr                    = "Error:"
 	invalidJSONContent          = "The provided content cannot be encoded as JSON."
@@ -607,7 +608,7 @@ func closeNotifier() {
 }
 
 func pushMetrics(metricsConf conf.MetricsConfiguration) {
-	err := PushMetrics(metricsConf)
+	err := PushCollectedMetrics(metricsConf)
 	if err != nil {
 		log.Err(err).Msg(metricsPushFailedMessage)
 		if metricsConf.RetryAfter == 0 || metricsConf.Retries == 0 {
@@ -616,7 +617,7 @@ func pushMetrics(metricsConf conf.MetricsConfiguration) {
 		for i := metricsConf.Retries; i > 0; i-- {
 			time.Sleep(metricsConf.RetryAfter)
 			log.Info().Msgf("Push metrics. Retrying (%d/%d attempts left)", i, metricsConf.Retries)
-			err = PushMetrics(metricsConf)
+			err = PushCollectedMetrics(metricsConf)
 			if err == nil {
 				log.Info().Msg("Metrics pushed successfully. Terminating notification service successfully.")
 				return
@@ -673,7 +674,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 		log.Info().Msg("Differ finished")
 		os.Exit(ExitStatusOK)
 	}
-	log.Info().Int("clusters", entries).Msg("Read cluster list: done")
+	log.Info().Int(clustersAttribute, entries).Msg("Read cluster list: done")
 	log.Info().Msg(separator)
 	log.Info().Msg("Read previously reported issues for cluster list")
 	previouslyReported, err = storage.ReadLastNotifiedRecordForClusterList(clusters, notifConfig.Cooldown)
@@ -682,7 +683,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 		log.Err(err).Msg(operationFailedMessage)
 		os.Exit(ExitStatusStorageError)
 	}
-	log.Info().Int("previously reported issues to notify again", len(previouslyReported)).Msg("Get previously reported issues: done")
+	log.Info().Int("previously reported issues still in cooldown", len(previouslyReported)).Msg("Get previously reported issues: done")
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
 	setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
@@ -690,7 +691,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
 	processClusters(ruleContent, storage, clusters)
-	log.Info().Int("clusters", entries).Msg("Process Clusters Entries: done")
+	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
 	log.Info().Msg(separator)
 	closeStorage(storage)
 	log.Info().Msg(separator)

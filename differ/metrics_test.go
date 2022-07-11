@@ -88,7 +88,7 @@ func TestPushMetricsGatewayNotFailingWithRetriesThenOk(t *testing.T) {
 		Retries:    10,
 	}
 
-	go differ.PushMetricsTest(metricsConf)
+	go differ.PushMetrics(metricsConf)
 
 	time.Sleep(totalTime)
 	cancel()
@@ -126,7 +126,7 @@ func TestPushMetricsGatewayNotFailingWithRetries(t *testing.T) {
 		Retries:    10,
 	}
 
-	go differ.PushMetricsTest(metricsConf)
+	go differ.PushMetrics(metricsConf)
 
 	time.Sleep(totalTime)
 	cancel()
@@ -162,7 +162,7 @@ func TestPushMetricsGatewayFailing(t *testing.T) {
 			Retries:    10,
 		}
 
-		go differ.PushMetricsTest(metricsConf)
+		go differ.PushMetrics(metricsConf)
 
 		time.Sleep(totalTime)
 		cancel()

@@ -18,7 +18,7 @@ pg_params = "sslmode=disable"
 log_sql_queries = true
 
 [dependencies]
-content_server = "localhost:8080" #provide in deployment env or as secret
+content_server = "localhost:8082" #provide in deployment env or as secret
 content_endpoint = "/api/v1/content" #provide in deployment env or as secret
 
 [notifications]
