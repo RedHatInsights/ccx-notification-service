@@ -552,7 +552,7 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 
 	query := `SELECT * FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
 		whereClause +
-		` ORDER BY cluster, updated_at DESC) t WHERE notified_at < NOW() - $1::INTERVAL;`
+		` ORDER BY cluster, notified_at DESC) t WHERE notified_at > NOW() - $1::INTERVAL;`
 
 	rows, err := storage.connection.Query(query, timeOffset)
 	if err != nil {
