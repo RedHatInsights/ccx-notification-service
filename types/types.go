@@ -172,8 +172,8 @@ const (
 	eventTypeWeekly  = "weekly-digest"
 )
 
-// String function returns string representation of given event type
-func (e EventType) String() string {
+// ToString function returns string representation of given event type
+func (e EventType) ToString() string {
 	return [...]string{eventTypeInstant, eventTypeWeekly}[e]
 }
 
@@ -229,3 +229,12 @@ type NotificationRecord struct {
 	NotifiedAt         Timestamp
 	ErrorLog           string
 }
+
+// ClusterOrgKey is a slice with two items: an organization ID and a cluster UUID
+type ClusterOrgKey struct {
+	OrgID       OrgID
+	ClusterName ClusterName
+}
+
+// NotifiedRecordsPerCluster maps a string representation of ClusterOrgKey to a NotificationRecord
+type NotifiedRecordsPerCluster map[ClusterOrgKey]NotificationRecord

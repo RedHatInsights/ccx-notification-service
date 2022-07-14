@@ -80,6 +80,7 @@ const (
 	organizationIDAttribute     = "org id"
 	AccountNumberAttribute      = "account number"
 	clusterAttribute            = "cluster"
+	clustersAttribute           = "clusters"
 	totalRiskAttribute          = "totalRisk"
 	errorStr                    = "Error:"
 	invalidJSONContent          = "The provided content cannot be encoded as JSON."
@@ -121,7 +122,7 @@ var (
 	notificationClusterDetailsURI  string
 	notificationRuleDetailsURI     string
 	notificationInsightsAdvisorURL string
-	notificationCooldown           time.Duration
+	previouslyReported             types.NotifiedRecordsPerCluster
 )
 
 // showVersion function displays version information.
@@ -258,7 +259,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 					Int("impact", impact).
 					Int(totalRiskAttribute, totalRisk).
 					Msg("Report with high impact detected")
-				if !shouldNotify(storage, cluster, r) {
+				if !shouldNotify(cluster, r) {
 					continue
 				}
 				// if new report differs from the older one -> send notification
@@ -433,7 +434,7 @@ func generateInstantNotificationMessage(
 	notification = types.NotificationMessage{
 		Bundle:      notificationBundleName,
 		Application: notificationApplicationName,
-		EventType:   types.InstantNotif.String(),
+		EventType:   types.InstantNotif.ToString(),
 		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		AccountID:   accountID,
 		Events:      events,
@@ -479,7 +480,7 @@ func generateWeeklyNotificationMessage(advisorURI *string, accountID string, dig
 	notification = types.NotificationMessage{
 		Bundle:      notificationBundleName,
 		Application: notificationApplicationName,
-		EventType:   types.WeeklyDigest.String(),
+		EventType:   types.WeeklyDigest.ToString(),
 		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		AccountID:   accountID,
 		Events:      events,
@@ -607,7 +608,7 @@ func closeNotifier() {
 }
 
 func pushMetrics(metricsConf conf.MetricsConfiguration) {
-	err := PushMetrics(metricsConf)
+	err := PushCollectedMetrics(metricsConf)
 	if err != nil {
 		log.Err(err).Msg(metricsPushFailedMessage)
 		if metricsConf.RetryAfter == 0 || metricsConf.Retries == 0 {
@@ -616,7 +617,7 @@ func pushMetrics(metricsConf conf.MetricsConfiguration) {
 		for i := metricsConf.Retries; i > 0; i-- {
 			time.Sleep(metricsConf.RetryAfter)
 			log.Info().Msgf("Push metrics. Retrying (%d/%d attempts left)", i, metricsConf.Retries)
-			err = PushMetrics(metricsConf)
+			err = PushCollectedMetrics(metricsConf)
 			if err == nil {
 				log.Info().Msg("Metrics pushed successfully. Terminating notification service successfully.")
 				return
@@ -658,7 +659,6 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	notificationClusterDetailsURI = notifConfig.ClusterDetailsURI
 	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
 	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
-	notificationCooldown = notifConfig.Cooldown
 
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)
@@ -674,16 +674,24 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 		log.Info().Msg("Differ finished")
 		os.Exit(ExitStatusOK)
 	}
-	log.Info().Int("clusters", entries).Msg("Read cluster list: done")
+	log.Info().Int(clustersAttribute, entries).Msg("Read cluster list: done")
 	log.Info().Msg(separator)
-
+	log.Info().Msg("Read previously reported issues for cluster list")
+	previouslyReported, err = storage.ReadLastNotifiedRecordForClusterList(clusters, notifConfig.Cooldown)
+	if err != nil {
+		ReadReportedErrors.Inc()
+		log.Err(err).Msg(operationFailedMessage)
+		os.Exit(ExitStatusStorageError)
+	}
+	log.Info().Int("previously reported issues still in cooldown", len(previouslyReported)).Msg("Get previously reported issues: done")
+	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
 	setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
 	log.Info().Msg("Kafka producer ready")
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
 	processClusters(ruleContent, storage, clusters)
-	log.Info().Int("clusters", entries).Msg("Process Clusters Entries: done")
+	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
 	log.Info().Msg(separator)
 	closeStorage(storage)
 	log.Info().Msg(separator)

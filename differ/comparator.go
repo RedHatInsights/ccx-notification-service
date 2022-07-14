@@ -28,7 +28,6 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/rs/zerolog/log"
 	"os"
-	"time"
 )
 
 // Messages
@@ -81,34 +80,20 @@ func getNotificationResolution(issue types.ReportItem, record types.Notification
 	}
 
 	resolution = IssueNotInReport(oldReport, issue)
-	if !resolution {
-		log.Info().Msg("Issue already notified in previous report")
-		// Issue is in previous report, let's see if we should notify again since cooldown has passed
-		_, tzOffset := time.Now().Zone()
-		elapsedSinceLastNotification := time.Since(time.Time(record.NotifiedAt).Add(-time.Second * time.Duration(tzOffset)))
-		resolution = elapsedSinceLastNotification >= notificationCooldown
-		log.Info().
-			Time("Last notification", time.Time(record.NotifiedAt)).
-			Time("Current time", time.Now()).
-			Msgf("Notify again if elapsed time (%s) >= cooldown (%s)", elapsedSinceLastNotification, notificationCooldown)
-	}
+	log.Info().Bool(resolutionKey, resolution).Msg(resolutionMsg)
 	return
 }
 
-func shouldNotify(storage Storage, cluster types.ClusterEntry, issue types.ReportItem) bool {
+func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem) bool {
 	// check if the issue of the given cluster has previously been reported
-	reported, err := storage.ReadLastNNotifiedRecords(cluster, 1)
-	if err != nil {
-		log.Error().Err(err).Str(clusterName, string(cluster.ClusterName)).Msg("Read last report failed")
-	}
-	if len(reported) == 0 {
+	key := types.ClusterOrgKey{OrgID: cluster.OrgID, ClusterName: cluster.ClusterName}
+	reported, ok := previouslyReported[key]
+	if !ok {
 		log.Info().Bool(resolutionKey, true).Msg(resolutionMsg)
 		return true
 	}
 
-	notify := getNotificationResolution(issue, reported[0])
-	log.Info().Bool(resolutionKey, notify).Msg(resolutionMsg)
-	return notify
+	return getNotificationResolution(issue, reported)
 }
 
 func updateNotificationRecordSameState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp) {
@@ -160,11 +145,10 @@ func issuesEqual(issue1, issue2 types.ReportItem) bool {
 func IssueNotInReport(oldReport types.Report, issue types.ReportItem) bool {
 	for _, oldIssue := range oldReport.Reports {
 		if issuesEqual(oldIssue, issue) {
+			log.Info().Msg("Issue already notified in previous report within cooldown time")
 			return false
 		}
 	}
-
-	log.Info().Msg("Old report does not contain the new issue")
 	return true
 }
 

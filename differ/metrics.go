@@ -38,6 +38,7 @@ import (
 const (
 	FetchContentErrorsName            = "fetch_content_errors"
 	ReadClusterListErrorsName         = "read_cluster_list_errors"
+	ReadReportedErrorsName            = "read_reported_errors"
 	ProducerSetupErrorsName           = "producer_setup_errors"
 	StorageSetupErrorsName            = "storage_setup_errors"
 	ReadReportForClusterErrorsName    = "read_report_for_cluster_errors"
@@ -52,6 +53,7 @@ const (
 const (
 	FetchContentErrorsHelp            = "The total number of errors during fetch from content service"
 	ReadClusterListErrorsHelp         = "The total number of errors when reading cluster list from new_reports table"
+	ReadReportedErrorsHelp            = "The total number of errors when reading previously reported reports fpr given clusters from reported table"
 	ProducerSetupErrorsHelp           = "The total number of errors when setting up Kafka producer"
 	StorageSetupErrorsHelp            = "The total number of errors when setting up storage connection"
 	ReadReportForClusterErrorsHelp    = "The total number of errors when getting latest report for a given cluster ID"
@@ -97,6 +99,12 @@ var FetchContentErrors = promauto.NewCounter(prometheus.CounterOpts{
 var ReadClusterListErrors = promauto.NewCounter(prometheus.CounterOpts{
 	Name: ReadClusterListErrorsName,
 	Help: ReadClusterListErrorsHelp,
+})
+
+// ReadReportedErrors shows number of errors when getting previously notified reports from reported table
+var ReadReportedErrors = promauto.NewCounter(prometheus.CounterOpts{
+	Name: ReadReportedErrorsName,
+	Help: ReadReportedErrorsHelp,
 })
 
 // ProducerSetupErrors shows number of errors when setting up Kafka producer
@@ -234,15 +242,16 @@ func AddMetricsWithNamespace(namespace string) {
 	})
 }
 
-// PushMetrics function pushes the metrics to the configured prometheus push
+// PushCollectedMetrics function pushes the metrics to the configured prometheus push
 // gateway
-func PushMetrics(metricsConf conf.MetricsConfiguration) error {
+func PushCollectedMetrics(metricsConf conf.MetricsConfiguration) error {
 	client := PushGatewayClient{metricsConf.GatewayAuthToken, http.Client{}}
 
 	// Creates a pusher to the gateway "$PUSHGW_URL/metrics/job/$(job_name)
 	return push.New(metricsConf.GatewayURL, metricsConf.Job).
 		Collector(FetchContentErrors).
 		Collector(ReadClusterListErrors).
+		Collector(ReadReportedErrors).
 		Collector(ProducerSetupErrors).
 		Collector(StorageSetupErrors).
 		Collector(ReadReportForClusterErrors).
