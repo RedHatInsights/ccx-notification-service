@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2022 Red Hat, Inc
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<html>
+<head>
+<title>metrics.go</title>
+<meta charset="utf-8"/>
+<style type="text/css">body {
+    background: rgb(225, 225, 225);
+    margin: 0px;
+    padding: 0px;
+}
+
+#docgo p {
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 15px;
+    margin-left: 0px;
+}
+
+#docgo div {
+    display: inline;
+}
+
+#docgo #background {
+    position: fixed;
+    top: 0; left: 525px; right: 0; bottom: 0;
+    background: rgb(47, 47, 47);
+    border-left: 1px solid #e5e5ee;
+    z-index: -1;
+}
+
+#docgo .keyword {
+    color: rgb(250, 200, 100);
+}
+
+#docgo .literal {
+    color: rgb(140, 190, 100);
+}
+
+#docgo .ident {
+    color: white;
+}
+
+#docgo .operator {
+    color: white;
+}
+
+#docgo .comment {
+}
+
+#docgo h1, h2, h3, h4, h5 {
+    text-align: left;
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 15px;
+    margin-left: 0px;
+}
+
+#docgo h1 {
+    margin-top: 40px;
+}
+
+#docgo .doc {
+    vertical-align: top;
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+    font-size: 15px;
+    line-height: 22px;
+    color: black;
+    min-width: 450px;
+    max-width: 450px;
+    padding-top: 10px;
+    padding-right: 25px;
+    padding-bottom: 1px;
+    padding-left: 50px;
+    overflow-x: hidden;
+}
+
+#docgo .code {
+    min-width: 650px;
+    max-width: 650px;
+    padding-left: 25px;
+    padding-right: 15px;
+    border-left: 1px;
+    overflow-x: hidden;
+    vertical-align: top;
+}
+
+#docgo .code pre code  {
+    font-size: 12px;
+    line-height: 18px;
+    font-family: Menlo, Monaco, Consolas, "Lucida Console", monospace;
+    color: rgb(120, 120, 120);
+}
+</style>
+</head>
+<body>
+<div id="docgo">
+  <div id="background"></div>
+  <table>
+    <thead><tr><th class="doc"><h1>metrics.go</h1></th><th class="code"></th></tr></thead>
+    <tbody>
+      
+      <tr class="section">
+	<td class="doc"></td>
+	<td class="code"><pre><code><div class="comment">/*
+Copyright © 2021 Red Hat, Inc.
+
+Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/</div>
+
+<div class="keyword">package</div> <div class="ident">differ</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>File metrics contains all metrics that needs to be exposed to Prometheus and
+indirectly to Grafana.</p>
+</td>
+	<td class="code"><pre><code>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Generated documentation is available at:
+https://pkg.go.dev/github.com/RedHatInsights/ccx-notification-service/</p>
+
+<p>Documentation in literate-programming-style is available at:
+https://redhatinsights.github.io/ccx-notification-service/packages/differ/metrics.html</p>
+</td>
+	<td class="code"><pre><code>
+<div class="keyword">import</div> <div class="operator">(</div>
+	<div class="literal">&#34;github.com/RedHatInsights/ccx-notification-service/conf&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;github.com/prometheus/client_golang/prometheus&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;github.com/prometheus/client_golang/prometheus/promauto&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;github.com/prometheus/client_golang/prometheus/push&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;github.com/rs/zerolog/log&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;net/http&#34;</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Metrics names</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">const</div> <div class="operator">(</div>
+	<div class="ident">FetchContentErrorsName</div>            <div class="operator">=</div> <div class="literal">&#34;fetch_content_errors&#34;</div><div class="operator"></div>
+	<div class="ident">ReadClusterListErrorsName</div>         <div class="operator">=</div> <div class="literal">&#34;read_cluster_list_errors&#34;</div><div class="operator"></div>
+	<div class="ident">ReadReportedErrorsName</div>            <div class="operator">=</div> <div class="literal">&#34;read_reported_errors&#34;</div><div class="operator"></div>
+	<div class="ident">ProducerSetupErrorsName</div>           <div class="operator">=</div> <div class="literal">&#34;producer_setup_errors&#34;</div><div class="operator"></div>
+	<div class="ident">StorageSetupErrorsName</div>            <div class="operator">=</div> <div class="literal">&#34;storage_setup_errors&#34;</div><div class="operator"></div>
+	<div class="ident">ReadReportForClusterErrorsName</div>    <div class="operator">=</div> <div class="literal">&#34;read_report_for_cluster_errors&#34;</div><div class="operator"></div>
+	<div class="ident">DeserializeReportErrorsName</div>       <div class="operator">=</div> <div class="literal">&#34;deserialize_report_errors&#34;</div><div class="operator"></div>
+	<div class="ident">ReportWithHighImpactName</div>          <div class="operator">=</div> <div class="literal">&#34;report_with_high_impact&#34;</div><div class="operator"></div>
+	<div class="ident">NotificationNotSentSameStateName</div>  <div class="operator">=</div> <div class="literal">&#34;notification_not_sent_same_state&#34;</div><div class="operator"></div>
+	<div class="ident">NotificationNotSentErrorStateName</div> <div class="operator">=</div> <div class="literal">&#34;notification_not_sent_error_state&#34;</div><div class="operator"></div>
+	<div class="ident">NotificationSentName</div>              <div class="operator">=</div> <div class="literal">&#34;notification_sent&#34;</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Metrics helps</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">const</div> <div class="operator">(</div>
+	<div class="ident">FetchContentErrorsHelp</div>            <div class="operator">=</div> <div class="literal">&#34;The total number of errors during fetch from content service&#34;</div><div class="operator"></div>
+	<div class="ident">ReadClusterListErrorsHelp</div>         <div class="operator">=</div> <div class="literal">&#34;The total number of errors when reading cluster list from new_reports table&#34;</div><div class="operator"></div>
+	<div class="ident">ReadReportedErrorsHelp</div>            <div class="operator">=</div> <div class="literal">&#34;The total number of errors when reading previously reported reports fpr given clusters from reported table&#34;</div><div class="operator"></div>
+	<div class="ident">ProducerSetupErrorsHelp</div>           <div class="operator">=</div> <div class="literal">&#34;The total number of errors when setting up Kafka producer&#34;</div><div class="operator"></div>
+	<div class="ident">StorageSetupErrorsHelp</div>            <div class="operator">=</div> <div class="literal">&#34;The total number of errors when setting up storage connection&#34;</div><div class="operator"></div>
+	<div class="ident">ReadReportForClusterErrorsHelp</div>    <div class="operator">=</div> <div class="literal">&#34;The total number of errors when getting latest report for a given cluster ID&#34;</div><div class="operator"></div>
+	<div class="ident">DeserializeReportErrorsHelp</div>       <div class="operator">=</div> <div class="literal">&#34;The total number of errors when deserializing a report retrieved from the new_reports table&#34;</div><div class="operator"></div>
+	<div class="ident">ReportWithHighImpactHelp</div>          <div class="operator">=</div> <div class="literal">&#34;The total number of reports with total risk higher than the configured threshold&#34;</div><div class="operator"></div>
+	<div class="ident">NotificationNotSentSameStateHelp</div>  <div class="operator">=</div> <div class="literal">&#34;The total number of notifications not sent because we parsed the same report&#34;</div><div class="operator"></div>
+	<div class="ident">NotificationNotSentErrorStateHelp</div> <div class="operator">=</div> <div class="literal">&#34;The total number of notifications not sent because of a Kafka producer error&#34;</div><div class="operator"></div>
+	<div class="ident">NotificationSentHelp</div>              <div class="operator">=</div> <div class="literal">&#34;The total number of notifications sent&#34;</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>PushGatewayClient is a simple wrapper over http.Client so that prometheus
+can do HTTP requests with the given authentication header</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">PushGatewayClient</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">AuthToken</div> <div class="ident">string</div><div class="operator"></div>
+
+	<div class="ident">httpClient</div> <div class="ident">http</div><div class="operator">.</div><div class="ident">Client</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Do is a simple wrapper over http.Client.Do method that includes
+the authentication header configured in the PushGatewayClient instance</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">pgc</div> <div class="operator">*</div><div class="ident">PushGatewayClient</div><div class="operator">)</div> <div class="ident">Do</div><div class="operator">(</div><div class="ident">request</div> <div class="operator">*</div><div class="ident">http</div><div class="operator">.</div><div class="ident">Request</div><div class="operator">)</div> <div class="operator">(</div><div class="operator">*</div><div class="ident">http</div><div class="operator">.</div><div class="ident">Response</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="keyword">if</div> <div class="ident">pgc</div><div class="operator">.</div><div class="ident">AuthToken</div> <div class="operator">!=</div> <div class="literal">&#34;&#34;</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Debug</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Adding authorization header to HTTP request&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">request</div><div class="operator">.</div><div class="ident">Header</div><div class="operator">.</div><div class="ident">Set</div><div class="operator">(</div><div class="literal">&#34;Authorization&#34;</div><div class="operator">,</div> <div class="literal">&#34;Basic &#34;</div><div class="operator">&#43;</div><div class="ident">pgc</div><div class="operator">.</div><div class="ident">AuthToken</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Debug</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;No authorization token provided. Making HTTP request without credentials.&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Debug</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;request&#34;</div><div class="operator">,</div> <div class="ident">request</div><div class="operator">.</div><div class="ident">URL</div><div class="operator">.</div><div class="ident">String</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;method&#34;</div><div class="operator">,</div> <div class="ident">request</div><div class="operator">.</div><div class="ident">Method</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Pushing metrics to Prometheus push gateway&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">resp</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">pgc</div><div class="operator">.</div><div class="ident">httpClient</div><div class="operator">.</div><div class="ident">Do</div><div class="operator">(</div><div class="ident">request</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">resp</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Debug</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;code&#34;</div><div class="operator">,</div> <div class="ident">resp</div><div class="operator">.</div><div class="ident">StatusCode</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Returned status code&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="keyword">return</div> <div class="ident">resp</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>FetchContentErrors shows number of errors during fetch from content service</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">FetchContentErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+	<div class="ident">Name</div><div class="operator">:</div> <div class="ident">FetchContentErrorsName</div><div class="operator">,</div>
+	<div class="ident">Help</div><div class="operator">:</div> <div class="ident">FetchContentErrorsHelp</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ReadClusterListErrors shows number of errors when reading cluster list from new_reports table</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">ReadClusterListErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+	<div class="ident">Name</div><div class="operator">:</div> <div class="ident">ReadClusterListErrorsName</div><div class="operator">,</div>
+	<div class="ident">Help</div><div class="operator">:</div> <div class="ident">ReadClusterListErrorsHelp</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ReadReportedErrors shows number of errors when getting previously notified reports from reported table</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">ReadReportedErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+	<div class="ident">Name</div><div class="operator">:</div> <div class="ident">ReadReportedErrorsName</div><div class="operator">,</div>
+	<div class="ident">Help</div><div class="operator">:</div> <div class="ident">ReadReportedErrorsHelp</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ProducerSetupErrors shows number of errors when setting up Kafka producer</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">ProducerSetupErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+	<div class="ident">Name</div><div class="operator">:</div> <div class="ident">ProducerSetupErrorsName</div><div class="operator">,</div>
+	<div class="ident">Help</div><div class="operator">:</div> <div class="ident">ProducerSetupErrorsHelp</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>StorageSetupErrors shows number of errors when setting up storage</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">StorageSetupErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+	<div class="ident">Name</div><div class="operator">:</div> <div class="ident">StorageSetupErrorsName</div><div class="operator">,</div>
+	<div class="ident">Help</div><div class="operator">:</div> <div class="ident">StorageSetupErrorsHelp</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ReadReportForClusterErrors shows number of errors when getting latest report for a given cluster</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">ReadReportForClusterErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+	<div class="ident">Name</div><div class="operator">:</div> <div class="ident">ReadReportForClusterErrorsName</div><div class="operator">,</div>
+	<div class="ident">Help</div><div class="operator">:</div> <div class="ident">ReadReportForClusterErrorsHelp</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>DeserializeReportErrors shows number of errors when deserializing a report retrieved from the new_reports table</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">DeserializeReportErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+	<div class="ident">Name</div><div class="operator">:</div> <div class="ident">DeserializeReportErrorsName</div><div class="operator">,</div>
+	<div class="ident">Help</div><div class="operator">:</div> <div class="ident">DeserializeReportErrorsHelp</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ReportWithHighImpact shows number of reports with total risk higher than the configured threshold</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">ReportWithHighImpact</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+	<div class="ident">Name</div><div class="operator">:</div> <div class="ident">ReportWithHighImpactName</div><div class="operator">,</div>
+	<div class="ident">Help</div><div class="operator">:</div> <div class="ident">ReportWithHighImpactHelp</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationNotSentSameState shows number of notifications not sent because we parsed the same report</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">NotificationNotSentSameState</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+	<div class="ident">Name</div><div class="operator">:</div> <div class="ident">NotificationNotSentSameStateName</div><div class="operator">,</div>
+	<div class="ident">Help</div><div class="operator">:</div> <div class="ident">NotificationNotSentSameStateHelp</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationNotSentErrorState shows number of notifications not sent because of a Kafka producer error</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">NotificationNotSentErrorState</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+	<div class="ident">Name</div><div class="operator">:</div> <div class="ident">NotificationNotSentErrorStateName</div><div class="operator">,</div>
+	<div class="ident">Help</div><div class="operator">:</div> <div class="ident">NotificationNotSentErrorStateHelp</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationSent shows number notifications sent to the configured Kafka topic</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">var</div> <div class="ident">NotificationSent</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+	<div class="ident">Name</div><div class="operator">:</div> <div class="ident">NotificationSentName</div><div class="operator">,</div>
+	<div class="ident">Help</div><div class="operator">:</div> <div class="ident">NotificationSentHelp</div><div class="operator">,</div>
+<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>AddMetricsWithNamespace register the desired metrics using a given namespace</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">AddMetricsWithNamespace</div><div class="operator">(</div><div class="ident">namespace</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">{</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>exposed metrics</p>
+</td>
+	<td class="code"><pre><code>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Unregister all metrics and registrer them again</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">prometheus</div><div class="operator">.</div><div class="ident">Unregister</div><div class="operator">(</div><div class="ident">FetchContentErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">prometheus</div><div class="operator">.</div><div class="ident">Unregister</div><div class="operator">(</div><div class="ident">ReadClusterListErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">prometheus</div><div class="operator">.</div><div class="ident">Unregister</div><div class="operator">(</div><div class="ident">ProducerSetupErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">prometheus</div><div class="operator">.</div><div class="ident">Unregister</div><div class="operator">(</div><div class="ident">StorageSetupErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">prometheus</div><div class="operator">.</div><div class="ident">Unregister</div><div class="operator">(</div><div class="ident">ReadReportForClusterErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">prometheus</div><div class="operator">.</div><div class="ident">Unregister</div><div class="operator">(</div><div class="ident">DeserializeReportErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">prometheus</div><div class="operator">.</div><div class="ident">Unregister</div><div class="operator">(</div><div class="ident">ReportWithHighImpact</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">prometheus</div><div class="operator">.</div><div class="ident">Unregister</div><div class="operator">(</div><div class="ident">NotificationNotSentSameState</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">prometheus</div><div class="operator">.</div><div class="ident">Unregister</div><div class="operator">(</div><div class="ident">NotificationNotSentErrorState</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">prometheus</div><div class="operator">.</div><div class="ident">Unregister</div><div class="operator">(</div><div class="ident">NotificationSent</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>FetchContentErrors shows number of errors during fetch from content service</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">FetchContentErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+		<div class="ident">Namespace</div><div class="operator">:</div> <div class="ident">namespace</div><div class="operator">,</div>
+		<div class="ident">Name</div><div class="operator">:</div>      <div class="ident">FetchContentErrorsName</div><div class="operator">,</div>
+		<div class="ident">Help</div><div class="operator">:</div>      <div class="ident">FetchContentErrorsHelp</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ReadClusterListErrors shows number of errors when reading cluster list from new_reports table</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">ReadClusterListErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+		<div class="ident">Namespace</div><div class="operator">:</div> <div class="ident">namespace</div><div class="operator">,</div>
+		<div class="ident">Name</div><div class="operator">:</div>      <div class="ident">ReadClusterListErrorsName</div><div class="operator">,</div>
+		<div class="ident">Help</div><div class="operator">:</div>      <div class="ident">ReadClusterListErrorsHelp</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ProducerSetupErrors shows number of errors when setting up Kafka producer</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">ProducerSetupErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+		<div class="ident">Namespace</div><div class="operator">:</div> <div class="ident">namespace</div><div class="operator">,</div>
+		<div class="ident">Name</div><div class="operator">:</div>      <div class="ident">ProducerSetupErrorsName</div><div class="operator">,</div>
+		<div class="ident">Help</div><div class="operator">:</div>      <div class="ident">ProducerSetupErrorsHelp</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>StorageSetupErrors shows number of errors when setting up storage</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">StorageSetupErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+		<div class="ident">Namespace</div><div class="operator">:</div> <div class="ident">namespace</div><div class="operator">,</div>
+		<div class="ident">Name</div><div class="operator">:</div>      <div class="ident">StorageSetupErrorsName</div><div class="operator">,</div>
+		<div class="ident">Help</div><div class="operator">:</div>      <div class="ident">StorageSetupErrorsHelp</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ReadReportForClusterErrors shows number of errors when getting latest report for a given cluster</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">ReadReportForClusterErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+		<div class="ident">Namespace</div><div class="operator">:</div> <div class="ident">namespace</div><div class="operator">,</div>
+		<div class="ident">Name</div><div class="operator">:</div>      <div class="ident">ReadReportForClusterErrorsName</div><div class="operator">,</div>
+		<div class="ident">Help</div><div class="operator">:</div>      <div class="ident">ReadReportForClusterErrorsHelp</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>DeserializeReportErrors shows number of errors when deserializing a report retrieved from the new_reports table</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">DeserializeReportErrors</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+		<div class="ident">Namespace</div><div class="operator">:</div> <div class="ident">namespace</div><div class="operator">,</div>
+		<div class="ident">Name</div><div class="operator">:</div>      <div class="ident">DeserializeReportErrorsName</div><div class="operator">,</div>
+		<div class="ident">Help</div><div class="operator">:</div>      <div class="ident">DeserializeReportErrorsHelp</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ReportWithHighImpact shows number of reports with total risk higher than the configured threshold</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">ReportWithHighImpact</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+		<div class="ident">Namespace</div><div class="operator">:</div> <div class="ident">namespace</div><div class="operator">,</div>
+		<div class="ident">Name</div><div class="operator">:</div>      <div class="ident">ReportWithHighImpactName</div><div class="operator">,</div>
+		<div class="ident">Help</div><div class="operator">:</div>      <div class="ident">ReportWithHighImpactHelp</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationNotSentSameState shows number of notifications not sent because we parsed the same report</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">NotificationNotSentSameState</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+		<div class="ident">Namespace</div><div class="operator">:</div> <div class="ident">namespace</div><div class="operator">,</div>
+		<div class="ident">Name</div><div class="operator">:</div>      <div class="ident">NotificationNotSentSameStateName</div><div class="operator">,</div>
+		<div class="ident">Help</div><div class="operator">:</div>      <div class="ident">NotificationNotSentSameStateHelp</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationNotSentErrorState shows number of notifications not sent because of a Kafka producer error</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">NotificationNotSentErrorState</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+		<div class="ident">Namespace</div><div class="operator">:</div> <div class="ident">namespace</div><div class="operator">,</div>
+		<div class="ident">Name</div><div class="operator">:</div>      <div class="ident">NotificationNotSentErrorStateName</div><div class="operator">,</div>
+		<div class="ident">Help</div><div class="operator">:</div>      <div class="ident">NotificationNotSentErrorStateHelp</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationSent shows number notifications sent to the configured Kafka topic</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">NotificationSent</div> <div class="operator">=</div> <div class="ident">promauto</div><div class="operator">.</div><div class="ident">NewCounter</div><div class="operator">(</div><div class="ident">prometheus</div><div class="operator">.</div><div class="ident">CounterOpts</div><div class="operator">{</div>
+		<div class="ident">Namespace</div><div class="operator">:</div> <div class="ident">namespace</div><div class="operator">,</div>
+		<div class="ident">Name</div><div class="operator">:</div>      <div class="ident">NotificationSentName</div><div class="operator">,</div>
+		<div class="ident">Help</div><div class="operator">:</div>      <div class="ident">NotificationSentHelp</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>PushCollectedMetrics function pushes the metrics to the configured prometheus push
+gateway</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">PushCollectedMetrics</div><div class="operator">(</div><div class="ident">metricsConf</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">MetricsConfiguration</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+	<div class="ident">client</div> <div class="operator">:=</div> <div class="ident">PushGatewayClient</div><div class="operator">{</div><div class="ident">metricsConf</div><div class="operator">.</div><div class="ident">GatewayAuthToken</div><div class="operator">,</div> <div class="ident">http</div><div class="operator">.</div><div class="ident">Client</div><div class="operator">{</div><div class="operator">}</div><div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Creates a pusher to the gateway &quot;$PUSHGW<em>URL/metrics/job/$(job</em>name)</p>
+</td>
+	<td class="code"><pre><code>	<div class="keyword">return</div> <div class="ident">push</div><div class="operator">.</div><div class="ident">New</div><div class="operator">(</div><div class="ident">metricsConf</div><div class="operator">.</div><div class="ident">GatewayURL</div><div class="operator">,</div> <div class="ident">metricsConf</div><div class="operator">.</div><div class="ident">Job</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Collector</div><div class="operator">(</div><div class="ident">FetchContentErrors</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Collector</div><div class="operator">(</div><div class="ident">ReadClusterListErrors</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Collector</div><div class="operator">(</div><div class="ident">ReadReportedErrors</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Collector</div><div class="operator">(</div><div class="ident">ProducerSetupErrors</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Collector</div><div class="operator">(</div><div class="ident">StorageSetupErrors</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Collector</div><div class="operator">(</div><div class="ident">ReadReportForClusterErrors</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Collector</div><div class="operator">(</div><div class="ident">DeserializeReportErrors</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Collector</div><div class="operator">(</div><div class="ident">ReportWithHighImpact</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Collector</div><div class="operator">(</div><div class="ident">NotificationNotSentSameState</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Collector</div><div class="operator">(</div><div class="ident">NotificationNotSentErrorState</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Collector</div><div class="operator">(</div><div class="ident">NotificationSent</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Client</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">client</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Push</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

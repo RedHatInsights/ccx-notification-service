@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- Copyright 2021 Red Hat, Inc
+ Copyright 2022 Red Hat, Inc
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -164,6 +164,8 @@ DataSource - specification of data source. The content of this parameter depends
 <div class="keyword">import</div> <div class="operator">(</div>
 	<div class="literal">&#34;database/sql&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;fmt&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;math&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;strconv&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;strings&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;time&#34;</div><div class="operator"></div>
 
@@ -197,9 +199,8 @@ DataSource - specification of data source. The content of this parameter depends
 		<div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">clusterName</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">,</div>
 		<div class="ident">offset</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">KafkaOffset</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterReport</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">,</div>
 	<div class="operator">)</div><div class="operator"></div>
-	<div class="ident">ReadLastNNotificationRecords</div><div class="operator">(</div>
-		<div class="ident">clusterEntry</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div>
-		<div class="ident">numberOfRecords</div> <div class="ident">int</div><div class="operator">)</div> <div class="operator">(</div><div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationRecord</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">ReadLastNotifiedRecordForClusterList</div><div class="operator">(</div>
+		<div class="ident">clusterEntries</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">timeOffset</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotifiedRecordsPerCluster</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">WriteNotificationRecord</div><div class="operator">(</div>
 		<div class="ident">notificationRecord</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationRecord</div><div class="operator">)</div> <div class="ident">error</div><div class="operator"></div>
 	<div class="ident">WriteNotificationRecordForCluster</div><div class="operator">(</div>
@@ -229,6 +230,10 @@ DataSource - specification of data source. The content of this parameter depends
 		<div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div>
 		<div class="ident">clusterName</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">,</div>
 		<div class="ident">notifiedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">PrintNewReportsForCleanup</div><div class="operator">(</div><div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">error</div><div class="operator"></div>
+	<div class="ident">CleanupNewReports</div><div class="operator">(</div><div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">PrintOldReportsForCleanup</div><div class="operator">(</div><div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">error</div><div class="operator"></div>
+	<div class="ident">CleanupOldReports</div><div class="operator">(</div><div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -262,10 +267,14 @@ SQLQueriesLog is log for sql queries, default is nil which means nothing is logg
 	<td class="doc"><p>other messages</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">const</div> <div class="operator">(</div>
-	<div class="ident">OrgIDMessage</div>       <div class="operator">=</div> <div class="literal">&#34;Organization ID&#34;</div><div class="operator"></div>
-	<div class="ident">ClusterNameMessage</div> <div class="operator">=</div> <div class="literal">&#34;Cluster name&#34;</div><div class="operator"></div>
-	<div class="ident">TimestampMessage</div>   <div class="operator">=</div> <div class="literal">&#34;Timestamp (notified_at/updated_at)&#34;</div><div class="operator"></div>
-	<div class="ident">MaxAgeAttribute</div>    <div class="operator">=</div> <div class="literal">&#34;max age&#34;</div><div class="operator"></div>
+	<div class="ident">OrgIDMessage</div>         <div class="operator">=</div> <div class="literal">&#34;Organization ID&#34;</div><div class="operator"></div>
+	<div class="ident">ClusterNameMessage</div>   <div class="operator">=</div> <div class="literal">&#34;Cluster name&#34;</div><div class="operator"></div>
+	<div class="ident">TimestampMessage</div>     <div class="operator">=</div> <div class="literal">&#34;Timestamp (notified_at/updated_at)&#34;</div><div class="operator"></div>
+	<div class="ident">AccountNumberMessage</div> <div class="operator">=</div> <div class="literal">&#34;Account number&#34;</div><div class="operator"></div>
+	<div class="ident">UpdatedAtMessage</div>     <div class="operator">=</div> <div class="literal">&#34;Updated at&#34;</div><div class="operator"></div>
+	<div class="ident">AgeMessage</div>           <div class="operator">=</div> <div class="literal">&#34;Age&#34;</div><div class="operator"></div>
+	<div class="ident">MaxAgeAttribute</div>      <div class="operator">=</div> <div class="literal">&#34;max age&#34;</div><div class="operator"></div>
+	<div class="ident">DeleteStatement</div>      <div class="operator">=</div> <div class="literal">&#34;delete statement&#34;</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
 </code></pre></td>
@@ -279,9 +288,21 @@ SQLQueriesLog is log for sql queries, default is nil which means nothing is logg
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>Delete older records from new_reports table for given organization ID</p>
+	<td class="doc"><p>Delete older records from new_reports table</p>
 </td>
 	<td class="code"><pre><code>	<div class="ident">deleteOldRecordsFromNewReportsTable</div> <div class="operator">=</div> <div class="literal">`
+                DELETE
+		  FROM new_reports
+		 WHERE updated_at &lt; NOW() - $1::INTERVAL
+`</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Delete older records from new_reports table for given organization ID</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">deleteOldRecordsFromNewReportsTableForOrganization</div> <div class="operator">=</div> <div class="literal">`
                 DELETE
 		  FROM new_reports
 		 WHERE org_id = $1
@@ -292,14 +313,27 @@ SQLQueriesLog is log for sql queries, default is nil which means nothing is logg
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>Delete older records from reported table for given organization ID</p>
+	<td class="doc"><p>Delete older records from reported table</p>
 </td>
 	<td class="code"><pre><code>	<div class="ident">deleteOldRecordsFromReportedTable</div> <div class="operator">=</div> <div class="literal">`
+                DELETE
+		  FROM reported
+		 WHERE updated_at &lt; NOW() - $1::INTERVAL
+`</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Delete older records from reported table for given organization ID</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">deleteOldRecordsFromReportedTableForOrganization</div> <div class="operator">=</div> <div class="literal">`
                 DELETE
 		  FROM reported
 		 WHERE org_id = $1
 		   AND updated_at &lt; NOW() - $2::INTERVAL
 `</div><div class="operator"></div>
+
 </code></pre></td>
       </tr>
       
@@ -313,6 +347,7 @@ SQLQueriesLog is log for sql queries, default is nil which means nothing is logg
 		   AND cluster = $2
 		   AND updated_at = $3
 `</div><div class="operator"></div>
+
 </code></pre></td>
       </tr>
       
@@ -326,7 +361,48 @@ SQLQueriesLog is log for sql queries, default is nil which means nothing is logg
 		   AND cluster = $2
 		   AND notified_at = $3
 `</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Display older records from new_reports table</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">displayOldRecordsFromNewReportsTable</div> <div class="operator">=</div> <div class="literal">`
+                SELECT org_id, account_number, cluster, updated_at, kafka_offset
+		  FROM new_reports
+		 WHERE updated_at &lt; NOW() - $1::INTERVAL
+		 ORDER BY updated_at
+`</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Display older records from reported table</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">displayOldRecordsFromReportedTable</div> <div class="operator">=</div> <div class="literal">`
+                SELECT org_id, account_number, cluster, updated_at, 0
+		  FROM reported
+		 WHERE updated_at &lt; NOW() - $1::INTERVAL
+		 ORDER BY updated_at
+`</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>inClauseFromStringSlice is a helper function to construct <code>in</code> clause for SQL
+statement from a given slice of string items. If the slice is empty, an
+empty string will be returned, making the in clause fail.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">inClauseFromStringSlice</div><div class="operator">(</div><div class="ident">slice</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">string</div><div class="operator">)</div> <div class="ident">string</div> <div class="operator">{</div>
+	<div class="keyword">if</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">slice</div><div class="operator">)</div> <div class="operator">==</div> <div class="literal">0</div> <div class="operator">{</div>
+		<div class="keyword">return</div> <div class="literal">&#34;&#34;</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="keyword">return</div> <div class="literal">&#34;&#39;&#34;</div> <div class="operator">&#43;</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">Join</div><div class="operator">(</div><div class="ident">slice</div><div class="operator">,</div> <div class="literal">`&#39;,&#39;`</div><div class="operator">)</div> <div class="operator">&#43;</div> <div class="literal">`&#39;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
       </tr>
@@ -374,34 +450,15 @@ SQLQueriesLog is log for sql queries, default is nil which means nothing is logg
 	<td class="doc"><p>initAndGetDriver initializes driver(with logs if logSQLQueries is true),
 checks if it's supported and returns driver type, driver name, dataSource and error</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">initAndGetDriver</div><div class="operator">(</div><div class="ident">configuration</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">StorageConfiguration</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">driverType</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriver</div><div class="operator">,</div> <div class="ident">driverName</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">dataSource</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">err</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>var driver sql_driver.Driver</p>
-</td>
-	<td class="code"><pre><code>	<div class="ident">driverName</div> <div class="operator">=</div> <div class="ident">configuration</div><div class="operator">.</div><div class="ident">Driver</div><div class="operator"></div>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">initAndGetDriver</div><div class="operator">(</div><div class="ident">configuration</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">StorageConfiguration</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">driverType</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriver</div><div class="operator">,</div> <div class="ident">driverName</div><div class="operator">,</div> <div class="ident">dataSource</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">err</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">driverName</div> <div class="operator">=</div> <div class="ident">configuration</div><div class="operator">.</div><div class="ident">Driver</div><div class="operator"></div>
 
 	<div class="keyword">switch</div> <div class="ident">driverName</div> <div class="operator">{</div>
 	<div class="keyword">case</div> <div class="literal">&#34;sqlite3&#34;</div><div class="operator">:</div>
 		<div class="ident">driverType</div> <div class="operator">=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriverSQLite3</div><div class="operator"></div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>driver = &amp;sqlite3.SQLiteDriver{}
-dataSource = configuration.SQLiteDataSource</p>
-</td>
-	<td class="code"><pre><code>	<div class="keyword">case</div> <div class="literal">&#34;postgres&#34;</div><div class="operator">:</div>
+	<div class="keyword">case</div> <div class="literal">&#34;postgres&#34;</div><div class="operator">:</div>
 		<div class="ident">driverType</div> <div class="operator">=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">DBDriverPostgres</div><div class="operator"></div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>driver = &amp;pq.Driver{}</p>
-</td>
-	<td class="code"><pre><code>		<div class="ident">dataSource</div> <div class="operator">=</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div>
+		<div class="ident">dataSource</div> <div class="operator">=</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div>
 			<div class="literal">&#34;postgresql://%v:%v@%v:%v/%v?%v&#34;</div><div class="operator">,</div>
 			<div class="ident">configuration</div><div class="operator">.</div><div class="ident">PGUsername</div><div class="operator">,</div>
 			<div class="ident">configuration</div><div class="operator">.</div><div class="ident">PGPassword</div><div class="operator">,</div>
@@ -528,7 +585,11 @@ dataSource = configuration.SQLiteDataSource</p>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">ReadClusterList</div><div class="operator">(</div><div class="operator">)</div> <div class="operator">(</div><div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="keyword">var</div> <div class="ident">clusterList</div> <div class="operator">=</div> <div class="ident">make</div><div class="operator">(</div><div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="literal">0</div><div class="operator">)</div><div class="operator"></div>
 
-	<div class="ident">rows</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">connection</div><div class="operator">.</div><div class="ident">Query</div><div class="operator">(</div><div class="literal">&#34;SELECT org_id, account_number, cluster, kafka_offset, updated_at FROM new_reports ORDER BY updated_at&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">rows</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">connection</div><div class="operator">.</div><div class="ident">Query</div><div class="operator">(</div><div class="literal">`
+		SELECT DISTINCT ON (cluster)
+		org_id, account_number, cluster, kafka_offset, updated_at
+		FROM new_reports
+		ORDER BY cluster, updated_at DESC`</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
 		<div class="keyword">return</div> <div class="ident">clusterList</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
@@ -750,24 +811,31 @@ ReadReportForClusterAtTime and ReadReportForClusterAtOffset methods).</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>ReadLastNNotificationRecords method returns the last N notification records
-for given org ID and cluster name.</p>
+	<td class="doc"><p>ReadLastNotifiedRecordForClusterList method returns the last notification
+with state = 'sent' for given org IDs and clusters.</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">ReadLastNNotificationRecords</div><div class="operator">(</div><div class="ident">clusterEntry</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div>
-	<div class="ident">numberOfRecords</div> <div class="ident">int</div><div class="operator">)</div> <div class="operator">(</div><div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationRecord</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
-	<div class="keyword">var</div> <div class="ident">notificationRecords</div> <div class="operator">=</div> <div class="ident">make</div><div class="operator">(</div><div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationRecord</div><div class="operator">,</div> <div class="literal">0</div><div class="operator">)</div><div class="operator"></div>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">ReadLastNotifiedRecordForClusterList</div><div class="operator">(</div><div class="ident">clusterEntries</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">timeOffset</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotifiedRecordsPerCluster</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="keyword">if</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">clusterEntries</div><div class="operator">)</div> <div class="operator">==</div> <div class="literal">0</div> <div class="operator">{</div>
+		<div class="keyword">return</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotifiedRecordsPerCluster</div><div class="operator">{</div><div class="operator">}</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="keyword">var</div> <div class="ident">orgIDs</div> <div class="operator">=</div> <div class="ident">make</div><div class="operator">(</div><div class="operator">[</div><div class="operator">]</div><div class="ident">string</div><div class="operator">,</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">clusterEntries</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">var</div> <div class="ident">clusterIDs</div> <div class="operator">=</div> <div class="ident">make</div><div class="operator">(</div><div class="operator">[</div><div class="operator">]</div><div class="ident">string</div><div class="operator">,</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">clusterEntries</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
 
-	<div class="ident">query</div> <div class="operator">:=</div> <div class="literal">`
-                  select org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log
-		    from reported
-		   where org_id = $1 and cluster = $2
-		   order by notified_at desc
-		   limit $3;
-		   `</div><div class="operator"></div>
+	<div class="keyword">for</div> <div class="ident">idx</div><div class="operator">,</div> <div class="ident">entry</div> <div class="operator">:=</div> <div class="keyword">range</div> <div class="ident">clusterEntries</div> <div class="operator">{</div>
+		<div class="ident">orgIDs</div><div class="operator">[</div><div class="ident">idx</div><div class="operator">]</div> <div class="operator">=</div> <div class="ident">strconv</div><div class="operator">.</div><div class="ident">FormatUint</div><div class="operator">(</div><div class="ident">uint64</div><div class="operator">(</div><div class="ident">entry</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">)</div><div class="operator">,</div> <div class="literal">10</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">clusterIDs</div><div class="operator">[</div><div class="ident">idx</div><div class="operator">]</div> <div class="operator">=</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">entry</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
 
-	<div class="ident">rows</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">connection</div><div class="operator">.</div><div class="ident">Query</div><div class="operator">(</div><div class="ident">query</div><div class="operator">,</div> <div class="ident">clusterEntry</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">clusterEntry</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">,</div> <div class="ident">numberOfRecords</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">whereClause</div> <div class="operator">:=</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div><div class="literal">` WHERE org_id IN (%v) AND cluster IN (%v) AND state = 1 `</div><div class="operator">,</div>
+		<div class="ident">inClauseFromStringSlice</div><div class="operator">(</div><div class="ident">orgIDs</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">inClauseFromStringSlice</div><div class="operator">(</div><div class="ident">clusterIDs</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">query</div> <div class="operator">:=</div> <div class="literal">`SELECT * FROM ( SELECT DISTINCT ON (cluster) * FROM reported `</div> <div class="operator">&#43;</div>
+		<div class="ident">whereClause</div> <div class="operator">&#43;</div>
+		<div class="literal">` ORDER BY cluster, notified_at DESC) t WHERE notified_at &gt; NOW() - $1::INTERVAL;`</div><div class="operator"></div>
+
+	<div class="ident">rows</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">connection</div><div class="operator">.</div><div class="ident">Query</div><div class="operator">(</div><div class="ident">query</div><div class="operator">,</div> <div class="ident">timeOffset</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="keyword">return</div> <div class="ident">notificationRecords</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="keyword">return</div> <div class="ident">nil</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
 	<div class="keyword">defer</div> <div class="keyword">func</div><div class="operator">(</div><div class="operator">)</div> <div class="operator">{</div>
@@ -776,6 +844,8 @@ for given org ID and cluster name.</p>
 			<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">unableToCloseDBRowsHandle</div><div class="operator">)</div><div class="operator"></div>
 		<div class="operator">}</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">notificationRecords</div> <div class="operator">:=</div> <div class="ident">make</div><div class="operator">(</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotifiedRecordsPerCluster</div><div class="operator">)</div><div class="operator"></div>
 
 	<div class="keyword">for</div> <div class="ident">rows</div><div class="operator">.</div><div class="ident">Next</div><div class="operator">(</div><div class="operator">)</div> <div class="operator">{</div>
 		<div class="keyword">var</div> <div class="operator">(</div>
@@ -798,7 +868,14 @@ for given org ID and cluster name.</p>
 			<div class="operator">}</div><div class="operator"></div>
 			<div class="keyword">return</div> <div class="ident">notificationRecords</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
 		<div class="operator">}</div><div class="operator"></div>
-		<div class="ident">notificationRecords</div> <div class="operator">=</div> <div class="ident">append</div><div class="operator">(</div><div class="ident">notificationRecords</div><div class="operator">,</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationRecord</div><div class="operator">{</div>
+		<div class="ident">key</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterOrgKey</div><div class="operator">{</div><div class="ident">OrgID</div><div class="operator">:</div> <div class="ident">orgID</div><div class="operator">,</div> <div class="ident">ClusterName</div><div class="operator">:</div> <div class="ident">clusterName</div><div class="operator">}</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>TODO: get only the necessary columns when selecting (e.g state is not needed, errorLog is not needed, I already have cluster and org, etc.</p>
+</td>
+	<td class="code"><pre><code>		<div class="ident">notificationRecords</div><div class="operator">[</div><div class="ident">key</div><div class="operator">]</div> <div class="operator">=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationRecord</div><div class="operator">{</div>
 			<div class="ident">OrgID</div><div class="operator">:</div>              <div class="ident">orgID</div><div class="operator">,</div>
 			<div class="ident">AccountNumber</div><div class="operator">:</div>      <div class="ident">accountNumber</div><div class="operator">,</div>
 			<div class="ident">ClusterName</div><div class="operator">:</div>        <div class="ident">clusterName</div><div class="operator">,</div>
@@ -808,7 +885,7 @@ for given org ID and cluster name.</p>
 			<div class="ident">Report</div><div class="operator">:</div>             <div class="ident">report</div><div class="operator">,</div>
 			<div class="ident">NotifiedAt</div><div class="operator">:</div>         <div class="ident">notifiedAt</div><div class="operator">,</div>
 			<div class="ident">ErrorLog</div><div class="operator">:</div>           <div class="ident">errorLog</div><div class="operator">,</div>
-		<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
 	<div class="keyword">return</div> <div class="ident">notificationRecords</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
@@ -826,14 +903,14 @@ sent.</p>
 
 <p>The method return number of deleted records.</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">CleanupForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">statement</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">CleanupForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div><div class="operator">,</div> <div class="ident">statement</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="ident">printableStatement</div> <div class="operator">:=</div> <div class="ident">getPrintableStatement</div><div class="operator">(</div><div class="ident">statement</div><div class="operator">)</div><div class="operator"></div>
 
 	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
 		<div class="ident">Str</div><div class="operator">(</div><div class="ident">MaxAgeAttribute</div><div class="operator">,</div> <div class="ident">maxAge</div><div class="operator">)</div><div class="operator">.</div>
-		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;delete statement&#34;</div><div class="operator">,</div> <div class="ident">printableStatement</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="ident">DeleteStatement</div><div class="operator">,</div> <div class="ident">printableStatement</div><div class="operator">)</div><div class="operator">.</div>
 		<div class="ident">Int</div><div class="operator">(</div><div class="ident">OrgIDMessage</div><div class="operator">,</div> <div class="ident">int</div><div class="operator">(</div><div class="ident">orgID</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
-		<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Cleanup operation&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Cleanup operation for organization&#34;</div><div class="operator">)</div><div class="operator"></div>
 
 </code></pre></td>
       </tr>
@@ -873,7 +950,7 @@ sent.</p>
 <p>The method return number of deleted records.</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">CleanupNewReportsForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
-	<div class="ident">sqlStatement</div> <div class="operator">:=</div> <div class="ident">deleteOldRecordsFromNewReportsTable</div><div class="operator"></div>
+	<div class="ident">sqlStatement</div> <div class="operator">:=</div> <div class="ident">deleteOldRecordsFromNewReportsTableForOrganization</div><div class="operator"></div>
 	<div class="keyword">return</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">CleanupForOrganization</div><div class="operator">(</div><div class="ident">orgID</div><div class="operator">,</div> <div class="ident">maxAge</div><div class="operator">,</div> <div class="ident">sqlStatement</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
@@ -891,7 +968,7 @@ sent.</p>
 <p>The method return number of deleted records.</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">CleanupOldReportsForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
-	<div class="ident">sqlStatement</div> <div class="operator">:=</div> <div class="ident">deleteOldRecordsFromReportedTable</div><div class="operator"></div>
+	<div class="ident">sqlStatement</div> <div class="operator">:=</div> <div class="ident">deleteOldRecordsFromReportedTableForOrganization</div><div class="operator"></div>
 	<div class="keyword">return</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">CleanupForOrganization</div><div class="operator">(</div><div class="ident">orgID</div><div class="operator">,</div> <div class="ident">maxAge</div><div class="operator">,</div> <div class="ident">sqlStatement</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
@@ -934,8 +1011,8 @@ Number of deleted rows (zero or one) is returned.</p>
 	<td class="doc"><p>getPrintableStatement returns SQL statement in form prepared for logging</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">getPrintableStatement</div><div class="operator">(</div><div class="ident">sqlStatement</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">string</div> <div class="operator">{</div>
-	<div class="ident">s</div> <div class="operator">:=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">Replace</div><div class="operator">(</div><div class="ident">sqlStatement</div><div class="operator">,</div> <div class="literal">&#34;\n&#34;</div><div class="operator">,</div> <div class="literal">&#34; &#34;</div><div class="operator">,</div> <div class="operator">-</div><div class="literal">1</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">s</div> <div class="operator">=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">Replace</div><div class="operator">(</div><div class="ident">s</div><div class="operator">,</div> <div class="literal">&#34;\t&#34;</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">,</div> <div class="operator">-</div><div class="literal">1</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">s</div> <div class="operator">:=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">ReplaceAll</div><div class="operator">(</div><div class="ident">sqlStatement</div><div class="operator">,</div> <div class="literal">&#34;\n&#34;</div><div class="operator">,</div> <div class="literal">&#34; &#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">s</div> <div class="operator">=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">ReplaceAll</div><div class="operator">(</div><div class="ident">s</div><div class="operator">,</div> <div class="literal">&#34;\t&#34;</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">return</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">Trim</div><div class="operator">(</div><div class="ident">s</div><div class="operator">,</div> <div class="literal">&#34; &#34;</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
@@ -983,6 +1060,179 @@ Number of deleted rows (zero or one) is returned.</p>
 		<div class="keyword">return</div> <div class="literal">0</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 	<div class="keyword">return</div> <div class="ident">int</div><div class="operator">(</div><div class="ident">affected</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>PrintNewReports method prints all reports from selected table older than
+specified relative time</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">PrintNewReports</div><div class="operator">(</div><div class="ident">maxAge</div><div class="operator">,</div> <div class="ident">query</div><div class="operator">,</div> <div class="ident">tableName</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="ident">MaxAgeAttribute</div><div class="operator">,</div> <div class="ident">maxAge</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;select statement&#34;</div><div class="operator">,</div> <div class="ident">query</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;PrintReportsForCleanup operation&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">rows</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">connection</div><div class="operator">.</div><div class="ident">Query</div><div class="operator">(</div><div class="ident">query</div><div class="operator">,</div> <div class="ident">maxAge</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>used to compute a real record age</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">now</div> <div class="operator">:=</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Now</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>iterate over all old records</p>
+</td>
+	<td class="code"><pre><code>	<div class="keyword">for</div> <div class="ident">rows</div><div class="operator">.</div><div class="ident">Next</div><div class="operator">(</div><div class="operator">)</div> <div class="operator">{</div>
+		<div class="keyword">var</div> <div class="operator">(</div>
+			<div class="ident">orgID</div>         <div class="ident">int</div><div class="operator"></div>
+			<div class="ident">accountNumber</div> <div class="ident">int</div><div class="operator"></div>
+			<div class="ident">clusterName</div>   <div class="ident">string</div><div class="operator"></div>
+			<div class="ident">updatedAt</div>     <div class="ident">time</div><div class="operator">.</div><div class="ident">Time</div><div class="operator"></div>
+			<div class="ident">kafkaOffset</div>   <div class="ident">int64</div><div class="operator"></div>
+		<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>read one old record from the report table</p>
+</td>
+	<td class="code"><pre><code>		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">rows</div><div class="operator">.</div><div class="ident">Scan</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">orgID</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">accountNumber</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">updatedAt</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">kafkaOffset</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>close the result set in case of any error</p>
+</td>
+	<td class="code"><pre><code>			<div class="keyword">if</div> <div class="ident">closeErr</div> <div class="operator">:=</div> <div class="ident">rows</div><div class="operator">.</div><div class="ident">Close</div><div class="operator">(</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">closeErr</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+				<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">closeErr</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">unableToCloseDBRowsHandle</div><div class="operator">)</div><div class="operator"></div>
+			<div class="operator">}</div><div class="operator"></div>
+			<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>compute the real record age</p>
+</td>
+	<td class="code"><pre><code>		<div class="ident">age</div> <div class="operator">:=</div> <div class="ident">int</div><div class="operator">(</div><div class="ident">math</div><div class="operator">.</div><div class="ident">Ceil</div><div class="operator">(</div><div class="ident">now</div><div class="operator">.</div><div class="ident">Sub</div><div class="operator">(</div><div class="ident">updatedAt</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Hours</div><div class="operator">(</div><div class="operator">)</div> <div class="operator">/</div> <div class="literal">24</div><div class="operator">)</div><div class="operator">)</div> <div class="operator"></div><div class="comment">// in days</div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>prepare for the report</p>
+</td>
+	<td class="code"><pre><code>		<div class="ident">updatedAtF</div> <div class="operator">:=</div> <div class="ident">updatedAt</div><div class="operator">.</div><div class="ident">Format</div><div class="operator">(</div><div class="ident">time</div><div class="operator">.</div><div class="ident">RFC3339</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>just print the report</p>
+</td>
+	<td class="code"><pre><code>		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
+			<div class="ident">Int</div><div class="operator">(</div><div class="ident">OrgIDMessage</div><div class="operator">,</div> <div class="ident">orgID</div><div class="operator">)</div><div class="operator">.</div>
+			<div class="ident">Int</div><div class="operator">(</div><div class="ident">AccountNumberMessage</div><div class="operator">,</div> <div class="ident">accountNumber</div><div class="operator">)</div><div class="operator">.</div>
+			<div class="ident">Str</div><div class="operator">(</div><div class="ident">ClusterNameMessage</div><div class="operator">,</div> <div class="ident">clusterName</div><div class="operator">)</div><div class="operator">.</div>
+			<div class="ident">Str</div><div class="operator">(</div><div class="ident">UpdatedAtMessage</div><div class="operator">,</div> <div class="ident">updatedAtF</div><div class="operator">)</div><div class="operator">.</div>
+			<div class="ident">Int</div><div class="operator">(</div><div class="ident">AgeMessage</div><div class="operator">,</div> <div class="ident">age</div><div class="operator">)</div><div class="operator">.</div>
+			<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Old report from `&#34;</div> <div class="operator">&#43;</div> <div class="ident">tableName</div> <div class="operator">&#43;</div> <div class="literal">&#34;` table&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="keyword">return</div> <div class="ident">nil</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>PrintNewReportsForCleanup method prints all reports from <code>new_reports</code> table
+older than specified relative time</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">PrintNewReportsForCleanup</div><div class="operator">(</div><div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+	<div class="keyword">return</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">PrintNewReports</div><div class="operator">(</div><div class="ident">maxAge</div><div class="operator">,</div> <div class="ident">displayOldRecordsFromNewReportsTable</div><div class="operator">,</div> <div class="literal">&#34;new_reports&#34;</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>PrintOldReportsForCleanup method prints all reports from <code>reported</code> table
+older than specified relative time</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">PrintOldReportsForCleanup</div><div class="operator">(</div><div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+	<div class="keyword">return</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">PrintNewReports</div><div class="operator">(</div><div class="ident">maxAge</div><div class="operator">,</div> <div class="ident">displayOldRecordsFromReportedTable</div><div class="operator">,</div> <div class="literal">&#34;reported&#34;</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Cleanup method deletes all reports older than specified
+relative time</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">Cleanup</div><div class="operator">(</div><div class="ident">maxAge</div><div class="operator">,</div> <div class="ident">statement</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="ident">MaxAgeAttribute</div><div class="operator">,</div> <div class="ident">maxAge</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="ident">DeleteStatement</div><div class="operator">,</div> <div class="ident">statement</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Cleanup operation for all organizations&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>perform the SQL statement</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">result</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">connection</div><div class="operator">.</div><div class="ident">Exec</div><div class="operator">(</div><div class="ident">statement</div><div class="operator">,</div> <div class="ident">maxAge</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="keyword">return</div> <div class="literal">0</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>read number of affected (deleted) rows</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">affected</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">result</div><div class="operator">.</div><div class="ident">RowsAffected</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="keyword">return</div> <div class="literal">0</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="keyword">return</div> <div class="ident">int</div><div class="operator">(</div><div class="ident">affected</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>CleanupNewReports method deletes all reports from <code>new_reports</code> table older
+than specified relative time</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">CleanupNewReports</div><div class="operator">(</div><div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="keyword">return</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">Cleanup</div><div class="operator">(</div><div class="ident">maxAge</div><div class="operator">,</div> <div class="ident">deleteOldRecordsFromNewReportsTable</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>CleanupOldReports method deletes all reports from <code>reported</code> table older
+than specified relative time</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">CleanupOldReports</div><div class="operator">(</div><div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="keyword">return</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">Cleanup</div><div class="operator">(</div><div class="ident">maxAge</div><div class="operator">,</div> <div class="ident">deleteOldRecordsFromReportedTable</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>

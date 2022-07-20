@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2022 Red Hat, Inc
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<html>
+<head>
+<title>differ_cli_args_test.go</title>
+<meta charset="utf-8"/>
+<style type="text/css">body {
+    background: rgb(225, 225, 225);
+    margin: 0px;
+    padding: 0px;
+}
+
+#docgo p {
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 15px;
+    margin-left: 0px;
+}
+
+#docgo div {
+    display: inline;
+}
+
+#docgo #background {
+    position: fixed;
+    top: 0; left: 525px; right: 0; bottom: 0;
+    background: rgb(47, 47, 47);
+    border-left: 1px solid #e5e5ee;
+    z-index: -1;
+}
+
+#docgo .keyword {
+    color: rgb(250, 200, 100);
+}
+
+#docgo .literal {
+    color: rgb(140, 190, 100);
+}
+
+#docgo .ident {
+    color: white;
+}
+
+#docgo .operator {
+    color: white;
+}
+
+#docgo .comment {
+}
+
+#docgo h1, h2, h3, h4, h5 {
+    text-align: left;
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 15px;
+    margin-left: 0px;
+}
+
+#docgo h1 {
+    margin-top: 40px;
+}
+
+#docgo .doc {
+    vertical-align: top;
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+    font-size: 15px;
+    line-height: 22px;
+    color: black;
+    min-width: 450px;
+    max-width: 450px;
+    padding-top: 10px;
+    padding-right: 25px;
+    padding-bottom: 1px;
+    padding-left: 50px;
+    overflow-x: hidden;
+}
+
+#docgo .code {
+    min-width: 650px;
+    max-width: 650px;
+    padding-left: 25px;
+    padding-right: 15px;
+    border-left: 1px;
+    overflow-x: hidden;
+    vertical-align: top;
+}
+
+#docgo .code pre code  {
+    font-size: 12px;
+    line-height: 18px;
+    font-family: Menlo, Monaco, Consolas, "Lucida Console", monospace;
+    color: rgb(120, 120, 120);
+}
+</style>
+</head>
+<body>
+<div id="docgo">
+  <div id="background"></div>
+  <table>
+    <thead><tr><th class="doc"><h1>differ_cli_args_test.go</h1></th><th class="code"></th></tr></thead>
+    <tbody>
+      
+      <tr class="section">
+	<td class="doc"></td>
+	<td class="code"><pre><code><div class="comment">/*
+Copyright © 2022 Red Hat, Inc.
+
+Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/</div>
+
+<div class="keyword">package</div> <div class="ident">differ</div><div class="operator"></div>
+
+<div class="keyword">import</div> <div class="operator">(</div>
+	<div class="literal">&#34;os&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;os/exec&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;testing&#34;</div><div class="operator"></div>
+
+	<div class="literal">&#34;github.com/RedHatInsights/ccx-notification-service/types&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;github.com/stretchr/testify/assert&#34;</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Test the checkArgs function when flag for --show-version is set</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestArgsParsingShowVersion</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">cmd</div> <div class="operator">:=</div> <div class="ident">exec</div><div class="operator">.</div><div class="ident">Command</div><div class="operator">(</div><div class="ident">os</div><div class="operator">.</div><div class="ident">Args</div><div class="operator">[</div><div class="literal">0</div><div class="operator">]</div><div class="operator">,</div> <div class="literal">&#34;-test.run=TestArgsParsingShowVersion&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">os</div><div class="operator">.</div><div class="ident">Getenv</div><div class="operator">(</div><div class="literal">&#34;SHOW_VERSION_FLAG&#34;</div><div class="operator">)</div> <div class="operator">==</div> <div class="literal">&#34;1&#34;</div> <div class="operator">{</div>
+		<div class="ident">args</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">CliFlags</div><div class="operator">{</div>
+			<div class="ident">ShowVersion</div><div class="operator">:</div> <div class="ident">true</div><div class="operator">,</div>
+		<div class="operator">}</div><div class="operator"></div>
+		<div class="ident">checkArgs</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">args</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">cmd</div><div class="operator">.</div><div class="ident">Env</div> <div class="operator">=</div> <div class="ident">append</div><div class="operator">(</div><div class="ident">os</div><div class="operator">.</div><div class="ident">Environ</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div> <div class="literal">&#34;SHOW_VERSION_FLAG=1&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">cmd</div><div class="operator">.</div><div class="ident">Run</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">e</div><div class="operator">,</div> <div class="ident">ok</div> <div class="operator">:=</div> <div class="ident">err</div><div class="operator">.</div><div class="operator">(</div><div class="operator">*</div><div class="ident">exec</div><div class="operator">.</div><div class="ident">ExitError</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">ok</div> <div class="operator">&amp;&amp;</div> <div class="operator">!</div><div class="ident">e</div><div class="operator">.</div><div class="ident">Success</div><div class="operator">(</div><div class="operator">)</div> <div class="operator">{</div>
+		<div class="ident">t</div><div class="operator">.</div><div class="ident">Fatalf</div><div class="operator">(</div><div class="literal">&#34;checkArgs exited with exit status %d, wanted exit status 0&#34;</div><div class="operator">,</div> <div class="ident">e</div><div class="operator">.</div><div class="ident">ExitCode</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Test the checkArgs function when flag for --show-authors is set</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestArgsParsingShowAuthors</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="keyword">if</div> <div class="ident">os</div><div class="operator">.</div><div class="ident">Getenv</div><div class="operator">(</div><div class="literal">&#34;SHOW_AUTHORS_FLAG&#34;</div><div class="operator">)</div> <div class="operator">==</div> <div class="literal">&#34;1&#34;</div> <div class="operator">{</div>
+		<div class="ident">args</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">CliFlags</div><div class="operator">{</div>
+			<div class="ident">ShowAuthors</div><div class="operator">:</div> <div class="ident">true</div><div class="operator">,</div>
+		<div class="operator">}</div><div class="operator"></div>
+		<div class="ident">checkArgs</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">args</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">cmd</div> <div class="operator">:=</div> <div class="ident">exec</div><div class="operator">.</div><div class="ident">Command</div><div class="operator">(</div><div class="ident">os</div><div class="operator">.</div><div class="ident">Args</div><div class="operator">[</div><div class="literal">0</div><div class="operator">]</div><div class="operator">,</div> <div class="literal">&#34;-test.run=TestArgsParsingShowAuthors&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">cmd</div><div class="operator">.</div><div class="ident">Env</div> <div class="operator">=</div> <div class="ident">append</div><div class="operator">(</div><div class="ident">os</div><div class="operator">.</div><div class="ident">Environ</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div> <div class="literal">&#34;SHOW_AUTHORS_FLAG=1&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">cmd</div><div class="operator">.</div><div class="ident">Run</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">e</div><div class="operator">,</div> <div class="ident">ok</div> <div class="operator">:=</div> <div class="ident">err</div><div class="operator">.</div><div class="operator">(</div><div class="operator">*</div><div class="ident">exec</div><div class="operator">.</div><div class="ident">ExitError</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">ok</div> <div class="operator">&amp;&amp;</div> <div class="operator">!</div><div class="ident">e</div><div class="operator">.</div><div class="ident">Success</div><div class="operator">(</div><div class="operator">)</div> <div class="operator">{</div>
+		<div class="ident">t</div><div class="operator">.</div><div class="ident">Fatalf</div><div class="operator">(</div><div class="literal">&#34;checkArgs exited with exit status %d, wanted exit status 0&#34;</div><div class="operator">,</div> <div class="ident">e</div><div class="operator">.</div><div class="ident">ExitCode</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Test the checkArgs function when no flag is set</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestArgsParsingNoFlags</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="keyword">if</div> <div class="ident">os</div><div class="operator">.</div><div class="ident">Getenv</div><div class="operator">(</div><div class="literal">&#34;EXEC_NO_FLAG&#34;</div><div class="operator">)</div> <div class="operator">==</div> <div class="literal">&#34;1&#34;</div> <div class="operator">{</div>
+		<div class="ident">args</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">CliFlags</div><div class="operator">{</div><div class="operator">}</div><div class="operator"></div>
+		<div class="ident">checkArgs</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">args</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">cmd</div> <div class="operator">:=</div> <div class="ident">exec</div><div class="operator">.</div><div class="ident">Command</div><div class="operator">(</div><div class="ident">os</div><div class="operator">.</div><div class="ident">Args</div><div class="operator">[</div><div class="literal">0</div><div class="operator">]</div><div class="operator">,</div> <div class="literal">&#34;-test.run=TestArgsParsingNoFlags&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">cmd</div><div class="operator">.</div><div class="ident">Env</div> <div class="operator">=</div> <div class="ident">append</div><div class="operator">(</div><div class="ident">os</div><div class="operator">.</div><div class="ident">Environ</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div> <div class="literal">&#34;EXEC_NO_FLAG=1&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">cmd</div><div class="operator">.</div><div class="ident">Run</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NotNil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">exitError</div><div class="operator">,</div> <div class="ident">ok</div> <div class="operator">:=</div> <div class="ident">err</div><div class="operator">.</div><div class="operator">(</div><div class="operator">*</div><div class="ident">exec</div><div class="operator">.</div><div class="ident">ExitError</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">ok</div> <div class="operator">{</div>
+		<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">ExitStatusConfiguration</div><div class="operator">,</div> <div class="ident">exitError</div><div class="operator">.</div><div class="ident">ExitCode</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">return</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">t</div><div class="operator">.</div><div class="ident">Fatalf</div><div class="operator">(</div><div class="literal">&#34;checkArgs didn&#39;t behave properly. Wanted exit status %d but got error\n %v&#34;</div><div class="operator">,</div> <div class="ident">ExitStatusConfiguration</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Test the checkArgs function when --weekly-reports flag is set</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestArgsParsingWeeklyReportsFlags</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">args</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">CliFlags</div><div class="operator">{</div>
+		<div class="ident">WeeklyReports</div><div class="operator">:</div> <div class="ident">true</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">checkArgs</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">args</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">notificationType</div><div class="operator">,</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">WeeklyDigest</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Test the checkArgs function when --instant-reports flag is set</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestArgsParsingInstantReportsFlags</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">args</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">CliFlags</div><div class="operator">{</div>
+		<div class="ident">InstantReports</div><div class="operator">:</div> <div class="ident">true</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">checkArgs</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">args</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">notificationType</div><div class="operator">,</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">InstantNotif</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+</body>
+</html>

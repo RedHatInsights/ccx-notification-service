@@ -1,0 +1,333 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2022 Red Hat, Inc
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<html>
+<head>
+<title>metrics_test.go</title>
+<meta charset="utf-8"/>
+<style type="text/css">body {
+    background: rgb(225, 225, 225);
+    margin: 0px;
+    padding: 0px;
+}
+
+#docgo p {
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 15px;
+    margin-left: 0px;
+}
+
+#docgo div {
+    display: inline;
+}
+
+#docgo #background {
+    position: fixed;
+    top: 0; left: 525px; right: 0; bottom: 0;
+    background: rgb(47, 47, 47);
+    border-left: 1px solid #e5e5ee;
+    z-index: -1;
+}
+
+#docgo .keyword {
+    color: rgb(250, 200, 100);
+}
+
+#docgo .literal {
+    color: rgb(140, 190, 100);
+}
+
+#docgo .ident {
+    color: white;
+}
+
+#docgo .operator {
+    color: white;
+}
+
+#docgo .comment {
+}
+
+#docgo h1, h2, h3, h4, h5 {
+    text-align: left;
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 15px;
+    margin-left: 0px;
+}
+
+#docgo h1 {
+    margin-top: 40px;
+}
+
+#docgo .doc {
+    vertical-align: top;
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+    font-size: 15px;
+    line-height: 22px;
+    color: black;
+    min-width: 450px;
+    max-width: 450px;
+    padding-top: 10px;
+    padding-right: 25px;
+    padding-bottom: 1px;
+    padding-left: 50px;
+    overflow-x: hidden;
+}
+
+#docgo .code {
+    min-width: 650px;
+    max-width: 650px;
+    padding-left: 25px;
+    padding-right: 15px;
+    border-left: 1px;
+    overflow-x: hidden;
+    vertical-align: top;
+}
+
+#docgo .code pre code  {
+    font-size: 12px;
+    line-height: 18px;
+    font-family: Menlo, Monaco, Consolas, "Lucida Console", monospace;
+    color: rgb(120, 120, 120);
+}
+</style>
+</head>
+<body>
+<div id="docgo">
+  <div id="background"></div>
+  <table>
+    <thead><tr><th class="doc"><h1>metrics_test.go</h1></th><th class="code"></th></tr></thead>
+    <tbody>
+      
+      <tr class="section">
+	<td class="doc"></td>
+	<td class="code"><pre><code><div class="comment">/*
+Copyright © 2021 Red Hat, Inc.
+
+Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/</div>
+
+<div class="keyword">package</div> <div class="ident">differ_test</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Documentation in literate-programming-style is available at:
+https://redhatinsights.github.io/ccx-notification-writer/packages/differ/metrics_test.html</p>
+</td>
+	<td class="code"><pre><code>
+<div class="keyword">import</div> <div class="operator">(</div>
+	<div class="literal">&#34;context&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;fmt&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;net/http&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;net/http/httptest&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;os&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;os/exec&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;testing&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;time&#34;</div><div class="operator"></div>
+
+	<div class="literal">&#34;github.com/RedHatInsights/ccx-notification-service/conf&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;github.com/RedHatInsights/ccx-notification-service/differ&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;github.com/rs/zerolog/log&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;github.com/stretchr/testify/assert&#34;</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>TestAddMetricsWithNamespace function checks the basic behaviour of function
+AddMetricsWithNamespace from <code>metrics.go</code></p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestAddMetricsWithNamespace</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>add all metrics into the namespace &quot;foobar&quot;</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">differ</div><div class="operator">.</div><div class="ident">AddMetricsWithNamespace</div><div class="operator">(</div><div class="literal">&#34;foobar&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>check the registration</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NotNil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">FetchContentErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NotNil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">ReadClusterListErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NotNil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">ReadReportedErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NotNil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">ProducerSetupErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NotNil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">StorageSetupErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NotNil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">ReadReportForClusterErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NotNil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">DeserializeReportErrors</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NotNil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">ReportWithHighImpact</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NotNil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">NotificationNotSentSameState</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NotNil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">NotificationNotSentErrorState</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NotNil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">NotificationSent</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>TODO: TestPushMetrics</p>
+</td>
+	<td class="code"><pre><code>
+<div class="keyword">func</div> <div class="ident">TestPushMetricsGatewayNotFailingWithRetriesThenOk</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="keyword">var</div> <div class="operator">(</div>
+		<div class="ident">pushes</div>          <div class="ident">int</div><div class="operator"></div>
+		<div class="ident">expectedPushes</div>  <div class="operator">=</div> <div class="literal">6</div><div class="operator"></div>
+		<div class="ident">timeBetweenPush</div> <div class="operator">=</div> <div class="literal">200</div> <div class="operator">*</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Millisecond</div> <div class="operator"></div><div class="comment">// 0.5s</div>
+		<div class="ident">totalTime</div>       <div class="operator">=</div> <div class="literal">2</div> <div class="operator">*</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Second</div>        <div class="operator"></div><div class="comment">// give enough time</div>
+	<div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">testServer</div> <div class="operator">:=</div> <div class="ident">httptest</div><div class="operator">.</div><div class="ident">NewServer</div><div class="operator">(</div>
+		<div class="ident">http</div><div class="operator">.</div><div class="ident">HandlerFunc</div><div class="operator">(</div><div class="keyword">func</div><div class="operator">(</div><div class="ident">w</div> <div class="ident">http</div><div class="operator">.</div><div class="ident">ResponseWriter</div><div class="operator">,</div> <div class="ident">r</div> <div class="operator">*</div><div class="ident">http</div><div class="operator">.</div><div class="ident">Request</div><div class="operator">)</div> <div class="operator">{</div>
+			<div class="ident">w</div><div class="operator">.</div><div class="ident">Header</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Set</div><div class="operator">(</div><div class="literal">&#34;Content-Type&#34;</div><div class="operator">,</div> <div class="literal">`text/plain; charset=utf-8`</div><div class="operator">)</div><div class="operator"></div>
+			<div class="keyword">if</div> <div class="ident">pushes</div> <div class="operator">&gt;=</div> <div class="literal">5</div> <div class="operator">{</div>
+				<div class="ident">w</div><div class="operator">.</div><div class="ident">WriteHeader</div><div class="operator">(</div><div class="ident">http</div><div class="operator">.</div><div class="ident">StatusOK</div><div class="operator">)</div><div class="operator"></div>
+			<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+				<div class="ident">w</div><div class="operator">.</div><div class="ident">WriteHeader</div><div class="operator">(</div><div class="ident">http</div><div class="operator">.</div><div class="ident">StatusBadGateway</div><div class="operator">)</div><div class="operator"></div>
+			<div class="operator">}</div><div class="operator"></div>
+			<div class="ident">pushes</div><div class="operator">&#43;&#43;</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator">)</div><div class="operator">,</div>
+	<div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">defer</div> <div class="ident">testServer</div><div class="operator">.</div><div class="ident">Close</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">_</div><div class="operator">,</div> <div class="ident">cancel</div> <div class="operator">:=</div> <div class="ident">context</div><div class="operator">.</div><div class="ident">WithTimeout</div><div class="operator">(</div><div class="ident">context</div><div class="operator">.</div><div class="ident">Background</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">totalTime</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">metricsConf</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">MetricsConfiguration</div><div class="operator">{</div>
+		<div class="ident">Job</div><div class="operator">:</div>        <div class="literal">&#34;ccx_notification_service&#34;</div><div class="operator">,</div>
+		<div class="ident">Namespace</div><div class="operator">:</div>  <div class="literal">&#34;ccx_notification_service&#34;</div><div class="operator">,</div>
+		<div class="ident">GatewayURL</div><div class="operator">:</div> <div class="ident">testServer</div><div class="operator">.</div><div class="ident">URL</div><div class="operator">,</div>
+		<div class="ident">RetryAfter</div><div class="operator">:</div> <div class="ident">timeBetweenPush</div><div class="operator">,</div>
+		<div class="ident">Retries</div><div class="operator">:</div>    <div class="literal">10</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="keyword">go</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">PushMetrics</div><div class="operator">(</div><div class="ident">metricsConf</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">time</div><div class="operator">.</div><div class="ident">Sleep</div><div class="operator">(</div><div class="ident">totalTime</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">cancel</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;pushes&#34;</div><div class="operator">,</div> <div class="ident">pushes</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;debug&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">expectedPushes</div><div class="operator">,</div> <div class="ident">pushes</div><div class="operator">,</div>
+		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div><div class="literal">&#34;expected exactly %d retries, but received %d&#34;</div><div class="operator">,</div> <div class="ident">expectedPushes</div><div class="operator">,</div> <div class="ident">pushes</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+<div class="keyword">func</div> <div class="ident">TestPushMetricsGatewayNotFailingWithRetries</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="keyword">var</div> <div class="operator">(</div>
+		<div class="ident">pushes</div>          <div class="ident">int</div><div class="operator"></div>
+		<div class="ident">expectedPushes</div>  <div class="operator">=</div> <div class="literal">1</div><div class="operator"></div>
+		<div class="ident">timeBetweenPush</div> <div class="operator">=</div> <div class="literal">100</div> <div class="operator">*</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Millisecond</div> <div class="operator"></div><div class="comment">// 0.1s</div>
+		<div class="ident">totalTime</div>       <div class="operator">=</div> <div class="literal">500</div> <div class="operator">*</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Millisecond</div> <div class="operator"></div><div class="comment">// give enough time</div>
+	<div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">testServer</div> <div class="operator">:=</div> <div class="ident">httptest</div><div class="operator">.</div><div class="ident">NewServer</div><div class="operator">(</div>
+		<div class="ident">http</div><div class="operator">.</div><div class="ident">HandlerFunc</div><div class="operator">(</div><div class="keyword">func</div><div class="operator">(</div><div class="ident">w</div> <div class="ident">http</div><div class="operator">.</div><div class="ident">ResponseWriter</div><div class="operator">,</div> <div class="ident">r</div> <div class="operator">*</div><div class="ident">http</div><div class="operator">.</div><div class="ident">Request</div><div class="operator">)</div> <div class="operator">{</div>
+			<div class="ident">w</div><div class="operator">.</div><div class="ident">Header</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Set</div><div class="operator">(</div><div class="literal">&#34;Content-Type&#34;</div><div class="operator">,</div> <div class="literal">`text/plain; charset=utf-8`</div><div class="operator">)</div><div class="operator"></div>
+			<div class="ident">w</div><div class="operator">.</div><div class="ident">WriteHeader</div><div class="operator">(</div><div class="ident">http</div><div class="operator">.</div><div class="ident">StatusOK</div><div class="operator">)</div><div class="operator"></div>
+			<div class="ident">pushes</div><div class="operator">&#43;&#43;</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator">)</div><div class="operator">,</div>
+	<div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">defer</div> <div class="ident">testServer</div><div class="operator">.</div><div class="ident">Close</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">_</div><div class="operator">,</div> <div class="ident">cancel</div> <div class="operator">:=</div> <div class="ident">context</div><div class="operator">.</div><div class="ident">WithTimeout</div><div class="operator">(</div><div class="ident">context</div><div class="operator">.</div><div class="ident">Background</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">totalTime</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">metricsConf</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">MetricsConfiguration</div><div class="operator">{</div>
+		<div class="ident">Job</div><div class="operator">:</div>        <div class="literal">&#34;ccx_notification_service&#34;</div><div class="operator">,</div>
+		<div class="ident">Namespace</div><div class="operator">:</div>  <div class="literal">&#34;ccx_notification_service&#34;</div><div class="operator">,</div>
+		<div class="ident">GatewayURL</div><div class="operator">:</div> <div class="ident">testServer</div><div class="operator">.</div><div class="ident">URL</div><div class="operator">,</div>
+		<div class="ident">RetryAfter</div><div class="operator">:</div> <div class="ident">timeBetweenPush</div><div class="operator">,</div>
+		<div class="ident">Retries</div><div class="operator">:</div>    <div class="literal">10</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="keyword">go</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">PushMetrics</div><div class="operator">(</div><div class="ident">metricsConf</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">time</div><div class="operator">.</div><div class="ident">Sleep</div><div class="operator">(</div><div class="ident">totalTime</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">cancel</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;pushes&#34;</div><div class="operator">,</div> <div class="ident">pushes</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;debug&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">expectedPushes</div><div class="operator">,</div> <div class="ident">pushes</div><div class="operator">,</div>
+		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div><div class="literal">&#34;expected exactly %d retries, but received %d&#34;</div><div class="operator">,</div> <div class="ident">expectedPushes</div><div class="operator">,</div> <div class="ident">pushes</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+<div class="keyword">func</div> <div class="ident">TestPushMetricsGatewayFailing</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="keyword">if</div> <div class="ident">os</div><div class="operator">.</div><div class="ident">Getenv</div><div class="operator">(</div><div class="literal">&#34;GATEWAY_502_FAIL_ALL_RETRIES&#34;</div><div class="operator">)</div> <div class="operator">==</div> <div class="literal">&#34;1&#34;</div> <div class="operator">{</div>
+		<div class="keyword">var</div> <div class="operator">(</div>
+			<div class="ident">timeBetweenPush</div> <div class="operator">=</div> <div class="literal">100</div> <div class="operator">*</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Millisecond</div> <div class="operator"></div><div class="comment">// 0.1s</div>
+			<div class="ident">totalTime</div>       <div class="operator">=</div> <div class="literal">1</div> <div class="operator">*</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Second</div>        <div class="operator"></div><div class="comment">// give enough time</div>
+		<div class="operator">)</div><div class="operator"></div>
+
+		<div class="ident">testServer</div> <div class="operator">:=</div> <div class="ident">httptest</div><div class="operator">.</div><div class="ident">NewServer</div><div class="operator">(</div>
+			<div class="ident">http</div><div class="operator">.</div><div class="ident">HandlerFunc</div><div class="operator">(</div><div class="keyword">func</div><div class="operator">(</div><div class="ident">w</div> <div class="ident">http</div><div class="operator">.</div><div class="ident">ResponseWriter</div><div class="operator">,</div> <div class="ident">r</div> <div class="operator">*</div><div class="ident">http</div><div class="operator">.</div><div class="ident">Request</div><div class="operator">)</div> <div class="operator">{</div>
+				<div class="ident">w</div><div class="operator">.</div><div class="ident">Header</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Set</div><div class="operator">(</div><div class="literal">&#34;Content-Type&#34;</div><div class="operator">,</div> <div class="literal">`text/plain; charset=utf-8`</div><div class="operator">)</div><div class="operator"></div>
+				<div class="ident">w</div><div class="operator">.</div><div class="ident">WriteHeader</div><div class="operator">(</div><div class="ident">http</div><div class="operator">.</div><div class="ident">StatusBadGateway</div><div class="operator">)</div><div class="operator"></div>
+			<div class="operator">}</div><div class="operator">)</div><div class="operator">,</div>
+		<div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">defer</div> <div class="ident">testServer</div><div class="operator">.</div><div class="ident">Close</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="ident">_</div><div class="operator">,</div> <div class="ident">cancel</div> <div class="operator">:=</div> <div class="ident">context</div><div class="operator">.</div><div class="ident">WithTimeout</div><div class="operator">(</div><div class="ident">context</div><div class="operator">.</div><div class="ident">Background</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">totalTime</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="ident">metricsConf</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">MetricsConfiguration</div><div class="operator">{</div>
+			<div class="ident">Job</div><div class="operator">:</div>        <div class="literal">&#34;ccx_notification_service&#34;</div><div class="operator">,</div>
+			<div class="ident">Namespace</div><div class="operator">:</div>  <div class="literal">&#34;ccx_notification_service&#34;</div><div class="operator">,</div>
+			<div class="ident">GatewayURL</div><div class="operator">:</div> <div class="ident">testServer</div><div class="operator">.</div><div class="ident">URL</div><div class="operator">,</div>
+			<div class="ident">RetryAfter</div><div class="operator">:</div> <div class="ident">timeBetweenPush</div><div class="operator">,</div>
+			<div class="ident">Retries</div><div class="operator">:</div>    <div class="literal">10</div><div class="operator">,</div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">go</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">PushMetrics</div><div class="operator">(</div><div class="ident">metricsConf</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="ident">time</div><div class="operator">.</div><div class="ident">Sleep</div><div class="operator">(</div><div class="ident">totalTime</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">cancel</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="ident">cmd</div> <div class="operator">:=</div> <div class="ident">exec</div><div class="operator">.</div><div class="ident">Command</div><div class="operator">(</div><div class="ident">os</div><div class="operator">.</div><div class="ident">Args</div><div class="operator">[</div><div class="literal">0</div><div class="operator">]</div><div class="operator">,</div> <div class="literal">&#34;-test.run=TestPushMetricsGatewayFailing&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">cmd</div><div class="operator">.</div><div class="ident">Env</div> <div class="operator">=</div> <div class="ident">append</div><div class="operator">(</div><div class="ident">os</div><div class="operator">.</div><div class="ident">Environ</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div> <div class="literal">&#34;GATEWAY_502_FAIL_ALL_RETRIES=1&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">cmd</div><div class="operator">.</div><div class="ident">Run</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">e</div><div class="operator">,</div> <div class="ident">ok</div> <div class="operator">:=</div> <div class="ident">err</div><div class="operator">.</div><div class="operator">(</div><div class="operator">*</div><div class="ident">exec</div><div class="operator">.</div><div class="ident">ExitError</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">ok</div> <div class="operator">&amp;&amp;</div> <div class="ident">e</div><div class="operator">.</div><div class="ident">ExitCode</div><div class="operator">(</div><div class="operator">)</div> <div class="operator">!=</div> <div class="ident">differ</div><div class="operator">.</div><div class="ident">ExitStatusMetricsError</div> <div class="operator">{</div>
+		<div class="ident">t</div><div class="operator">.</div><div class="ident">Fatalf</div><div class="operator">(</div>
+			<div class="literal">&#34;Should exit with status ExitStatusMetricsError(%d). Got status %d&#34;</div><div class="operator">,</div>
+			<div class="ident">differ</div><div class="operator">.</div><div class="ident">ExitStatusMetricsError</div><div class="operator">,</div>
+			<div class="ident">e</div><div class="operator">.</div><div class="ident">ExitCode</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+</body>
+</html>
