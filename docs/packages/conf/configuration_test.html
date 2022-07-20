@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- Copyright 2021 Red Hat, Inc
+ Copyright 2022 Red Hat, Inc
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -118,7 +118,7 @@
       <tr class="section">
 	<td class="doc"></td>
 	<td class="code"><pre><code><div class="comment">/*
-Copyright © 2021 Red Hat, Inc.
+Copyright © 2021, 2022 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
 you may not use this file except in compliance with the License.
@@ -157,18 +157,6 @@ limitations under the License.
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
 		<div class="ident">panic</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
-<div class="operator">}</div><div class="operator"></div>
-
-<div class="keyword">func</div> <div class="ident">mustFailLoadingConfigurationIfWrongEnvVar</div><div class="operator">(</div><div class="ident">envVar</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">{</div>
-	<div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">LoadConfiguration</div><div class="operator">(</div><div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;ANonExistingDefaultConfigPath&#34;</div><div class="operator">)</div><div class="operator"></div>
-	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">==</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="ident">panic</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
-	<div class="operator">}</div><div class="operator"></div>
-<div class="operator">}</div><div class="operator"></div>
-
-<div class="keyword">func</div> <div class="ident">removeFile</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">,</div> <div class="ident">filename</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">{</div>
-	<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">os</div><div class="operator">.</div><div class="ident">Remove</div><div class="operator">(</div><div class="ident">filename</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">helpers</div><div class="operator">.</div><div class="ident">FailOnError</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 <div class="keyword">func</div> <div class="ident">mustSetEnv</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">,</div> <div class="ident">key</div><div class="operator">,</div> <div class="ident">val</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">{</div>
@@ -262,13 +250,6 @@ limitations under the License.
 	<div class="ident">envVar</div> <div class="operator">:=</div> <div class="literal">&#34;CCX_NOTIFICATION_SERVICE_CONFIG_FILE&#34;</div><div class="operator"></div>
 	<div class="ident">expectedTimeout</div><div class="operator">,</div> <div class="ident">_</div> <div class="operator">:=</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">ParseDuration</div><div class="operator">(</div><div class="literal">&#34;20s&#34;</div><div class="operator">)</div><div class="operator"></div>
 
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>helpers.FailOnError(t, os.Chdir(&quot;..&quot;))</p>
-</td>
-	<td class="code"><pre><code>
 	<div class="ident">mustSetEnv</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;../tests/config2&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">LoadConfiguration</div><div class="operator">(</div><div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Nil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">,</div> <div class="literal">&#34;Failed loading configuration file from env var!&#34;</div><div class="operator">)</div><div class="operator"></div>
@@ -343,6 +324,26 @@ limitations under the License.
       </tr>
       
       <tr class="section">
+	<td class="doc"><p>TestLoadNotificationsConfiguration tests loading the notifications configuration sub-tree</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestLoadNotificationsConfiguration</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">envVar</div> <div class="operator">:=</div> <div class="literal">&#34;CCX_NOTIFICATION_SERVICE_CONFIG_FILE&#34;</div><div class="operator"></div>
+
+	<div class="ident">mustSetEnv</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;../tests/config2&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">LoadConfiguration</div><div class="operator">(</div><div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Nil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">,</div> <div class="literal">&#34;Failed loading configuration file from env var!&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">conf</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetNotificationsConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;url_to_specific_rule&#34;</div><div class="operator">,</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">RuleDetailsURI</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;url_to_advisor&#34;</div><div class="operator">,</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">InsightsAdvisorURL</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;url_to_specific_cluster&#34;</div><div class="operator">,</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">ClusterDetailsURI</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
 	<td class="doc"><p>TestLoadConfigurationFromEnvVariableClowderEnabled tests loading the config.
 file for testing from an environment variable. Clowder config is enabled in
 this case.</p>
@@ -353,6 +354,26 @@ this case.</p>
 	<div class="ident">mustSetEnv</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;CCX_NOTIFICATION_SERVICE_CONFIG_FILE&#34;</div><div class="operator">,</div> <div class="literal">&#34;tests/config2&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">mustSetEnv</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;ACG_CONFIG&#34;</div><div class="operator">,</div> <div class="literal">&#34;tests/clowder_config.json&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">mustLoadConfiguration</div><div class="operator">(</div><div class="literal">&#34;CCX_NOTIFICATION_SERVICE_CONFIG_FILE&#34;</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>TestLoadNotificationsConfiguration tests loading the notifications configuration sub-tree</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestLoadMetricsConfiguration</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">envVar</div> <div class="operator">:=</div> <div class="literal">&#34;CCX_NOTIFICATION_SERVICE_CONFIG_FILE&#34;</div><div class="operator"></div>
+
+	<div class="ident">mustSetEnv</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;../tests/config2&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">LoadConfiguration</div><div class="operator">(</div><div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Nil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">,</div> <div class="literal">&#34;Failed loading configuration file from env var!&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">conf</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetMetricsConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;ccx_notification_service_namespace&#34;</div><div class="operator">,</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">Namespace</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;:9091&#34;</div><div class="operator">,</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GatewayURL</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">,</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GatewayAuthToken</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>

@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- Copyright 2021 Red Hat, Inc
+ Copyright 2022 Red Hat, Inc
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -149,10 +149,9 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/compar
 <div class="keyword">import</div> <div class="operator">(</div>
 	<div class="literal">&#34;bytes&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;encoding/json&#34;</div><div class="operator"></div>
-	<div class="literal">&#34;os&#34;</div><div class="operator"></div>
-
 	<div class="literal">&#34;github.com/RedHatInsights/ccx-notification-service/types&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;github.com/rs/zerolog/log&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;os&#34;</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
 </code></pre></td>
@@ -162,7 +161,9 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/compar
 	<td class="doc"><p>Messages</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">const</div> <div class="operator">(</div>
-	<div class="ident">clusterName</div> <div class="operator">=</div> <div class="literal">&#34;cluster&#34;</div><div class="operator"></div>
+	<div class="ident">clusterName</div>   <div class="operator">=</div> <div class="literal">&#34;cluster&#34;</div><div class="operator"></div>
+	<div class="ident">resolutionKey</div> <div class="operator">=</div> <div class="literal">&#34;resolution&#34;</div><div class="operator"></div>
+	<div class="ident">resolutionMsg</div> <div class="operator">=</div> <div class="literal">&#34;Should notify user&#34;</div><div class="operator"></div>
 
 	<div class="ident">notificationTypeInstant</div> <div class="operator">=</div> <div class="literal">&#34;instant&#34;</div><div class="operator"></div>
 	<div class="ident">notificationTypeWeekly</div>  <div class="operator">=</div> <div class="literal">&#34;weekly&#34;</div><div class="operator"></div>
@@ -196,54 +197,47 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/compar
 	<div class="keyword">return</div> <div class="operator">-</div><div class="literal">1</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
-<div class="keyword">func</div> <div class="ident">shouldNotify</div><div class="operator">(</div><div class="ident">storage</div> <div class="ident">Storage</div><div class="operator">,</div> <div class="ident">cluster</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">report</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Report</div><div class="operator">)</div> <div class="ident">bool</div> <div class="operator">{</div>
+<div class="keyword">func</div> <div class="ident">getNotificationResolution</div><div class="operator">(</div><div class="ident">issue</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ReportItem</div><div class="operator">,</div> <div class="ident">record</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationRecord</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">resolution</div> <div class="ident">bool</div><div class="operator">)</div> <div class="operator">{</div>
 </code></pre></td>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>try to read older report for a cluster</p>
+	<td class="doc"><p>it is not a brand new cluster -&gt; check if issue was included in older report</p>
 </td>
-	<td class="code"><pre><code>	<div class="ident">reported</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">ReadLastNNotificationRecords</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">,</div> <div class="literal">1</div><div class="operator">)</div><div class="operator"></div>
+	<td class="code"><pre><code>	<div class="keyword">var</div> <div class="ident">oldReport</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Report</div><div class="operator"></div>
+	<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">json</div><div class="operator">.</div><div class="ident">Unmarshal</div><div class="operator">(</div><div class="operator">[</div><div class="operator">]</div><div class="ident">byte</div><div class="operator">(</div><div class="ident">record</div><div class="operator">.</div><div class="ident">Report</div><div class="operator">)</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">oldReport</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read last n reports&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div>
+			<div class="literal">&#34;Deserialization error - Couldn&#39;t create issue object for older issue\n %s&#34;</div><div class="operator">,</div>
+			<div class="ident">string</div><div class="operator">(</div><div class="ident">record</div><div class="operator">.</div><div class="ident">Report</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusStorageError</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
+	<div class="ident">resolution</div> <div class="operator">=</div> <div class="ident">IssueNotInReport</div><div class="operator">(</div><div class="ident">oldReport</div><div class="operator">,</div> <div class="ident">issue</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Bool</div><div class="operator">(</div><div class="ident">resolutionKey</div><div class="operator">,</div> <div class="ident">resolution</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">resolutionMsg</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">return</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+<div class="keyword">func</div> <div class="ident">shouldNotify</div><div class="operator">(</div><div class="ident">cluster</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">issue</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ReportItem</div><div class="operator">)</div> <div class="ident">bool</div> <div class="operator">{</div>
 </code></pre></td>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>check if the new result has been stored for brand new cluster</p>
+	<td class="doc"><p>check if the issue of the given cluster has previously been reported</p>
 </td>
-	<td class="code"><pre><code>	<div class="keyword">if</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">reported</div><div class="operator">)</div> <div class="operator">==</div> <div class="literal">0</div> <div class="operator">{</div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;New cluster -&gt; send instant report&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<td class="code"><pre><code>	<div class="ident">key</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterOrgKey</div><div class="operator">{</div><div class="ident">OrgID</div><div class="operator">:</div> <div class="ident">cluster</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">ClusterName</div><div class="operator">:</div> <div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">}</div><div class="operator"></div>
+	<div class="ident">reported</div><div class="operator">,</div> <div class="ident">ok</div> <div class="operator">:=</div> <div class="ident">previouslyReported</div><div class="operator">[</div><div class="ident">key</div><div class="operator">]</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="operator">!</div><div class="ident">ok</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Bool</div><div class="operator">(</div><div class="ident">resolutionKey</div><div class="operator">,</div> <div class="ident">true</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">resolutionMsg</div><div class="operator">)</div><div class="operator"></div>
 		<div class="keyword">return</div> <div class="ident">true</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>it is not a brand new cluster -&gt; compare new report with older one</p>
-</td>
-	<td class="code"><pre><code>	<div class="keyword">var</div> <div class="ident">oldReport</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Report</div><div class="operator"></div>
-	<div class="ident">err</div> <div class="operator">=</div> <div class="ident">json</div><div class="operator">.</div><div class="ident">Unmarshal</div><div class="operator">(</div><div class="operator">[</div><div class="operator">]</div><div class="ident">byte</div><div class="operator">(</div><div class="ident">reported</div><div class="operator">[</div><div class="literal">0</div><div class="operator">]</div><div class="operator">.</div><div class="ident">Report</div><div class="operator">)</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">oldReport</div><div class="operator">)</div><div class="operator"></div>
-	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div>
-			<div class="literal">&#34;Deserialization error - Couldn&#39;t create report object for older report\n %s&#34;</div><div class="operator">,</div>
-			<div class="ident">string</div><div class="operator">(</div><div class="ident">reported</div><div class="operator">[</div><div class="literal">0</div><div class="operator">]</div><div class="operator">.</div><div class="ident">Report</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
-		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusStorageError</div><div class="operator">)</div><div class="operator"></div>
-	<div class="operator">}</div><div class="operator"></div>
-	<div class="ident">notify</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">CompareReports</div><div class="operator">(</div><div class="ident">oldReport</div><div class="operator">,</div> <div class="ident">report</div><div class="operator">)</div><div class="operator"></div>
-	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Unable to compare old and new reports&#34;</div><div class="operator">)</div><div class="operator"></div>
-	<div class="operator">}</div><div class="operator"></div>
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Bool</div><div class="operator">(</div><div class="literal">&#34;resolution&#34;</div><div class="operator">,</div> <div class="ident">notify</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Should notify user&#34;</div><div class="operator">)</div><div class="operator"></div>
-	<div class="keyword">return</div> <div class="ident">notify</div><div class="operator"></div>
+	<div class="keyword">return</div> <div class="ident">getNotificationResolution</div><div class="operator">(</div><div class="ident">issue</div><div class="operator">,</div> <div class="ident">reported</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 <div class="keyword">func</div> <div class="ident">updateNotificationRecordSameState</div><div class="operator">(</div><div class="ident">storage</div> <div class="ident">Storage</div><div class="operator">,</div> <div class="ident">cluster</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">report</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterReport</div><div class="operator">,</div> <div class="ident">notifiedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div><div class="literal">&#34;No new issues to notify for cluster %s&#34;</div><div class="operator">,</div> <div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Same report as before&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">NotificationNotSentSameState</div><div class="operator">.</div><div class="ident">Inc</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
 </code></pre></td>
       </tr>
       
@@ -258,6 +252,7 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/compar
 
 <div class="keyword">func</div> <div class="ident">updateNotificationRecordSentState</div><div class="operator">(</div><div class="ident">storage</div> <div class="ident">Storage</div><div class="operator">,</div> <div class="ident">cluster</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">report</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterReport</div><div class="operator">,</div> <div class="ident">notifiedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div><div class="literal">&#34;New issues notified for cluster %s&#34;</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">NotificationSent</div><div class="operator">.</div><div class="ident">Inc</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">WriteNotificationRecordForCluster</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">,</div> <div class="ident">notificationTypes</div><div class="operator">.</div><div class="ident">Instant</div><div class="operator">,</div> <div class="ident">states</div><div class="operator">.</div><div class="ident">SentState</div><div class="operator">,</div> <div class="ident">report</div><div class="operator">,</div> <div class="ident">notifiedAt</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
 		<div class="ident">writeNotificationRecordFailed</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
@@ -266,6 +261,7 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/compar
 
 <div class="keyword">func</div> <div class="ident">updateNotificationRecordErrorState</div><div class="operator">(</div><div class="ident">storage</div> <div class="ident">Storage</div><div class="operator">,</div> <div class="ident">err</div> <div class="ident">error</div><div class="operator">,</div> <div class="ident">cluster</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">report</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterReport</div><div class="operator">,</div> <div class="ident">notifiedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div><div class="literal">&#34;New issues couldn&#39;t be notified for cluster %s&#34;</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">NotificationNotSentErrorState</div><div class="operator">.</div><div class="ident">Inc</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">err</div> <div class="operator">=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">WriteNotificationRecordForCluster</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">,</div> <div class="ident">notificationTypes</div><div class="operator">.</div><div class="ident">Instant</div><div class="operator">,</div> <div class="ident">states</div><div class="operator">.</div><div class="ident">ErrorState</div><div class="operator">,</div> <div class="ident">report</div><div class="operator">,</div> <div class="ident">notifiedAt</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
 		<div class="ident">writeNotificationRecordFailed</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator"></div>
@@ -282,7 +278,7 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/compar
       <tr class="section">
 	<td class="doc"><p>Function issuesEqual compares two issues from reports</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">issuesEqual</div><div class="operator">(</div><div class="ident">issue1</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ReportItem</div><div class="operator">,</div> <div class="ident">issue2</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ReportItem</div><div class="operator">)</div> <div class="ident">bool</div> <div class="operator">{</div>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">issuesEqual</div><div class="operator">(</div><div class="ident">issue1</div><div class="operator">,</div> <div class="ident">issue2</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ReportItem</div><div class="operator">)</div> <div class="ident">bool</div> <div class="operator">{</div>
 	<div class="keyword">if</div> <div class="ident">issue1</div><div class="operator">.</div><div class="ident">Type</div> <div class="operator">==</div> <div class="ident">issue2</div><div class="operator">.</div><div class="ident">Type</div> <div class="operator">&amp;&amp;</div>
 		<div class="ident">issue1</div><div class="operator">.</div><div class="ident">Module</div> <div class="operator">==</div> <div class="ident">issue2</div><div class="operator">.</div><div class="ident">Module</div> <div class="operator">&amp;&amp;</div>
 		<div class="ident">issue1</div><div class="operator">.</div><div class="ident">ErrorKey</div> <div class="operator">==</div> <div class="ident">issue2</div><div class="operator">.</div><div class="ident">ErrorKey</div> <div class="operator">&amp;&amp;</div>
@@ -296,92 +292,18 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/compar
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>CompareReports compares old OCP report with the newest one and
-returns boolean flag indicating that new report contain new issues and thus
-user needs to be informed about them.</p>
+	<td class="doc"><p>IssueNotInReport searches for a specific issue in given OCP report.
+It returns a boolean flag indicating that the report does not
+contain the issue and thus user needs to be informed about it.</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">CompareReports</div><div class="operator">(</div>
-	<div class="ident">oldReport</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Report</div><div class="operator">,</div>
-	<div class="ident">newReport</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Report</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">bool</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
-
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>check whether new report contains more issues than the older one</p>
-</td>
-	<td class="code"><pre><code>	<div class="keyword">if</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">newReport</div><div class="operator">.</div><div class="ident">Reports</div><div class="operator">)</div> <div class="operator">&gt;</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">oldReport</div><div class="operator">.</div><div class="ident">Reports</div><div class="operator">)</div> <div class="operator">{</div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;New report contains more issues&#34;</div><div class="operator">)</div><div class="operator"></div>
-		<div class="keyword">return</div> <div class="ident">true</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
-	<div class="operator">}</div><div class="operator"></div>
-
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>now the number of issues is the same: time to compare them</p>
-</td>
-	<td class="code"><pre><code>	<div class="ident">notFoundIssues</div> <div class="operator">:=</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">newReport</div><div class="operator">.</div><div class="ident">Reports</div><div class="operator">)</div><div class="operator"></div>
-	<div class="keyword">for</div> <div class="ident">_</div><div class="operator">,</div> <div class="ident">issue1</div> <div class="operator">:=</div> <div class="keyword">range</div> <div class="ident">oldReport</div><div class="operator">.</div><div class="ident">Reports</div> <div class="operator">{</div>
-		<div class="ident">found</div> <div class="operator">:=</div> <div class="ident">false</div><div class="operator"></div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>check if issue1 is found in newest report</p>
-</td>
-	<td class="code"><pre><code>		<div class="keyword">for</div> <div class="ident">_</div><div class="operator">,</div> <div class="ident">issue2</div> <div class="operator">:=</div> <div class="keyword">range</div> <div class="ident">newReport</div><div class="operator">.</div><div class="ident">Reports</div> <div class="operator">{</div>
-			<div class="keyword">if</div> <div class="ident">issuesEqual</div><div class="operator">(</div><div class="ident">issue1</div><div class="operator">,</div> <div class="ident">issue2</div><div class="operator">)</div> <div class="operator">{</div>
-				<div class="ident">found</div> <div class="operator">=</div> <div class="ident">true</div><div class="operator"></div>
-				<div class="ident">notFoundIssues</div><div class="operator">--</div><div class="operator"></div>
-				<div class="keyword">break</div><div class="operator"></div>
-			<div class="operator">}</div><div class="operator"></div>
-		<div class="operator">}</div><div class="operator"></div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>all issues in newReports have been found in oldReports -&gt; return false</p>
-</td>
-	<td class="code"><pre><code>		<div class="keyword">if</div> <div class="ident">notFoundIssues</div> <div class="operator">==</div> <div class="literal">0</div> <div class="operator">{</div>
-			<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;New report does not contain new issues&#34;</div><div class="operator">)</div><div class="operator"></div>
-			<div class="keyword">return</div> <div class="ident">false</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
-		<div class="operator">}</div><div class="operator"></div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>issue can't be found in this old report -&gt; there might be change user needs to
-be notified about. Let's keep the log for now, might help for debug</p>
-</td>
-	<td class="code"><pre><code>		<div class="keyword">if</div> <div class="operator">!</div><div class="ident">found</div> <div class="operator">{</div>
-			<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Type&#34;</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">issue1</div><div class="operator">.</div><div class="ident">Type</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Module&#34;</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">issue1</div><div class="operator">.</div><div class="ident">Module</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;ErrorKey&#34;</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">issue1</div><div class="operator">.</div><div class="ident">ErrorKey</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Details&#34;</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">issue1</div><div class="operator">.</div><div class="ident">Details</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Not found&#34;</div><div class="operator">)</div><div class="operator"></div>
-			<div class="keyword">return</div> <div class="ident">true</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">IssueNotInReport</div><div class="operator">(</div><div class="ident">oldReport</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Report</div><div class="operator">,</div> <div class="ident">issue</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ReportItem</div><div class="operator">)</div> <div class="ident">bool</div> <div class="operator">{</div>
+	<div class="keyword">for</div> <div class="ident">_</div><div class="operator">,</div> <div class="ident">oldIssue</div> <div class="operator">:=</div> <div class="keyword">range</div> <div class="ident">oldReport</div><div class="operator">.</div><div class="ident">Reports</div> <div class="operator">{</div>
+		<div class="keyword">if</div> <div class="ident">issuesEqual</div><div class="operator">(</div><div class="ident">oldIssue</div><div class="operator">,</div> <div class="ident">issue</div><div class="operator">)</div> <div class="operator">{</div>
+			<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Issue already notified in previous report within cooldown time&#34;</div><div class="operator">)</div><div class="operator"></div>
+			<div class="keyword">return</div> <div class="ident">false</div><div class="operator"></div>
 		<div class="operator">}</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>Some issues can't be found -&gt; there must be change user needs to
-be notified about</p>
-</td>
-	<td class="code"><pre><code>	<div class="keyword">if</div> <div class="ident">notFoundIssues</div> <div class="operator">&gt;</div> <div class="literal">0</div> <div class="operator">{</div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;All issues in new report have already been reported&#34;</div><div class="operator">)</div><div class="operator"></div>
-		<div class="keyword">return</div> <div class="ident">true</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
-	<div class="operator">}</div><div class="operator"></div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>seems like both old report and new report are the same</p>
-</td>
-	<td class="code"><pre><code>	<div class="keyword">return</div> <div class="ident">false</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
+	<div class="keyword">return</div> <div class="ident">true</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 <div class="keyword">func</div> <div class="ident">getNotificationTypes</div><div class="operator">(</div><div class="ident">storage</div> <div class="ident">Storage</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>

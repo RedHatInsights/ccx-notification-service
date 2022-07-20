@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- Copyright 2021 Red Hat, Inc
+ Copyright 2022 Red Hat, Inc
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -168,7 +168,7 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/differ
 	<td class="doc"><p>Configuration-related constants</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">const</div> <div class="operator">(</div>
-	<div class="ident">configFileEnvVariableName</div> <div class="operator">=</div> <div class="literal">&#34;NOTIFICATION_SERVICE_CONFIG_FILE&#34;</div><div class="operator"></div>
+	<div class="ident">configFileEnvVariableName</div> <div class="operator">=</div> <div class="literal">&#34;CCX_NOTIFICATION_SERVICE_CONFIG_FILE&#34;</div><div class="operator"></div>
 	<div class="ident">defaultConfigFileName</div>     <div class="operator">=</div> <div class="literal">&#34;config&#34;</div><div class="operator"></div>
 
 </code></pre></td>
@@ -243,6 +243,20 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/differ
 	<td class="doc"><p>ExitStatusKafkaConnectionNotClosedError is raised when connection cannot be closed</p>
 </td>
 	<td class="code"><pre><code>	<div class="ident">ExitStatusKafkaConnectionNotClosedError</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ExitStatusCleanerError is raised when clean operation is not successful</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">ExitStatusCleanerError</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ExitStatusMetricsError is raised when prometheus metrics cannot be pushed</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">ExitStatusMetricsError</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
 </code></pre></td>
@@ -253,17 +267,19 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/differ
 </td>
 	<td class="code"><pre><code><div class="keyword">const</div> <div class="operator">(</div>
 	<div class="ident">versionMessage</div>              <div class="operator">=</div> <div class="literal">&#34;Notification service version 1.0&#34;</div><div class="operator"></div>
-	<div class="ident">authorsMessage</div>              <div class="operator">=</div> <div class="literal">&#34;Pavel Tisnovsky, Red Hat Inc.&#34;</div><div class="operator"></div>
+	<div class="ident">authorsMessage</div>              <div class="operator">=</div> <div class="literal">&#34;Pavel Tisnovsky, Papa Bakary Camara, Red Hat Inc.&#34;</div><div class="operator"></div>
 	<div class="ident">separator</div>                   <div class="operator">=</div> <div class="literal">&#34;------------------------------------------------------------&#34;</div><div class="operator"></div>
 	<div class="ident">operationFailedMessage</div>      <div class="operator">=</div> <div class="literal">&#34;Operation failed&#34;</div><div class="operator"></div>
 	<div class="ident">clusterEntryMessage</div>         <div class="operator">=</div> <div class="literal">&#34;cluster entry&#34;</div><div class="operator"></div>
 	<div class="ident">organizationIDAttribute</div>     <div class="operator">=</div> <div class="literal">&#34;org id&#34;</div><div class="operator"></div>
 	<div class="ident">AccountNumberAttribute</div>      <div class="operator">=</div> <div class="literal">&#34;account number&#34;</div><div class="operator"></div>
 	<div class="ident">clusterAttribute</div>            <div class="operator">=</div> <div class="literal">&#34;cluster&#34;</div><div class="operator"></div>
+	<div class="ident">clustersAttribute</div>           <div class="operator">=</div> <div class="literal">&#34;clusters&#34;</div><div class="operator"></div>
 	<div class="ident">totalRiskAttribute</div>          <div class="operator">=</div> <div class="literal">&#34;totalRisk&#34;</div><div class="operator"></div>
 	<div class="ident">errorStr</div>                    <div class="operator">=</div> <div class="literal">&#34;Error:&#34;</div><div class="operator"></div>
 	<div class="ident">invalidJSONContent</div>          <div class="operator">=</div> <div class="literal">&#34;The provided content cannot be encoded as JSON.&#34;</div><div class="operator"></div>
 	<div class="ident">contextToEscapedStringError</div> <div class="operator">=</div> <div class="literal">&#34;Notification message will not be generated as context couldn&#39;t be converted to escaped string.&#34;</div><div class="operator"></div>
+	<div class="ident">metricsPushFailedMessage</div>    <div class="operator">=</div> <div class="literal">&#34;Couldn&#39;t push prometheus metrics&#34;</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
 </code></pre></td>
@@ -320,8 +336,12 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/differ
 <div class="operator">)</div><div class="operator"></div>
 
 <div class="keyword">var</div> <div class="operator">(</div>
-	<div class="ident">notificationType</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">EventType</div><div class="operator"></div>
-	<div class="ident">notifier</div>         <div class="operator">*</div><div class="ident">producer</div><div class="operator">.</div><div class="ident">KafkaProducer</div><div class="operator"></div>
+	<div class="ident">notificationType</div>               <div class="ident">types</div><div class="operator">.</div><div class="ident">EventType</div><div class="operator"></div>
+	<div class="ident">notifier</div>                       <div class="operator">*</div><div class="ident">producer</div><div class="operator">.</div><div class="ident">KafkaProducer</div><div class="operator"></div>
+	<div class="ident">notificationClusterDetailsURI</div>  <div class="ident">string</div><div class="operator"></div>
+	<div class="ident">notificationRuleDetailsURI</div>     <div class="ident">string</div><div class="operator"></div>
+	<div class="ident">notificationInsightsAdvisorURL</div> <div class="ident">string</div><div class="operator"></div>
+	<div class="ident">previouslyReported</div>             <div class="ident">types</div><div class="operator">.</div><div class="ident">NotifiedRecordsPerCluster</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
 </code></pre></td>
@@ -344,6 +364,61 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/differ
 	<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="ident">authorsMessage</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>showConfiguration function displays actual configuration.</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">showConfiguration</div><div class="operator">(</div><div class="ident">config</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">ConfigStruct</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">brokerConfig</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetKafkaBrokerConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Address&#34;</div><div class="operator">,</div> <div class="ident">brokerConfig</div><div class="operator">.</div><div class="ident">Address</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Topic&#34;</div><div class="operator">,</div> <div class="ident">brokerConfig</div><div class="operator">.</div><div class="ident">Topic</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Timeout&#34;</div><div class="operator">,</div> <div class="ident">brokerConfig</div><div class="operator">.</div><div class="ident">Timeout</div><div class="operator">.</div><div class="ident">String</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Broker configuration&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">storageConfig</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetStorageConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Driver&#34;</div><div class="operator">,</div> <div class="ident">storageConfig</div><div class="operator">.</div><div class="ident">Driver</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;DB Name&#34;</div><div class="operator">,</div> <div class="ident">storageConfig</div><div class="operator">.</div><div class="ident">PGDBName</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Username&#34;</div><div class="operator">,</div> <div class="ident">storageConfig</div><div class="operator">.</div><div class="ident">PGUsername</div><div class="operator">)</div><div class="operator">.</div> <div class="comment">// password is omitted on purpose</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Host&#34;</div><div class="operator">,</div> <div class="ident">storageConfig</div><div class="operator">.</div><div class="ident">PGHost</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;Port&#34;</div><div class="operator">,</div> <div class="ident">storageConfig</div><div class="operator">.</div><div class="ident">PGPort</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Bool</div><div class="operator">(</div><div class="literal">&#34;LogSQLQueries&#34;</div><div class="operator">,</div> <div class="ident">storageConfig</div><div class="operator">.</div><div class="ident">LogSQLQueries</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Parameters&#34;</div><div class="operator">,</div> <div class="ident">storageConfig</div><div class="operator">.</div><div class="ident">PGParams</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Storage configuration&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">loggingConfig</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetLoggingConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Level&#34;</div><div class="operator">,</div> <div class="ident">loggingConfig</div><div class="operator">.</div><div class="ident">LogLevel</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Bool</div><div class="operator">(</div><div class="literal">&#34;Pretty colored debug logging&#34;</div><div class="operator">,</div> <div class="ident">loggingConfig</div><div class="operator">.</div><div class="ident">Debug</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Logging configuration&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">notificationConfig</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetNotificationsConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Insights Advisor URL&#34;</div><div class="operator">,</div> <div class="ident">notificationConfig</div><div class="operator">.</div><div class="ident">InsightsAdvisorURL</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Cluster details URI&#34;</div><div class="operator">,</div> <div class="ident">notificationConfig</div><div class="operator">.</div><div class="ident">ClusterDetailsURI</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Rule details URI&#34;</div><div class="operator">,</div> <div class="ident">notificationConfig</div><div class="operator">.</div><div class="ident">RuleDetailsURI</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Notifications configuration&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">metricsConfig</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetMetricsConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Authentication token and metrics groups values are omitted on
+purpose</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Namespace&#34;</div><div class="operator">,</div> <div class="ident">metricsConfig</div><div class="operator">.</div><div class="ident">Namespace</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Push Gateway&#34;</div><div class="operator">,</div> <div class="ident">metricsConfig</div><div class="operator">.</div><div class="ident">GatewayURL</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;Retries&#34;</div><div class="operator">,</div> <div class="ident">metricsConfig</div><div class="operator">.</div><div class="ident">Retries</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;Retry after&#34;</div><div class="operator">,</div> <div class="ident">metricsConfig</div><div class="operator">.</div><div class="ident">RetryAfter</div><div class="operator">.</div><div class="ident">String</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
+		<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Metrics configuration&#34;</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
 <div class="keyword">func</div> <div class="ident">calculateTotalRisk</div><div class="operator">(</div><div class="ident">impact</div><div class="operator">,</div> <div class="ident">likelihood</div> <div class="ident">int</div><div class="operator">)</div> <div class="ident">int</div> <div class="operator">{</div>
 	<div class="keyword">return</div> <div class="operator">(</div><div class="ident">impact</div> <div class="operator">&#43;</div> <div class="ident">likelihood</div><div class="operator">)</div> <div class="operator">/</div> <div class="literal">2</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
@@ -356,28 +431,32 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/differ
 -&gt;
 cluster<em>wide</em>proxy<em>auth</em>check</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">moduleToRuleName</div><div class="operator">(</div><div class="ident">module</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">string</div> <div class="operator">{</div>
-	<div class="ident">result</div> <div class="operator">:=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">TrimSuffix</div><div class="operator">(</div><div class="ident">module</div><div class="operator">,</div> <div class="literal">&#34;.report&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">moduleToRuleName</div><div class="operator">(</div><div class="ident">module</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ModuleName</div><div class="operator">)</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">RuleName</div> <div class="operator">{</div>
+	<div class="ident">result</div> <div class="operator">:=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">TrimSuffix</div><div class="operator">(</div><div class="ident">string</div><div class="operator">(</div><div class="ident">module</div><div class="operator">)</div><div class="operator">,</div> <div class="literal">&#34;.report&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">result</div> <div class="operator">=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">TrimPrefix</div><div class="operator">(</div><div class="ident">result</div><div class="operator">,</div> <div class="literal">&#34;ccx_rules_ocp.&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">result</div> <div class="operator">=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">TrimPrefix</div><div class="operator">(</div><div class="ident">result</div><div class="operator">,</div> <div class="literal">&#34;external.&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">result</div> <div class="operator">=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">TrimPrefix</div><div class="operator">(</div><div class="ident">result</div><div class="operator">,</div> <div class="literal">&#34;rules.&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">result</div> <div class="operator">=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">TrimPrefix</div><div class="operator">(</div><div class="ident">result</div><div class="operator">,</div> <div class="literal">&#34;bug_rules.&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">result</div> <div class="operator">=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">TrimPrefix</div><div class="operator">(</div><div class="ident">result</div><div class="operator">,</div> <div class="literal">&#34;ocs.&#34;</div><div class="operator">)</div><div class="operator"></div>
 
-	<div class="keyword">return</div> <div class="ident">result</div><div class="operator"></div>
+	<div class="keyword">return</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">RuleName</div><div class="operator">(</div><div class="ident">result</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
-<div class="keyword">func</div> <div class="ident">findRuleByNameAndErrorKey</div><div class="operator">(</div><div class="ident">ruleContent</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">RulesMap</div><div class="operator">,</div> <div class="ident">impacts</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Impacts</div><div class="operator">,</div> <div class="ident">ruleName</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">errorKey</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">int</div><div class="operator">,</div> <div class="ident">int</div><div class="operator">)</div> <div class="operator">{</div>
-	<div class="ident">rc</div> <div class="operator">:=</div> <div class="ident">ruleContent</div><div class="operator">[</div><div class="ident">ruleName</div><div class="operator">]</div><div class="operator"></div>
+<div class="keyword">func</div> <div class="ident">findRuleByNameAndErrorKey</div><div class="operator">(</div>
+	<div class="ident">ruleContent</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">RulesMap</div><div class="operator">,</div> <div class="ident">ruleName</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">RuleName</div><div class="operator">,</div> <div class="ident">errorKey</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ErrorKey</div><div class="operator">)</div> <div class="operator">(</div>
+	<div class="ident">likelihood</div> <div class="ident">int</div><div class="operator">,</div> <div class="ident">impact</div> <div class="ident">int</div><div class="operator">,</div> <div class="ident">totalRisk</div> <div class="ident">int</div><div class="operator">,</div> <div class="ident">description</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">rc</div> <div class="operator">:=</div> <div class="ident">ruleContent</div><div class="operator">[</div><div class="ident">string</div><div class="operator">(</div><div class="ident">ruleName</div><div class="operator">)</div><div class="operator">]</div><div class="operator"></div>
 	<div class="ident">ek</div> <div class="operator">:=</div> <div class="ident">rc</div><div class="operator">.</div><div class="ident">ErrorKeys</div><div class="operator"></div>
-	<div class="ident">val</div> <div class="operator">:=</div> <div class="ident">ek</div><div class="operator">[</div><div class="ident">errorKey</div><div class="operator">]</div><div class="operator"></div>
-	<div class="ident">likelihood</div> <div class="operator">:=</div> <div class="ident">val</div><div class="operator">.</div><div class="ident">Metadata</div><div class="operator">.</div><div class="ident">Likelihood</div><div class="operator"></div>
-	<div class="ident">impact</div> <div class="operator">:=</div> <div class="ident">impacts</div><div class="operator">[</div><div class="ident">val</div><div class="operator">.</div><div class="ident">Metadata</div><div class="operator">.</div><div class="ident">Impact</div><div class="operator">]</div><div class="operator"></div>
-	<div class="ident">totalRisk</div> <div class="operator">:=</div> <div class="ident">calculateTotalRisk</div><div class="operator">(</div><div class="ident">likelihood</div><div class="operator">,</div> <div class="ident">impact</div><div class="operator">)</div><div class="operator"></div>
-	<div class="keyword">return</div> <div class="ident">likelihood</div><div class="operator">,</div> <div class="ident">impact</div><div class="operator">,</div> <div class="ident">totalRisk</div><div class="operator"></div>
+	<div class="ident">val</div> <div class="operator">:=</div> <div class="ident">ek</div><div class="operator">[</div><div class="ident">string</div><div class="operator">(</div><div class="ident">errorKey</div><div class="operator">)</div><div class="operator">]</div><div class="operator"></div>
+	<div class="ident">likelihood</div> <div class="operator">=</div> <div class="ident">val</div><div class="operator">.</div><div class="ident">Metadata</div><div class="operator">.</div><div class="ident">Likelihood</div><div class="operator"></div>
+	<div class="ident">description</div> <div class="operator">=</div> <div class="ident">val</div><div class="operator">.</div><div class="ident">Metadata</div><div class="operator">.</div><div class="ident">Description</div><div class="operator"></div>
+	<div class="ident">impact</div> <div class="operator">=</div> <div class="ident">val</div><div class="operator">.</div><div class="ident">Metadata</div><div class="operator">.</div><div class="ident">Impact</div><div class="operator">.</div><div class="ident">Impact</div><div class="operator"></div>
+	<div class="ident">totalRisk</div> <div class="operator">=</div> <div class="ident">calculateTotalRisk</div><div class="operator">(</div><div class="ident">likelihood</div><div class="operator">,</div> <div class="ident">impact</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">return</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
-<div class="keyword">func</div> <div class="ident">processReportsByCluster</div><div class="operator">(</div><div class="ident">ruleContent</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">RulesMap</div><div class="operator">,</div> <div class="ident">impacts</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Impacts</div><div class="operator">,</div> <div class="ident">storage</div> <div class="ident">Storage</div><div class="operator">,</div> <div class="ident">clusters</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">notificationConfig</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">NotificationsConfiguration</div><div class="operator">)</div> <div class="operator">{</div>
+<div class="keyword">func</div> <div class="ident">processReportsByCluster</div><div class="operator">(</div><div class="ident">ruleContent</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">RulesMap</div><div class="operator">,</div> <div class="ident">storage</div> <div class="ident">Storage</div><div class="operator">,</div> <div class="ident">clusters</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">notifiedIssues</div> <div class="operator">:=</div> <div class="literal">0</div><div class="operator"></div>
 	<div class="keyword">for</div> <div class="ident">i</div><div class="operator">,</div> <div class="ident">cluster</div> <div class="operator">:=</div> <div class="keyword">range</div> <div class="ident">clusters</div> <div class="operator">{</div>
 		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
 			<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;#&#34;</div><div class="operator">,</div> <div class="ident">i</div><div class="operator">)</div><div class="operator">.</div>
@@ -386,17 +465,17 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 			<div class="ident">Str</div><div class="operator">(</div><div class="ident">clusterAttribute</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
 			<div class="ident">Msg</div><div class="operator">(</div><div class="ident">clusterEntryMessage</div><div class="operator">)</div><div class="operator"></div>
 
-		<div class="ident">report</div><div class="operator">,</div> <div class="ident">reportedAt</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">ReadReportForCluster</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">report</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">ReadReportForClusterAtTime</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">,</div> <div class="ident">cluster</div><div class="operator">.</div><div class="ident">UpdatedAt</div><div class="operator">)</div><div class="operator"></div>
 		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="ident">ReadReportForClusterErrors</div><div class="operator">.</div><div class="ident">Inc</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
 			<div class="ident">log</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">operationFailedMessage</div><div class="operator">)</div><div class="operator"></div>
 			<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusStorageError</div><div class="operator">)</div><div class="operator"></div>
 		<div class="operator">}</div><div class="operator"></div>
 
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Time</div><div class="operator">(</div><div class="literal">&#34;time&#34;</div><div class="operator">,</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Time</div><div class="operator">(</div><div class="ident">reportedAt</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read&#34;</div><div class="operator">)</div><div class="operator"></div>
 		<div class="keyword">var</div> <div class="ident">deserialized</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Report</div><div class="operator"></div>
-
 		<div class="ident">err</div> <div class="operator">=</div> <div class="ident">json</div><div class="operator">.</div><div class="ident">Unmarshal</div><div class="operator">(</div><div class="operator">[</div><div class="operator">]</div><div class="ident">byte</div><div class="operator">(</div><div class="ident">report</div><div class="operator">)</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">deserialized</div><div class="operator">)</div><div class="operator"></div>
 		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="ident">DeserializeReportErrors</div><div class="operator">.</div><div class="ident">Inc</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
 			<div class="ident">log</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Deserialization error - Couldn&#39;t create report object&#34;</div><div class="operator">)</div><div class="operator"></div>
 			<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusStorageError</div><div class="operator">)</div><div class="operator"></div>
 		<div class="operator">}</div><div class="operator"></div>
@@ -406,39 +485,37 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 			<div class="keyword">continue</div><div class="operator"></div>
 		<div class="operator">}</div><div class="operator"></div>
 
+		<div class="ident">notificationMsg</div> <div class="operator">:=</div> <div class="ident">generateInstantNotificationMessage</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">notificationClusterDetailsURI</div><div class="operator">,</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprint</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">AccountNumber</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
 		<div class="ident">notifiedAt</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">(</div><div class="ident">time</div><div class="operator">.</div><div class="ident">Now</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
-		<div class="keyword">if</div> <div class="operator">!</div><div class="ident">shouldNotify</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">,</div> <div class="ident">cluster</div><div class="operator">,</div> <div class="ident">deserialized</div><div class="operator">)</div> <div class="operator">{</div>
-			<div class="ident">updateNotificationRecordSameState</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">,</div> <div class="ident">cluster</div><div class="operator">,</div> <div class="ident">report</div><div class="operator">,</div> <div class="ident">notifiedAt</div><div class="operator">)</div><div class="operator"></div>
-			<div class="keyword">continue</div><div class="operator"></div>
-		<div class="operator">}</div><div class="operator"></div>
 
+		<div class="keyword">for</div> <div class="ident">_</div><div class="operator">,</div> <div class="ident">r</div> <div class="operator">:=</div> <div class="keyword">range</div> <div class="ident">deserialized</div><div class="operator">.</div><div class="ident">Reports</div> <div class="operator">{</div>
+			<div class="ident">module</div> <div class="operator">:=</div> <div class="ident">r</div><div class="operator">.</div><div class="ident">Module</div><div class="operator"></div>
+			<div class="ident">ruleName</div> <div class="operator">:=</div> <div class="ident">moduleToRuleName</div><div class="operator">(</div><div class="ident">module</div><div class="operator">)</div><div class="operator"></div>
+			<div class="ident">errorKey</div> <div class="operator">:=</div> <div class="ident">r</div><div class="operator">.</div><div class="ident">ErrorKey</div><div class="operator"></div>
+			<div class="ident">likelihood</div><div class="operator">,</div> <div class="ident">impact</div><div class="operator">,</div> <div class="ident">totalRisk</div><div class="operator">,</div> <div class="ident">description</div> <div class="operator">:=</div> <div class="ident">findRuleByNameAndErrorKey</div><div class="operator">(</div><div class="ident">ruleContent</div><div class="operator">,</div> <div class="ident">ruleName</div><div class="operator">,</div> <div class="ident">errorKey</div><div class="operator">)</div><div class="operator"></div>
+
+			<div class="keyword">if</div> <div class="ident">totalRisk</div> <div class="operator">&gt;=</div> <div class="ident">totalRiskThreshold</div> <div class="operator">{</div>
+				<div class="ident">log</div><div class="operator">.</div><div class="ident">Warn</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
+					<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;type&#34;</div><div class="operator">,</div> <div class="ident">r</div><div class="operator">.</div><div class="ident">Type</div><div class="operator">)</div><div class="operator">.</div>
+					<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;rule&#34;</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">ruleName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
+					<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;error key&#34;</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">errorKey</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
+					<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;likelihood&#34;</div><div class="operator">,</div> <div class="ident">likelihood</div><div class="operator">)</div><div class="operator">.</div>
+					<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;impact&#34;</div><div class="operator">,</div> <div class="ident">impact</div><div class="operator">)</div><div class="operator">.</div>
+					<div class="ident">Int</div><div class="operator">(</div><div class="ident">totalRiskAttribute</div><div class="operator">,</div> <div class="ident">totalRisk</div><div class="operator">)</div><div class="operator">.</div>
+					<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Report with high impact detected&#34;</div><div class="operator">)</div><div class="operator"></div>
+				<div class="keyword">if</div> <div class="operator">!</div><div class="ident">shouldNotify</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">,</div> <div class="ident">r</div><div class="operator">)</div> <div class="operator">{</div>
+					<div class="keyword">continue</div><div class="operator"></div>
+				<div class="operator">}</div><div class="operator"></div>
 </code></pre></td>
       </tr>
       
       <tr class="section">
 	<td class="doc"><p>if new report differs from the older one -&gt; send notification</p>
 </td>
-	<td class="code"><pre><code>		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Different report from the last one&#34;</div><div class="operator">)</div><div class="operator"></div>
-
-		<div class="ident">notificationMsg</div> <div class="operator">:=</div> <div class="ident">generateInstantNotificationMessage</div><div class="operator">(</div><div class="ident">notificationConfig</div><div class="operator">.</div><div class="ident">ClusterDetailsURI</div><div class="operator">,</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprint</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">AccountNumber</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
-
-		<div class="keyword">for</div> <div class="ident">i</div><div class="operator">,</div> <div class="ident">r</div> <div class="operator">:=</div> <div class="keyword">range</div> <div class="ident">deserialized</div><div class="operator">.</div><div class="ident">Reports</div> <div class="operator">{</div>
-			<div class="ident">ruleName</div> <div class="operator">:=</div> <div class="ident">moduleToRuleName</div><div class="operator">(</div><div class="ident">string</div><div class="operator">(</div><div class="ident">r</div><div class="operator">.</div><div class="ident">Module</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
-			<div class="ident">errorKey</div> <div class="operator">:=</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">r</div><div class="operator">.</div><div class="ident">ErrorKey</div><div class="operator">)</div><div class="operator"></div>
-			<div class="ident">likelihood</div><div class="operator">,</div> <div class="ident">impact</div><div class="operator">,</div> <div class="ident">totalRisk</div> <div class="operator">:=</div> <div class="ident">findRuleByNameAndErrorKey</div><div class="operator">(</div><div class="ident">ruleContent</div><div class="operator">,</div> <div class="ident">impacts</div><div class="operator">,</div> <div class="ident">ruleName</div><div class="operator">,</div> <div class="ident">errorKey</div><div class="operator">)</div><div class="operator"></div>
-
-			<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;#&#34;</div><div class="operator">,</div> <div class="ident">i</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;type&#34;</div><div class="operator">,</div> <div class="ident">r</div><div class="operator">.</div><div class="ident">Type</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;rule&#34;</div><div class="operator">,</div> <div class="ident">ruleName</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;error key&#34;</div><div class="operator">,</div> <div class="ident">errorKey</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;likelihood&#34;</div><div class="operator">,</div> <div class="ident">likelihood</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;impact&#34;</div><div class="operator">,</div> <div class="ident">impact</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Int</div><div class="operator">(</div><div class="ident">totalRiskAttribute</div><div class="operator">,</div> <div class="ident">totalRisk</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Report&#34;</div><div class="operator">)</div><div class="operator"></div>
-			<div class="keyword">if</div> <div class="ident">totalRisk</div> <div class="operator">&gt;=</div> <div class="ident">totalRiskThreshold</div> <div class="operator">{</div>
-				<div class="ident">log</div><div class="operator">.</div><div class="ident">Warn</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Int</div><div class="operator">(</div><div class="ident">totalRiskAttribute</div><div class="operator">,</div> <div class="ident">totalRisk</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Report with high impact detected&#34;</div><div class="operator">)</div><div class="operator"></div>
-				<div class="ident">appendEventToNotificationMessage</div><div class="operator">(</div><div class="ident">notificationConfig</div><div class="operator">.</div><div class="ident">RuleDetailsURI</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">notificationMsg</div><div class="operator">,</div> <div class="ident">ruleName</div><div class="operator">,</div> <div class="ident">totalRisk</div><div class="operator">,</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Time</div><div class="operator">(</div><div class="ident">reportedAt</div><div class="operator">)</div><div class="operator">.</div><div class="ident">UTC</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Format</div><div class="operator">(</div><div class="ident">time</div><div class="operator">.</div><div class="ident">RFC3339Nano</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<td class="code"><pre><code>				<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Different report from the last one&#34;</div><div class="operator">)</div><div class="operator"></div>
+				<div class="ident">ReportWithHighImpact</div><div class="operator">.</div><div class="ident">Inc</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+				<div class="ident">notificationPayloadURL</div> <div class="operator">:=</div> <div class="ident">generateNotificationPayloadURL</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">notificationRuleDetailsURI</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">module</div><div class="operator">,</div> <div class="ident">errorKey</div><div class="operator">)</div><div class="operator"></div>
+				<div class="ident">appendEventToNotificationMessage</div><div class="operator">(</div><div class="ident">notificationPayloadURL</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">notificationMsg</div><div class="operator">,</div> <div class="ident">description</div><div class="operator">,</div> <div class="ident">totalRisk</div><div class="operator">,</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Time</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">UpdatedAt</div><div class="operator">)</div><div class="operator">.</div><div class="ident">UTC</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Format</div><div class="operator">(</div><div class="ident">time</div><div class="operator">.</div><div class="ident">RFC3339Nano</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
 			<div class="operator">}</div><div class="operator"></div>
 		<div class="operator">}</div><div class="operator"></div>
 
@@ -457,8 +534,9 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 			<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusKafkaProducerError</div><div class="operator">)</div><div class="operator"></div>
 		<div class="operator">}</div><div class="operator"></div>
 		<div class="ident">updateNotificationRecordSentState</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">,</div> <div class="ident">cluster</div><div class="operator">,</div> <div class="ident">report</div><div class="operator">,</div> <div class="ident">notifiedAt</div><div class="operator">)</div><div class="operator"></div>
-
+		<div class="ident">notifiedIssues</div> <div class="operator">&#43;=</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">notificationMsg</div><div class="operator">.</div><div class="ident">Events</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div><div class="literal">&#34;Number of high impact issues notified: %d&#34;</div><div class="operator">,</div> <div class="ident">notifiedIssues</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -500,7 +578,7 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
       <tr class="section">
 	<td class="doc"><p>processAllReportsFromCurrentWeek function creates weekly digest with for all the clusters corresponding to each user account</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">processAllReportsFromCurrentWeek</div><div class="operator">(</div><div class="ident">ruleContent</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">RulesMap</div><div class="operator">,</div> <div class="ident">impacts</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Impacts</div><div class="operator">,</div> <div class="ident">storage</div> <div class="ident">Storage</div><div class="operator">,</div> <div class="ident">clusters</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">notificationConfig</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">NotificationsConfiguration</div><div class="operator">)</div> <div class="operator">{</div>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">processAllReportsFromCurrentWeek</div><div class="operator">(</div><div class="ident">ruleContent</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">RulesMap</div><div class="operator">,</div> <div class="ident">storage</div> <div class="ident">Storage</div><div class="operator">,</div> <div class="ident">clusters</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="ident">digestByAccount</div> <div class="operator">:=</div> <div class="keyword">map</div><div class="operator">[</div><div class="ident">types</div><div class="operator">.</div><div class="ident">AccountNumber</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">Digest</div><div class="operator">{</div><div class="operator">}</div><div class="operator"></div>
 	<div class="ident">digest</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Digest</div><div class="operator">{</div><div class="operator">}</div><div class="operator"></div>
 
@@ -536,15 +614,16 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 		<div class="ident">digest</div><div class="operator">.</div><div class="ident">Recommendations</div> <div class="operator">&#43;=</div> <div class="ident">numReports</div><div class="operator"></div>
 
 		<div class="keyword">for</div> <div class="ident">i</div><div class="operator">,</div> <div class="ident">r</div> <div class="operator">:=</div> <div class="keyword">range</div> <div class="ident">deserialized</div><div class="operator">.</div><div class="ident">Reports</div> <div class="operator">{</div>
-			<div class="ident">ruleName</div> <div class="operator">:=</div> <div class="ident">moduleToRuleName</div><div class="operator">(</div><div class="ident">string</div><div class="operator">(</div><div class="ident">r</div><div class="operator">.</div><div class="ident">Module</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
-			<div class="ident">errorKey</div> <div class="operator">:=</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">r</div><div class="operator">.</div><div class="ident">ErrorKey</div><div class="operator">)</div><div class="operator"></div>
-			<div class="ident">likelihood</div><div class="operator">,</div> <div class="ident">impact</div><div class="operator">,</div> <div class="ident">totalRisk</div> <div class="operator">:=</div> <div class="ident">findRuleByNameAndErrorKey</div><div class="operator">(</div><div class="ident">ruleContent</div><div class="operator">,</div> <div class="ident">impacts</div><div class="operator">,</div> <div class="ident">ruleName</div><div class="operator">,</div> <div class="ident">errorKey</div><div class="operator">)</div><div class="operator"></div>
+			<div class="ident">moduleName</div> <div class="operator">:=</div> <div class="ident">r</div><div class="operator">.</div><div class="ident">Module</div><div class="operator"></div>
+			<div class="ident">ruleName</div> <div class="operator">:=</div> <div class="ident">moduleToRuleName</div><div class="operator">(</div><div class="ident">moduleName</div><div class="operator">)</div><div class="operator"></div>
+			<div class="ident">errorKey</div> <div class="operator">:=</div> <div class="ident">r</div><div class="operator">.</div><div class="ident">ErrorKey</div><div class="operator"></div>
+			<div class="ident">likelihood</div><div class="operator">,</div> <div class="ident">impact</div><div class="operator">,</div> <div class="ident">totalRisk</div><div class="operator">,</div> <div class="ident">_</div> <div class="operator">:=</div> <div class="ident">findRuleByNameAndErrorKey</div><div class="operator">(</div><div class="ident">ruleContent</div><div class="operator">,</div> <div class="ident">ruleName</div><div class="operator">,</div> <div class="ident">errorKey</div><div class="operator">)</div><div class="operator"></div>
 
 			<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
 				<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;#&#34;</div><div class="operator">,</div> <div class="ident">i</div><div class="operator">)</div><div class="operator">.</div>
 				<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;type&#34;</div><div class="operator">,</div> <div class="ident">r</div><div class="operator">.</div><div class="ident">Type</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;rule&#34;</div><div class="operator">,</div> <div class="ident">ruleName</div><div class="operator">)</div><div class="operator">.</div>
-				<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;error key&#34;</div><div class="operator">,</div> <div class="ident">errorKey</div><div class="operator">)</div><div class="operator">.</div>
+				<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;rule&#34;</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">ruleName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
+				<div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;error key&#34;</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">errorKey</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
 				<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;likelihood&#34;</div><div class="operator">,</div> <div class="ident">likelihood</div><div class="operator">)</div><div class="operator">.</div>
 				<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;impact&#34;</div><div class="operator">,</div> <div class="ident">impact</div><div class="operator">)</div><div class="operator">.</div>
 				<div class="ident">Int</div><div class="operator">(</div><div class="ident">totalRiskAttribute</div><div class="operator">,</div> <div class="ident">totalRisk</div><div class="operator">)</div><div class="operator">.</div>
@@ -568,7 +647,7 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 			<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;important notifications&#34;</div><div class="operator">,</div> <div class="ident">digest</div><div class="operator">.</div><div class="ident">ImportantNotifications</div><div class="operator">)</div><div class="operator">.</div>
 			<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Producing weekly notification for &#34;</div><div class="operator">)</div><div class="operator"></div>
 
-		<div class="ident">notification</div> <div class="operator">:=</div> <div class="ident">generateWeeklyNotificationMessage</div><div class="operator">(</div><div class="ident">notificationConfig</div><div class="operator">.</div><div class="ident">InsightsAdvisorURL</div><div class="operator">,</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprint</div><div class="operator">(</div><div class="ident">account</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">digest</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">notification</div> <div class="operator">:=</div> <div class="ident">generateWeeklyNotificationMessage</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">notificationInsightsAdvisorURL</div><div class="operator">,</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprint</div><div class="operator">(</div><div class="ident">account</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">digest</div><div class="operator">)</div><div class="operator"></div>
 		<div class="ident">_</div><div class="operator">,</div> <div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">notifier</div><div class="operator">.</div><div class="ident">ProduceMessage</div><div class="operator">(</div><div class="ident">notification</div><div class="operator">)</div><div class="operator"></div>
 		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
 			<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
@@ -585,30 +664,11 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
       <tr class="section">
 	<td class="doc"><p>processClusters function creates desired notification messages for all the clusters obtained from the database</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">processClusters</div><div class="operator">(</div><div class="ident">ruleContent</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">RulesMap</div><div class="operator">,</div> <div class="ident">impacts</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Impacts</div><div class="operator">,</div> <div class="ident">storage</div> <div class="ident">Storage</div><div class="operator">,</div> <div class="ident">clusters</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">config</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">ConfigStruct</div><div class="operator">)</div> <div class="operator">{</div>
-	<div class="ident">notificationConfig</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetNotificationsConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
-
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">processClusters</div><div class="operator">(</div><div class="ident">ruleContent</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">RulesMap</div><div class="operator">,</div> <div class="ident">storage</div> <div class="ident">Storage</div><div class="operator">,</div> <div class="ident">clusters</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="keyword">if</div> <div class="ident">notificationType</div> <div class="operator">==</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">InstantNotif</div> <div class="operator">{</div>
-		<div class="ident">processReportsByCluster</div><div class="operator">(</div><div class="ident">ruleContent</div><div class="operator">,</div> <div class="ident">impacts</div><div class="operator">,</div> <div class="ident">storage</div><div class="operator">,</div> <div class="ident">clusters</div><div class="operator">,</div> <div class="ident">notificationConfig</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">processReportsByCluster</div><div class="operator">(</div><div class="ident">ruleContent</div><div class="operator">,</div> <div class="ident">storage</div><div class="operator">,</div> <div class="ident">clusters</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div> <div class="keyword">else</div> <div class="keyword">if</div> <div class="ident">notificationType</div> <div class="operator">==</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">WeeklyDigest</div> <div class="operator">{</div>
-		<div class="ident">processAllReportsFromCurrentWeek</div><div class="operator">(</div><div class="ident">ruleContent</div><div class="operator">,</div> <div class="ident">impacts</div><div class="operator">,</div> <div class="ident">storage</div><div class="operator">,</div> <div class="ident">clusters</div><div class="operator">,</div> <div class="ident">notificationConfig</div><div class="operator">)</div><div class="operator"></div>
-	<div class="operator">}</div><div class="operator"></div>
-<div class="operator">}</div><div class="operator"></div>
-
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>printClusters function displays information of all clusters in the given list</p>
-</td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">printClusters</div><div class="operator">(</div><div class="ident">clusters</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">)</div> <div class="operator">{</div>
-	<div class="keyword">for</div> <div class="ident">i</div><div class="operator">,</div> <div class="ident">cluster</div> <div class="operator">:=</div> <div class="keyword">range</div> <div class="ident">clusters</div> <div class="operator">{</div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
-			<div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;#&#34;</div><div class="operator">,</div> <div class="ident">i</div><div class="operator">)</div><div class="operator">.</div>
-			<div class="ident">Int</div><div class="operator">(</div><div class="ident">organizationIDAttribute</div><div class="operator">,</div> <div class="ident">int</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
-			<div class="ident">Int</div><div class="operator">(</div><div class="ident">AccountNumberAttribute</div><div class="operator">,</div> <div class="ident">int</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">AccountNumber</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
-			<div class="ident">Str</div><div class="operator">(</div><div class="ident">clusterAttribute</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">cluster</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
-			<div class="ident">Msg</div><div class="operator">(</div><div class="ident">clusterEntryMessage</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">processAllReportsFromCurrentWeek</div><div class="operator">(</div><div class="ident">ruleContent</div><div class="operator">,</div> <div class="ident">storage</div><div class="operator">,</div> <div class="ident">clusters</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
@@ -621,6 +681,7 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">setupNotificationProducer</div><div class="operator">(</div><div class="ident">brokerConfig</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">KafkaConfiguration</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="ident">producer</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">producer</div><div class="operator">.</div><div class="ident">New</div><div class="operator">(</div><div class="ident">brokerConfig</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">ProducerSetupErrors</div><div class="operator">.</div><div class="ident">Inc</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
 		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div>
 			<div class="ident">Str</div><div class="operator">(</div><div class="ident">errorStr</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div>
 			<div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Couldn&#39;t initialize Kafka producer with the provided config.&#34;</div><div class="operator">)</div><div class="operator"></div>
@@ -633,33 +694,26 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>generateInstantNotificationMessage function generates a notification message with no events for a given account+cluster</p>
+	<td class="doc"><p>generateInstantNotificationMessage function generates a notification message
+container with no events for a given account+cluster</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">generateInstantNotificationMessage</div><div class="operator">(</div><div class="ident">clusterURI</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">accountID</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">clusterID</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">notification</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationMessage</div><div class="operator">)</div> <div class="operator">{</div>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">generateInstantNotificationMessage</div><div class="operator">(</div>
+	<div class="ident">clusterURI</div> <div class="operator">*</div><div class="ident">string</div><div class="operator">,</div> <div class="ident">accountID</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">clusterID</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div>
+	<div class="ident">notification</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationMessage</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="ident">events</div> <div class="operator">:=</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">Event</div><div class="operator">{</div><div class="operator">}</div><div class="operator"></div>
 	<div class="ident">context</div> <div class="operator">:=</div> <div class="ident">toJSONEscapedString</div><div class="operator">(</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationContext</div><div class="operator">{</div>
 		<div class="ident">notificationContextDisplayName</div><div class="operator">:</div> <div class="ident">clusterID</div><div class="operator">,</div>
-		<div class="ident">notificationContextHostURL</div><div class="operator">:</div>     <div class="ident">strings</div><div class="operator">.</div><div class="ident">Replace</div><div class="operator">(</div><div class="ident">clusterURI</div><div class="operator">,</div> <div class="literal">&#34;{cluster}&#34;</div><div class="operator">,</div> <div class="ident">clusterID</div><div class="operator">,</div> <div class="literal">1</div><div class="operator">)</div><div class="operator">,</div>
+		<div class="ident">notificationContextHostURL</div><div class="operator">:</div>     <div class="ident">strings</div><div class="operator">.</div><div class="ident">Replace</div><div class="operator">(</div><div class="operator">*</div><div class="ident">clusterURI</div><div class="operator">,</div> <div class="literal">&#34;{cluster_id}&#34;</div><div class="operator">,</div> <div class="ident">clusterID</div><div class="operator">,</div> <div class="literal">1</div><div class="operator">)</div><div class="operator">,</div>
 	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">context</div> <div class="operator">==</div> <div class="literal">&#34;&#34;</div> <div class="operator">{</div>
 		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">contextToEscapedStringError</div><div class="operator">)</div><div class="operator"></div>
 		<div class="keyword">return</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>Temporal code to avoid flooding insights-qa owner's email inbox</p>
-</td>
-	<td class="code"><pre><code>	<div class="keyword">if</div> <div class="ident">accountID</div> <div class="operator">==</div> <div class="literal">&#34;6089719&#34;</div> <div class="operator">{</div>
-		<div class="ident">accountID</div> <div class="operator">=</div> <div class="literal">&#34;5910538&#34;</div><div class="operator"></div>
-	<div class="operator">}</div><div class="operator"></div>
-
 	<div class="ident">notification</div> <div class="operator">=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationMessage</div><div class="operator">{</div>
 		<div class="ident">Bundle</div><div class="operator">:</div>      <div class="ident">notificationBundleName</div><div class="operator">,</div>
 		<div class="ident">Application</div><div class="operator">:</div> <div class="ident">notificationApplicationName</div><div class="operator">,</div>
-		<div class="ident">EventType</div><div class="operator">:</div>   <div class="ident">types</div><div class="operator">.</div><div class="ident">InstantNotif</div><div class="operator">.</div><div class="ident">String</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div>
+		<div class="ident">EventType</div><div class="operator">:</div>   <div class="ident">types</div><div class="operator">.</div><div class="ident">InstantNotif</div><div class="operator">.</div><div class="ident">ToString</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div>
 		<div class="ident">Timestamp</div><div class="operator">:</div>   <div class="ident">time</div><div class="operator">.</div><div class="ident">Now</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">UTC</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Format</div><div class="operator">(</div><div class="ident">time</div><div class="operator">.</div><div class="ident">RFC3339</div><div class="operator">)</div><div class="operator">,</div>
 		<div class="ident">AccountID</div><div class="operator">:</div>   <div class="ident">accountID</div><div class="operator">,</div>
 		<div class="ident">Events</div><div class="operator">:</div>      <div class="ident">events</div><div class="operator">,</div>
@@ -674,9 +728,9 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
       <tr class="section">
 	<td class="doc"><p>generateWeeklyNotificationMessage function generates a notification message with one event based on the provided digest</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">generateWeeklyNotificationMessage</div><div class="operator">(</div><div class="ident">advisorURI</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">accountID</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">digest</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Digest</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">notification</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationMessage</div><div class="operator">)</div> <div class="operator">{</div>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">generateWeeklyNotificationMessage</div><div class="operator">(</div><div class="ident">advisorURI</div> <div class="operator">*</div><div class="ident">string</div><div class="operator">,</div> <div class="ident">accountID</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">digest</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Digest</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">notification</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationMessage</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="ident">context</div> <div class="operator">:=</div> <div class="ident">toJSONEscapedString</div><div class="operator">(</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationContext</div><div class="operator">{</div>
-		<div class="ident">notificationContextAdvisorURL</div><div class="operator">:</div> <div class="ident">advisorURI</div><div class="operator">,</div>
+		<div class="ident">notificationContextAdvisorURL</div><div class="operator">:</div> <div class="operator">*</div><div class="ident">advisorURI</div><div class="operator">,</div>
 	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">context</div> <div class="operator">==</div> <div class="literal">&#34;&#34;</div> <div class="operator">{</div>
 		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">contextToEscapedStringError</div><div class="operator">)</div><div class="operator"></div>
@@ -701,14 +755,17 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>The insights Notifications backend expects this field to be an empty object in the received JSON</p>
+	<td class="doc"><p>The insights Notifications backend expects this
+field to be an empty object in the received JSON</p>
 </td>
 	<td class="code"><pre><code>			<div class="ident">Metadata</div><div class="operator">:</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">EventMetadata</div><div class="operator">{</div><div class="operator">}</div><div class="operator">,</div>
 </code></pre></td>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>The insights Notifications backend expects to receive the payload as a string with all its fields as escaped strings</p>
+	<td class="doc"><p>The insights Notifications backend expects to
+receive the payload as a string with all its fields
+as escaped strings</p>
 </td>
 	<td class="code"><pre><code>			<div class="ident">Payload</div><div class="operator">:</div> <div class="ident">payload</div><div class="operator">,</div>
 		<div class="operator">}</div><div class="operator">,</div>
@@ -717,12 +774,21 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 	<div class="ident">notification</div> <div class="operator">=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationMessage</div><div class="operator">{</div>
 		<div class="ident">Bundle</div><div class="operator">:</div>      <div class="ident">notificationBundleName</div><div class="operator">,</div>
 		<div class="ident">Application</div><div class="operator">:</div> <div class="ident">notificationApplicationName</div><div class="operator">,</div>
-		<div class="ident">EventType</div><div class="operator">:</div>   <div class="ident">types</div><div class="operator">.</div><div class="ident">WeeklyDigest</div><div class="operator">.</div><div class="ident">String</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div>
+		<div class="ident">EventType</div><div class="operator">:</div>   <div class="ident">types</div><div class="operator">.</div><div class="ident">WeeklyDigest</div><div class="operator">.</div><div class="ident">ToString</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div>
 		<div class="ident">Timestamp</div><div class="operator">:</div>   <div class="ident">time</div><div class="operator">.</div><div class="ident">Now</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">UTC</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Format</div><div class="operator">(</div><div class="ident">time</div><div class="operator">.</div><div class="ident">RFC3339</div><div class="operator">)</div><div class="operator">,</div>
 		<div class="ident">AccountID</div><div class="operator">:</div>   <div class="ident">accountID</div><div class="operator">,</div>
 		<div class="ident">Events</div><div class="operator">:</div>      <div class="ident">events</div><div class="operator">,</div>
 		<div class="ident">Context</div><div class="operator">:</div>     <div class="ident">context</div><div class="operator">,</div>
 	<div class="operator">}</div><div class="operator"></div>
+	<div class="keyword">return</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+<div class="keyword">func</div> <div class="ident">generateNotificationPayloadURL</div><div class="operator">(</div>
+	<div class="ident">ruleURI</div> <div class="operator">*</div><div class="ident">string</div><div class="operator">,</div> <div class="ident">clusterID</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">module</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ModuleName</div><div class="operator">,</div> <div class="ident">errorKey</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ErrorKey</div><div class="operator">)</div> <div class="operator">(</div>
+	<div class="ident">notificationPayloadURL</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">parsedModule</div> <div class="operator">:=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">ReplaceAll</div><div class="operator">(</div><div class="ident">string</div><div class="operator">(</div><div class="ident">module</div><div class="operator">)</div><div class="operator">,</div> <div class="literal">&#34;.&#34;</div><div class="operator">,</div> <div class="literal">&#34;|&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">replacer</div> <div class="operator">:=</div> <div class="ident">strings</div><div class="operator">.</div><div class="ident">NewReplacer</div><div class="operator">(</div><div class="literal">&#34;{cluster_id}&#34;</div><div class="operator">,</div> <div class="ident">clusterID</div><div class="operator">,</div> <div class="literal">&#34;{module}&#34;</div><div class="operator">,</div> <div class="ident">parsedModule</div><div class="operator">,</div> <div class="literal">&#34;{error_key}&#34;</div><div class="operator">,</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">errorKey</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">notificationPayloadURL</div> <div class="operator">=</div> <div class="ident">replacer</div><div class="operator">.</div><div class="ident">Replace</div><div class="operator">(</div><div class="operator">*</div><div class="ident">ruleURI</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">return</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
@@ -732,10 +798,11 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
       <tr class="section">
 	<td class="doc"><p>appendEventToNotificationMessage function adds a new event to the given notification message after constructing the payload string</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">appendEventToNotificationMessage</div><div class="operator">(</div><div class="ident">ruleURI</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">notification</div> <div class="operator">*</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationMessage</div><div class="operator">,</div> <div class="ident">ruleName</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">totalRisk</div> <div class="ident">int</div><div class="operator">,</div> <div class="ident">publishDate</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">{</div>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">appendEventToNotificationMessage</div><div class="operator">(</div><div class="ident">notificationPayloadURL</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">notification</div> <div class="operator">*</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationMessage</div><div class="operator">,</div> <div class="ident">ruleDescription</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">totalRisk</div> <div class="ident">int</div><div class="operator">,</div> <div class="ident">publishDate</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">{</div>
+
 	<div class="ident">payload</div> <div class="operator">:=</div> <div class="ident">toJSONEscapedString</div><div class="operator">(</div><div class="ident">types</div><div class="operator">.</div><div class="ident">EventPayload</div><div class="operator">{</div>
-		<div class="ident">notificationPayloadRuleDescription</div><div class="operator">:</div> <div class="ident">ruleName</div><div class="operator">,</div>
-		<div class="ident">notificationPayloadRuleURL</div><div class="operator">:</div>         <div class="ident">strings</div><div class="operator">.</div><div class="ident">Replace</div><div class="operator">(</div><div class="ident">ruleURI</div><div class="operator">,</div> <div class="literal">&#34;{rule}&#34;</div><div class="operator">,</div> <div class="ident">ruleName</div><div class="operator">,</div> <div class="literal">1</div><div class="operator">)</div><div class="operator">,</div>
+		<div class="ident">notificationPayloadRuleDescription</div><div class="operator">:</div> <div class="ident">ruleDescription</div><div class="operator">,</div>
+		<div class="ident">notificationPayloadRuleURL</div><div class="operator">:</div>         <div class="ident">notificationPayloadURL</div><div class="operator">,</div>
 		<div class="ident">notificationPayloadTotalRisk</div><div class="operator">:</div>       <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprint</div><div class="operator">(</div><div class="ident">totalRisk</div><div class="operator">)</div><div class="operator">,</div>
 		<div class="ident">notificationPayloadPublishDate</div><div class="operator">:</div>     <div class="ident">publishDate</div><div class="operator">,</div>
 	<div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
@@ -748,14 +815,16 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>The insights Notifications backend expects this field to be an empty object in the received JSON</p>
+	<td class="doc"><p>The insights Notifications backend expects this field to be
+an empty object in the received JSON</p>
 </td>
 	<td class="code"><pre><code>		<div class="ident">Metadata</div><div class="operator">:</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">EventMetadata</div><div class="operator">{</div><div class="operator">}</div><div class="operator">,</div>
 </code></pre></td>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>The insights Notifications backend expects to receive the payload as a string with all its fields as escaped strings</p>
+	<td class="doc"><p>The insights Notifications backend expects to receive the
+payload as a string with all its fields as escaped strings</p>
 </td>
 	<td class="code"><pre><code>		<div class="ident">Payload</div><div class="operator">:</div> <div class="ident">payload</div><div class="operator">,</div>
 	<div class="operator">}</div><div class="operator"></div>
@@ -791,6 +860,26 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 	<div class="keyword">case</div> <div class="ident">args</div><div class="operator">.</div><div class="ident">ShowAuthors</div><div class="operator">:</div>
 		<div class="ident">showAuthors</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
 		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusOK</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">case</div> <div class="ident">args</div><div class="operator">.</div><div class="ident">ShowConfiguration</div><div class="operator">:</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>config not loaded yet, just skip the rest of function for
+now</p>
+</td>
+	<td class="code"><pre><code>		<div class="keyword">return</div><div class="operator"></div>
+	<div class="keyword">case</div> <div class="ident">args</div><div class="operator">.</div><div class="ident">PrintNewReportsForCleanup</div><div class="operator">,</div>
+		<div class="ident">args</div><div class="operator">.</div><div class="ident">PerformNewReportsCleanup</div><div class="operator">,</div>
+		<div class="ident">args</div><div class="operator">.</div><div class="ident">PrintOldReportsForCleanup</div><div class="operator">,</div>
+		<div class="ident">args</div><div class="operator">.</div><div class="ident">PerformOldReportsCleanup</div><div class="operator">:</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>DB only operations, no need for additional args</p>
+</td>
+	<td class="code"><pre><code>		<div class="keyword">return</div><div class="operator"></div>
 	<div class="keyword">default</div><div class="operator">:</div>
 	<div class="operator">}</div><div class="operator"></div>
 
@@ -828,6 +917,19 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 	<div class="operator">}</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>registerMetrics registers metrics using the provided namespace, if any</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">registerMetrics</div><div class="operator">(</div><div class="ident">metricsConfig</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">MetricsConfiguration</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="keyword">if</div> <div class="ident">metricsConfig</div><div class="operator">.</div><div class="ident">Namespace</div> <div class="operator">!=</div> <div class="literal">&#34;&#34;</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Str</div><div class="operator">(</div><div class="literal">&#34;namespace&#34;</div><div class="operator">,</div> <div class="ident">metricsConfig</div><div class="operator">.</div><div class="ident">Namespace</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Setting metrics namespace&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">AddMetricsWithNamespace</div><div class="operator">(</div><div class="ident">metricsConfig</div><div class="operator">.</div><div class="ident">Namespace</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
 <div class="keyword">func</div> <div class="ident">closeStorage</div><div class="operator">(</div><div class="ident">storage</div> <div class="operator">*</div><div class="ident">DBStorage</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">Close</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
@@ -842,6 +944,101 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 		<div class="ident">log</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">operationFailedMessage</div><div class="operator">)</div><div class="operator"></div>
 		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusKafkaConnectionNotClosedError</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+<div class="keyword">func</div> <div class="ident">pushMetrics</div><div class="operator">(</div><div class="ident">metricsConf</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">MetricsConfiguration</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">PushCollectedMetrics</div><div class="operator">(</div><div class="ident">metricsConf</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">metricsPushFailedMessage</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">if</div> <div class="ident">metricsConf</div><div class="operator">.</div><div class="ident">RetryAfter</div> <div class="operator">==</div> <div class="literal">0</div> <div class="operator">||</div> <div class="ident">metricsConf</div><div class="operator">.</div><div class="ident">Retries</div> <div class="operator">==</div> <div class="literal">0</div> <div class="operator">{</div>
+			<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusMetricsError</div><div class="operator">)</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+		<div class="keyword">for</div> <div class="ident">i</div> <div class="operator">:=</div> <div class="ident">metricsConf</div><div class="operator">.</div><div class="ident">Retries</div><div class="operator">;</div> <div class="ident">i</div> <div class="operator">&gt;</div> <div class="literal">0</div><div class="operator">;</div> <div class="ident">i</div><div class="operator">--</div> <div class="operator">{</div>
+			<div class="ident">time</div><div class="operator">.</div><div class="ident">Sleep</div><div class="operator">(</div><div class="ident">metricsConf</div><div class="operator">.</div><div class="ident">RetryAfter</div><div class="operator">)</div><div class="operator"></div>
+			<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div><div class="literal">&#34;Push metrics. Retrying (%d/%d attempts left)&#34;</div><div class="operator">,</div> <div class="ident">i</div><div class="operator">,</div> <div class="ident">metricsConf</div><div class="operator">.</div><div class="ident">Retries</div><div class="operator">)</div><div class="operator"></div>
+			<div class="ident">err</div> <div class="operator">=</div> <div class="ident">PushCollectedMetrics</div><div class="operator">(</div><div class="ident">metricsConf</div><div class="operator">)</div><div class="operator"></div>
+			<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">==</div> <div class="ident">nil</div> <div class="operator">{</div>
+				<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Metrics pushed successfully. Terminating notification service successfully.&#34;</div><div class="operator">)</div><div class="operator"></div>
+				<div class="keyword">return</div><div class="operator"></div>
+			<div class="operator">}</div><div class="operator"></div>
+			<div class="ident">log</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">metricsPushFailedMessage</div><div class="operator">)</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusMetricsError</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Metrics pushed successfully. Terminating notification service successfully.&#34;</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+<div class="keyword">func</div> <div class="ident">deleteOperationSpecified</div><div class="operator">(</div><div class="ident">cliFlags</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">CliFlags</div><div class="operator">)</div> <div class="ident">bool</div> <div class="operator">{</div>
+	<div class="keyword">return</div> <div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">PrintNewReportsForCleanup</div> <div class="operator">||</div>
+		<div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">PerformNewReportsCleanup</div> <div class="operator">||</div>
+		<div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">PrintOldReportsForCleanup</div> <div class="operator">||</div>
+		<div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">PerformOldReportsCleanup</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+<div class="keyword">func</div> <div class="ident">startDiffer</div><div class="operator">(</div><div class="ident">config</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">ConfigStruct</div><div class="operator">,</div> <div class="ident">storage</div> <div class="operator">*</div><div class="ident">DBStorage</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Differ started&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">registerMetrics</div><div class="operator">(</div><div class="ident">conf</div><div class="operator">.</div><div class="ident">GetMetricsConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Getting rule content and impacts from content service&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">ruleContent</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">fetchAllRulesContent</div><div class="operator">(</div><div class="ident">conf</div><div class="operator">.</div><div class="ident">GetDependenciesConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">FetchContentErrors</div><div class="operator">.</div><div class="ident">Inc</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusFetchContentError</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read cluster list&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">notifConfig</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetNotificationsConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">notificationClusterDetailsURI</div> <div class="operator">=</div> <div class="ident">notifConfig</div><div class="operator">.</div><div class="ident">ClusterDetailsURI</div><div class="operator"></div>
+	<div class="ident">notificationRuleDetailsURI</div> <div class="operator">=</div> <div class="ident">notifConfig</div><div class="operator">.</div><div class="ident">RuleDetailsURI</div><div class="operator"></div>
+	<div class="ident">notificationInsightsAdvisorURL</div> <div class="operator">=</div> <div class="ident">notifConfig</div><div class="operator">.</div><div class="ident">InsightsAdvisorURL</div><div class="operator"></div>
+
+	<div class="ident">setupNotificationStates</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">setupNotificationTypes</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">clusters</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">ReadClusterList</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">ReadClusterListErrors</div><div class="operator">.</div><div class="ident">Inc</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">operationFailedMessage</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusStorageError</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">entries</div> <div class="operator">:=</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">clusters</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">entries</div> <div class="operator">==</div> <div class="literal">0</div> <div class="operator">{</div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Differ finished&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusOK</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Int</div><div class="operator">(</div><div class="ident">clustersAttribute</div><div class="operator">,</div> <div class="ident">entries</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read cluster list: done&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read previously reported issues for cluster list&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">previouslyReported</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">ReadLastNotifiedRecordForClusterList</div><div class="operator">(</div><div class="ident">clusters</div><div class="operator">,</div> <div class="ident">notifConfig</div><div class="operator">.</div><div class="ident">Cooldown</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">ReadReportedErrors</div><div class="operator">.</div><div class="ident">Inc</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">operationFailedMessage</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusStorageError</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;previously reported issues still in cooldown&#34;</div><div class="operator">,</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">previouslyReported</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Get previously reported issues: done&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Preparing Kafka producer&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">setupNotificationProducer</div><div class="operator">(</div><div class="ident">conf</div><div class="operator">.</div><div class="ident">GetKafkaBrokerConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Kafka producer ready&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Checking new issues for all new reports&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">processClusters</div><div class="operator">(</div><div class="ident">ruleContent</div><div class="operator">,</div> <div class="ident">storage</div><div class="operator">,</div> <div class="ident">clusters</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Int</div><div class="operator">(</div><div class="ident">clustersAttribute</div><div class="operator">,</div> <div class="ident">entries</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Process Clusters Entries: done&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">closeStorage</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">closeNotifier</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Differ finished. Pushing metrics to the configured prometheus gateway.&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">pushMetrics</div><div class="operator">(</div><div class="ident">conf</div><div class="operator">.</div><div class="ident">GetMetricsConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -863,6 +1060,13 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 	<div class="ident">flag</div><div class="operator">.</div><div class="ident">BoolVar</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">WeeklyReports</div><div class="operator">,</div> <div class="literal">&#34;weekly-reports&#34;</div><div class="operator">,</div> <div class="ident">false</div><div class="operator">,</div> <div class="literal">&#34;create weekly reports&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">flag</div><div class="operator">.</div><div class="ident">BoolVar</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">ShowVersion</div><div class="operator">,</div> <div class="literal">&#34;show-version&#34;</div><div class="operator">,</div> <div class="ident">false</div><div class="operator">,</div> <div class="literal">&#34;show version and exit&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">flag</div><div class="operator">.</div><div class="ident">BoolVar</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">ShowAuthors</div><div class="operator">,</div> <div class="literal">&#34;show-authors&#34;</div><div class="operator">,</div> <div class="ident">false</div><div class="operator">,</div> <div class="literal">&#34;show authors and exit&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">flag</div><div class="operator">.</div><div class="ident">BoolVar</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">ShowConfiguration</div><div class="operator">,</div> <div class="literal">&#34;show-configuration&#34;</div><div class="operator">,</div> <div class="ident">false</div><div class="operator">,</div> <div class="literal">&#34;show configuration and exit&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">flag</div><div class="operator">.</div><div class="ident">BoolVar</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">PrintNewReportsForCleanup</div><div class="operator">,</div> <div class="literal">&#34;print-new-reports-for-cleanup&#34;</div><div class="operator">,</div> <div class="ident">false</div><div class="operator">,</div> <div class="literal">&#34;print new reports to be cleaned up&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">flag</div><div class="operator">.</div><div class="ident">BoolVar</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">PerformNewReportsCleanup</div><div class="operator">,</div> <div class="literal">&#34;new-reports-cleanup&#34;</div><div class="operator">,</div> <div class="ident">false</div><div class="operator">,</div> <div class="literal">&#34;perform new reports clean up&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">flag</div><div class="operator">.</div><div class="ident">BoolVar</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">PrintOldReportsForCleanup</div><div class="operator">,</div> <div class="literal">&#34;print-old-reports-for-cleanup&#34;</div><div class="operator">,</div> <div class="ident">false</div><div class="operator">,</div> <div class="literal">&#34;print old reports to be cleaned up&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">flag</div><div class="operator">.</div><div class="ident">BoolVar</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">PerformOldReportsCleanup</div><div class="operator">,</div> <div class="literal">&#34;old-reports-cleanup&#34;</div><div class="operator">,</div> <div class="ident">false</div><div class="operator">,</div> <div class="literal">&#34;perform old reports clean up&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">flag</div><div class="operator">.</div><div class="ident">BoolVar</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">CleanupOnStartup</div><div class="operator">,</div> <div class="literal">&#34;cleanup-on-startup&#34;</div><div class="operator">,</div> <div class="ident">false</div><div class="operator">,</div> <div class="literal">&#34;perform database clean up on startup&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">flag</div><div class="operator">.</div><div class="ident">StringVar</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">MaxAge</div><div class="operator">,</div> <div class="literal">&#34;max-age&#34;</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">,</div> <div class="literal">&#34;max age for displaying/cleaning old records&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">flag</div><div class="operator">.</div><div class="ident">Parse</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">checkArgs</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">cliFlags</div><div class="operator">)</div><div class="operator"></div>
 
@@ -878,21 +1082,31 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusConfiguration</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>configuration is loaded, so it would be possible to display it if
+asked by user</p>
+</td>
+	<td class="code"><pre><code>	<div class="keyword">if</div> <div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">ShowConfiguration</div> <div class="operator">{</div>
+		<div class="ident">showConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusOK</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>override default value by one read from configuration file</p>
+</td>
+	<td class="code"><pre><code>	<div class="keyword">if</div> <div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">MaxAge</div> <div class="operator">==</div> <div class="literal">&#34;&#34;</div> <div class="operator">{</div>
+		<div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">MaxAge</div> <div class="operator">=</div> <div class="ident">config</div><div class="operator">.</div><div class="ident">Cleaner</div><div class="operator">.</div><div class="ident">MaxAge</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
 	<div class="keyword">if</div> <div class="ident">config</div><div class="operator">.</div><div class="ident">Logging</div><div class="operator">.</div><div class="ident">Debug</div> <div class="operator">{</div>
 		<div class="ident">log</div><div class="operator">.</div><div class="ident">Logger</div> <div class="operator">=</div> <div class="ident">log</div><div class="operator">.</div><div class="ident">Output</div><div class="operator">(</div><div class="ident">zerolog</div><div class="operator">.</div><div class="ident">ConsoleWriter</div><div class="operator">{</div><div class="ident">Out</div><div class="operator">:</div> <div class="ident">os</div><div class="operator">.</div><div class="ident">Stderr</div><div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
-
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Differ started&#34;</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Getting rule content and impacts from content service&#34;</div><div class="operator">)</div><div class="operator"></div>
-
-	<div class="ident">ruleContent</div><div class="operator">,</div> <div class="ident">impacts</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">fetchAllRulesContent</div><div class="operator">(</div><div class="ident">conf</div><div class="operator">.</div><div class="ident">GetDependenciesConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
-	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusFetchContentError</div><div class="operator">)</div><div class="operator"></div>
-	<div class="operator">}</div><div class="operator"></div>
-
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read cluster list&#34;</div><div class="operator">)</div><div class="operator"></div>
 
 </code></pre></td>
       </tr>
@@ -903,44 +1117,41 @@ cluster<em>wide</em>proxy<em>auth</em>check</p>
 	<td class="code"><pre><code>	<div class="ident">storageConfiguration</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetStorageConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">storage</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">NewStorage</div><div class="operator">(</div><div class="ident">storageConfiguration</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">StorageSetupErrors</div><div class="operator">.</div><div class="ident">Inc</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
 		<div class="ident">log</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">operationFailedMessage</div><div class="operator">)</div><div class="operator"></div>
 		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusStorageError</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="keyword">if</div> <div class="ident">deleteOperationSpecified</div><div class="operator">(</div><div class="ident">cliFlags</div><div class="operator">)</div> <div class="operator">{</div>
+		<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">PerformCleanupOperation</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">,</div> <div class="ident">cliFlags</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusCleanerError</div><div class="operator">)</div><div class="operator"></div>
+		<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+			<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusOK</div><div class="operator">)</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
       </tr>
       
       <tr class="section">
-	<td class="doc"><p>TODO: Set notificationConfig global variables here to avoid passing so much parameters</p>
+	<td class="doc"><p>perform database cleanup on startup if specified on command line</p>
 </td>
-	<td class="code"><pre><code>
-	<div class="ident">setupNotificationStates</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">setupNotificationTypes</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">)</div><div class="operator"></div>
+	<td class="code"><pre><code>	<div class="keyword">if</div> <div class="ident">cliFlags</div><div class="operator">.</div><div class="ident">CleanupOnStartup</div> <div class="operator">{</div>
+		<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">PerformCleanupOnStartup</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">,</div> <div class="ident">cliFlags</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusCleanerError</div><div class="operator">)</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>if previous operation is correct, just continue</p>
+</td>
+	<td class="code"><pre><code>	<div class="operator">}</div><div class="operator"></div>
 
-	<div class="ident">clusters</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">ReadClusterList</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
-	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">err</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">operationFailedMessage</div><div class="operator">)</div><div class="operator"></div>
-		<div class="ident">os</div><div class="operator">.</div><div class="ident">Exit</div><div class="operator">(</div><div class="ident">ExitStatusStorageError</div><div class="operator">)</div><div class="operator"></div>
-	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">startDiffer</div><div class="operator">(</div><div class="ident">config</div><div class="operator">,</div> <div class="ident">storage</div><div class="operator">)</div><div class="operator"></div>
 
-	<div class="ident">printClusters</div><div class="operator">(</div><div class="ident">clusters</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Int</div><div class="operator">(</div><div class="literal">&#34;clusters&#34;</div><div class="operator">,</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">clusters</div><div class="operator">)</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Read cluster list: done&#34;</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Checking new issues for all new reports&#34;</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Preparing Kafka producer&#34;</div><div class="operator">)</div><div class="operator"></div>
-
-	<div class="ident">setupNotificationProducer</div><div class="operator">(</div><div class="ident">conf</div><div class="operator">.</div><div class="ident">GetKafkaBrokerConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
-
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Kafka producer ready&#34;</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">separator</div><div class="operator">)</div><div class="operator"></div>
-
-	<div class="ident">processClusters</div><div class="operator">(</div><div class="ident">ruleContent</div><div class="operator">,</div> <div class="ident">impacts</div><div class="operator">,</div> <div class="ident">storage</div><div class="operator">,</div> <div class="ident">clusters</div><div class="operator">,</div> <div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
-
-	<div class="ident">closeStorage</div><div class="operator">(</div><div class="ident">storage</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">closeNotifier</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
-
-	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="literal">&#34;Differ finished&#34;</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>

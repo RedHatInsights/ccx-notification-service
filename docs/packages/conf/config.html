@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- Copyright 2021 Red Hat, Inc
+ Copyright 2022 Red Hat, Inc
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -144,8 +144,10 @@ represents configuration of Notification service. This source file
 also contains function named LoadConfiguration that can be used to load
 configuration from provided configuration file and/or from environment
 variables. Additionally several specific functions named
-GetStorageConfiguration, GetLoggingConfiguration, and GetBrokerConfiguration
-are to be used to return specific configuration options.</p>
+GetStorageConfiguration, GetLoggingConfiguration,
+GetKafkaBrokerConfiguration, GetNotificationsConfiguration and
+GetMetricsConfiguration are to be used to return specific configuration
+options.</p>
 </td>
 	<td class="code"><pre><code>
 </code></pre></td>
@@ -219,6 +221,8 @@ configuration</p>
 	<div class="ident">Kafka</div>         <div class="ident">KafkaConfiguration</div>         <div class="literal">`mapstructure:&#34;kafka_broker&#34; toml:&#34;kafka_broker&#34;`</div><div class="operator"></div>
 	<div class="ident">Dependencies</div>  <div class="ident">DependenciesConfiguration</div>  <div class="literal">`mapstructure:&#34;dependencies&#34; toml:&#34;dependencies&#34;`</div><div class="operator"></div>
 	<div class="ident">Notifications</div> <div class="ident">NotificationsConfiguration</div> <div class="literal">`mapstructure:&#34;notifications&#34; toml:&#34;notifications&#34;`</div><div class="operator"></div>
+	<div class="ident">Metrics</div>       <div class="ident">MetricsConfiguration</div>       <div class="literal">`mapstructure:&#34;metrics&#34; toml:&#34;metrics&#34;`</div><div class="operator"></div>
+	<div class="ident">Cleaner</div>       <div class="ident">CleanerConfiguration</div>       <div class="literal">`mapstructure:&#34;cleaner&#34; toml:&#34;cleaner&#34;`</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -284,6 +288,22 @@ configuration</p>
       </tr>
       
       <tr class="section">
+	<td class="doc"><p>CleanerConfiguration represents configuration for the main cleaner</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">CleanerConfiguration</div> <div class="keyword">struct</div> <div class="operator">{</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>MaxAge is specification of max age for records to be cleaned</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">MaxAge</div> <div class="ident">string</div> <div class="literal">`mapstructure:&#34;max_age&#34; toml:&#34;max_age&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
 	<td class="doc"><p>KafkaConfiguration represents configuration of Kafka brokers and topics</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">KafkaConfiguration</div> <div class="keyword">struct</div> <div class="operator">{</div>
@@ -302,6 +322,22 @@ configuration</p>
 	<div class="ident">InsightsAdvisorURL</div> <div class="ident">string</div> <div class="literal">`mapstructure:&#34;insights_advisor_url&#34; toml:&#34;insights_advisor_url&#34;`</div><div class="operator"></div>
 	<div class="ident">ClusterDetailsURI</div>  <div class="ident">string</div> <div class="literal">`mapstructure:&#34;cluster_details_uri&#34; toml:&#34;cluster_details_uri&#34;`</div><div class="operator"></div>
 	<div class="ident">RuleDetailsURI</div>     <div class="ident">string</div> <div class="literal">`mapstructure:&#34;rule_details_uri&#34;    toml:&#34;rule_details_uri&#34;`</div><div class="operator"></div>
+	<div class="ident">Cooldown</div>           <div class="ident">string</div> <div class="literal">`mapstructure:&#34;cooldown&#34; toml:&#34;cooldown&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>MetricsConfiguration holds metrics related configuration</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">MetricsConfiguration</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Job</div>              <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;job_name&#34; toml:&#34;job_name&#34;`</div><div class="operator"></div>
+	<div class="ident">Namespace</div>        <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;namespace&#34; toml:&#34;namespace&#34;`</div><div class="operator"></div>
+	<div class="ident">GatewayURL</div>       <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;gateway_url&#34; toml:&#34;gateway_url&#34;`</div><div class="operator"></div>
+	<div class="ident">GatewayAuthToken</div> <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;gateway_auth_token&#34; toml:&#34;gateway_auth_token&#34;`</div><div class="operator"></div>
+	<div class="ident">Retries</div>          <div class="ident">int</div>           <div class="literal">`mapstructure:&#34;retries&#34; toml:&#34;retries&#34;`</div><div class="operator"></div>
+	<div class="ident">RetryAfter</div>       <div class="ident">time</div><div class="operator">.</div><div class="ident">Duration</div> <div class="literal">`mapstructure:&#34;retry_after&#34; toml:&#34;retry_after&#34;`</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -311,7 +347,7 @@ configuration</p>
 	<td class="doc"><p>LoadConfiguration loads configuration from defaultConfigFile, file set in
 configFileEnvVariableName or from env</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">LoadConfiguration</div><div class="operator">(</div><div class="ident">configFileEnvVariableName</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">defaultConfigFile</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">ConfigStruct</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">LoadConfiguration</div><div class="operator">(</div><div class="ident">configFileEnvVariableName</div><div class="operator">,</div> <div class="ident">defaultConfigFile</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">ConfigStruct</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="keyword">var</div> <div class="ident">config</div> <div class="ident">ConfigStruct</div><div class="operator"></div>
 
 </code></pre></td>
@@ -412,29 +448,9 @@ we need to read fake config file</p>
 		<div class="keyword">return</div> <div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
-	<div class="keyword">if</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">IsClowderEnabled</div><div class="operator">(</div><div class="operator">)</div> <div class="operator">{</div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>can not use Zerolog at this moment!</p>
-</td>
-	<td class="code"><pre><code>		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="literal">&#34;Clowder is enabled&#34;</div><div class="operator">)</div><div class="operator"></div>
-
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>TODO: insert logic to replace SELECTED configuration variables</p>
-</td>
-	<td class="code"><pre><code>	<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>can not use Zerolog at this moment!</p>
-</td>
-	<td class="code"><pre><code>		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="literal">&#34;Clowder is disabled&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">updateConfigFromClowder</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">config</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="literal">&#34;error loading clowder configuration&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">return</div> <div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -494,6 +510,73 @@ we need to read fake config file</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">GetNotificationsConfiguration</div><div class="operator">(</div><div class="ident">config</div> <div class="ident">ConfigStruct</div><div class="operator">)</div> <div class="ident">NotificationsConfiguration</div> <div class="operator">{</div>
 	<div class="keyword">return</div> <div class="ident">config</div><div class="operator">.</div><div class="ident">Notifications</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>GetMetricsConfiguration returns metrics configuration</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">GetMetricsConfiguration</div><div class="operator">(</div><div class="ident">config</div> <div class="ident">ConfigStruct</div><div class="operator">)</div> <div class="ident">MetricsConfiguration</div> <div class="operator">{</div>
+	<div class="keyword">return</div> <div class="ident">config</div><div class="operator">.</div><div class="ident">Metrics</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>GetCleanerConfiguration returns cleaner configuration</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">GetCleanerConfiguration</div><div class="operator">(</div><div class="ident">config</div> <div class="ident">ConfigStruct</div><div class="operator">)</div> <div class="ident">CleanerConfiguration</div> <div class="operator">{</div>
+	<div class="keyword">return</div> <div class="ident">config</div><div class="operator">.</div><div class="ident">Cleaner</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>updateConfigFromClowder updates the current config with the values defined in clowder</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">updateConfigFromClowder</div><div class="operator">(</div><div class="ident">c</div> <div class="operator">*</div><div class="ident">ConfigStruct</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+	<div class="keyword">if</div> <div class="operator">!</div><div class="ident">clowder</div><div class="operator">.</div><div class="ident">IsClowderEnabled</div><div class="operator">(</div><div class="operator">)</div> <div class="operator">||</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div> <div class="operator">==</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="literal">&#34;Clowder is disabled&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">return</div> <div class="ident">nil</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="literal">&#34;Clowder is enabled&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Kafka</div> <div class="operator">==</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="literal">&#34;No Kafka configuration available in Clowder, using default one&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+		<div class="ident">broker</div> <div class="operator">:=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Brokers</div><div class="operator">[</div><div class="literal">0</div><div class="operator">]</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>port can be empty in clowder, so taking it into account</p>
+</td>
+	<td class="code"><pre><code>		<div class="keyword">if</div> <div class="ident">broker</div><div class="operator">.</div><div class="ident">Port</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Address</div> <div class="operator">=</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div><div class="literal">&#34;%s:%d&#34;</div><div class="operator">,</div> <div class="ident">broker</div><div class="operator">.</div><div class="ident">Hostname</div><div class="operator">,</div> <div class="operator">*</div><div class="ident">broker</div><div class="operator">.</div><div class="ident">Port</div><div class="operator">)</div><div class="operator"></div>
+		<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+			<div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Address</div> <div class="operator">=</div> <div class="ident">broker</div><div class="operator">.</div><div class="ident">Hostname</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="keyword">if</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Database</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>get DB configuration from clowder</p>
+</td>
+	<td class="code"><pre><code>		<div class="ident">c</div><div class="operator">.</div><div class="ident">Storage</div><div class="operator">.</div><div class="ident">PGDBName</div> <div class="operator">=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Database</div><div class="operator">.</div><div class="ident">Name</div><div class="operator"></div>
+		<div class="ident">c</div><div class="operator">.</div><div class="ident">Storage</div><div class="operator">.</div><div class="ident">PGHost</div> <div class="operator">=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Database</div><div class="operator">.</div><div class="ident">Hostname</div><div class="operator"></div>
+		<div class="ident">c</div><div class="operator">.</div><div class="ident">Storage</div><div class="operator">.</div><div class="ident">PGPort</div> <div class="operator">=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Database</div><div class="operator">.</div><div class="ident">Port</div><div class="operator"></div>
+		<div class="ident">c</div><div class="operator">.</div><div class="ident">Storage</div><div class="operator">.</div><div class="ident">PGUsername</div> <div class="operator">=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Database</div><div class="operator">.</div><div class="ident">Username</div><div class="operator"></div>
+		<div class="ident">c</div><div class="operator">.</div><div class="ident">Storage</div><div class="operator">.</div><div class="ident">PGPassword</div> <div class="operator">=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Database</div><div class="operator">.</div><div class="ident">Password</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="keyword">return</div> <div class="ident">nil</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>

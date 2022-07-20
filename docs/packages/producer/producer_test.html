@@ -1,6 +1,6 @@
 <!DOCTYPE html>
 <!--
- Copyright 2021 Red Hat, Inc
+ Copyright 2022 Red Hat, Inc
 
  Licensed under the Apache License, Version 2.0 (the "License");
  you may not use this file except in compliance with the License.
@@ -155,13 +155,6 @@ limitations under the License.
 		<div class="ident">Topic</div><div class="operator">:</div>   <div class="literal">&#34;platform.notifications.ingress&#34;</div><div class="operator">,</div>
 		<div class="ident">Timeout</div><div class="operator">:</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Duration</div><div class="operator">(</div><div class="literal">30</div><div class="operator">*</div><div class="literal">10</div> <div class="operator">^</div> <div class="literal">9</div><div class="operator">)</div><div class="operator">,</div>
 	<div class="operator">}</div><div class="operator"></div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>Base UNIX time plus approximately 50 years (not long before year 2020).</p>
-</td>
-	<td class="code"><pre><code>	<div class="ident">testTimestamp</div> <div class="operator">=</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Unix</div><div class="operator">(</div><div class="literal">50</div><div class="operator">*</div><div class="literal">365</div><div class="operator">*</div><div class="literal">24</div><div class="operator">*</div><div class="literal">60</div><div class="operator">*</div><div class="literal">60</div><div class="operator">,</div> <div class="literal">0</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
 <div class="keyword">func</div> <div class="ident">init</div><div class="operator">(</div><div class="operator">)</div> <div class="operator">{</div>
@@ -357,7 +350,7 @@ This test assumes there is no local kafka instance currently running</p>
 		<div class="operator">}</div><div class="operator">,</div>
 		<div class="operator">{</div>
 			<div class="ident">Metadata</div><div class="operator">:</div> <div class="keyword">map</div><div class="operator">[</div><div class="ident">string</div><div class="operator">]</div><div class="keyword">interface</div><div class="operator">{</div><div class="operator">}</div><div class="operator">{</div>
-				<div class="literal">&#34;foo&#34;</div><div class="operator">:</div> <div class="ident">make</div><div class="operator">(</div><div class="keyword">chan</div> <div class="ident">int</div><div class="operator">)</div><div class="operator">,</div> <div class="comment">//A value that cannot be represented in JSON</div>
+				<div class="literal">&#34;foo&#34;</div><div class="operator">:</div> <div class="ident">make</div><div class="operator">(</div><div class="keyword">chan</div> <div class="ident">int</div><div class="operator">)</div><div class="operator">,</div> <div class="comment">// A value that cannot be represented in JSON</div>
 			<div class="operator">}</div><div class="operator">,</div>
 			<div class="ident">Payload</div><div class="operator">:</div> <div class="literal">&#34;{\&#34;rule_id\&#34;: \&#34;a unique ID\&#34;, \&#34;what happened\&#34;: \&#34;something baaad happened\&#34;, \&#34;error_code\&#34;:\&#34;3\&#34;, \&#34;more_random_data\&#34;: \&#34;why not...\&#34;}&#34;</div><div class="operator">,</div>
 		<div class="operator">}</div><div class="operator">,</div>
