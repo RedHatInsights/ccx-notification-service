@@ -1,0 +1,20 @@
+@startuml
+participant "Kafka topic\nccx.ocp.results"
+participant "ccx-notification-writer\nservice"
+participant "Notification\ndatabase"
+
+loop
+"ccx-notification-writer\nservice" -> "Kafka topic\nccx.ocp.results" : request(get results)
+activate "Kafka topic\nccx.ocp.results"
+"ccx-notification-writer\nservice" <-- "Kafka topic\nccx.ocp.results": here are rule results
+deactivate "Kafka topic\nccx.ocp.results"
+"ccx-notification-writer\nservice" -> "ccx-notification-writer\nservice" : validate(rule resuls)
+activate "ccx-notification-writer\nservice"
+"ccx-notification-writer\nservice" <-- "ccx-notification-writer\nservice": validated
+deactivate "ccx-notification-writer\nservice"
+"ccx-notification-writer\nservice" -> "Notification\ndatabase" : store(rule results)
+activate "Notification\ndatabase"
+"ccx-notification-writer\nservice" <-- "Notification\ndatabase": stored
+deactivate "Notification\ndatabase"
+end
+@enduml

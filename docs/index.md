@@ -75,6 +75,10 @@ Templates used by this notification service are available at:
 
 [Full scale](weekly_reports.png)
 
+## Sequence diagram for CCX Notification Writer service
+
+[Sequence diagram for CCX Notification Writer service](sequence_diagram_notification_writer.png)
+
 ## Database description
 
 * PostgreSQL database is used as a storage.
