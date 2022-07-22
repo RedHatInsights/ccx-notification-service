@@ -1,0 +1,31 @@
+@startuml
+participant "Notification\ndatabase"
+participant "ccx-notification-service"
+participant "ServiceLog\nREST API"
+
+loop
+"ccx-notification-service" -> "Notification\ndatabase" : request(read new results)
+activate "Notification\ndatabase"
+"ccx-notification-service" <-- "Notification\ndatabase": here are new results
+deactivate "Notification\ndatabase"
+"ccx-notification-service" -> "Notification\ndatabase" : request(read reported results)
+activate "Notification\ndatabase"
+"ccx-notification-service" <-- "Notification\ndatabase": here are already reported results
+deactivate "Notification\ndatabase"
+"ccx-notification-service" -> "ccx-notification-service" : find_diff(reported results, new results)
+activate "ccx-notification-service"
+"ccx-notification-service" <-- "ccx-notification-service": diff
+deactivate "ccx-notification-service"
+loop for all new reports
+"ccx-notification-service" -> "ServiceLog\nREST API" : notify(one new report)
+activate "ServiceLog\nREST API"
+alt success (200 OK)
+"ccx-notification-service" <-- "ServiceLog\nREST API": accepted
+"ccx-notification-service" -> "ccx-notification-service": update DB
+else failure
+"ccx-notification-service" <-- "ServiceLog\nREST API": rejected
+"ccx-notification-service" -> "ccx-notification-service": log error
+deactivate "ServiceLog\nREST API"
+end
+end
+@enduml
