@@ -102,7 +102,7 @@ loop:
 
 					// compare operator priorities
 					if priority1 > priority2 {
-						// priority of read operator is greater that:
+						// priority of read operator is greater than:
 						// -> end of processing
 						break
 					}
