@@ -62,11 +62,11 @@ loop:
 			// integer value can be added directly into output
 			intValue, _ := strconv.Atoi(value)
 			output = append(output, ValueToken(tok, intValue))
-			fmt.Printf("%v ", intValue)
+			fmt.Printf("%d ", intValue)
 		case token.IDENT:
 			// identifier can be added directly into output
 			output = append(output, IdentifierToken(tok, value))
-			fmt.Printf("%v ", value)
+			fmt.Printf("%s ", value)
 		case token.LPAREN:
 			// left paren is pushed into stack
 			stack = append(stack, tok)
