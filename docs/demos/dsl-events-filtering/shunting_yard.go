@@ -26,6 +26,8 @@ import (
 
 // toRPN function transforms sequence of tokens with expression into PRN code
 func toRPN(s scanner.Scanner) []TokenWithValue {
+	const stringFmt = "%s "
+
 	// operators with precedence
 	var operators = map[token.Token]int{
 		// arithmetic operators
@@ -66,7 +68,7 @@ loop:
 		case token.IDENT:
 			// identifier can be added directly into output
 			output = append(output, IdentifierToken(tok, value))
-			fmt.Printf("%s ", value)
+			fmt.Printf(stringFmt, value)
 		case token.LPAREN:
 			// left paren is pushed into stack
 			stack = append(stack, tok)
@@ -109,7 +111,7 @@ loop:
 					// -> process read operator and POP it from stack
 					stack = stack[:len(stack)-1] // POP
 					output = append(output, OperatorToken(tok))
-					fmt.Printf("%s ", tok)
+					fmt.Printf(stringFmt, tok)
 				}
 
 				// newly read operator needs to be pushed onto stack
@@ -119,7 +121,7 @@ loop:
 	}
 	// clean out the stack at end of processing
 	for len(stack) > 0 {
-		fmt.Printf("%s ", stack[len(stack)-1])
+		fmt.Printf(stringFmt, stack[len(stack)-1])
 		output = append(output, OperatorToken(stack[len(stack)-1]))
 		stack = stack[:len(stack)-1]
 	}
