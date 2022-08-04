@@ -123,9 +123,10 @@ func TestToJSONEscapedStringInvalidJSON(t *testing.T) {
 func TestGenerateInstantReportNotificationMessage(t *testing.T) {
 	clusterURI := "the_cluster_uri_in_ocm_for_{cluster_id}"
 	accountID := "a_stringified_account_id"
+	orgID := "a_stringified_org_id"
 	clusterID := "the_displayed_cluster_ID"
 
-	notificationMsg := generateInstantNotificationMessage(&clusterURI, accountID, clusterID)
+	notificationMsg := generateInstantNotificationMessage(&clusterURI, accountID, orgID, clusterID)
 
 	assert.NotEmpty(t, notificationMsg, "the generated notification message is empty")
 	assert.Empty(t, notificationMsg.Events, "the generated notification message should not have any events")
@@ -134,13 +135,15 @@ func TestGenerateInstantReportNotificationMessage(t *testing.T) {
 	assert.Equal(t, notificationBundleName, notificationMsg.Bundle, "Generated notifications should indicate 'openshift' as bundle")
 	assert.Equal(t, notificationApplicationName, notificationMsg.Application, "Generated notifications should indicate 'openshift' as application name")
 	assert.Equal(t, accountID, notificationMsg.AccountID, "Generated notifications does not have expected account ID")
+	assert.Equal(t, orgID, notificationMsg.OrgID, "Generated notifications does not have expected org ID")
 }
 
 func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	clusterURI := "the_cluster_uri_in_ocm"
 	accountID := "a_stringified_account_id"
+	orgID := "a_stringified_org_id"
 	clusterID := "the_displayed_cluster_ID"
-	notificationMsg := generateInstantNotificationMessage(&clusterURI, accountID, clusterID)
+	notificationMsg := generateInstantNotificationMessage(&clusterURI, accountID, orgID, clusterID)
 
 	assert.Empty(t, notificationMsg.Events, "the generated notification message should not have any events")
 

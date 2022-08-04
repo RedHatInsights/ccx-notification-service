@@ -241,7 +241,11 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			continue
 		}
 
-		notificationMsg := generateInstantNotificationMessage(&notificationClusterDetailsURI, fmt.Sprint(cluster.AccountNumber), string(cluster.ClusterName))
+		notificationMsg := generateInstantNotificationMessage(
+			&notificationClusterDetailsURI,
+			fmt.Sprint(cluster.AccountNumber),
+			fmt.Sprint(cluster.OrgID),
+			string(cluster.ClusterName))
 		notifiedAt := types.Timestamp(time.Now())
 
 		for _, r := range deserialized.Reports {
@@ -419,7 +423,7 @@ func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) {
 // generateInstantNotificationMessage function generates a notification message
 // container with no events for a given account+cluster
 func generateInstantNotificationMessage(
-	clusterURI *string, accountID string, clusterID string) (
+	clusterURI *string, accountID, orgID, clusterID string) (
 	notification types.NotificationMessage) {
 	events := []types.Event{}
 	context := toJSONEscapedString(types.NotificationContext{
@@ -437,6 +441,7 @@ func generateInstantNotificationMessage(
 		EventType:   types.InstantNotif.ToString(),
 		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		AccountID:   accountID,
+		OrgID:       orgID,
 		Events:      events,
 		Context:     context,
 	}

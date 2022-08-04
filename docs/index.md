@@ -27,7 +27,7 @@ The "end-to-end" data flow is described there (including Notification Writer ser
 1. `ccx-notification-writer` service stores insights results into AWS RDS database into `new_reports` table.
 1. Content of that table is consumed by `ccx-notification-service` periodically.
 1. Newest results from `new_reports` table is compared with results stored in `reported` table.
-1. If changes (new issues) has been found, notification message is sent into Kafka topic named `platform.notifications.ingress`.
+1. If changes (new issues) has been found, notification message is sent into Kafka topic named `platform.notifications.ingress`. The expected format of the message can be found [here](https://core-platform-apps.pages.redhat.com/notifications-docs/dev/user-guide/send-notification.html#_kafka).
 1. New issues is also sent to Service Log via REST API
 1. The newest result is stored into `reported` table to be used in the next `ccx-notification-service` iteration.
 

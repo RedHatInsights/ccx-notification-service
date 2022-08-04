@@ -213,6 +213,7 @@ type NotificationMessage struct {
 	EventType   string  `json:"event_type"`
 	Timestamp   string  `json:"timestamp"`
 	AccountID   string  `json:"account_id"`
+	OrgID       string  `json:"org_id"`
 	Events      []Event `json:"events"`
 	Context     string  `json:"context"`
 }
