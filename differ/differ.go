@@ -409,6 +409,14 @@ func processClusters(ruleContent types.RulesMap, storage Storage, clusters []typ
 
 // setupNotificationProducer function creates a kafka producer using the provided configuration
 func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) {
+	// broker enable/disable is very important information, let's inform
+	// admins about the state
+	if brokerConfig.Enabled {
+		log.Info().Msg("Broker config for Notification Service is enabled")
+	} else {
+		log.Info().Msg("Broker config for Notification Service is disabled")
+	}
+
 	producer, err := producer.New(brokerConfig)
 	if err != nil {
 		ProducerSetupErrors.Inc()
