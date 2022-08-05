@@ -35,6 +35,7 @@ var (
 		Address: "localhost:9092",
 		Topic:   "platform.notifications.ingress",
 		Timeout: time.Duration(30*10 ^ 9),
+		Enabled: true,
 	}
 )
 
@@ -50,6 +51,7 @@ func TestNewProducerBadBroker(t *testing.T) {
 		Address: "",
 		Topic:   "whatever",
 		Timeout: 0,
+		Enabled: true,
 	})
 	assert.EqualError(t, err, expectedErr)
 

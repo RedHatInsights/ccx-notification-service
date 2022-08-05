@@ -46,6 +46,7 @@ var (
 		Address: "localhost:9092",
 		Topic:   "platform.notifications.ingress",
 		Timeout: time.Duration(30*10 ^ 9),
+		Enabled: true,
 	}
 	// Base UNIX time plus approximately 50 years (not long before year 2020).
 	testTimestamp   = time.Unix(50*365*24*60*60, 0)
@@ -261,6 +262,7 @@ func TestShowConfiguration(t *testing.T) {
 			Address: brokerAddr,
 			Topic:   brokerTopic,
 			Timeout: 0,
+			Enabled: true,
 		},
 		Dependencies: conf.DependenciesConfiguration{},
 		Notifications: conf.NotificationsConfiguration{
@@ -333,6 +335,7 @@ func TestSetupNotificationProducerInvalidBrokerConf(t *testing.T) {
 			Address: "invalid_address",
 			Topic:   "",
 			Timeout: 0,
+			Enabled: true,
 		}
 
 		setupNotificationProducer(brokerConfig)
@@ -371,6 +374,7 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 		Address: mockBroker.Addr(),
 		Topic:   brokerCfg.Topic,
 		Timeout: brokerCfg.Timeout,
+		Enabled: brokerCfg.Enabled,
 	}
 
 	kafkaProducer := producer.KafkaProducer{
@@ -520,6 +524,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			Address: mockBroker.Addr(),
 			Topic:   brokerCfg.Topic,
 			Timeout: 0,
+			Enabled: true,
 		},
 		Notifications: conf.NotificationsConfiguration{
 			InsightsAdvisorURL: "an uri",
@@ -708,6 +713,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			Address: mockBroker.Addr(),
 			Topic:   brokerCfg.Topic,
 			Timeout: 0,
+			Enabled: true,
 		},
 		Notifications: conf.NotificationsConfiguration{
 			InsightsAdvisorURL: "an uri",
@@ -981,6 +987,7 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 			Address: mockBroker.Addr(),
 			Topic:   brokerCfg.Topic,
 			Timeout: 0,
+			Enabled: true,
 		},
 		Notifications: conf.NotificationsConfiguration{
 			InsightsAdvisorURL: "an uri",
@@ -1164,6 +1171,7 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 			Address: mockBroker.Addr(),
 			Topic:   brokerCfg.Topic,
 			Timeout: brokerCfg.Timeout,
+			Enabled: true,
 		},
 		Notifications: conf.NotificationsConfiguration{
 			InsightsAdvisorURL: "an uri",

@@ -58,6 +58,12 @@ func New(brokerCfg conf.KafkaConfiguration) (*KafkaProducer, error) {
 // partition ID and offset of new message or an error value in case of any
 // problem on broker side.
 func (producer *KafkaProducer) ProduceMessage(msg types.NotificationMessage) (partitionID int32, offset int64, err error) {
+	// no-op when producer is disabled
+	// (this logic allows us to enable/disable producer on the fly
+	if !producer.Configuration.Enabled {
+		return
+	}
+
 	jsonBytes, err := json.Marshal(msg)
 
 	if err != nil {
