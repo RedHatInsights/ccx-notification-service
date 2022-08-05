@@ -13,6 +13,7 @@ CCX notification service
 
 * [Description](#description)
 * [Building](#building)
+* [BDD tests](#bdd-tests)
 * [Usage](#usage)
     * [All command line options](#all-command-line-options)
 * [Database](#database)
@@ -71,6 +72,20 @@ bdd_tests_mock       Run BDD tests with mocked dependencies
 before_commit        Checks done before commit
 help                 Show this help screen
 ```
+
+## BDD tests
+
+Behaviour tests for this service are included in [Insights Behavioral
+Spec](https://github.com/RedHatInsights/insights-behavioral-spec) repository.
+In order to run these tests, the following steps need to be made:
+
+1. clone the [Insights Behavioral Spec](https://github.com/RedHatInsights/insights-behavioral-spec) repository
+1. go into the cloned subdirectory `insights-behavioral-spec`
+1. run the `notification_service_tests.sh` from this subdirectory
+
+List of all test scenarios prepared for this service is available at
+<https://github.com/RedHatInsights/insights-behavioral-spec#ccx-notification-service>
+
 ## Usage
 
 Provided a valid configuration, you can start the service with `./ccx-notification-service --instant-reports` 
