@@ -2,6 +2,7 @@
 address = "localhost:29092"
 topic = "ccx_test_notifications"
 timeout = "20s"
+enabled = true
 
 [storage]
 db_driver = "sqlite3"

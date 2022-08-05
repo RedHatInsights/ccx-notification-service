@@ -40,6 +40,8 @@ objects:
             value: ${OUTGOING_TOPIC}
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__TIMEOUT
             value: 60s
+          - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__ENABLED
+            value: 'true'
           - name: CCX_NOTIFICATION_SERVICE__STORAGE__DB_DRIVER
             value: postgres
           - name: CCX_NOTIFICATION_SERVICE__STORAGE__PG_PARAMS
