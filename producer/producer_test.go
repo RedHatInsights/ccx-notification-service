@@ -37,6 +37,13 @@ var (
 		Timeout: time.Duration(30*10 ^ 9),
 		Enabled: true,
 	}
+
+	disabledBrokerCfg = conf.KafkaConfiguration{
+		Address: "localhost:9092",
+		Topic:   "platform.notifications.ingress",
+		Timeout: time.Duration(30*10 ^ 9),
+		Enabled: false,
+	}
 )
 
 func init() {
@@ -112,6 +119,20 @@ func TestProducerSendEmptyNotificationMessage(t *testing.T) {
 
 	_, _, err := kafkaProducer.ProduceMessage(types.NotificationMessage{})
 	assert.NoError(t, err, "Couldn't produce message with given broker configuration")
+	helpers.FailOnError(t, kafkaProducer.Close())
+}
+
+func TestProducerTryToSendEmptyNotificationMessageForDisabledBroker(t *testing.T) {
+	mockProducer := mocks.NewSyncProducer(t, nil)
+	mockProducer.ExpectSendMessageAndSucceed()
+
+	kafkaProducer := KafkaProducer{
+		Configuration: disabledBrokerCfg,
+		Producer:      mockProducer,
+	}
+
+	_, _, err := kafkaProducer.ProduceMessage(types.NotificationMessage{})
+	assert.NoError(t, err, "Couldn't produce message with given disabled broker configuration")
 	helpers.FailOnError(t, kafkaProducer.Close())
 }
 
@@ -242,6 +263,44 @@ func TestProducerSendNotificationMessageEventContentNotValidJson(t *testing.T) {
 	_, _, err := kafkaProducer.ProduceMessage(msg)
 
 	assert.EqualError(t, err, jsonParseErrorMessage)
+}
+
+func TestProducerSendNotificationMessageEventContentNotValidJsonDisabledBroker(t *testing.T) {
+	mockProducer := mocks.NewSyncProducer(t, nil)
+	mockProducer.ExpectSendMessageAndSucceed()
+
+	kafkaProducer := KafkaProducer{
+		Configuration: disabledBrokerCfg,
+		Producer:      mockProducer,
+	}
+
+	events := []types.Event{
+		{
+			Metadata: types.EventMetadata{},
+			Payload:  "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\"}",
+		},
+		{
+			Metadata: map[string]interface{}{
+				"foo": make(chan int), // A value that cannot be represented in JSON
+			},
+			Payload: "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\", \"more_random_data\": \"why not...\"}",
+		},
+	}
+
+	msg := types.NotificationMessage{
+		Bundle:      "openshift",
+		Application: "advisor",
+		EventType:   "critical",
+		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
+		AccountID:   "000001",
+		Events:      events,
+		Context:     "{}",
+	}
+
+	_, _, err := kafkaProducer.ProduceMessage(msg)
+
+	assert.NoError(t, err, "Error not expected for disabled broker")
+	helpers.FailOnError(t, kafkaProducer.Close())
 }
 
 /*
