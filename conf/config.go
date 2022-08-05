@@ -123,6 +123,7 @@ type CleanerConfiguration struct {
 
 // KafkaConfiguration represents configuration of Kafka brokers and topics
 type KafkaConfiguration struct {
+	Enabled bool          `mapstructure:"enabled" toml:"enabled"`
 	Address string        `mapstructure:"address" toml:"address"`
 	Topic   string        `mapstructure:"topic"   toml:"topic"`
 	Timeout time.Duration `mapstructure:"timeout" toml:"timeout"`
