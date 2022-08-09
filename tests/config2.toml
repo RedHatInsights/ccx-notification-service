@@ -3,6 +3,11 @@ address = "localhost:29092"
 topic = "ccx_test_notifications"
 timeout = "20s"
 enabled = true
+total_risk_threshold = 3
+
+[service_log]
+enabled = false
+total_risk_threshold = 3
 
 [storage]
 db_driver = "sqlite3"
@@ -26,7 +31,6 @@ content_endpoint = ":8081"
 insights_advisor_url = "url_to_advisor"
 cluster_details_uri = "url_to_specific_cluster"
 rule_details_uri = "url_to_specific_rule"
-total_risk_threshold = 3
 
 [cleaner]
 max_age = "90 days"

@@ -142,10 +142,18 @@ func showAuthors() {
 func showConfiguration(config conf.ConfigStruct) {
 	brokerConfig := conf.GetKafkaBrokerConfiguration(config)
 	log.Info().
+		Bool("Enabled", brokerConfig.Enabled).
 		Str("Address", brokerConfig.Address).
 		Str("Topic", brokerConfig.Topic).
 		Str("Timeout", brokerConfig.Timeout.String()).
+		Int("Total risk threshold", brokerConfig.TotalRiskThreshold).
 		Msg("Broker configuration")
+
+	serviceLogConfig := conf.GetServiceLogConfiguration(config)
+	log.Info().
+		Bool("Enabled", serviceLogConfig.Enabled).
+		Int("Total risk threshold", serviceLogConfig.TotalRiskThreshold).
+		Msg("ServiceLog configuration")
 
 	storageConfig := conf.GetStorageConfiguration(config)
 	log.Info().
@@ -169,7 +177,6 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Insights Advisor URL", notificationConfig.InsightsAdvisorURL).
 		Str("Cluster details URI", notificationConfig.ClusterDetailsURI).
 		Str("Rule details URI", notificationConfig.RuleDetailsURI).
-		Int("Total risk threshold", notificationConfig.TotalRiskThreshold).
 		Msg("Notifications configuration")
 
 	metricsConfig := conf.GetMetricsConfiguration(config)
@@ -676,7 +683,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	notificationClusterDetailsURI = notifConfig.ClusterDetailsURI
 	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
 	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
-	totalRiskThreshold = notifConfig.TotalRiskThreshold
+	totalRiskThreshold = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
 
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)

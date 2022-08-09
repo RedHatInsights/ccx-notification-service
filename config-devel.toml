@@ -7,6 +7,11 @@ enabled = true
 address = "kafka:29092"
 topic = "platform.notifications.ingress"
 timeout = "60s"
+total_risk_threshold = 3
+
+[service_log]
+enabled = false
+total_risk_threshold = 3
 
 [storage]
 db_driver = "postgres"
@@ -28,7 +33,6 @@ cluster_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}
 rule_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}/insights/{module}/{error_key}"
 # valid units are SQL epoch time units: months days hours minutes seconds"
 cooldown = "1 minutes"
-total_risk_threshold = 3
 
 [metrics]
 job_name = "ccx_notification_service"

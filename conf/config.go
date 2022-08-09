@@ -75,6 +75,7 @@ type ConfigStruct struct {
 	Logging       LoggingConfiguration       `mapstructure:"logging" toml:"logging"`
 	Storage       StorageConfiguration       `mapstructure:"storage" toml:"storage"`
 	Kafka         KafkaConfiguration         `mapstructure:"kafka_broker" toml:"kafka_broker"`
+	ServiceLog    ServiceLogConfiguration    `mapstructure:"service_log" toml:"service_log"`
 	Dependencies  DependenciesConfiguration  `mapstructure:"dependencies" toml:"dependencies"`
 	Notifications NotificationsConfiguration `mapstructure:"notifications" toml:"notifications"`
 	Metrics       MetricsConfiguration       `mapstructure:"metrics" toml:"metrics"`
@@ -123,10 +124,17 @@ type CleanerConfiguration struct {
 
 // KafkaConfiguration represents configuration of Kafka brokers and topics
 type KafkaConfiguration struct {
-	Enabled bool          `mapstructure:"enabled" toml:"enabled"`
-	Address string        `mapstructure:"address" toml:"address"`
-	Topic   string        `mapstructure:"topic"   toml:"topic"`
-	Timeout time.Duration `mapstructure:"timeout" toml:"timeout"`
+	Enabled            bool          `mapstructure:"enabled" toml:"enabled"`
+	Address            string        `mapstructure:"address" toml:"address"`
+	Topic              string        `mapstructure:"topic"   toml:"topic"`
+	Timeout            time.Duration `mapstructure:"timeout" toml:"timeout"`
+	TotalRiskThreshold int           `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
+}
+
+// ServiceLogConfiguration represents configuration of ServiceLog REST API
+type ServiceLogConfiguration struct {
+	Enabled            bool `mapstructure:"enabled" toml:"enabled"`
+	TotalRiskThreshold int  `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
 }
 
 // NotificationsConfiguration represents the configuration specific to the content of notifications
@@ -135,7 +143,6 @@ type NotificationsConfiguration struct {
 	ClusterDetailsURI  string `mapstructure:"cluster_details_uri" toml:"cluster_details_uri"`
 	RuleDetailsURI     string `mapstructure:"rule_details_uri"    toml:"rule_details_uri"`
 	Cooldown           string `mapstructure:"cooldown" toml:"cooldown"`
-	TotalRiskThreshold int    `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
 }
 
 // MetricsConfiguration holds metrics related configuration
@@ -233,6 +240,11 @@ func GetLoggingConfiguration(config ConfigStruct) LoggingConfiguration {
 // GetKafkaBrokerConfiguration returns kafka broker configuration
 func GetKafkaBrokerConfiguration(config ConfigStruct) KafkaConfiguration {
 	return config.Kafka
+}
+
+// GetServiceLogConfiguration returns ServiceLog configuration
+func GetServiceLogConfiguration(config ConfigStruct) ServiceLogConfiguration {
+	return config.ServiceLog
 }
 
 // GetDependenciesConfiguration returns dependencies configuration
