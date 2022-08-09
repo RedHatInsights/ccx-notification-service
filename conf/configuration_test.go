@@ -102,9 +102,25 @@ func TestLoadBrokerConfiguration(t *testing.T) {
 
 	brokerCfg := conf.GetKafkaBrokerConfiguration(config)
 
+	assert.True(t, brokerCfg.Enabled)
 	assert.Equal(t, "localhost:29092", brokerCfg.Address)
 	assert.Equal(t, "ccx_test_notifications", brokerCfg.Topic)
 	assert.Equal(t, expectedTimeout, brokerCfg.Timeout)
+}
+
+// TestLoadServiceLogConfiguration tests loading the ServiceLog configuration
+// sub-tree
+func TestLoadServiceLogConfiguration(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+
+	mustSetEnv(t, envVar, "../tests/config2")
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	serviceLogCfg := conf.GetServiceLogConfiguration(config)
+
+	assert.False(t, serviceLogCfg.Enabled)
+	assert.Equal(t, 3, serviceLogCfg.TotalRiskThreshold)
 }
 
 // TestLoadStorageConfiguration tests loading the storage configuration sub-tree
