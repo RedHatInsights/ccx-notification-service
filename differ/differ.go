@@ -41,9 +41,6 @@ import (
 const (
 	configFileEnvVariableName = "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	defaultConfigFileName     = "config"
-
-	// TODO: make this configurable via config file
-	totalRiskThreshold = 3
 )
 
 // Exit codes
@@ -116,12 +113,18 @@ const (
 	notificationContextAdvisorURL  = "advisor_url"
 )
 
+// Constants used to filter events
+const (
+	DefaultTotalRiskThreshold = 3
+)
+
 var (
 	notificationType               types.EventType
 	notifier                       *producer.KafkaProducer
 	notificationClusterDetailsURI  string
 	notificationRuleDetailsURI     string
 	notificationInsightsAdvisorURL string
+	totalRiskThreshold             int = DefaultTotalRiskThreshold
 	previouslyReported             types.NotifiedRecordsPerCluster
 )
 
@@ -166,6 +169,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Insights Advisor URL", notificationConfig.InsightsAdvisorURL).
 		Str("Cluster details URI", notificationConfig.ClusterDetailsURI).
 		Str("Rule details URI", notificationConfig.RuleDetailsURI).
+		Int("Total risk threshold", notificationConfig.TotalRiskThreshold).
 		Msg("Notifications configuration")
 
 	metricsConfig := conf.GetMetricsConfiguration(config)
@@ -672,6 +676,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	notificationClusterDetailsURI = notifConfig.ClusterDetailsURI
 	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
 	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
+	totalRiskThreshold = notifConfig.TotalRiskThreshold
 
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)

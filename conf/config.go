@@ -135,6 +135,7 @@ type NotificationsConfiguration struct {
 	ClusterDetailsURI  string `mapstructure:"cluster_details_uri" toml:"cluster_details_uri"`
 	RuleDetailsURI     string `mapstructure:"rule_details_uri"    toml:"rule_details_uri"`
 	Cooldown           string `mapstructure:"cooldown" toml:"cooldown"`
+	TotalRiskThreshold int    `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
 }
 
 // MetricsConfiguration holds metrics related configuration
