@@ -18,7 +18,7 @@ objects:
     testing:
       iqePlugin: ccx
     jobs:
-      - name: instance
+      - name: to-notification-backend
         schedule: ${JOB_SCHEDULE}
         restartPolicy: Never
         concurrencyPolicy: Forbid
