@@ -33,7 +33,7 @@ import (
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
-	utypes "github.com/RedHatInsights/insights-operator-utils/types"
+	utypes "github.com/RedHatInsights/insights-results-types"
 	"github.com/rs/zerolog/log"
 )
 
