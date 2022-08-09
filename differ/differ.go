@@ -149,6 +149,12 @@ func showConfiguration(config conf.ConfigStruct) {
 		Int("Total risk threshold", brokerConfig.TotalRiskThreshold).
 		Msg("Broker configuration")
 
+	serviceLogConfig := conf.GetServiceLogConfiguration(config)
+	log.Info().
+		Bool("Enabled", serviceLogConfig.Enabled).
+		Int("Total risk threshold", serviceLogConfig.TotalRiskThreshold).
+		Msg("ServiceLog configuration")
+
 	storageConfig := conf.GetStorageConfiguration(config)
 	log.Info().
 		Str("Driver", storageConfig.Driver).
