@@ -26,7 +26,7 @@ import (
 	"testing"
 	"time"
 
-	utypes "github.com/RedHatInsights/insights-operator-utils/types"
+	utypes "github.com/RedHatInsights/insights-results-types"
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/producer"
