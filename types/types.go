@@ -25,7 +25,7 @@ package types
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/RedHatInsights/insights-operator-utils/types"
+	"github.com/RedHatInsights/insights-results-types"
 	"time"
 )
 
