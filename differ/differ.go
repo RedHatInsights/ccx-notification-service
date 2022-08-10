@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Red Hat, Inc.
+Copyright © 2021, 2022 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -121,8 +121,10 @@ const (
 
 // Constants used to filter events
 const (
-	DefaultTotalRiskThreshold = 3
-	DefaultEventFilter        = "totalRisk >= totalRiskThreshold"
+	DefaultTotalRiskThreshold  = 3
+	DefaultLikelihoodThreshold = 0
+	DefaultImpactThreshold     = 0
+	DefaultEventFilter         = "totalRisk >= totalRiskThreshold"
 )
 
 var (
@@ -131,6 +133,8 @@ var (
 	notificationClusterDetailsURI  string
 	notificationRuleDetailsURI     string
 	notificationInsightsAdvisorURL string
+	likelihoodThreshold            int = DefaultLikelihoodThreshold
+	impactThreshold                int = DefaultImpactThreshold
 	totalRiskThreshold             int = DefaultTotalRiskThreshold
 	previouslyReported             types.NotifiedRecordsPerCluster
 	eventFilter                    string = DefaultEventFilter
@@ -281,6 +285,8 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 
 			// values to be passed into expression evaluator
 			values := make(map[string]int)
+			values["likelihoodThreshold"] = likelihoodThreshold
+			values["impactThreshold"] = impactThreshold
 			values["totalRiskThreshold"] = totalRiskThreshold
 			values["likelihood"] = likelihood
 			values["impact"] = impact
