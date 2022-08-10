@@ -44,6 +44,8 @@ objects:
             value: 'true'
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__TOTAL_RISK_THRESHOLD
             value: "3"
+          - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__EVENT_FILTER
+            value: "totalRisk > totalRiskThreshold"
           - name: CCX_NOTIFICATION_SERVICE__STORAGE__DB_DRIVER
             value: postgres
           - name: CCX_NOTIFICATION_SERVICE__STORAGE__PG_PARAMS
