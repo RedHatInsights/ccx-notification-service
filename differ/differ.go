@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Red Hat, Inc.
+Copyright © 2021, 2022 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -121,8 +121,11 @@ const (
 
 // Constants used to filter events
 const (
-	DefaultTotalRiskThreshold = 3
-	DefaultEventFilter        = "totalRisk >= totalRiskThreshold"
+	DefaultTotalRiskThreshold  = 3
+	DefaultLikelihoodThreshold = 0
+	DefaultImpactThreshold     = 0
+	DefaultSeverityThreshold   = 0
+	DefaultEventFilter         = "totalRisk >= totalRiskThreshold"
 )
 
 var (
@@ -131,6 +134,9 @@ var (
 	notificationClusterDetailsURI  string
 	notificationRuleDetailsURI     string
 	notificationInsightsAdvisorURL string
+	likelihoodThreshold            int = DefaultLikelihoodThreshold
+	impactThreshold                int = DefaultImpactThreshold
+	severityThreshold              int = DefaultSeverityThreshold
 	totalRiskThreshold             int = DefaultTotalRiskThreshold
 	previouslyReported             types.NotifiedRecordsPerCluster
 	eventFilter                    string = DefaultEventFilter
@@ -154,6 +160,9 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Address", brokerConfig.Address).
 		Str("Topic", brokerConfig.Topic).
 		Str("Timeout", brokerConfig.Timeout.String()).
+		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
+		Int("Impact threshold", brokerConfig.ImpactThreshold).
+		Int("Severity threshold", brokerConfig.SeverityThreshold).
 		Int("Total risk threshold", brokerConfig.TotalRiskThreshold).
 		Str("Event filter", brokerConfig.EventFilter).
 		Msg("Broker configuration")
@@ -161,6 +170,9 @@ func showConfiguration(config conf.ConfigStruct) {
 	serviceLogConfig := conf.GetServiceLogConfiguration(config)
 	log.Info().
 		Bool("Enabled", serviceLogConfig.Enabled).
+		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
+		Int("Impact threshold", brokerConfig.ImpactThreshold).
+		Int("Severity threshold", brokerConfig.SeverityThreshold).
 		Int("Total risk threshold", serviceLogConfig.TotalRiskThreshold).
 		Str("Event filter", serviceLogConfig.EventFilter).
 		Msg("ServiceLog configuration")
@@ -277,6 +289,9 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 
 			// values to be passed into expression evaluator
 			values := make(map[string]int)
+			values["likelihoodThreshold"] = likelihoodThreshold
+			values["impactThreshold"] = impactThreshold
+			values["severityThreshold"] = severityThreshold
 			values["totalRiskThreshold"] = totalRiskThreshold
 			values["likelihood"] = likelihood
 			values["impact"] = impact
@@ -707,6 +722,9 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	notificationClusterDetailsURI = notifConfig.ClusterDetailsURI
 	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
 	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
+	likelihoodThreshold = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
+	impactThreshold = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
+	severityThreshold = conf.GetKafkaBrokerConfiguration(config).SeverityThreshold
 	totalRiskThreshold = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
 	eventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
 

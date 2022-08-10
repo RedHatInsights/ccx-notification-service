@@ -44,6 +44,12 @@ objects:
             value: 'true'
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__TOTAL_RISK_THRESHOLD
             value: "3"
+          - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__LIKELIHOOD_THRESHOLD
+            value: "0"
+          - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__IMPACT_THRESHOLD
+            value: "0"
+          - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__SEVERITY_THRESHOLD
+            value: "0"
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__EVENT_FILTER
             value: "totalRisk > totalRiskThreshold"
           - name: CCX_NOTIFICATION_SERVICE__STORAGE__DB_DRIVER
