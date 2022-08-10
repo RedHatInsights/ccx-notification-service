@@ -7,11 +7,15 @@ enabled = true
 address = "kafka:29092"
 topic = "platform.notifications.ingress"
 timeout = "60s"
+likelihood_threshold = 0
+impact_threshold = 0
 total_risk_threshold = 3
 event_filter = "totalRisk >= totalRiskThreshold"
 
 [service_log]
 enabled = false
+likelihood_threshold = 0
+impact_threshold = 0
 total_risk_threshold = 3
 event_filter = "totalRisk > totalRiskThreshold"
 
