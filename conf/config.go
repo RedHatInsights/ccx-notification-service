@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Red Hat, Inc.
+Copyright © 2021, 2022 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -124,19 +124,23 @@ type CleanerConfiguration struct {
 
 // KafkaConfiguration represents configuration of Kafka brokers and topics
 type KafkaConfiguration struct {
-	Enabled            bool          `mapstructure:"enabled" toml:"enabled"`
-	Address            string        `mapstructure:"address" toml:"address"`
-	Topic              string        `mapstructure:"topic"   toml:"topic"`
-	Timeout            time.Duration `mapstructure:"timeout" toml:"timeout"`
-	TotalRiskThreshold int           `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
-	EventFilter        string        `mapstructure:"event_filter" toml:"event_filter"`
+	Enabled             bool          `mapstructure:"enabled" toml:"enabled"`
+	Address             string        `mapstructure:"address" toml:"address"`
+	Topic               string        `mapstructure:"topic"   toml:"topic"`
+	Timeout             time.Duration `mapstructure:"timeout" toml:"timeout"`
+	LikelihoodThreshold int           `mapstructure:"likelihood_threshold" toml:"likelihood_threshold"`
+	ImpactThreshold     int           `mapstructure:"impact_threshold" toml:"impact_threshold"`
+	TotalRiskThreshold  int           `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
+	EventFilter         string        `mapstructure:"event_filter" toml:"event_filter"`
 }
 
 // ServiceLogConfiguration represents configuration of ServiceLog REST API
 type ServiceLogConfiguration struct {
-	Enabled            bool   `mapstructure:"enabled" toml:"enabled"`
-	TotalRiskThreshold int    `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
-	EventFilter        string `mapstructure:"event_filter" toml:"event_filter"`
+	Enabled             bool   `mapstructure:"enabled" toml:"enabled"`
+	LikelihoodThreshold int    `mapstructure:"likelihood_threshold" toml:"likelihood_threshold"`
+	ImpactThreshold     int    `mapstructure:"impact_threshold" toml:"impact_threshold"`
+	TotalRiskThreshold  int    `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
+	EventFilter         string `mapstructure:"event_filter" toml:"event_filter"`
 }
 
 // NotificationsConfiguration represents the configuration specific to the content of notifications
