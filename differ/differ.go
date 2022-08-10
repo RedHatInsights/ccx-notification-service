@@ -154,6 +154,8 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Address", brokerConfig.Address).
 		Str("Topic", brokerConfig.Topic).
 		Str("Timeout", brokerConfig.Timeout.String()).
+		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
+		Int("Impact threshold", brokerConfig.ImpactThreshold).
 		Int("Total risk threshold", brokerConfig.TotalRiskThreshold).
 		Str("Event filter", brokerConfig.EventFilter).
 		Msg("Broker configuration")
@@ -161,6 +163,8 @@ func showConfiguration(config conf.ConfigStruct) {
 	serviceLogConfig := conf.GetServiceLogConfiguration(config)
 	log.Info().
 		Bool("Enabled", serviceLogConfig.Enabled).
+		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
+		Int("Impact threshold", brokerConfig.ImpactThreshold).
 		Int("Total risk threshold", serviceLogConfig.TotalRiskThreshold).
 		Str("Event filter", serviceLogConfig.EventFilter).
 		Msg("ServiceLog configuration")
