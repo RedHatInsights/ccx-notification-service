@@ -130,6 +130,7 @@ type KafkaConfiguration struct {
 	Timeout             time.Duration `mapstructure:"timeout" toml:"timeout"`
 	LikelihoodThreshold int           `mapstructure:"likelihood_threshold" toml:"likelihood_threshold"`
 	ImpactThreshold     int           `mapstructure:"impact_threshold" toml:"impact_threshold"`
+	SeverityThreshold   int           `mapstructure:"severity_threshold" toml:"severity_threshold"`
 	TotalRiskThreshold  int           `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
 	EventFilter         string        `mapstructure:"event_filter" toml:"event_filter"`
 }
@@ -139,6 +140,7 @@ type ServiceLogConfiguration struct {
 	Enabled             bool   `mapstructure:"enabled" toml:"enabled"`
 	LikelihoodThreshold int    `mapstructure:"likelihood_threshold" toml:"likelihood_threshold"`
 	ImpactThreshold     int    `mapstructure:"impact_threshold" toml:"impact_threshold"`
+	SeverityThreshold   int    `mapstructure:"severity_threshold" toml:"severity_threshold"`
 	TotalRiskThreshold  int    `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
 	EventFilter         string `mapstructure:"event_filter" toml:"event_filter"`
 }

@@ -124,6 +124,7 @@ const (
 	DefaultTotalRiskThreshold  = 3
 	DefaultLikelihoodThreshold = 0
 	DefaultImpactThreshold     = 0
+	DefaultSeverityThreshold   = 0
 	DefaultEventFilter         = "totalRisk >= totalRiskThreshold"
 )
 
@@ -135,6 +136,7 @@ var (
 	notificationInsightsAdvisorURL string
 	likelihoodThreshold            int = DefaultLikelihoodThreshold
 	impactThreshold                int = DefaultImpactThreshold
+	severityThreshold              int = DefaultSeverityThreshold
 	totalRiskThreshold             int = DefaultTotalRiskThreshold
 	previouslyReported             types.NotifiedRecordsPerCluster
 	eventFilter                    string = DefaultEventFilter
@@ -160,6 +162,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Timeout", brokerConfig.Timeout.String()).
 		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
 		Int("Impact threshold", brokerConfig.ImpactThreshold).
+		Int("Severity threshold", brokerConfig.SeverityThreshold).
 		Int("Total risk threshold", brokerConfig.TotalRiskThreshold).
 		Str("Event filter", brokerConfig.EventFilter).
 		Msg("Broker configuration")
@@ -169,6 +172,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Bool("Enabled", serviceLogConfig.Enabled).
 		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
 		Int("Impact threshold", brokerConfig.ImpactThreshold).
+		Int("Severity threshold", brokerConfig.SeverityThreshold).
 		Int("Total risk threshold", serviceLogConfig.TotalRiskThreshold).
 		Str("Event filter", serviceLogConfig.EventFilter).
 		Msg("ServiceLog configuration")
@@ -287,6 +291,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			values := make(map[string]int)
 			values["likelihoodThreshold"] = likelihoodThreshold
 			values["impactThreshold"] = impactThreshold
+			values["severityThreshold"] = severityThreshold
 			values["totalRiskThreshold"] = totalRiskThreshold
 			values["likelihood"] = likelihood
 			values["impact"] = impact
@@ -717,6 +722,9 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	notificationClusterDetailsURI = notifConfig.ClusterDetailsURI
 	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
 	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
+	likelihoodThreshold = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
+	impactThreshold = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
+	severityThreshold = conf.GetKafkaBrokerConfiguration(config).SeverityThreshold
 	totalRiskThreshold = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
 	eventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
 

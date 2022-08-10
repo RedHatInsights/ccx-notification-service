@@ -5,6 +5,7 @@ timeout = "20s"
 enabled = true
 likelihood_threshold = 0
 impact_threshold = 0
+severity_threshold = 0
 total_risk_threshold = 3
 event_filter = "totalRisk >= totalRiskThreshold"
 
@@ -12,6 +13,7 @@ event_filter = "totalRisk >= totalRiskThreshold"
 enabled = false
 likelihood_threshold = 0
 impact_threshold = 0
+severity_threshold = 0
 total_risk_threshold = 3
 event_filter = "totalRisk > totalRiskThreshold"
 
