@@ -131,7 +131,7 @@ var (
 	notificationClusterDetailsURI  string
 	notificationRuleDetailsURI     string
 	notificationInsightsAdvisorURL string
-	totalRiskThreshold             int = DefaultTotalRiskThreshold
+	totalRiskThreshold             int
 	previouslyReported             types.NotifiedRecordsPerCluster
 	eventFilter                    string = DefaultEventFilter
 )
@@ -708,14 +708,15 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
 	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
 	totalRiskThreshold = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
+	if totalRiskThreshold == 0 {
+		totalRiskThreshold = DefaultTotalRiskThreshold
+	}
 	eventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
-
 	if eventFilter == "" {
 		err := fmt.Errorf("Configuration problem")
 		log.Err(err).Msg(eventFilterNotSetMessage)
 		os.Exit(ExitStatusEventFilterError)
 	}
-
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)
 

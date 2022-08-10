@@ -490,6 +490,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 		},
 	)
 
+	totalRiskThreshold = DefaultTotalRiskThreshold
 	processClusters(ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
