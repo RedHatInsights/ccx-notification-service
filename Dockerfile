@@ -26,6 +26,7 @@ RUN umask 0022 && \
 FROM registry.access.redhat.com/ubi8/ubi-minimal:latest
 
 COPY --from=builder /opt/app-root/src/ccx-notification-service .
+COPY --from=builder /opt/app-root/src/config.toml .
 
 USER 1001
 
