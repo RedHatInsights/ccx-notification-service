@@ -129,12 +129,14 @@ type KafkaConfiguration struct {
 	Topic              string        `mapstructure:"topic"   toml:"topic"`
 	Timeout            time.Duration `mapstructure:"timeout" toml:"timeout"`
 	TotalRiskThreshold int           `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
+	EventFilter        string        `mapstructure:"event_filter" toml:"event_filter"`
 }
 
 // ServiceLogConfiguration represents configuration of ServiceLog REST API
 type ServiceLogConfiguration struct {
-	Enabled            bool `mapstructure:"enabled" toml:"enabled"`
-	TotalRiskThreshold int  `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
+	Enabled            bool   `mapstructure:"enabled" toml:"enabled"`
+	TotalRiskThreshold int    `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
+	EventFilter        string `mapstructure:"event_filter" toml:"event_filter"`
 }
 
 // NotificationsConfiguration represents the configuration specific to the content of notifications

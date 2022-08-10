@@ -30,11 +30,13 @@ import (
 	"strings"
 	"time"
 
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/producer"
 	"github.com/RedHatInsights/ccx-notification-service/types"
-	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
+	"github.com/RedHatInsights/insights-operator-utils/evaluator"
 )
 
 // Configuration-related constants
@@ -65,6 +67,8 @@ const (
 	ExitStatusCleanerError
 	// ExitStatusMetricsError is raised when prometheus metrics cannot be pushed
 	ExitStatusMetricsError
+	// ExitStatusEventFilterError is raised when event filter is not set correctly
+	ExitStatusEventFilterError
 )
 
 // Messages
@@ -83,6 +87,8 @@ const (
 	invalidJSONContent          = "The provided content cannot be encoded as JSON."
 	contextToEscapedStringError = "Notification message will not be generated as context couldn't be converted to escaped string."
 	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
+	eventFilterNotSetMessage    = "Event filter not set"
+	evaluationErrorMessage      = "Evaluation error"
 )
 
 // Constants for notification message top level fields
@@ -116,6 +122,7 @@ const (
 // Constants used to filter events
 const (
 	DefaultTotalRiskThreshold = 3
+	DefaultEventFilter        = "totalRisk >= totalRiskThreshold"
 )
 
 var (
@@ -126,6 +133,7 @@ var (
 	notificationInsightsAdvisorURL string
 	totalRiskThreshold             int = DefaultTotalRiskThreshold
 	previouslyReported             types.NotifiedRecordsPerCluster
+	eventFilter                    string = DefaultEventFilter
 )
 
 // showVersion function displays version information.
@@ -147,12 +155,14 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Topic", brokerConfig.Topic).
 		Str("Timeout", brokerConfig.Timeout.String()).
 		Int("Total risk threshold", brokerConfig.TotalRiskThreshold).
+		Str("Event filter", brokerConfig.EventFilter).
 		Msg("Broker configuration")
 
 	serviceLogConfig := conf.GetServiceLogConfiguration(config)
 	log.Info().
 		Bool("Enabled", serviceLogConfig.Enabled).
 		Int("Total risk threshold", serviceLogConfig.TotalRiskThreshold).
+		Str("Event filter", serviceLogConfig.EventFilter).
 		Msg("ServiceLog configuration")
 
 	storageConfig := conf.GetStorageConfiguration(config)
@@ -265,7 +275,21 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			errorKey := r.ErrorKey
 			likelihood, impact, totalRisk, description := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
 
-			if totalRisk >= totalRiskThreshold {
+			// values to be passed into expression evaluator
+			values := make(map[string]int)
+			values["totalRiskThreshold"] = totalRiskThreshold
+			values["likelihood"] = likelihood
+			values["impact"] = impact
+			values["totalRisk"] = totalRisk
+
+			// try to evaluate event filter expression
+			result, err := evaluator.Evaluate(eventFilter, values)
+			if err != nil {
+				log.Err(err).Msg(evaluationErrorMessage)
+				continue
+			}
+
+			if result > 0 {
 				log.Warn().
 					Str("type", r.Type).
 					Str("rule", string(ruleName)).
@@ -684,6 +708,13 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
 	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
 	totalRiskThreshold = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
+	eventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
+
+	if eventFilter == "" {
+		err := fmt.Errorf("Configuration problem")
+		log.Err(err).Msg(eventFilterNotSetMessage)
+		os.Exit(ExitStatusEventFilterError)
+	}
 
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)

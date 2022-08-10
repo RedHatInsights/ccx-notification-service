@@ -43,10 +43,11 @@ import (
 
 var (
 	brokerCfg = conf.KafkaConfiguration{
-		Address: "localhost:9092",
-		Topic:   "platform.notifications.ingress",
-		Timeout: time.Duration(30*10 ^ 9),
-		Enabled: true,
+		Address:     "localhost:9092",
+		Topic:       "platform.notifications.ingress",
+		Timeout:     time.Duration(30*10 ^ 9),
+		Enabled:     true,
+		EventFilter: "totalRisk >= totalRiskThreshold",
 	}
 	// Base UNIX time plus approximately 50 years (not long before year 2020).
 	testTimestamp   = time.Unix(50*365*24*60*60, 0)
@@ -259,10 +260,11 @@ func TestShowConfiguration(t *testing.T) {
 			PGDBName: db,
 		},
 		Kafka: conf.KafkaConfiguration{
-			Address: brokerAddr,
-			Topic:   brokerTopic,
-			Timeout: 0,
-			Enabled: true,
+			Address:     brokerAddr,
+			Topic:       brokerTopic,
+			Timeout:     0,
+			Enabled:     true,
+			EventFilter: "totalRisk >= totalRiskThreshold",
 		},
 		Dependencies: conf.DependenciesConfiguration{},
 		Notifications: conf.NotificationsConfiguration{
@@ -332,10 +334,11 @@ func TestModuleNameToRuleNameValidRuleName(t *testing.T) {
 func TestSetupNotificationProducerInvalidBrokerConf(t *testing.T) {
 	if os.Getenv("SETUP_PRODUCER") == "1" {
 		brokerConfig := conf.KafkaConfiguration{
-			Address: "invalid_address",
-			Topic:   "",
-			Timeout: 0,
-			Enabled: true,
+			Address:     "invalid_address",
+			Topic:       "",
+			Timeout:     0,
+			Enabled:     true,
+			EventFilter: "totalRisk >= totalRiskThreshold",
 		}
 
 		setupNotificationProducer(brokerConfig)
@@ -521,10 +524,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 
 	config := conf.ConfigStruct{
 		Kafka: conf.KafkaConfiguration{
-			Address: mockBroker.Addr(),
-			Topic:   brokerCfg.Topic,
-			Timeout: 0,
-			Enabled: true,
+			Address:     mockBroker.Addr(),
+			Topic:       brokerCfg.Topic,
+			Timeout:     0,
+			Enabled:     true,
+			EventFilter: "totalRisk >= totalRiskThreshold",
 		},
 		Notifications: conf.NotificationsConfiguration{
 			InsightsAdvisorURL: "an uri",
@@ -710,10 +714,11 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 
 	config := conf.ConfigStruct{
 		Kafka: conf.KafkaConfiguration{
-			Address: mockBroker.Addr(),
-			Topic:   brokerCfg.Topic,
-			Timeout: 0,
-			Enabled: true,
+			Address:     mockBroker.Addr(),
+			Topic:       brokerCfg.Topic,
+			Timeout:     0,
+			Enabled:     true,
+			EventFilter: "totalRisk >= totalRiskThreshold",
 		},
 		Notifications: conf.NotificationsConfiguration{
 			InsightsAdvisorURL: "an uri",

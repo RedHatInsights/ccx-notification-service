@@ -8,10 +8,12 @@ address = "kafka:29092" #provide in deployment env or as secret
 topic = "platform.notifications.ingress" #provide in deployment env or as secret
 timeout = "60s"
 total_risk_threshold = 3
+event_filter = "totalRisk >= totalRiskThreshold"
 
 [service_log]
 enabled = false
 total_risk_threshold = 3
+event_filter = "totalRisk > totalRiskThreshold"
 
 [storage]
 db_driver = "postgres"
