@@ -4,10 +4,12 @@ topic = "ccx_test_notifications"
 timeout = "20s"
 enabled = true
 total_risk_threshold = 3
+event_filter = "totalRisk >= totalRiskThreshold"
 
 [service_log]
 enabled = false
 total_risk_threshold = 3
+event_filter = "totalRisk > totalRiskThreshold"
 
 [storage]
 db_driver = "sqlite3"
