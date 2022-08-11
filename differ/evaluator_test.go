@@ -117,3 +117,89 @@ func TestEvaluatorIncorrectExpression(t *testing.T) {
 		}
 	}
 }
+
+type TestCase struct {
+	name          string
+	expression    string
+	expectedValue int
+	expectedError bool
+}
+
+// TestEvaluatorRelational checks the evaluator.Evaluate function for simple
+// relational expression
+func TestEvaluatorRelational(t *testing.T) {
+	testCases := []TestCase{
+		{
+			name:          "less than",
+			expression:    "totalRisk < totalRiskThreshold",
+			expectedValue: 1,
+		},
+		{
+			name:          "less then or equal",
+			expression:    "totalRisk <= totalRiskThreshold",
+			expectedValue: 1,
+		},
+		{
+			name:          "equal",
+			expression:    "totalRisk == totalRiskThreshold",
+			expectedValue: 0,
+		},
+		{
+			name:          "greater or equal",
+			expression:    "totalRisk >= totalRiskThreshold",
+			expectedValue: 0,
+		},
+		{
+			name:          "greater than",
+			expression:    "totalRisk > totalRiskThreshold",
+			expectedValue: 0,
+		},
+		{
+			name:          "not equal",
+			expression:    "totalRisk != totalRiskThreshold",
+			expectedValue: 1,
+		},
+		{
+			name:          "arithmetic + less than",
+			expression:    "totalRisk + 1 < totalRiskThreshold",
+			expectedValue: 0,
+		},
+		{
+			name:          "arithmetic + less then or equal",
+			expression:    "totalRisk + 1 <= totalRiskThreshold",
+			expectedValue: 1,
+		},
+		{
+			name:          "arithmetic + equal",
+			expression:    "totalRisk + 1 == totalRiskThreshold",
+			expectedValue: 1,
+		},
+		{
+			name:          "arithmetic + greater or equal",
+			expression:    "totalRisk + 1 >= totalRiskThreshold",
+			expectedValue: 1,
+		},
+		{
+			name:          "arithmetic + greater than",
+			expression:    "totalRisk + 1 > totalRiskThreshold",
+			expectedValue: 0,
+		},
+		{
+			name:          "arithmetic + not equal",
+			expression:    "totalRisk + 1 != totalRiskThreshold",
+			expectedValue: 0,
+		},
+	}
+
+	const totalRiskThreshold = 3
+	const totalRisk = 2
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			result, err := evaluateFilterExpression(tc.expression,
+				0, 0, 0, totalRiskThreshold,
+				0, 0, totalRisk)
+			assert.NoError(t, err, "unexpected error")
+			assert.Equal(t, tc.expectedValue, result)
+		})
+	}
+}
