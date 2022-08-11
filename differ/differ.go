@@ -734,9 +734,13 @@ func deleteOperationSpecified(cliFlags types.CliFlags) bool {
 		cliFlags.PerformOldReportsCleanup
 }
 
-func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
+func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
+
+	if verbose {
+		showConfiguration(config)
+	}
 
 	registerMetrics(conf.GetMetricsConfiguration(config))
 
@@ -826,6 +830,7 @@ func Run() {
 	flag.BoolVar(&cliFlags.PrintOldReportsForCleanup, "print-old-reports-for-cleanup", false, "print old reports to be cleaned up")
 	flag.BoolVar(&cliFlags.PerformOldReportsCleanup, "old-reports-cleanup", false, "perform old reports clean up")
 	flag.BoolVar(&cliFlags.CleanupOnStartup, "cleanup-on-startup", false, "perform database clean up on startup")
+	flag.BoolVar(&cliFlags.Verbose, "verbose", false, "verbose logs")
 	flag.StringVar(&cliFlags.MaxAge, "max-age", "", "max age for displaying/cleaning old records")
 	flag.Parse()
 	checkArgs(&cliFlags)
@@ -880,6 +885,6 @@ func Run() {
 		// if previous operation is correct, just continue
 	}
 
-	startDiffer(config, storage)
+	startDiffer(config, storage, cliFlags.Verbose)
 
 }
