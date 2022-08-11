@@ -122,7 +122,6 @@ type TestCase struct {
 	name          string
 	expression    string
 	expectedValue int
-	expectedError bool
 }
 
 // TestEvaluatorRelational checks the evaluator.Evaluate function for simple
