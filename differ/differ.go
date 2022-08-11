@@ -128,7 +128,7 @@ const (
 	DefaultEventFilter         = "totalRisk >= totalRiskThreshold"
 )
 
-// EventThreshold structure contains all threshold values for event filter
+// EventThresholds structure contains all threshold values for event filter
 // evaluator
 type EventThresholds struct {
 	TotalRisk  int
