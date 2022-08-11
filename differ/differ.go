@@ -244,6 +244,26 @@ func findRuleByNameAndErrorKey(
 	return
 }
 
+// evaluateFilterExpression function tries to evaluate event filter expression
+// based on provided threshold values and actual reccomendation values
+func evaluateFilterExpression(eventFilter string,
+	likelihoodThreshold int, impactThreshold int, severityThreshold int, totalRiskThreshold int,
+	likelihood int, impact int, totalRisk int) (int, error) {
+
+	// values to be passed into expression evaluator
+	values := make(map[string]int)
+	values["likelihoodThreshold"] = likelihoodThreshold
+	values["impactThreshold"] = impactThreshold
+	values["severityThreshold"] = severityThreshold
+	values["totalRiskThreshold"] = totalRiskThreshold
+	values["likelihood"] = likelihood
+	values["impact"] = impact
+	values["totalRisk"] = totalRisk
+
+	// try to evaluate event filter expression
+	return evaluator.Evaluate(eventFilter, values)
+}
+
 func processReportsByCluster(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
 	notifiedIssues := 0
 	for i, cluster := range clusters {
@@ -287,18 +307,12 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			errorKey := r.ErrorKey
 			likelihood, impact, totalRisk, description := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
 
-			// values to be passed into expression evaluator
-			values := make(map[string]int)
-			values["likelihoodThreshold"] = likelihoodThreshold
-			values["impactThreshold"] = impactThreshold
-			values["severityThreshold"] = severityThreshold
-			values["totalRiskThreshold"] = totalRiskThreshold
-			values["likelihood"] = likelihood
-			values["impact"] = impact
-			values["totalRisk"] = totalRisk
-
 			// try to evaluate event filter expression
-			result, err := evaluator.Evaluate(eventFilter, values)
+			result, err := evaluateFilterExpression(eventFilter,
+				likelihoodThreshold, impactThreshold,
+				severityThreshold, totalRiskThreshold, likelihood,
+				impact, totalRisk)
+
 			if err != nil {
 				log.Err(err).Msg(evaluationErrorMessage)
 				continue
