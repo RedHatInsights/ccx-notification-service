@@ -128,18 +128,37 @@ const (
 	DefaultEventFilter         = "totalRisk >= totalRiskThreshold"
 )
 
+// EventThresholds structure contains all threshold values for event filter
+// evaluator
+type EventThresholds struct {
+	TotalRisk  int
+	Likelihood int
+	Impact     int
+	Severity   int
+}
+
+// EventValue structure contains all event values for event filter evaluator
+type EventValue struct {
+	TotalRisk  int
+	Likelihood int
+	Impact     int
+	Severity   int
+}
+
 var (
 	notificationType               types.EventType
 	notifier                       *producer.KafkaProducer
 	notificationClusterDetailsURI  string
 	notificationRuleDetailsURI     string
 	notificationInsightsAdvisorURL string
-	likelihoodThreshold            int = DefaultLikelihoodThreshold
-	impactThreshold                int = DefaultImpactThreshold
-	severityThreshold              int = DefaultSeverityThreshold
-	totalRiskThreshold             int = DefaultTotalRiskThreshold
-	previouslyReported             types.NotifiedRecordsPerCluster
-	eventFilter                    string = DefaultEventFilter
+	eventThresholds                EventThresholds = EventThresholds{
+		TotalRisk:  DefaultTotalRiskThreshold,
+		Likelihood: DefaultLikelihoodThreshold,
+		Impact:     DefaultImpactThreshold,
+		Severity:   DefaultSeverityThreshold,
+	}
+	previouslyReported types.NotifiedRecordsPerCluster
+	eventFilter        string = DefaultEventFilter
 )
 
 // showVersion function displays version information.
@@ -244,6 +263,25 @@ func findRuleByNameAndErrorKey(
 	return
 }
 
+// evaluateFilterExpression function tries to evaluate event filter expression
+// based on provided threshold values and actual reccomendation values
+func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, eventValue EventValue) (int, error) {
+
+	// values to be passed into expression evaluator
+	values := make(map[string]int)
+	values["likelihoodThreshold"] = thresholds.Likelihood
+	values["impactThreshold"] = thresholds.Impact
+	values["severityThreshold"] = thresholds.Severity
+	values["totalRiskThreshold"] = thresholds.TotalRisk
+	values["likelihood"] = eventValue.Likelihood
+	values["impact"] = eventValue.Impact
+	values["severity"] = eventValue.Severity
+	values["totalRisk"] = eventValue.TotalRisk
+
+	// try to evaluate event filter expression
+	return evaluator.Evaluate(eventFilter, values)
+}
+
 func processReportsByCluster(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
 	notifiedIssues := 0
 	for i, cluster := range clusters {
@@ -286,19 +324,16 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			ruleName := moduleToRuleName(module)
 			errorKey := r.ErrorKey
 			likelihood, impact, totalRisk, description := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
-
-			// values to be passed into expression evaluator
-			values := make(map[string]int)
-			values["likelihoodThreshold"] = likelihoodThreshold
-			values["impactThreshold"] = impactThreshold
-			values["severityThreshold"] = severityThreshold
-			values["totalRiskThreshold"] = totalRiskThreshold
-			values["likelihood"] = likelihood
-			values["impact"] = impact
-			values["totalRisk"] = totalRisk
+			eventValue := EventValue{
+				Likelihood: likelihood,
+				Impact:     impact,
+				TotalRisk:  totalRisk,
+			}
 
 			// try to evaluate event filter expression
-			result, err := evaluator.Evaluate(eventFilter, values)
+			result, err := evaluateFilterExpression(eventFilter,
+				eventThresholds, eventValue)
+
 			if err != nil {
 				log.Err(err).Msg(evaluationErrorMessage)
 				continue
@@ -722,10 +757,10 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage) {
 	notificationClusterDetailsURI = notifConfig.ClusterDetailsURI
 	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
 	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
-	likelihoodThreshold = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
-	impactThreshold = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
-	severityThreshold = conf.GetKafkaBrokerConfiguration(config).SeverityThreshold
-	totalRiskThreshold = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
+	eventThresholds.Likelihood = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
+	eventThresholds.Impact = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
+	eventThresholds.Severity = conf.GetKafkaBrokerConfiguration(config).SeverityThreshold
+	eventThresholds.TotalRisk = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
 	eventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
 
 	if eventFilter == "" {
