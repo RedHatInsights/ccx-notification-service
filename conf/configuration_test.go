@@ -112,6 +112,7 @@ func TestLoadBrokerConfiguration(t *testing.T) {
 // sub-tree
 func TestLoadServiceLogConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	expectedTimeout, _ := time.ParseDuration("15s")
 
 	mustSetEnv(t, envVar, "../tests/config2")
 	config, err := conf.LoadConfiguration(envVar, "")
@@ -121,6 +122,9 @@ func TestLoadServiceLogConfiguration(t *testing.T) {
 
 	assert.False(t, serviceLogCfg.Enabled)
 	assert.Equal(t, 3, serviceLogCfg.TotalRiskThreshold)
+	assert.Equal(t, "test", serviceLogCfg.AccessToken)
+	assert.Equal(t, "localhost:8000/api/service_logs/v1/cluster_logs/", serviceLogCfg.URL)
+	assert.Equal(t, expectedTimeout, serviceLogCfg.Timeout)
 }
 
 // TestLoadStorageConfiguration tests loading the storage configuration sub-tree

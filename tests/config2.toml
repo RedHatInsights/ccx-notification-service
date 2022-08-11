@@ -11,6 +11,9 @@ event_filter = "totalRisk >= totalRiskThreshold"
 
 [service_log]
 enabled = false
+access_token = "test"
+url = "localhost:8000/api/service_logs/v1/cluster_logs/"
+timeout = "15s"
 likelihood_threshold = 0
 impact_threshold = 0
 severity_threshold = 0
