@@ -95,7 +95,7 @@ objects:
           command:
             - /bin/sh
             - -c
-            - ./ccx-notification-service --instant-reports --cleanup-on-startup --max-age '8 days'
+            - ./ccx-notification-service --instant-reports --cleanup-on-startup --max-age '8 days' --verbose
 
     kafkaTopics:
       - topicName: ${OUTGOING_TOPIC}
