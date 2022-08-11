@@ -28,12 +28,28 @@ func TestEvaluatorDefaultExpression(t *testing.T) {
 	const expression = "totalRisk >= totalRiskThreshold"
 	const totalRiskThreshold = 3
 
+	thresholds := EventThresholds{
+		Likelihood: 0,
+		Impact:     0,
+		Severity:   0,
+		TotalRisk:  totalRiskThreshold,
+	}
+
+	eventValue := EventValue{
+		Likelihood: 0,
+		Impact:     0,
+		Severity:   0,
+		TotalRisk:  3,
+	}
+
 	// try all combinations of totalRisk
 	for totalRisk := 0; totalRisk <= 5; totalRisk++ {
+		// update event value
+		eventValue.TotalRisk = totalRisk
+
 		// try to evaluate the expression
 		result, err := evaluateFilterExpression(expression,
-			0, 0, 0, totalRiskThreshold,
-			0, 0, totalRisk)
+			thresholds, eventValue)
 
 		// expression should be evaluated w/o errors
 		assert.NoError(t, err, "Error is not expected there")
@@ -54,13 +70,30 @@ func TestEvaluatorComplicatedExpression(t *testing.T) {
 	const totalRiskThreshold = 3
 	const likelihoodThreshold = 2
 
+	thresholds := EventThresholds{
+		Likelihood: likelihoodThreshold,
+		Impact:     0,
+		Severity:   0,
+		TotalRisk:  totalRiskThreshold,
+	}
+
+	eventValue := EventValue{
+		Likelihood: 0,
+		Impact:     0,
+		Severity:   0,
+		TotalRisk:  0,
+	}
+
 	// try all combinations of likelihood and totalRisk
 	for likelihood := 0; likelihood <= 5; likelihood++ {
 		for totalRisk := 0; totalRisk <= 5; totalRisk++ {
+			// update event value
+			eventValue.TotalRisk = totalRisk
+			eventValue.Likelihood = likelihood
+
 			// try to evaluate the expression
 			result, err := evaluateFilterExpression(expression,
-				likelihoodThreshold, 0, 0, totalRiskThreshold,
-				likelihood, 0, totalRisk)
+				thresholds, eventValue)
 
 			// expression should be evaluated w/o errors
 			assert.NoError(t, err, "Error is not expected there")
@@ -82,13 +115,30 @@ func TestEvaluatorEmptyExpression(t *testing.T) {
 	const totalRiskThreshold = 3
 	const likelihoodThreshold = 2
 
+	thresholds := EventThresholds{
+		Likelihood: likelihoodThreshold,
+		Impact:     0,
+		Severity:   0,
+		TotalRisk:  totalRiskThreshold,
+	}
+
+	eventValue := EventValue{
+		Likelihood: 0,
+		Impact:     0,
+		Severity:   0,
+		TotalRisk:  0,
+	}
+
 	// try all combinations of likelihood and totalRisk
 	for likelihood := 0; likelihood <= 5; likelihood++ {
 		for totalRisk := 0; totalRisk <= 5; totalRisk++ {
+			// update event value
+			eventValue.TotalRisk = totalRisk
+			eventValue.Likelihood = likelihood
+
 			// try to evaluate the expression
 			_, err := evaluateFilterExpression(expression,
-				likelihoodThreshold, 0, 0, totalRiskThreshold,
-				likelihood, 0, totalRisk)
+				thresholds, eventValue)
 
 			// error should be reported for incorrect expression
 			assert.Error(t, err, "Error is expected there")
@@ -104,13 +154,30 @@ func TestEvaluatorIncorrectExpression(t *testing.T) {
 	const totalRiskThreshold = 3
 	const likelihoodThreshold = 2
 
+	thresholds := EventThresholds{
+		Likelihood: likelihoodThreshold,
+		Impact:     0,
+		Severity:   0,
+		TotalRisk:  totalRiskThreshold,
+	}
+
+	eventValue := EventValue{
+		Likelihood: 0,
+		Impact:     0,
+		Severity:   0,
+		TotalRisk:  0,
+	}
+
 	// try all combinations of likelihood and totalRisk
 	for likelihood := 0; likelihood <= 5; likelihood++ {
 		for totalRisk := 0; totalRisk <= 5; totalRisk++ {
+			// update event value
+			eventValue.TotalRisk = totalRisk
+			eventValue.Likelihood = likelihood
+
 			// try to evaluate the expression
 			_, err := evaluateFilterExpression(expression,
-				likelihoodThreshold, 0, 0, totalRiskThreshold,
-				likelihood, 0, totalRisk)
+				thresholds, eventValue)
 
 			// error should be reported for incorrect expression
 			assert.Error(t, err, "Error is expected there")
@@ -192,11 +259,26 @@ func TestEvaluatorRelational(t *testing.T) {
 
 	const totalRiskThreshold = 3
 	const totalRisk = 2
+
+	thresholds := EventThresholds{
+		Likelihood: 0,
+		Impact:     0,
+		Severity:   0,
+		TotalRisk:  totalRiskThreshold,
+	}
+
+	eventValue := EventValue{
+		Likelihood: 0,
+		Impact:     0,
+		Severity:   0,
+		TotalRisk:  totalRisk,
+	}
+
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
+			// try to evaluate the expression
 			result, err := evaluateFilterExpression(tc.expression,
-				0, 0, 0, totalRiskThreshold,
-				0, 0, totalRisk)
+				thresholds, eventValue)
 			assert.NoError(t, err, "unexpected error")
 			assert.Equal(t, tc.expectedValue, result)
 		})
