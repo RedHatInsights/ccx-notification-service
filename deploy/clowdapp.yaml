@@ -68,6 +68,10 @@ objects:
             value: http://ccx-insights-content-service:${CONTENT_SERVICE_PORT}/api/v1/
           - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_ENDPOINT
             value: content
+          - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__TEMPLATE_RENDERER_SERVER
+            value: http://localhost:8083/
+          - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__TEMPLATE_RENDERER_ENDPOINT
+            value: rendered_reports
           - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__INSIGHTS_ADVISOR_URL
             value: "https://${PLATFORM_UI_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}"
           - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__CLUSTER_DETAILS_URI

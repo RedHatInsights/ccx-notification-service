@@ -139,7 +139,6 @@ func TestProducerSendNotificationMessageNoEvents(t *testing.T) {
 		Events:      nil,
 		Context:     "{}",
 	}
-
 	msgBytes, err := json.Marshal(msg)
 	helpers.FailOnError(t, err)
 
@@ -225,7 +224,7 @@ func TestProducerSendNotificationMessageMultipleEvents(t *testing.T) {
 func TestProducerSend(t *testing.T) {
 
 	producer, err := sarama.NewSyncProducer([]string{brokerCfg.Address}, nil)
-	kafkaProducer := KafkaProducer{
+	kafkaProducer := Producer{
 		Configuration: brokerCfg,
 		Producer:  producer   ,
 	}
