@@ -66,7 +66,7 @@ var (
 
 	testCluster = types.ClusterEntry{
 		OrgID:         1,
-		AccountNumber: 0123456,
+		AccountNumber: 0o123456,
 		ClusterName:   "test_cluster1",
 		KafkaOffset:   0,
 		UpdatedAt:     types.Timestamp(testTimestamp),
