@@ -211,3 +211,16 @@ func TestLoadMetricsConfiguration(t *testing.T) {
 	assert.Equal(t, ":9091", conf.GatewayURL)
 	assert.Equal(t, "", conf.GatewayAuthToken)
 }
+
+// TestLoadNotificationsConfiguration tests loading the notifications configuration sub-tree
+func TestLoadCleanerConfiguration(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+
+	mustSetEnv(t, envVar, "../tests/config2")
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	conf := conf.GetCleanerConfiguration(config)
+
+	assert.Equal(t, "90 days", conf.MaxAge)
+}
