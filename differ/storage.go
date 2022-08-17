@@ -48,6 +48,9 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
+// NotificationBackendEventTypeID represent an event for the notification backend
+const NotificationBackendEventTypeID = 1
+
 // Storage represents an interface to almost any database or storage system
 type Storage interface {
 	Close() error
@@ -85,7 +88,8 @@ type Storage interface {
 		report types.ClusterReport,
 		updatedAt types.Timestamp,
 		notifiedAt types.Timestamp,
-		errorLog string) error
+		errorLog string,
+		eventType int) error
 	CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
 	CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
 	DeleteRowFromNewReports(
@@ -481,7 +485,8 @@ func (storage DBStorage) WriteNotificationRecord(
 		notificationRecord.AccountNumber, notificationRecord.ClusterName,
 		notificationRecord.NotificationTypeID, notificationRecord.StateID,
 		notificationRecord.Report, notificationRecord.UpdatedAt,
-		notificationRecord.NotifiedAt, notificationRecord.ErrorLog)
+		notificationRecord.NotifiedAt, notificationRecord.ErrorLog,
+		NotificationBackendEventTypeID)
 }
 
 // WriteNotificationRecordImpl method writes a report (with given state and
@@ -498,17 +503,18 @@ func (storage DBStorage) WriteNotificationRecordImpl(
 	report types.ClusterReport,
 	updatedAt types.Timestamp,
 	notifiedAt types.Timestamp,
-	errorLog string) error {
+	errorLog string,
+	eventTarget int) error {
 
 	const insertStatement = `
             INSERT INTO reported
-            (org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log)
+            (org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log, event_type_id)
             VALUES
-            ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         `
 	_, err := storage.connection.Exec(insertStatement, orgID,
 		accountNumber, clusterName, notificationTypeID, stateID,
-		report, time.Time(updatedAt), time.Time(notifiedAt), errorLog)
+		report, time.Time(updatedAt), time.Time(notifiedAt), errorLog, eventTarget)
 
 	return err
 }
@@ -530,7 +536,7 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 	return storage.WriteNotificationRecordImpl(clusterEntry.OrgID,
 		clusterEntry.AccountNumber, clusterEntry.ClusterName,
 		notificationTypeID, stateID, report, clusterEntry.UpdatedAt,
-		notifiedAt, errorLog)
+		notifiedAt, errorLog, NotificationBackendEventTypeID)
 }
 
 // ReadLastNotifiedRecordForClusterList method returns the last notification
@@ -547,10 +553,10 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 		clusterIDs[idx] = string(entry.ClusterName)
 	}
 
-	whereClause := fmt.Sprintf(` WHERE org_id IN (%v) AND cluster IN (%v) AND state = 1 `,
+	whereClause := fmt.Sprintf(` WHERE event_type_id = 1 AND state = 1 AND org_id IN (%v) AND cluster IN (%v)`,
 		inClauseFromStringSlice(orgIDs), inClauseFromStringSlice(clusterIDs))
 
-	query := `SELECT * FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
+	query := `SELECT report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
 		whereClause +
 		` ORDER BY cluster, notified_at DESC) t WHERE notified_at > NOW() - $1::INTERVAL;`
 
