@@ -370,13 +370,13 @@ func (_m *Storage) WriteNotificationRecordForCluster(clusterEntry types.ClusterE
 	return r0
 }
 
-// WriteNotificationRecordImpl provides a mock function with given fields: orgID, accountNumber, clusterName, notificationTypeID, stateID, report, updatedAt, notifiedAt, errorLog
-func (_m *Storage) WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string) error {
-	ret := _m.Called(orgID, accountNumber, clusterName, notificationTypeID, stateID, report, updatedAt, notifiedAt, errorLog)
+// WriteNotificationRecordImpl provides a mock function with given fields: orgID, accountNumber, clusterName, notificationTypeID, stateID, report, updatedAt, notifiedAt, errorLog, eventType
+func (_m *Storage) WriteNotificationRecordImpl(orgID types.OrgID, accountNumber types.AccountNumber, clusterName types.ClusterName, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, updatedAt types.Timestamp, notifiedAt types.Timestamp, errorLog string, eventType int) error {
+	ret := _m.Called(orgID, accountNumber, clusterName, notificationTypeID, stateID, report, updatedAt, notifiedAt, errorLog, eventType)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.OrgID, types.AccountNumber, types.ClusterName, types.NotificationTypeID, types.StateID, types.ClusterReport, types.Timestamp, types.Timestamp, string) error); ok {
-		r0 = rf(orgID, accountNumber, clusterName, notificationTypeID, stateID, report, updatedAt, notifiedAt, errorLog)
+	if rf, ok := ret.Get(0).(func(types.OrgID, types.AccountNumber, types.ClusterName, types.NotificationTypeID, types.StateID, types.ClusterReport, types.Timestamp, types.Timestamp, string, int) error); ok {
+		r0 = rf(orgID, accountNumber, clusterName, notificationTypeID, stateID, report, updatedAt, notifiedAt, errorLog, eventType)
 	} else {
 		r0 = ret.Error(0)
 	}
