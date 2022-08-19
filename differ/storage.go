@@ -556,7 +556,7 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 	whereClause := fmt.Sprintf(` WHERE event_type_id = 1 AND state = 1 AND org_id IN (%v) AND cluster IN (%v)`,
 		inClauseFromStringSlice(orgIDs), inClauseFromStringSlice(clusterIDs))
 
-	query := `SELECT report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
+	query := `SELECT org_id, cluster, report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
 		whereClause +
 		` ORDER BY cluster, notified_at DESC) t WHERE notified_at > NOW() - $1::INTERVAL;`
 
@@ -576,19 +576,13 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 
 	for rows.Next() {
 		var (
-			orgID              types.OrgID
-			accountNumber      types.AccountNumber
-			clusterName        types.ClusterName
-			updatedAt          types.Timestamp
-			notificationTypeID types.NotificationTypeID
-			stateID            types.StateID
-			report             types.ClusterReport
-			notifiedAt         types.Timestamp
-			errorLog           string
+			orgID       types.OrgID
+			clusterName types.ClusterName
+			report      types.ClusterReport
+			notifiedAt  types.Timestamp
 		)
 
-		err := rows.Scan(&orgID, &accountNumber, &clusterName, &notificationTypeID,
-			&stateID, &report, &updatedAt, &notifiedAt, &errorLog)
+		err := rows.Scan(&orgID, &clusterName, &report, &notifiedAt)
 		if err != nil {
 			if closeErr := rows.Close(); closeErr != nil {
 				log.Error().Err(closeErr).Msg(unableToCloseDBRowsHandle)
@@ -596,17 +590,11 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 			return notificationRecords, err
 		}
 		key := types.ClusterOrgKey{OrgID: orgID, ClusterName: clusterName}
-		//TODO: get only the necessary columns when selecting (e.g state is not needed, errorLog is not needed, I already have cluster and org, etc.
 		notificationRecords[key] = types.NotificationRecord{
-			OrgID:              orgID,
-			AccountNumber:      accountNumber,
-			ClusterName:        clusterName,
-			UpdatedAt:          updatedAt,
-			NotificationTypeID: notificationTypeID,
-			StateID:            stateID,
-			Report:             report,
-			NotifiedAt:         notifiedAt,
-			ErrorLog:           errorLog,
+			OrgID:       orgID,
+			ClusterName: clusterName,
+			Report:      report,
+			NotifiedAt:  notifiedAt,
 		}
 	}
 
