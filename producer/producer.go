@@ -31,7 +31,7 @@ import (
 
 // Producer represents any producer
 type Producer interface {
-	New(brokerCfg conf.KafkaConfiguration) (Producer, error)
+	New(configStruct conf.ConfigStruct) (Producer, error)
 	ProduceMessage(msg types.NotificationMessage) (int32, int64, error)
 	Close() error
 }

@@ -40,16 +40,17 @@ type KafkaProducer struct {
 }
 
 // New constructs new implementation of Producer interface
-func New(brokerCfg conf.KafkaConfiguration) (*KafkaProducer, error) {
-	//TODO: Think about a tolerant config for the producer
-	producer, err := sarama.NewSyncProducer([]string{brokerCfg.Address}, nil)
+func New(config conf.ConfigStruct) (*KafkaProducer, error) {
+	kafkaConfig := conf.GetKafkaBrokerConfiguration(config)
+
+	producer, err := sarama.NewSyncProducer([]string{kafkaConfig.Address}, nil)
 	if err != nil {
-		log.Error().Err(err).Msg("unable to create a new Kafka producer")
+		log.Error().Err(err).Msgf("unable to start a Kafka producer with broker address %s", config.Kafka.Address)
 		return nil, err
 	}
 
 	return &KafkaProducer{
-		Configuration: brokerCfg,
+		Configuration: kafkaConfig,
 		Producer:      producer,
 	}, nil
 }
