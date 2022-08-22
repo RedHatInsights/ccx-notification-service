@@ -333,15 +333,17 @@ func TestModuleNameToRuleNameValidRuleName(t *testing.T) {
 //---------------------------------------------------------------------------------------
 func TestSetupNotificationProducerInvalidBrokerConf(t *testing.T) {
 	if os.Getenv("SETUP_PRODUCER") == "1" {
-		brokerConfig := conf.KafkaConfiguration{
-			Address:     "invalid_address",
-			Topic:       "",
-			Timeout:     0,
-			Enabled:     true,
-			EventFilter: "totalRisk >= totalRiskThreshold",
+		testConfig := conf.ConfigStruct{
+			Kafka: conf.KafkaConfiguration{
+				Address:     "invalid_address",
+				Topic:       "",
+				Timeout:     0,
+				Enabled:     true,
+				EventFilter: "totalRisk >= totalRiskThreshold",
+			},
 		}
 
-		setupNotificationProducer(brokerConfig)
+		setupNotificationProducer(testConfig)
 	}
 	cmd := exec.Command(os.Args[0], "-test.run=TestSetupNotificationProducerInvalidBrokerConf")
 	cmd.Env = append(os.Environ(), "SETUP_PRODUCER=1")
@@ -373,15 +375,17 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
 		})
 
-	testConfig := conf.KafkaConfiguration{
-		Address: mockBroker.Addr(),
-		Topic:   brokerCfg.Topic,
-		Timeout: brokerCfg.Timeout,
-		Enabled: brokerCfg.Enabled,
+	testConfig := conf.ConfigStruct{
+		Kafka: conf.KafkaConfiguration{
+			Address: mockBroker.Addr(),
+			Topic:   brokerCfg.Topic,
+			Timeout: brokerCfg.Timeout,
+			Enabled: brokerCfg.Enabled,
+		},
 	}
 
 	kafkaProducer := producer.KafkaProducer{
-		Configuration: testConfig,
+		Configuration: conf.GetKafkaBrokerConfiguration(testConfig),
 		Producer:      nil,
 	}
 

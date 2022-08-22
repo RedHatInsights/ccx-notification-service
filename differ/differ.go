@@ -493,16 +493,16 @@ func processClusters(ruleContent types.RulesMap, storage Storage, clusters []typ
 }
 
 // setupNotificationProducer function creates a kafka producer using the provided configuration
-func setupNotificationProducer(brokerConfig conf.KafkaConfiguration) {
+func setupNotificationProducer(config conf.ConfigStruct) {
 	// broker enable/disable is very important information, let's inform
 	// admins about the state
-	if brokerConfig.Enabled {
+	if conf.GetKafkaBrokerConfiguration(config).Enabled {
 		log.Info().Msg("Broker config for Notification Service is enabled")
 	} else {
 		log.Info().Msg("Broker config for Notification Service is disabled")
 	}
 
-	producer, err := producer.New(brokerConfig)
+	producer, err := producer.New(config)
 	if err != nil {
 		ProducerSetupErrors.Inc()
 		log.Error().
@@ -799,7 +799,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Int("previously reported issues still in cooldown", len(previouslyReported)).Msg("Get previously reported issues: done")
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
-	setupNotificationProducer(conf.GetKafkaBrokerConfiguration(config))
+	setupNotificationProducer(config)
 	log.Info().Msg("Kafka producer ready")
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
