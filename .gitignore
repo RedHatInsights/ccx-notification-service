@@ -20,3 +20,7 @@ ccx-notification-service
 
 # Ignore helper scripts
 issues.py
+
+# Profiler output
+cpuprofile.prof
+memprofile.prof
