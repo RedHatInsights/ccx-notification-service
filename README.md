@@ -71,6 +71,7 @@ json-check           Check all JSONs for basic syntax
 style                Run all the formatting related commands (fmt, vet, lint, cyclo) + check shell scripts
 run                  Build the project and executes the binary
 test                 Run the unit tests
+profiler             Run the unit tests with profiler enabled
 cover                Generate HTML pages with code coverage
 coverage             Display code coverage on terminal
 bdd_tests            Run BDD tests (needs real dependencies)
