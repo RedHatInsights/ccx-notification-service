@@ -63,6 +63,9 @@ run: ${BINARY} ## Build the project and executes the binary
 test: ${BINARY} ## Run the unit tests
 	./unit-tests.sh
 
+profiler: ${BINARY} ## Run the unit tests with profiler enabled
+	./profile.sh
+
 cover: test ## Generate HTML pages with code coverage
 	@go tool cover -html=coverage.out
 
