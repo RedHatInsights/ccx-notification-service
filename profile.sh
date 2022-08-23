@@ -31,4 +31,13 @@ function run_profiler() {
 
 }
 
+function show_results() {
+    echo "Memory profile"
+    go tool pprof -top memprofile.prof
+
+    echo "CPU profile"
+    go tool pprof -top cpuprofile.prof
+}
+
 run_profiler
+show_results
