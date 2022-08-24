@@ -284,9 +284,12 @@ func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, ev
 
 func processReportsByCluster(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
 	notifiedIssues := 0
+	clustersCount := len(clusters)
+
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
+			Int("of", clustersCount).
 			Int(organizationIDAttribute, int(cluster.OrgID)).
 			Int(AccountNumberAttribute, int(cluster.AccountNumber)).
 			Str(clusterAttribute, string(cluster.ClusterName)).
