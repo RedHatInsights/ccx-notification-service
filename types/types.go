@@ -247,3 +247,6 @@ type ClusterOrgKey struct {
 
 // NotifiedRecordsPerCluster maps a string representation of ClusterOrgKey to a NotificationRecord
 type NotifiedRecordsPerCluster map[ClusterOrgKey]NotificationRecord
+
+// NotifiedRecordsPerClusterByTarget let us split the notified records by their target (CCXDEV-8767)
+type NotifiedRecordsPerClusterByTarget map[EventTarget]NotifiedRecordsPerCluster

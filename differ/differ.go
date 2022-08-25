@@ -160,7 +160,7 @@ var (
 	}
 	previouslyReportedNotificationBackend types.NotifiedRecordsPerCluster
 	previouslyReportedServiceLog          types.NotifiedRecordsPerCluster
-	previouslyReported                    = map[types.EventTarget]types.NotifiedRecordsPerCluster{
+	previouslyReported                    = types.NotifiedRecordsPerClusterByTarget{
 		types.NotificationBackendTarget: previouslyReportedNotificationBackend,
 		types.ServiceLogTarget:          previouslyReportedServiceLog,
 	}
