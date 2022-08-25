@@ -543,10 +543,10 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 		clusterIDs[idx] = string(entry.ClusterName)
 	}
 
-	whereClause := fmt.Sprintf(` WHERE event_type_id = 1 AND state = 1 AND org_id IN (%v) AND cluster IN (%v)`,
+	whereClause := fmt.Sprintf(` WHERE state = 1 AND org_id IN (%v) AND cluster IN (%v)`,
 		inClauseFromStringSlice(orgIDs), inClauseFromStringSlice(clusterIDs))
 
-	query := `SELECT org_id, cluster, report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
+	query := `SELECT org_id, cluster, report, notified_at, event_type_id FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
 		whereClause +
 		` ORDER BY cluster, notified_at DESC) t WHERE notified_at > NOW() - $1::INTERVAL;`
 
@@ -570,9 +570,10 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 			clusterName types.ClusterName
 			report      types.ClusterReport
 			notifiedAt  types.Timestamp
+			eventTarget types.EventTarget
 		)
 
-		err := rows.Scan(&orgID, &clusterName, &report, &notifiedAt)
+		err := rows.Scan(&orgID, &clusterName, &report, &notifiedAt, &eventTarget)
 		if err != nil {
 			if closeErr := rows.Close(); closeErr != nil {
 				log.Error().Err(closeErr).Msg(unableToCloseDBRowsHandle)
@@ -585,6 +586,7 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 			ClusterName: clusterName,
 			Report:      report,
 			NotifiedAt:  notifiedAt,
+			EventTarget: eventTarget,
 		}
 	}
 

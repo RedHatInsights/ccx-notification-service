@@ -237,6 +237,7 @@ type NotificationRecord struct {
 	Report             ClusterReport
 	NotifiedAt         Timestamp
 	ErrorLog           string
+	EventTarget        EventTarget
 }
 
 // ClusterOrgKey is a slice with two items: an organization ID and a cluster UUID

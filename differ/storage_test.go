@@ -14,18 +14,77 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package differ
+package differ_test
 
 import (
-	"github.com/stretchr/testify/assert"
+	"database/sql"
+	"fmt"
+	"regexp"
 	"testing"
+	"time"
+
+	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/RedHatInsights/ccx-notification-service/differ"
+	"github.com/RedHatInsights/ccx-notification-service/types"
+	"github.com/stretchr/testify/assert"
 )
 
-// Test the checkArgs function when flag for --show-version is set
-func TestInClauseFromSlice(t *testing.T) {
-	stringSlice := make([]string, 0)
-	assert.Equal(t, "", inClauseFromStringSlice(stringSlice))
+func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
+	var (
+		now            = time.Now()
+		clusters       = "'first cluster','second cluster'"
+		orgs           = "'1','2'"
+		clusterEntries = []types.ClusterEntry{
+			{
+				OrgID:         1,
+				AccountNumber: 1,
+				ClusterName:   "first cluster",
+				KafkaOffset:   1,
+				UpdatedAt:     types.Timestamp(now),
+			},
+			{
+				OrgID:         2,
+				AccountNumber: 2,
+				ClusterName:   "second cluster",
+				KafkaOffset:   1,
+				UpdatedAt:     types.Timestamp(now),
+			},
+		}
+		timeOffset = "1 day"
+	)
 
-	stringSlice = []string{"first item", "second item"}
-	assert.Equal(t, "'first item','second item'", inClauseFromStringSlice(stringSlice))
+	db, mock := newMock(t)
+	defer db.Close()
+
+	sut := differ.NewFromConnection(db, types.DBDriverPostgres)
+
+	expectedQuery := fmt.Sprintf(`
+	SELECT org_id, cluster, report, notified_at, event_type_id 
+	FROM ( 
+		SELECT DISTINCT ON (cluster) * 
+		FROM reported
+		WHERE state = 1 AND org_id IN (%v) AND cluster IN (%v)
+		ORDER BY cluster, notified_at DESC) t 
+	WHERE notified_at > NOW() - $1::INTERVAL;
+	`, orgs, clusters)
+
+	rows := sqlmock.NewRows(
+		[]string{"org_id", "cluster", "report", "notified_at", "event_type_id"}).
+		AddRow(1, "first cluster", "test", now, 1).
+		AddRow(1, "first cluster", "test", now, 1)
+
+	mock.ExpectQuery(regexp.QuoteMeta(expectedQuery)).WillReturnRows(rows)
+
+	records, err := sut.ReadLastNotifiedRecordForClusterList(clusterEntries, timeOffset)
+	assert.NoError(t, err, "error running ReadLastNotifiedRecordForClusterList")
+	fmt.Println(records)
+}
+
+func newMock(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
+	db, mock, err := sqlmock.New()
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+
+	return db, mock
 }
