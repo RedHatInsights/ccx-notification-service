@@ -54,7 +54,7 @@ func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 	)
 
 	db, mock := newMock(t)
-	defer db.Close()
+	defer func() { _ = db.Close() }()
 
 	sut := differ.NewFromConnection(db, types.DBDriverPostgres)
 

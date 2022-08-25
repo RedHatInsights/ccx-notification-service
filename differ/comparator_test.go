@@ -17,12 +17,13 @@ limitations under the License.
 package differ
 
 import (
+	"testing"
+
 	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"testing"
 )
 
 var (
@@ -380,7 +381,7 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 
 	previouslyReported, _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours")
 	for _, issue := range newReport.Reports {
-		assert.True(t, shouldNotify(testCluster, issue))
+		assert.True(t, shouldNotify(testCluster, issue, types.NotificationBackendTarget))
 	}
 }
 
@@ -400,6 +401,7 @@ func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}}]}",
 					NotifiedAt:         types.Timestamp(testTimestamp),
 					ErrorLog:           "",
+					EventTarget:        types.NotificationBackendTarget,
 				},
 			}
 		},
@@ -420,7 +422,7 @@ func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 
 	previouslyReported, _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours")
 	for _, issue := range newReport.Reports {
-		assert.True(t, shouldNotify(testCluster, issue))
+		assert.True(t, shouldNotify(testCluster, issue, types.NotificationBackendTarget))
 	}
 }
 
@@ -440,6 +442,7 @@ func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}}]}",
 					NotifiedAt:         types.Timestamp(testTimestamp),
 					ErrorLog:           "",
+					EventTarget:        types.NotificationBackendTarget,
 				},
 			}
 		},
@@ -461,6 +464,6 @@ func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 	previouslyReported, _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours")
 
 	for _, issue := range newReport.Reports {
-		assert.True(t, shouldNotify(testCluster, issue))
+		assert.True(t, shouldNotify(testCluster, issue, types.NotificationBackendTarget))
 	}
 }

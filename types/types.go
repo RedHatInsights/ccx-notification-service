@@ -59,6 +59,7 @@ type NotificationTypeID int
 // StateID represents ID value in `states` table.
 type StateID int
 
+// EventTarget represents where the notifications are sent (CCXDEV-8767)
 type EventTarget int8
 
 const (
@@ -246,5 +247,15 @@ type ClusterOrgKey struct {
 	ClusterName ClusterName
 }
 
+// ClusterOrgTargetKey is a slice with three items: an organization ID, a cluster UUID and the
+// backend target where the notification has been sent
+type ClusterOrgTargetKey struct {
+	ClusterOrgKey
+	EventTarget EventTarget
+}
+
 // NotifiedRecordsPerCluster maps a string representation of ClusterOrgKey to a NotificationRecord
 type NotifiedRecordsPerCluster map[ClusterOrgKey]NotificationRecord
+
+// NotifiedRecordsPerClusterAndTarget maps a string representation of ClusterOrgTargetKey to a NotificationRecord
+type NotifiedRecordsPerClusterAndTarget map[ClusterOrgTargetKey]NotificationRecord

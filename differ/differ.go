@@ -89,6 +89,7 @@ const (
 	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
 	eventFilterNotSetMessage    = "Event filter not set"
 	evaluationErrorMessage      = "Evaluation error"
+	differentReportMessage      = "Different report from the last one"
 )
 
 // Constants for notification message top level fields
@@ -348,14 +349,40 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 					Int("impact", impact).
 					Int(totalRiskAttribute, totalRisk).
 					Msg("Report with high impact detected")
-				if !shouldNotify(cluster, r) {
-					continue
+
+				// Notification backend
+				if shouldNotify(cluster, r, types.NotificationBackendTarget) {
+					// if new report differs from the older one -> send notification
+					log.Info().
+						Str("EventTarget", "notification backend").
+						Str(clusterName, string(cluster.ClusterName)).
+						Msg(differentReportMessage)
+					ReportWithHighImpact.Inc()
+					notificationPayloadURL := generateNotificationPayloadURL(
+						&notificationRuleDetailsURI,
+						string(cluster.ClusterName),
+						module,
+						errorKey,
+					)
+					appendEventToNotificationMessage(
+						notificationPayloadURL,
+						&notificationMsg,
+						description,
+						totalRisk,
+						time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano),
+					)
 				}
-				// if new report differs from the older one -> send notification
-				log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Different report from the last one")
-				ReportWithHighImpact.Inc()
-				notificationPayloadURL := generateNotificationPayloadURL(&notificationRuleDetailsURI, string(cluster.ClusterName), module, errorKey)
-				appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano))
+				// Service Log
+				if shouldNotify(cluster, r, types.ServiceLogTarget) {
+					// if new report differs from the older one -> send notification
+					log.Info().
+						Str("EventTarget", "service log").
+						Str(clusterName, string(cluster.ClusterName)).
+						Msg(differentReportMessage)
+					// TODO: ServiceLogReportWithHighImpact.Inc()
+					// TODO: serviceLogPayloadURL := generateServiceLogPayloadURL(...)
+					// TODO: appendEventToServiceLogMessage -> update serviceLogMsg
+				}
 			}
 		}
 

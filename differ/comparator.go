@@ -25,16 +25,21 @@ package differ
 import (
 	"bytes"
 	"encoding/json"
+	"os"
+
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/rs/zerolog/log"
-	"os"
 )
 
 // Messages
 const (
-	clusterName   = "cluster"
-	resolutionKey = "resolution"
-	resolutionMsg = "Should notify user"
+	clusterName         = "cluster"
+	resolutionKey       = "resolution"
+	resolutionMsg       = "Should notify user"
+	issueNotInReportKey = "issueNotInReport"
+	issueNotInReportMsg = "Issue not seen before"
+	matchTargetKey      = "matchTarget"
+	matchTargetMsg      = "Target matches"
 
 	notificationTypeInstant = "instant"
 	notificationTypeWeekly  = "weekly"
@@ -68,7 +73,8 @@ func getNotificationType(notificationTypes []types.NotificationType, value strin
 	return -1
 }
 
-func getNotificationResolution(issue types.ReportItem, record types.NotificationRecord) (resolution bool) {
+// getNotificationResolution returns true if it has to notify
+func getNotificationResolution(issue types.ReportItem, record types.NotificationRecord, target types.EventTarget) bool {
 	// it is not a brand new cluster -> check if issue was included in older report
 	var oldReport types.Report
 	err := json.Unmarshal([]byte(record.Report), &oldReport)
@@ -79,12 +85,22 @@ func getNotificationResolution(issue types.ReportItem, record types.Notification
 		os.Exit(ExitStatusStorageError)
 	}
 
-	resolution = IssueNotInReport(oldReport, issue)
-	log.Info().Bool(resolutionKey, resolution).Msg(resolutionMsg)
-	return
+	issueNotInReport := IssueNotInReport(oldReport, issue)
+	log.Info().Bool(issueNotInReportKey, issueNotInReport).Msg(issueNotInReportMsg)
+
+	if issueNotInReport {
+		// if the issue was not found in the report, it should notify
+		return true
+	}
+
+	// if the issue was found in the report, but the target was different, it should notify
+	matchTarget := record.EventTarget == target
+	log.Info().Bool(matchTargetKey, matchTarget).Msg(matchTargetMsg)
+
+	return !matchTarget
 }
 
-func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem) bool {
+func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem, target types.EventTarget) bool {
 	// check if the issue of the given cluster has previously been reported
 	key := types.ClusterOrgKey{OrgID: cluster.OrgID, ClusterName: cluster.ClusterName}
 	reported, ok := previouslyReported[key]
@@ -93,7 +109,7 @@ func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem) bool {
 		return true
 	}
 
-	return getNotificationResolution(issue, reported)
+	return getNotificationResolution(issue, reported, target)
 }
 
 func updateNotificationRecordSameState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp) {
