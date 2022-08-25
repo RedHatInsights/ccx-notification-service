@@ -199,16 +199,6 @@ const (
 `
 )
 
-// inClauseFromStringSlice is a helper function to construct `in` clause for SQL
-// statement from a given slice of string items. If the slice is empty, an
-// empty string will be returned, making the in clause fail.
-func inClauseFromStringSlice(slice []string) string {
-	if len(slice) == 0 {
-		return ""
-	}
-	return "'" + strings.Join(slice, `','`) + `'`
-}
-
 // NewStorage function creates and initializes a new instance of Storage interface
 func NewStorage(configuration conf.StorageConfiguration) (*DBStorage, error) {
 	driverType, driverName, dataSource, err := initAndGetDriver(configuration)
