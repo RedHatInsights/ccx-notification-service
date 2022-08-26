@@ -148,7 +148,7 @@ type EventValue struct {
 
 var (
 	notificationType               types.EventType
-	notifier                       *producer.KafkaProducer
+	notifier                       producer.Producer
 	notificationClusterDetailsURI  string
 	notificationRuleDetailsURI     string
 	notificationInsightsAdvisorURL string

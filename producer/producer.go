@@ -25,13 +25,11 @@ package producer
 // https://redhatinsights.github.io/ccx-notification-service/packages/producer/producer.html
 
 import (
-	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 )
 
 // Producer represents any producer
 type Producer interface {
-	New(configStruct conf.ConfigStruct) (Producer, error)
 	ProduceMessage(msg types.NotificationMessage) (int32, int64, error)
 	Close() error
 }
