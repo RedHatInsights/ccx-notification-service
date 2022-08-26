@@ -59,7 +59,7 @@ func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 	sut := differ.NewFromConnection(db, types.DBDriverPostgres)
 
 	expectedQuery := fmt.Sprintf(`
-	SELECT org_id, cluster, report, notified_at, event_type_id 
+	SELECT org_id, cluster, report, notified_at 
 	FROM ( 
 		SELECT DISTINCT ON (cluster) * 
 		FROM reported
