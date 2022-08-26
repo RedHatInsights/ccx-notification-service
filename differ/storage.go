@@ -554,7 +554,7 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 	}
 	query += ";"
 
-	rows, err := storage.connection.Query(query, timeOffset)
+	rows, err := storage.connection.Query(query)
 	if err != nil {
 		return nil, err
 	}
