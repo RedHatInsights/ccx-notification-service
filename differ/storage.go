@@ -550,7 +550,7 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 	query += whereClause
 	query += " ORDER BY cluster, notified_at DESC) t"
 	if timeOffset != "" {
-		query += fmt.Sprintf(" WHERE notified_at > NOW() - %v::INTERVAL", timeOffset)
+		query += fmt.Sprintf(" WHERE notified_at > NOW() - '%v'::INTERVAL", timeOffset)
 	}
 	query += ";"
 
