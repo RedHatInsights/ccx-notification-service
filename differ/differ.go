@@ -833,7 +833,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 		os.Exit(ExitStatusStorageError)
 	}
 	previouslyReportedServiceLog, err = storage.ReadLastNotifiedRecordForClusterList(
-		clusters, notifConfig.Cooldown, types.ServiceLogTarget)
+		clusters, "", types.ServiceLogTarget)
 	if err != nil {
 		ReadReportedErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)

@@ -65,8 +65,8 @@ func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 		FROM reported
 		WHERE event_type_id = %v AND state = 1 AND org_id IN (%v) AND cluster IN (%v)
 		ORDER BY cluster, notified_at DESC) t 
-	WHERE notified_at > NOW() - $1::INTERVAL;
-	`, types.NotificationBackendTarget, orgs, clusters)
+	WHERE notified_at > NOW() - %v::INTERVAL;
+	`, types.NotificationBackendTarget, orgs, clusters, timeOffset)
 
 	rows := sqlmock.NewRows(
 		[]string{"org_id", "cluster", "report", "notified_at"}).

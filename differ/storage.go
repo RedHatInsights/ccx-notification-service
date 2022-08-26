@@ -546,9 +546,13 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 	whereClause := fmt.Sprintf(` WHERE event_type_id = %v AND state = 1 AND org_id IN (%v) AND cluster IN (%v)`,
 		eventTarget, inClauseFromStringSlice(orgIDs), inClauseFromStringSlice(clusterIDs))
 
-	query := `SELECT org_id, cluster, report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
-		whereClause +
-		` ORDER BY cluster, notified_at DESC) t WHERE notified_at > NOW() - $1::INTERVAL;`
+	query := `SELECT org_id, cluster, report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported `
+	query += whereClause
+	query += " ORDER BY cluster, notified_at DESC) t"
+	if timeOffset != "" {
+		query += fmt.Sprintf(" WHERE notified_at > NOW() - %v::INTERVAL", timeOffset)
+	}
+	query += ";"
 
 	rows, err := storage.connection.Query(query, timeOffset)
 	if err != nil {
