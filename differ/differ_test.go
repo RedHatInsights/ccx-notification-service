@@ -33,7 +33,6 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/Shopify/sarama"
-	samara_mocks "github.com/Shopify/sarama/mocks"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
@@ -391,11 +390,13 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 
 	setupNotificationProducer(testConfig)
 
-	assert.Equal(t, kafkaProducer.Configuration.Address, notifier.Configuration.Address)
-	assert.Equal(t, kafkaProducer.Configuration.Topic, notifier.Configuration.Topic)
-	assert.Equal(t, kafkaProducer.Configuration.Timeout, notifier.Configuration.Timeout)
+	prod := notifier.(*producer.KafkaProducer)
+
+	assert.Equal(t, kafkaProducer.Configuration.Address, prod.Configuration.Address)
+	assert.Equal(t, kafkaProducer.Configuration.Topic, prod.Configuration.Topic)
+	assert.Equal(t, kafkaProducer.Configuration.Timeout, prod.Configuration.Timeout)
 	assert.Nil(t, kafkaProducer.Producer, "Unexpected behavior: Producer was not set up correctly")
-	assert.NotNil(t, notifier.Producer, "Unexpected behavior: Producer was not set up correctly")
+	assert.NotNil(t, prod.Producer, "Unexpected behavior: Producer was not set up correctly")
 
 	err := notifier.Close()
 	assert.Nil(t, err, "Unexpected behavior: Producer was not closed successfully")
@@ -526,37 +527,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
 		})
 
-	config := conf.ConfigStruct{
-		Kafka: conf.KafkaConfiguration{
-			Address:     mockBroker.Addr(),
-			Topic:       brokerCfg.Topic,
-			Timeout:     0,
-			Enabled:     true,
-			EventFilter: "totalRisk >= totalRiskThreshold",
-		},
-		Notifications: conf.NotificationsConfiguration{
-			InsightsAdvisorURL: "an uri",
-			ClusterDetailsURI:  "a {cluster} details uri",
-			RuleDetailsURI:     "a {rule} details uri",
-		},
-	}
 	producerMock := mocks.Producer{}
-	producerMock.On("New", mock.AnythingOfType("conf.KafkaConfiguration")).Return(
-		func(brokerCfg conf.KafkaConfiguration) *producer.KafkaProducer {
-			mockProducer := samara_mocks.NewSyncProducer(t, nil)
-			mockProducer.ExpectSendMessageAndSucceed()
-			mockProducer.ExpectSendMessageAndSucceed()
-
-			kp := producer.KafkaProducer{
-				Configuration: brokerCfg,
-				Producer:      mockProducer,
-			}
-			return &kp
-		},
-		func(brokerCfg conf.KafkaConfiguration) error {
-			return nil
-		},
-	)
 	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
 		func(msg types.NotificationMessage) int32 {
 			testPartitionID++
@@ -572,7 +543,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 	)
 
 	originalNotifier := notifier
-	notifier, _ = producerMock.New(config.Kafka)
+	notifier = &producerMock
 
 	errorKeys := map[string]utypes.RuleErrorKeyContent{
 		"RULE_1": {
@@ -687,7 +658,6 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 	assert.Contains(t, executionLog, "Report with high impact detected", "processClusters should create a notification for 'first_cluster' with given data")
 	assert.Contains(t, executionLog, "Producing instant notification for cluster first_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
 	assert.Contains(t, executionLog, "Producing instant notification for cluster second_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
-	assert.Contains(t, executionLog, "message sent to partition")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	notifier = originalNotifier
@@ -716,37 +686,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
 		})
 
-	config := conf.ConfigStruct{
-		Kafka: conf.KafkaConfiguration{
-			Address:     mockBroker.Addr(),
-			Topic:       brokerCfg.Topic,
-			Timeout:     0,
-			Enabled:     true,
-			EventFilter: "totalRisk >= totalRiskThreshold",
-		},
-		Notifications: conf.NotificationsConfiguration{
-			InsightsAdvisorURL: "an uri",
-			ClusterDetailsURI:  "a {cluster} details uri",
-			RuleDetailsURI:     "a {rule} details uri",
-		},
-	}
 	producerMock := mocks.Producer{}
-	producerMock.On("New", mock.AnythingOfType("conf.KafkaConfiguration")).Return(
-		func(brokerCfg conf.KafkaConfiguration) *producer.KafkaProducer {
-			mockProducer := samara_mocks.NewSyncProducer(t, nil)
-			mockProducer.ExpectSendMessageAndSucceed()
-			mockProducer.ExpectSendMessageAndSucceed()
-
-			kp := producer.KafkaProducer{
-				Configuration: brokerCfg,
-				Producer:      mockProducer,
-			}
-			return &kp
-		},
-		func(brokerCfg conf.KafkaConfiguration) error {
-			return nil
-		},
-	)
 	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
 		func(msg types.NotificationMessage) int32 {
 			testPartitionID++
@@ -762,7 +702,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 	)
 
 	originalNotifier := notifier
-	notifier, _ = producerMock.New(config.Kafka)
+	notifier = &producerMock
 
 	errorKeys := map[string]utypes.RuleErrorKeyContent{
 		"RULE_1": {
@@ -856,7 +796,6 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 	assert.Contains(t, executionLog, "{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
 	assert.Contains(t, executionLog, "Producing instant notification for cluster first_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
 	assert.Contains(t, executionLog, "Producing instant notification for cluster second_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
-	assert.Contains(t, executionLog, "message sent to partition")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	notifier = originalNotifier
@@ -991,20 +930,6 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
 		})
 
-	config := conf.ConfigStruct{
-		Kafka: conf.KafkaConfiguration{
-			Address: mockBroker.Addr(),
-			Topic:   brokerCfg.Topic,
-			Timeout: 0,
-			Enabled: true,
-		},
-		Notifications: conf.NotificationsConfiguration{
-			InsightsAdvisorURL: "an uri",
-			ClusterDetailsURI:  "a {cluster} details uri",
-			RuleDetailsURI:     "a {rule} details uri",
-		},
-	}
-
 	errorKeys := map[string]utypes.RuleErrorKeyContent{
 		"RULE_1": {
 			Metadata: utypes.ErrorKeyMetadata{
@@ -1093,22 +1018,6 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	)
 
 	producerMock := mocks.Producer{}
-	producerMock.On("New", mock.AnythingOfType("conf.KafkaConfiguration")).Return(
-		func(brokerCfg conf.KafkaConfiguration) *producer.KafkaProducer {
-			mockProducer := samara_mocks.NewSyncProducer(t, nil)
-			mockProducer.ExpectSendMessageAndSucceed()
-			mockProducer.ExpectSendMessageAndSucceed()
-
-			kp := producer.KafkaProducer{
-				Configuration: brokerCfg,
-				Producer:      mockProducer,
-			}
-			return &kp
-		},
-		func(brokerCfg conf.KafkaConfiguration) error {
-			return nil
-		},
-	)
 	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
 		func(msg types.NotificationMessage) int32 {
 			testPartitionID++
@@ -1124,7 +1033,7 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	)
 
 	originalNotifier := notifier
-	notifier, _ = producerMock.New(config.Kafka)
+	notifier = &producerMock
 
 	previouslyReported[types.ClusterOrgKey{OrgID: types.OrgID(3), ClusterName: "a cluster"}] = types.NotificationRecord{
 		OrgID:              3,
@@ -1144,7 +1053,6 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	assert.Contains(t, executionLog, "{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
 	assert.Contains(t, executionLog, "Producing instant notification for cluster first_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
 	assert.Contains(t, executionLog, "Producing instant notification for cluster second_cluster with 1 events", "processClusters should generate one notification for 'second_cluster' with given data")
-	assert.Contains(t, executionLog, "message sent to partition")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	notifier = originalNotifier
@@ -1174,20 +1082,6 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 			"OffsetFetchRequest": sarama.NewMockOffsetFetchResponse(t).
 				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
 		})
-
-	config := conf.ConfigStruct{
-		Kafka: conf.KafkaConfiguration{
-			Address: mockBroker.Addr(),
-			Topic:   brokerCfg.Topic,
-			Timeout: brokerCfg.Timeout,
-			Enabled: true,
-		},
-		Notifications: conf.NotificationsConfiguration{
-			InsightsAdvisorURL: "an uri",
-			ClusterDetailsURI:  "a {cluster} details uri",
-			RuleDetailsURI:     "a {rule} details uri",
-		},
-	}
 
 	errorKeys := map[string]utypes.RuleErrorKeyContent{
 		"RULE_1": {
@@ -1267,24 +1161,22 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	)
 
 	producerMock := mocks.Producer{}
-	producerMock.On("New", mock.AnythingOfType("conf.KafkaConfiguration")).Return(
-		func(brokerCfg conf.KafkaConfiguration) *producer.KafkaProducer {
-			mockProducer := samara_mocks.NewSyncProducer(t, nil)
-			mockProducer.ExpectSendMessageAndSucceed()
-			mockProducer.ExpectSendMessageAndSucceed()
-			kp := producer.KafkaProducer{
-				Configuration: brokerCfg,
-				Producer:      mockProducer,
-			}
-			return &kp
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
+		func(msg types.NotificationMessage) int32 {
+			testPartitionID++
+			return int32(testPartitionID)
 		},
-		func(brokerCfg conf.KafkaConfiguration) error {
+		func(msg types.NotificationMessage) int64 {
+			testOffset++
+			return int64(testOffset)
+		},
+		func(msg types.NotificationMessage) error {
 			return nil
 		},
 	)
 
 	originalNotifier := notifier
-	notifier, _ = producerMock.New(config.Kafka)
+	notifier = &producerMock
 
 	notificationType = types.WeeklyDigest
 	processClusters(ruleContent, &storage, clusters)
@@ -1295,7 +1187,6 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"Creating notification digest for account 2\"}")
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"account number\":1,\"total recommendations\":1,\"clusters affected\":1,\"critical notifications\":0,\"important notifications\":0,\"message\":\"Producing weekly notification for \"}")
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"account number\":2,\"total recommendations\":1,\"clusters affected\":1,\"critical notifications\":0,\"important notifications\":0,\"message\":\"Producing weekly notification for \"}")
-	assert.Contains(t, buf.String(), "message sent to partition")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	notifier = originalNotifier
