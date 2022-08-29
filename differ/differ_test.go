@@ -402,6 +402,20 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 	assert.Nil(t, err, "Unexpected behavior: Producer was not closed successfully")
 }
 
+func TestSetupNotificationProducerDisabledBrokerConfig(t *testing.T) {
+	testConfig := conf.ConfigStruct{
+		Kafka: conf.KafkaConfiguration{
+			Enabled: false,
+		},
+	}
+
+	setupNotificationProducer(testConfig)
+
+	_, _, err := notifier.ProduceMessage(types.NotificationMessage{})
+	assert.NoError(t, err, "error producing message")
+	assert.NoError(t, notifier.Close(), "error closing producer")
+}
+
 //---------------------------------------------------------------------------------------
 func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.T) {
 	buf := new(bytes.Buffer)
