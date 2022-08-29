@@ -769,6 +769,29 @@ func deleteOperationSpecified(cliFlags types.CliFlags) bool {
 		cliFlags.PerformOldReportsCleanup
 }
 
+// fill the previouslyReported variable
+func fillPreviouslyReported(config conf.ConfigStruct, clusters []types.ClusterEntry, storage *DBStorage) (err error) {
+	log.Info().Msg("Read previously reported issues for cluster list")
+
+	// Notification backend
+	cooldown := conf.GetNotificationsConfiguration(config).Cooldown
+	previouslyReportedNotificationBackend, err = storage.ReadLastNotifiedRecordForClusterList(
+		clusters, cooldown, types.NotificationBackendTarget)
+	if err != nil {
+		return err
+	}
+
+	// Service Log
+	previouslyReportedServiceLog, err = storage.ReadLastNotifiedRecordForClusterList(
+		clusters, "", types.ServiceLogTarget)
+	if err != nil {
+		return err
+	}
+
+	log.Info().Int("previously reported issues still in cooldown", len(previouslyReportedNotificationBackend)).Msg("Get previously reported issues: done")
+	return nil
+}
+
 func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
@@ -824,23 +847,14 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	}
 	log.Info().Int(clustersAttribute, entries).Msg("Read cluster list: done")
 	log.Info().Msg(separator)
-	log.Info().Msg("Read previously reported issues for cluster list")
-	previouslyReportedNotificationBackend, err = storage.ReadLastNotifiedRecordForClusterList(
-		clusters, notifConfig.Cooldown, types.NotificationBackendTarget)
-	if err != nil {
-		ReadReportedErrors.Inc()
-		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusStorageError)
-	}
-	previouslyReportedServiceLog, err = storage.ReadLastNotifiedRecordForClusterList(
-		clusters, "", types.ServiceLogTarget)
+
+	err = fillPreviouslyReported(config, clusters, storage)
 	if err != nil {
 		ReadReportedErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
 		os.Exit(ExitStatusStorageError)
 	}
 
-	log.Info().Int("previously reported issues still in cooldown", len(previouslyReportedNotificationBackend)).Msg("Get previously reported issues: done")
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
 	setupNotificationProducer(config)

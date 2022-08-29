@@ -59,6 +59,7 @@ type NotificationTypeID int
 // StateID represents ID value in `states` table.
 type StateID int
 
+// EventTarget matches the backend int code in the database where the notifications are sent (CCXDEV-8767)
 type EventTarget int8
 
 const (
