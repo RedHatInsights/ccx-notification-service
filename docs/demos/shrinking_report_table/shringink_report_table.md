@@ -1,9 +1,9 @@
-Optimizing and shrinking `report` table for CCX Notification Service
+Optimizing and shrinking `reported` table for CCX Notification Service
 ====================================================================
 
 Reasons
 -------
-* Access to `report` table is very slow on prod
+* Access to `reported` table is very slow on prod
 * Simple `select count(*) from report` can take minutes!
 * Table grows over time (new features) up to ~150GB as higher limit today
 * Will be limiting factor for integration with ServiceLog
@@ -106,7 +106,7 @@ postgres=# SELECT pg_size_pretty(pg_total_relation_size('reported'));
 ```
 
 * Auto vacuumer is started in the background
-* It affects all access to the `report` table significantly
+* It affects all access to the `reported` table significantly
      - this is the little devil
 
 ```
@@ -119,7 +119,7 @@ ead_tuples
   11184525
 ```
 
-* Access to `report` table during vacuuming
+* Access to `reported` table during vacuuming
 
 ```
 postgres=# explain(analyze, buffers, format text) select count(*) from reported;
