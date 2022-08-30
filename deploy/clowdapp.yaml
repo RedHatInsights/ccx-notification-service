@@ -19,7 +19,7 @@ objects:
       iqePlugin: ccx
     jobs:
       - name: to-notification-backend
-        schedule: ${JOB_SCHEDULE}
+        schedule: ${JOB_SCHEDULE__NOTIFICATION_BACKEND}
         restartPolicy: Never
         concurrencyPolicy: Forbid
         # In PROD 1 cronjob takes around 45 min. Deadline set to 60 mins.
@@ -42,6 +42,8 @@ objects:
             value: 60s
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__ENABLED
             value: 'true'
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__ENABLED
+            value: 'false'
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__TOTAL_RISK_THRESHOLD
             value: "3"
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__LIKELIHOOD_THRESHOLD
@@ -91,7 +93,86 @@ objects:
           - name: CCX_NOTIFICATION_SERVICE__METRICS__RETRIES
             value: ${METRICS_PUSH_RETRIES}
           - name: CCX_NOTIFICATION_SERVICE__METRICS__RETRY_AFTER
-            value: ${METRIS_PUSH_RETRIES_COOLDOWN}
+            value: ${METRICS_PUSH_RETRIES_COOLDOWN}
+          command:
+            - /bin/sh
+            - -c
+            - ./ccx-notification-service --instant-reports --cleanup-on-startup --max-age '${CLEANUP_MAX_AGE}' --verbose
+      - name: to-service-log
+        schedule: ${JOB_SCHEDULE__SERVICE_LOG}
+        restartPolicy: Never
+        concurrencyPolicy: Forbid
+        activeDeadlineSeconds: 3600
+        podSpec:
+          image: ${IMAGE}:${IMAGE_TAG}
+          resources:
+            limits:
+              cpu: ${CPU_LIMIT}
+              memory: ${MEMORY_LIMIT}
+            requests:
+              cpu: ${CPU_REQUEST}
+              memory: ${MEMORY_REQUEST}
+          env:
+          - name: CCX_NOTIFICATION_SERVICE__KAFKA__ENABLED
+            value: 'false'
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__ENABLED
+            value: 'true'
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__ACCESS_TOKEN
+            value: ${SERVICE_LOG__ACCESS_TOKEN}
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__URL
+            value: ${SERVICE_LOG__URL}
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__TIMEOUT
+            value: '10s'
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__LIKELIHOOD_THRESHOLD
+            value: "0"
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__IMPACT_THRESHOLD
+            value: "0"
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__SEVERITY_THRESHOLD
+            value: "0"
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__TOTAL_RISK_THRESHOLD
+            value: "3"
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__EVENT_FILTER
+            value: "totalRisk >= totalRiskThreshold"
+          - name: CCX_NOTIFICATION_SERVICE__STORAGE__DB_DRIVER
+            value: postgres
+          - name: CCX_NOTIFICATION_SERVICE__STORAGE__PG_PARAMS
+            value: sslmode=disable
+          - name: CCX_NOTIFICATION_SERVICE__STORAGE__LOG_SQL_QUERIES
+            value: 'true'
+          - name: CCX_NOTIFICATION_SERVICE__LOGGING__DEBUG
+            value: 'true'
+          - name: CCX_NOTIFICATION_SERVICE__LOGGING__LEVEL
+            value: info
+          - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_SERVER
+            value: http://ccx-insights-content-service:${CONTENT_SERVICE_PORT}/api/v1/
+          - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_ENDPOINT
+            value: content
+          - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__INSIGHTS_ADVISOR_URL
+            value: "https://${PLATFORM_UI_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}"
+          - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__CLUSTER_DETAILS_URI
+            value: "https://${PLATFORM_UI_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}"
+          - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__RULE_DETAILS_URI
+            value: "https://${PLATFORM_UI_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}?first={module}|{error_key}"
+          - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__COOLDOWN
+            value: ${NOTIFICATION_RESEND_COOLDOWN}
+          - name: CCX_NOTIFICATION_SERVICE__METRICS__JOB_NAME
+            value: ccx_notification_service
+          - name: CCX_NOTIFICATION_SERVICE__METRICS__NAMESPACE
+            value: ${METRICS_NAMESPACE}
+          - name: CCX_NOTIFICATION_SERVICE__METRICS__GATEWAY_URL
+            valueFrom:
+              secretKeyRef:
+                key: server
+                name: push-gateway-basic-auth
+          - name: CCX_NOTIFICATION_SERVICE__METRICS__GATEWAY_AUTH_TOKEN
+            valueFrom:
+              secretKeyRef:
+                key: credentials_b64
+                name: push-gateway-basic-auth
+          - name: CCX_NOTIFICATION_SERVICE__METRICS__RETRIES
+            value: ${METRICS_PUSH_RETRIES}
+          - name: CCX_NOTIFICATION_SERVICE__METRICS__RETRY_AFTER
+            value: ${METRICS_PUSH_RETRIES_COOLDOWN}
           command:
             - /bin/sh
             - -c
@@ -128,8 +209,11 @@ parameters:
 - description: Should the cron job be disabled?
   name: SUSPEND_JOB
   value: 'false'
-- description: When the cronjob runs
-  name: JOB_SCHEDULE
+- description: When the cronjob runs for the notification backend
+  name: JOB_SCHEDULE__NOTIFICATION_BACKEND
+  value: '*/3 * * * *'
+- description: When the cronjob runs for the service log
+  name: JOB_SCHEDULE__SERVICE_LOG
   value: '*/3 * * * *'
 - name: CPU_LIMIT
   value: 500m
@@ -152,8 +236,13 @@ parameters:
   value: ccx_notification_service
 - name: METRICS_PUSH_RETRIES
   value: '3'
-- name: METRIS_PUSH_RETRIES_COOLDOWN
+- name: METRICS_PUSH_RETRIES_COOLDOWN
   value: 60s
 - description: Maximum age for reports cleanup on startup
   name: CLEANUP_MAX_AGE
   value: '8 days'
+# Service Log
+- description: Access token to publish to Service Log
+  name: SERVICE_LOG__ACCESS_TOKEN
+- description: URL of the Service Log API
+  name: SERVICE_LOG__URL
