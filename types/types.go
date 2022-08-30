@@ -25,9 +25,8 @@ package types
 import (
 	"encoding/json"
 	"fmt"
+	"github.com/RedHatInsights/insights-results-types"
 	"time"
-
-	types "github.com/RedHatInsights/insights-results-types"
 )
 
 // Timestamp represents any timestamp in a form gathered from database
@@ -59,9 +58,6 @@ type NotificationTypeID int
 // StateID represents ID value in `states` table.
 type StateID int
 
-// EventTarget matches the backend int code in the database where the notifications are sent (CCXDEV-8767)
-type EventTarget int8
-
 const (
 	// DBDriverSQLite3 shows that db driver is sqlite
 	DBDriverSQLite3 DBDriver = iota
@@ -69,10 +65,6 @@ const (
 	DBDriverPostgres
 	// DBDriverGeneral general sql(used for mock now)
 	DBDriverGeneral
-	// NotificationBackendTarget matches the notification backend int code in the database (CCXDEV-8767)
-	NotificationBackendTarget EventTarget = 1
-	// ServiceLogTarget matches the service log int code in the database (CCXDEV-8767)
-	ServiceLogTarget EventTarget = 2
 )
 
 // ClusterEntry represents the entries retrieved from the DB
@@ -248,6 +240,3 @@ type ClusterOrgKey struct {
 
 // NotifiedRecordsPerCluster maps a string representation of ClusterOrgKey to a NotificationRecord
 type NotifiedRecordsPerCluster map[ClusterOrgKey]NotificationRecord
-
-// NotifiedRecordsPerClusterByTarget let us split the notified records by their target (CCXDEV-8767)
-type NotifiedRecordsPerClusterByTarget map[EventTarget]NotifiedRecordsPerCluster

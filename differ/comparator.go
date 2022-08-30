@@ -25,10 +25,9 @@ package differ
 import (
 	"bytes"
 	"encoding/json"
-	"os"
-
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/rs/zerolog/log"
+	"os"
 )
 
 // Messages
@@ -85,10 +84,10 @@ func getNotificationResolution(issue types.ReportItem, record types.Notification
 	return
 }
 
-func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem, eventTarget types.EventTarget) bool {
+func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem) bool {
 	// check if the issue of the given cluster has previously been reported
 	key := types.ClusterOrgKey{OrgID: cluster.OrgID, ClusterName: cluster.ClusterName}
-	reported, ok := previouslyReported[eventTarget][key]
+	reported, ok := previouslyReported[key]
 	if !ok {
 		log.Info().Bool(resolutionKey, true).Msg(resolutionMsg)
 		return true
