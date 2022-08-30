@@ -89,6 +89,7 @@ const (
 	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
 	eventFilterNotSetMessage    = "Event filter not set"
 	evaluationErrorMessage      = "Evaluation error"
+	differentReportMessage      = "Different report from the last one"
 )
 
 // Constants for notification message top level fields
@@ -157,8 +158,13 @@ var (
 		Impact:     DefaultImpactThreshold,
 		Severity:   DefaultSeverityThreshold,
 	}
-	previouslyReported types.NotifiedRecordsPerCluster
-	eventFilter        string = DefaultEventFilter
+	previouslyReportedNotificationBackend types.NotifiedRecordsPerCluster
+	previouslyReportedServiceLog          types.NotifiedRecordsPerCluster
+	previouslyReported                    = types.NotifiedRecordsPerClusterByTarget{
+		types.NotificationBackendTarget: previouslyReportedNotificationBackend,
+		types.ServiceLogTarget:          previouslyReportedServiceLog,
+	}
+	eventFilter string = DefaultEventFilter
 )
 
 // showVersion function displays version information.
@@ -351,14 +357,40 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 					Int("impact", impact).
 					Int(totalRiskAttribute, totalRisk).
 					Msg("Report with high impact detected")
-				if !shouldNotify(cluster, r) {
-					continue
+
+					// Notification backend
+				if shouldNotify(cluster, r, types.NotificationBackendTarget) {
+					// if new report differs from the older one -> send notification
+					log.Info().
+						Str("EventTarget", "notification backend").
+						Str(clusterName, string(cluster.ClusterName)).
+						Msg(differentReportMessage)
+					ReportWithHighImpact.Inc()
+					notificationPayloadURL := generateNotificationPayloadURL(
+						&notificationRuleDetailsURI,
+						string(cluster.ClusterName),
+						module,
+						errorKey,
+					)
+					appendEventToNotificationMessage(
+						notificationPayloadURL,
+						&notificationMsg,
+						description,
+						totalRisk,
+						time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano),
+					)
 				}
-				// if new report differs from the older one -> send notification
-				log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Different report from the last one")
-				ReportWithHighImpact.Inc()
-				notificationPayloadURL := generateNotificationPayloadURL(&notificationRuleDetailsURI, string(cluster.ClusterName), module, errorKey)
-				appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano))
+				// Service Log
+				if shouldNotify(cluster, r, types.ServiceLogTarget) {
+					// if new report differs from the older one -> send notification
+					log.Info().
+						Str("EventTarget", "service log").
+						Str(clusterName, string(cluster.ClusterName)).
+						Msg(differentReportMessage)
+					// TODO: ServiceLogReportWithHighImpact.Inc()
+					// TODO: serviceLogPayloadURL := generateServiceLogPayloadURL(...)
+					// TODO: appendEventToServiceLogMessage -> update serviceLogMsg
+				}
 			}
 		}
 
@@ -737,6 +769,29 @@ func deleteOperationSpecified(cliFlags types.CliFlags) bool {
 		cliFlags.PerformOldReportsCleanup
 }
 
+// fill the previouslyReported variable
+func fillPreviouslyReported(config conf.ConfigStruct, clusters []types.ClusterEntry, storage *DBStorage) (err error) {
+	log.Info().Msg("Read previously reported issues for cluster list")
+
+	// Notification backend
+	cooldown := conf.GetNotificationsConfiguration(config).Cooldown
+	previouslyReportedNotificationBackend, err = storage.ReadLastNotifiedRecordForClusterList(
+		clusters, cooldown, types.NotificationBackendTarget)
+	if err != nil {
+		return err
+	}
+
+	// Service Log
+	previouslyReportedServiceLog, err = storage.ReadLastNotifiedRecordForClusterList(
+		clusters, "", types.ServiceLogTarget)
+	if err != nil {
+		return err
+	}
+
+	log.Info().Int("previously reported issues still in cooldown", len(previouslyReportedNotificationBackend)).Msg("Get previously reported issues: done")
+	return nil
+}
+
 func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
@@ -792,14 +847,14 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	}
 	log.Info().Int(clustersAttribute, entries).Msg("Read cluster list: done")
 	log.Info().Msg(separator)
-	log.Info().Msg("Read previously reported issues for cluster list")
-	previouslyReported, err = storage.ReadLastNotifiedRecordForClusterList(clusters, notifConfig.Cooldown)
+
+	err = fillPreviouslyReported(config, clusters, storage)
 	if err != nil {
 		ReadReportedErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
 		os.Exit(ExitStatusStorageError)
 	}
-	log.Info().Int("previously reported issues still in cooldown", len(previouslyReported)).Msg("Get previously reported issues: done")
+
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
 	setupNotificationProducer(config)
