@@ -788,7 +788,10 @@ func fillPreviouslyReported(config conf.ConfigStruct, clusters []types.ClusterEn
 		return err
 	}
 
-	log.Info().Int("previously reported issues still in cooldown", len(previouslyReportedNotificationBackend)).Msg("Get previously reported issues: done")
+	log.Info().
+		Int("notification backend", len(previouslyReportedNotificationBackend)).
+		Int("service log", len(previouslyReportedServiceLog)).
+		Msg("Get previously reported issues: done")
 	return nil
 }
 
