@@ -554,8 +554,6 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 	}
 	query += ";"
 
-	log.Debug().Str("query", query).Msg("ReadLastNotifiedRecordForClusterList")
-
 	rows, err := storage.connection.Query(query)
 	if err != nil {
 		return nil, err
