@@ -69,7 +69,7 @@ type Storage interface {
 		offset types.KafkaOffset) (types.ClusterReport, error,
 	)
 	ReadLastNotifiedRecordForClusterList(
-		clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) (types.NotifiedRecordsPerCluster, error)
+		clusterEntries []types.ClusterEntry, timeOffset string) (types.NotifiedRecordsPerCluster, error)
 	WriteNotificationRecord(
 		notificationRecord types.NotificationRecord) error
 	WriteNotificationRecordForCluster(
@@ -198,6 +198,16 @@ const (
 		 ORDER BY updated_at
 `
 )
+
+// inClauseFromStringSlice is a helper function to construct `in` clause for SQL
+// statement from a given slice of string items. If the slice is empty, an
+// empty string will be returned, making the in clause fail.
+func inClauseFromStringSlice(slice []string) string {
+	if len(slice) == 0 {
+		return ""
+	}
+	return "'" + strings.Join(slice, `','`) + `'`
+}
 
 // NewStorage function creates and initializes a new instance of Storage interface
 func NewStorage(configuration conf.StorageConfiguration) (*DBStorage, error) {
@@ -531,7 +541,7 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 
 // ReadLastNotifiedRecordForClusterList method returns the last notification
 // with state = 'sent' for given org IDs and clusters.
-func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) (types.NotifiedRecordsPerCluster, error) {
+func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []types.ClusterEntry, timeOffset string) (types.NotifiedRecordsPerCluster, error) {
 	if len(clusterEntries) == 0 {
 		return types.NotifiedRecordsPerCluster{}, nil
 	}
@@ -543,20 +553,14 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 		clusterIDs[idx] = string(entry.ClusterName)
 	}
 
-	whereClause := fmt.Sprintf(` WHERE event_type_id = %v AND state = 1 AND org_id IN (%v) AND cluster IN (%v)`,
-		eventTarget, inClauseFromStringSlice(orgIDs), inClauseFromStringSlice(clusterIDs))
+	whereClause := fmt.Sprintf(` WHERE event_type_id = 1 AND state = 1 AND org_id IN (%v) AND cluster IN (%v)`,
+		inClauseFromStringSlice(orgIDs), inClauseFromStringSlice(clusterIDs))
 
-	query := `SELECT org_id, cluster, report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported `
-	query += whereClause
-	query += " ORDER BY cluster, notified_at DESC) t"
-	if timeOffset != "" {
-		query += fmt.Sprintf(" WHERE notified_at > NOW() - '%v'::INTERVAL", timeOffset)
-	}
-	query += ";"
+	query := `SELECT org_id, cluster, report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
+		whereClause +
+		` ORDER BY cluster, notified_at DESC) t WHERE notified_at > NOW() - $1::INTERVAL;`
 
-	log.Debug().Str("query", query).Msg("ReadLastNotifiedRecordForClusterList")
-
-	rows, err := storage.connection.Query(query)
+	rows, err := storage.connection.Query(query, timeOffset)
 	if err != nil {
 		return nil, err
 	}

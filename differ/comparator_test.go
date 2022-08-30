@@ -17,13 +17,12 @@ limitations under the License.
 package differ
 
 import (
-	"testing"
-
 	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"testing"
 )
 
 var (
@@ -76,7 +75,7 @@ var (
 
 func init() {
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	previouslyReported[types.NotificationBackendTarget] = make(types.NotifiedRecordsPerCluster)
+	previouslyReported = make(types.NotifiedRecordsPerCluster)
 }
 
 func TestGetState(t *testing.T) {
@@ -360,17 +359,14 @@ func TestIssueNotInReportLessItemsInNewReportAndIssueFoundInOldReports(t *testin
 func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 	storage := mocks.Storage{}
 	storage.On("ReadLastNotifiedRecordForClusterList",
-		mock.AnythingOfType("[]types.ClusterEntry"),
-		mock.AnythingOfType("string"),
-		mock.AnythingOfType("types.EventTarget")).
-		Return(
-			func(clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) types.NotifiedRecordsPerCluster {
-				return types.NotifiedRecordsPerCluster{}
-			},
-			func(clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) error {
-				return nil
-			},
-		)
+		mock.AnythingOfType("[]types.ClusterEntry"), mock.AnythingOfType("string")).Return(
+		func(clusterEntries []types.ClusterEntry, timeOffset string) types.NotifiedRecordsPerCluster {
+			return types.NotifiedRecordsPerCluster{}
+		},
+		func(clusterEntries []types.ClusterEntry, timeOffset string) error {
+			return nil
+		},
+	)
 	newReport := types.Report{
 		Reports: []types.ReportItem{
 			{
@@ -382,38 +378,35 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 		},
 	}
 
-	previouslyReported[types.NotificationBackendTarget], _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours", types.NotificationBackendTarget)
+	previouslyReported, _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours")
 	for _, issue := range newReport.Reports {
-		assert.True(t, shouldNotify(testCluster, issue, types.NotificationBackendTarget))
+		assert.True(t, shouldNotify(testCluster, issue))
 	}
 }
 
 func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 	storage := mocks.Storage{}
 	storage.On("ReadLastNotifiedRecordForClusterList",
-		mock.AnythingOfType("[]types.ClusterEntry"),
-		mock.AnythingOfType("string"),
-		mock.AnythingOfType("types.EventTarget")).
-		Return(
-			func(clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) types.NotifiedRecordsPerCluster {
-				return types.NotifiedRecordsPerCluster{
-					types.ClusterOrgKey{OrgID: testCluster.OrgID, ClusterName: testCluster.ClusterName}: {
-						OrgID:              testCluster.OrgID,
-						AccountNumber:      testCluster.AccountNumber,
-						ClusterName:        testCluster.ClusterName,
-						UpdatedAt:          types.Timestamp(testTimestamp),
-						NotificationTypeID: 1,
-						StateID:            1,
-						Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}}]}",
-						NotifiedAt:         types.Timestamp(testTimestamp),
-						ErrorLog:           "",
-					},
-				}
-			},
-			func(clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) error {
-				return nil
-			},
-		)
+		mock.AnythingOfType("[]types.ClusterEntry"), mock.AnythingOfType("string")).Return(
+		func(clusterEntries []types.ClusterEntry, timeOffset string) types.NotifiedRecordsPerCluster {
+			return types.NotifiedRecordsPerCluster{
+				types.ClusterOrgKey{OrgID: testCluster.OrgID, ClusterName: testCluster.ClusterName}: {
+					OrgID:              testCluster.OrgID,
+					AccountNumber:      testCluster.AccountNumber,
+					ClusterName:        testCluster.ClusterName,
+					UpdatedAt:          types.Timestamp(testTimestamp),
+					NotificationTypeID: 1,
+					StateID:            1,
+					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}}]}",
+					NotifiedAt:         types.Timestamp(testTimestamp),
+					ErrorLog:           "",
+				},
+			}
+		},
+		func(clusterEntries []types.ClusterEntry, timeOffset string) error {
+			return nil
+		},
+	)
 	newReport := types.Report{
 		Reports: []types.ReportItem{
 			{
@@ -425,38 +418,35 @@ func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 		},
 	}
 
-	previouslyReported[types.NotificationBackendTarget], _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours", types.NotificationBackendTarget)
+	previouslyReported, _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours")
 	for _, issue := range newReport.Reports {
-		assert.True(t, shouldNotify(testCluster, issue, types.NotificationBackendTarget))
+		assert.True(t, shouldNotify(testCluster, issue))
 	}
 }
 
 func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 	storage := mocks.Storage{}
 	storage.On("ReadLastNotifiedRecordForClusterList",
-		mock.AnythingOfType("[]types.ClusterEntry"),
-		mock.AnythingOfType("string"),
-		mock.AnythingOfType("types.EventTarget")).
-		Return(
-			func(clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) types.NotifiedRecordsPerCluster {
-				return types.NotifiedRecordsPerCluster{
-					types.ClusterOrgKey{OrgID: testCluster.OrgID, ClusterName: testCluster.ClusterName}: {
-						OrgID:              testCluster.OrgID,
-						AccountNumber:      testCluster.AccountNumber,
-						ClusterName:        testCluster.ClusterName,
-						UpdatedAt:          types.Timestamp(testTimestamp),
-						NotificationTypeID: 1,
-						StateID:            1,
-						Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}}]}",
-						NotifiedAt:         types.Timestamp(testTimestamp),
-						ErrorLog:           "",
-					},
-				}
-			},
-			func(clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) error {
-				return nil
-			},
-		)
+		mock.AnythingOfType("[]types.ClusterEntry"), mock.AnythingOfType("string")).Return(
+		func(clusterEntries []types.ClusterEntry, timeOffset string) types.NotifiedRecordsPerCluster {
+			return types.NotifiedRecordsPerCluster{
+				types.ClusterOrgKey{OrgID: testCluster.OrgID, ClusterName: testCluster.ClusterName}: {
+					OrgID:              testCluster.OrgID,
+					AccountNumber:      testCluster.AccountNumber,
+					ClusterName:        testCluster.ClusterName,
+					UpdatedAt:          types.Timestamp(testTimestamp),
+					NotificationTypeID: 1,
+					StateID:            1,
+					Report:             "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_4|RULE_4\",\"component\":\"ccx_rules_ocp.external.rules.rule_4.report\",\"type\":\"rule\",\"key\":\"RULE_4\",\"details\":{\"degraded_operators\":[{\"available\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:45:10Z\",\"reason\":\"AsExpected\",\"message\":\"Available: 2 nodes are active; 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"degraded\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:46:14Z\",\"reason\":\"NodeInstallerDegradedInstallerPodFailed\",\"message\":\"NodeControllerDegraded: All master nodes are ready\\nStaticPodsDegraded: nodes/ip-10-0-137-172.us-east-2.compute.internal pods/kube-apiserver-ip-10-0-137-172.us-east-2.compute.internal container=\\\"kube-apiserver-3\\\" is not ready\"},\"name\":\"kube-apiserver\",\"progressing\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:43:00Z\",\"reason\":\"\",\"message\":\"Progressing: 1 nodes are at revision 0; 2 nodes are at revision 2; 0 nodes have achieved new revision 3\"},\"upgradeable\":{\"status\":true,\"last_trans_time\":\"2020-04-21T12:42:52Z\",\"reason\":\"AsExpected\",\"message\":\"\"},\"version\":\"4.3.13\"}],\"type\":\"rule\",\"error_key\":\"NODE_INSTALLER_DEGRADED\"},\"tags\":[],\"links\":{\"kcs\":[\"https://access.redhat.com/solutions/4849711\"]}}]}",
+					NotifiedAt:         types.Timestamp(testTimestamp),
+					ErrorLog:           "",
+				},
+			}
+		},
+		func(clusterEntries []types.ClusterEntry, timeOffset string) error {
+			return nil
+		},
+	)
 	newReport := types.Report{
 		Reports: []types.ReportItem{
 			{
@@ -468,9 +458,9 @@ func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 		},
 	}
 
-	previouslyReported[types.NotificationBackendTarget], _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours", types.NotificationBackendTarget)
+	previouslyReported, _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours")
 
 	for _, issue := range newReport.Reports {
-		assert.True(t, shouldNotify(testCluster, issue, types.NotificationBackendTarget))
+		assert.True(t, shouldNotify(testCluster, issue))
 	}
 }

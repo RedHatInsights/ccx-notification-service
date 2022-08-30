@@ -203,13 +203,13 @@ func (_m *Storage) ReadClusterList() ([]types.ClusterEntry, error) {
 	return r0, r1
 }
 
-// ReadLastNotifiedRecordForClusterList provides a mock function with given fields: clusterEntries, timeOffset, eventTarget
-func (_m *Storage) ReadLastNotifiedRecordForClusterList(clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) (types.NotifiedRecordsPerCluster, error) {
-	ret := _m.Called(clusterEntries, timeOffset, eventTarget)
+// ReadLastNotifiedRecordForClusterList provides a mock function with given fields: clusterEntries, timeOffset
+func (_m *Storage) ReadLastNotifiedRecordForClusterList(clusterEntries []types.ClusterEntry, timeOffset string) (types.NotifiedRecordsPerCluster, error) {
+	ret := _m.Called(clusterEntries, timeOffset)
 
 	var r0 types.NotifiedRecordsPerCluster
-	if rf, ok := ret.Get(0).(func([]types.ClusterEntry, string, types.EventTarget) types.NotifiedRecordsPerCluster); ok {
-		r0 = rf(clusterEntries, timeOffset, eventTarget)
+	if rf, ok := ret.Get(0).(func([]types.ClusterEntry, string) types.NotifiedRecordsPerCluster); ok {
+		r0 = rf(clusterEntries, timeOffset)
 	} else {
 		if ret.Get(0) != nil {
 			r0 = ret.Get(0).(types.NotifiedRecordsPerCluster)
@@ -217,8 +217,8 @@ func (_m *Storage) ReadLastNotifiedRecordForClusterList(clusterEntries []types.C
 	}
 
 	var r1 error
-	if rf, ok := ret.Get(1).(func([]types.ClusterEntry, string, types.EventTarget) error); ok {
-		r1 = rf(clusterEntries, timeOffset, eventTarget)
+	if rf, ok := ret.Get(1).(func([]types.ClusterEntry, string) error); ok {
+		r1 = rf(clusterEntries, timeOffset)
 	} else {
 		r1 = ret.Error(1)
 	}
