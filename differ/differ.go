@@ -157,8 +157,11 @@ var (
 		Impact:     DefaultImpactThreshold,
 		Severity:   DefaultSeverityThreshold,
 	}
-	previouslyReported types.NotifiedRecordsPerCluster
-	eventFilter        string = DefaultEventFilter
+	previouslyReported = types.NotifiedRecordsPerClusterByTarget{
+		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
+		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
+	}
+	eventFilter string = DefaultEventFilter
 )
 
 // showVersion function displays version information.
@@ -353,7 +356,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 					Int("impact", impact).
 					Int(totalRiskAttribute, totalRisk).
 					Msg("Report with high impact detected")
-				if !shouldNotify(cluster, r) {
+				if !shouldNotify(cluster, r, types.NotificationBackendTarget) {
 					continue
 				}
 				// if new report differs from the older one -> send notification
@@ -797,7 +800,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Int(clustersAttribute, entries).Msg("Read cluster list: done")
 	log.Info().Msg(separator)
 	log.Info().Msg("Read previously reported issues for cluster list")
-	previouslyReported, err = storage.ReadLastNotifiedRecordForClusterList(clusters, notifConfig.Cooldown)
+	previouslyReported[types.NotificationBackendTarget], err = storage.ReadLastNotifiedRecordForClusterList(clusters, notifConfig.Cooldown, types.NotificationBackendTarget)
 	if err != nil {
 		ReadReportedErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
