@@ -26,9 +26,12 @@ package producer
 
 import (
 	"encoding/json"
+	"strings"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 
+	tlsutils "github.com/RedHatInsights/insights-operator-utils/tls"
 	"github.com/Shopify/sarama"
 	"github.com/rs/zerolog/log"
 )
@@ -43,7 +46,12 @@ type KafkaProducer struct {
 func New(config conf.ConfigStruct) (*KafkaProducer, error) {
 	kafkaConfig := conf.GetKafkaBrokerConfiguration(config)
 
-	producer, err := sarama.NewSyncProducer([]string{kafkaConfig.Address}, nil)
+	saramaConfig, err := saramaConfigFromBrokerConfig(kafkaConfig)
+	if err != nil {
+		log.Error().Err(err).Msg("Unable to create a valid Kafka configuration")
+	}
+
+	producer, err := sarama.NewSyncProducer([]string{kafkaConfig.Address}, saramaConfig)
 	if err != nil {
 		log.Error().Err(err).Msgf("unable to start a Kafka producer with broker address %s", config.Kafka.Address)
 		return nil, err
@@ -95,4 +103,31 @@ func (producer *KafkaProducer) Close() error {
 	}
 
 	return nil
+}
+
+func saramaConfigFromBrokerConfig(cfg conf.KafkaConfiguration) (*sarama.Config, error) {
+	saramaConfig := sarama.NewConfig()
+	saramaConfig.Version = sarama.V0_10_2_0
+
+	if strings.Contains(cfg.SecurityProtocol, "SSL") {
+		saramaConfig.Net.TLS.Enable = true
+	}
+	if cfg.CertPath != "" {
+		tlsConfig, err := tlsutils.NewTLSConfig(cfg.CertPath)
+		if err != nil {
+			log.Error().Msgf("Unable to load TLS config for %s cert", cfg.CertPath)
+			return nil, err
+		}
+		saramaConfig.Net.TLS.Config = tlsConfig
+	}
+	if strings.HasPrefix(cfg.SecurityProtocol, "SASL_") {
+		log.Info().Msg("Configuring SASL authentication")
+		saramaConfig.Net.SASL.Enable = true
+		saramaConfig.Net.SASL.User = cfg.SaslUsername
+		saramaConfig.Net.SASL.Password = cfg.SaslPassword
+		saramaConfig.Net.SASL.Mechanism = sarama.SASLMechanism(cfg.SaslMechanism)
+	}
+
+	saramaConfig.Producer.Return.Successes = true
+	return saramaConfig, nil
 }

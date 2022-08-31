@@ -126,6 +126,11 @@ type CleanerConfiguration struct {
 type KafkaConfiguration struct {
 	Enabled             bool          `mapstructure:"enabled" toml:"enabled"`
 	Address             string        `mapstructure:"address" toml:"address"`
+	SecurityProtocol    string        `mapstructure:"security_protocol" toml:"security_protocol"`
+	CertPath            string        `mapstructure:"cert_path" toml:"cert_path"`
+	SaslMechanism       string        `mapstructure:"sasl_mechanism" toml:"sasl_mechanism"`
+	SaslUsername        string        `mapstructure:"sasl_username" toml:"sasl_username"`
+	SaslPassword        string        `mapstructure:"sasl_password" toml:"sasl_password"`
 	Topic               string        `mapstructure:"topic"   toml:"topic"`
 	Timeout             time.Duration `mapstructure:"timeout" toml:"timeout"`
 	LikelihoodThreshold int           `mapstructure:"likelihood_threshold" toml:"likelihood_threshold"`
@@ -295,6 +300,17 @@ func updateConfigFromClowder(c *ConfigStruct) error {
 			c.Kafka.Address = fmt.Sprintf("%s:%d", broker.Hostname, *broker.Port)
 		} else {
 			c.Kafka.Address = broker.Hostname
+		}
+
+		// SSL config
+		if broker.Authtype != nil {
+			c.Kafka.SaslUsername = *broker.Sasl.Username
+			c.Kafka.SaslPassword = *broker.Sasl.Password
+			c.Kafka.SaslMechanism = *broker.Sasl.SaslMechanism
+
+			if caPath, err := clowder.LoadedConfig.KafkaCa(broker); err == nil {
+				c.Kafka.CertPath = caPath
+			}
 		}
 	}
 

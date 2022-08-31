@@ -177,6 +177,8 @@ func showConfiguration(config conf.ConfigStruct) {
 	log.Info().
 		Bool("Enabled", brokerConfig.Enabled).
 		Str("Address", brokerConfig.Address).
+		Str("SecurityProtocol", brokerConfig.SecurityProtocol).
+		Str("SaslMechanism", brokerConfig.SaslMechanism).
 		Str("Topic", brokerConfig.Topic).
 		Str("Timeout", brokerConfig.Timeout.String()).
 		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).

@@ -5,6 +5,11 @@ log_level = "info"
 [kafka_broker]
 enabled = true
 address = "kafka:29092" #provide in deployment env or as secret
+security_protocol = "PLAINTEXT"
+cert_path = "not-set"
+sasl_mechanism = "PLAIN"
+sasl_username = "not-used"
+sasl_password = "not-used"
 topic = "platform.notifications.ingress" #provide in deployment env or as secret
 timeout = "60s"
 likelihood_threshold = 0
