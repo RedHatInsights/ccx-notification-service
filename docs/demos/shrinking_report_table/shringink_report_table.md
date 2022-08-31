@@ -346,3 +346,234 @@ Further shrinking
 -----------------
 * TOAST
 * gzip `report.reported` column programmatically
+
+TOAST
+-----
+* Compression on DB side
+* Can be configured per column
+* Citing official doc: ""the best thing since sliced bread"
+* Fast but not too efficient
+    - need to lower the threshold from 2048 chars/bytes to minimum 128
+
+```
+postgres=# alter table reported set(toast_tuple_target=128);
+ALTER TABLE
+```
+
+Gzipping `report.reported`
+--------------------------
+* Very unpopular in academia
+    - it's DB problem how/if to compress data
+* In the real world
+    - very easy to scale our service (thanks OpenShift)
+    - hard/costly/lack of knowledge how to scale DB properly
+* Questions to answer
+    - will be it hard to implement?
+    - will be efficient?
+    - will be fast or slow?
+* Will be it hard to implement?
+    - basically 10 lines of code
+
+```go
+package main
+
+import (
+	"bytes"
+	"compress/gzip"
+	"fmt"
+	"os"
+)
+
+func gzipBytes(src []byte) ([]byte, error) {
+	var buf bytes.Buffer
+	zw := gzip.NewWriter(&buf)
+
+	_, err := zw.Write(src)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := zw.Close(); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func gzipString(src string) ([]byte, error) {
+	var buf bytes.Buffer
+	zw := gzip.NewWriter(&buf)
+
+	_, err := zw.Write([]byte(src))
+	if err != nil {
+		return nil, err
+	}
+
+	if err := zw.Close(); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+```
+
+* Will it be efficient?
+    - let's measure for "empty" and largest report
+
+```
+Filename: data/empty_report.json
+String: 422  Zipped out: 252  Stripped: 40%
+String: 422  Zipped out: 252  Stripped: 40%
+
+Filename: data/large_report.json
+String: 8395  Zipped out: 2454  Stripped: 71%
+String: 8395  Zipped out: 2454  Stripped: 71%
+```
+
+
+* Will it be fast or slow?
+    - forget academia, benchmarks are there to prove
+
+```go
+package main_test
+
+import (
+	"bytes"
+	"compress/gzip"
+	"os"
+
+	"testing"
+)
+
+var (
+	text1 string = ""
+	text2 string
+	text3 string
+)
+
+func init() {
+	content, err := os.ReadFile("../data/empty_report.json")
+	if err != nil {
+		panic(err)
+	}
+
+	text2 = string(content)
+
+	content, err = os.ReadFile("../data/large_report.json")
+	if err != nil {
+		panic(err)
+	}
+
+	text3 = string(content)
+}
+
+func gzipBytes(src *[]byte) ([]byte, error) {
+	var buf bytes.Buffer
+	zw := gzip.NewWriter(&buf)
+
+	_, err := zw.Write(*src)
+	if err != nil {
+		return nil, err
+	}
+
+	if err := zw.Close(); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func gzipString(src *string) ([]byte, error) {
+	var buf bytes.Buffer
+	zw := gzip.NewWriter(&buf)
+
+	_, err := zw.Write([]byte(*src))
+	if err != nil {
+		return nil, err
+	}
+
+	if err := zw.Close(); err != nil {
+		return nil, err
+	}
+
+	return buf.Bytes(), nil
+}
+
+func BenchmarkGzipEmptyString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		gzipString(&text1)
+	}
+}
+
+func BenchmarkGzipSimpleJSONAsString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		gzipString(&text2)
+	}
+}
+
+func BenchmarkGzipRuleReportAsString(b *testing.B) {
+	for i := 0; i < b.N; i++ {
+		gzipString(&text3)
+	}
+}
+
+func BenchmarkGzipZeroBytes(b *testing.B) {
+	bytes1 := []byte(text1)
+
+	for i := 0; i < b.N; i++ {
+		gzipBytes(&bytes1)
+	}
+}
+
+func BenchmarkGzipSimpleJSONAsBytes(b *testing.B) {
+	bytes2 := []byte(text2)
+
+	for i := 0; i < b.N; i++ {
+		gzipBytes(&bytes2)
+	}
+}
+
+func BenchmarkGzipRuleReportAsBytes(b *testing.B) {
+	bytes3 := []byte(text3)
+
+	for i := 0; i < b.N; i++ {
+		gzipBytes(&bytes3)
+	}
+}
+```
+
+* Results
+
+```
+goos: linux
+goarch: amd64
+pkg: main/benchmark
+cpu: Intel(R) Core(TM) i7-8665U CPU @ 1.90GHz
+BenchmarkGzipEmptyString-8                153459            111102 ns/op
+BenchmarkGzipSimpleJSONAsString-8          89157            143929 ns/op
+BenchmarkGzipRuleReportAsString-8          35571            324360 ns/op
+BenchmarkGzipZeroBytes-8                  103700            123996 ns/op
+BenchmarkGzipSimpleJSONAsBytes-8           94760            157709 ns/op
+BenchmarkGzipRuleReportAsBytes-8           39266            322264 ns/op
+PASS
+ok      main/benchmark  92.980s
+```
+
+Summary
+=======
+* Performance problems with `reported` table are caused by
+    - high number of records stored (50M)
+    - large records, especially in column `reported.report`
+* Possible solution discussed there
+    - vertical partitioning
+        - N/A, not useful
+    - horizontal partitioning
+        - spike for future research
+    - reduction of number of records
+        - viable solution
+        - spike for future research
+    - reduction size of records
+        - low hanging fruit - able to reduce **by** 80% easily
+        - well understood
+        - set of tasks to be prepared
+        - to be decided: whether to do gzipping on client side
