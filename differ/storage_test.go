@@ -91,3 +91,12 @@ func newMock(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
 
 	return db, mock
 }
+
+// Test the checkArgs function when flag for --show-version is set
+func TestInClauseFromSlice(t *testing.T) {
+	stringSlice := make([]string, 0)
+	assert.Equal(t, "", differ.InClauseFromStringSlice(stringSlice))
+
+	stringSlice = []string{"first item", "second item"}
+	assert.Equal(t, "'first item','second item'", differ.InClauseFromStringSlice(stringSlice))
+}

@@ -33,3 +33,7 @@ import (
 func PushMetrics(metricsConf conf.MetricsConfiguration) {
 	pushMetrics(metricsConf)
 }
+
+func InClauseFromStringSlice(slice []string) string {
+	return inClauseFromStringSlice(slice)
+}
