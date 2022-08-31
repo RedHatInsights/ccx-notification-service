@@ -3,9 +3,9 @@ Optimizing and shrinking `reported` table for CCX Notification Service
 
 Reasons
 -------
-* Access to `reported` table is very slow on prod
-* Simple `select count(*) from report` can take minutes!
-* Table grows over time (new features) up to ~150GB as higher limit today
+* Access to `reported` table is very slow on production system
+* Even simple `select count(*) from report` can take minutes!
+* Table grows over time (new features) up to ~150GB as high limit today
 * Will be limiting factor for integration with ServiceLog
 
 Table structure
@@ -15,25 +15,48 @@ Table structure
     - but devil is in the details as usual
 
 ```
+postgres=# \d reported ;
+                             Table "public.reported"
+      Column       |            Type             | Collation | Nullable | Default
+-------------------+-----------------------------+-----------+----------+--------
+ org_id            | integer                     |           | not null |
+ account_number    | integer                     |           | not null |
+ cluster           | character(36)               |           | not null |
+ notification_type | integer                     |           | not null |
+ state             | integer                     |           | not null |
+ report            | character varying           |           | not null |
+ updated_at        | timestamp without time zone |           | not null |
+ notified_at       | timestamp without time zone |           | not null |
+ error_log         | character varying           |           |          |
+ event_type_id     | integer                     |           | not null |
+Indexes:
+    "reported_pkey" PRIMARY KEY, btree (org_id, cluster, notified_at)
+    "notified_at_desc_idx" btree (notified_at DESC)
+    "updated_at_desc_idx" btree (updated_at)
+Foreign-key constraints:
+    "fk_notification_type" FOREIGN KEY (notification_type) REFERENCES notification_types(id)
+    "fk_state" FOREIGN KEY (state) REFERENCES states(id)
+    "reported_event_type_id_fkey" FOREIGN KEY (event_type_id) REFERENCES event_targets(id)
 ```
 
 Table size
 ----------
-* CCX Notification Service is started with 15 minutes frequence
+* CCX Notification Service is started with 15 minutes frequency
     - i.e. 4 times per hour
-* On each run approximatelly 65000 reports are written into the table
+* On each run
+    - approximatelly 65000 reports are written into the table
 * Reports are stored for 8 days
     - limit required for 'cooldown' feature
 * Simple math
     - number of records=8 days × 24 hours × 4 (runs per hour) × 65000
     - number of records=8×24×4×65000
-    - 49920000 ~ 50 millions!
-* => "each bytes in reports counts!"
+    - 49920000 ~ 50 millions records!
+* ⇒ "each byte in reports counts!"
 
 
 
-Original table
-==============
+`reported` table details
+========================
 
 * Let's look at the `reported` table used in production for several months
 * We'll measure overall table size
@@ -44,6 +67,7 @@ Original table
 
 Overall table size
 ------------------
+
 ```
 postgres=# SELECT pg_size_pretty(pg_total_relation_size('reported'));
  pg_size_pretty
@@ -79,16 +103,18 @@ postgres=# explain(analyze, buffers, format text) select count(*) from reported;
 Conclusion
 ----------
 * Not super fast
-* OTOH for approximatelly 50M records it is still ok
+* OTOH for approximately 50M records it is still ok
 * Can be make faster
      - by introducing simpler index (ID)
-     - and by increasing table size by 50 000 000 * sizeof(ID) :)
+     - that will increase table size by 50 000 000 * sizeof(ID) :)
+
+
 
 Table as live entity in the system
 ==================================
 * Content of `reported` table is changing quite rapidly
     - well it depends how we look at it
-    - each hour, approximatelly 65000 × 4 = 260000 reports is created/deleted
+    - each hour, approximately 65000 × 4 = 260000 reports are created/deleted
     - a lot in terms of changed MB/GB
     - OTOH it is just 0.52% of the whole table 
 
@@ -107,7 +133,8 @@ postgres=# SELECT pg_size_pretty(pg_total_relation_size('reported'));
 
 * Auto vacuumer is started in the background
 * It affects all access to the `reported` table significantly
-     - this is the little devil
+     - this is the little devil we talked about!
+     - (Aristotle was right: "horror vacui")
 
 ```
 postgres=# select * from pg_stat_progress_vacuum;
@@ -173,10 +200,14 @@ ws=15677300 loops=3)
 * we are back at good numbers
 
 
+
 After some CCX Notification Service runs
 ========================================
 * Table size is ~ same in terms of #records
+    - but many pages are in 'deleted' state
+    - needs defragmentation
 * But vacuuming is usually not finished in time
+    - it can be proved easily:
 
 ```
 postgres=# SELECT pg_size_pretty(pg_total_relation_size('reported'));
@@ -184,3 +215,134 @@ postgres=# SELECT pg_size_pretty(pg_total_relation_size('reported'));
 ----------------
  141 GB
 ```
+
+
+
+Possible solutions for this problem
+===================================
+* Database partitioning
+    - vertical
+    - horizontal
+* Reduce number of records
+    - change in process logic
+* Reduce size of records
+    - less IOPS in overall
+    - less network transfers
+    - faster vacuuming
+    - increase #ops done in "burst mode"
+
+Vertical partitioning
+---------------------
+* Done by column
+    - in our case by `report` column
+    - no specific syntax in PostgreSQL
+    - query usually consists of several `JOIN`s
+* Won't be super useful in our case
+    - `INSERT` needs to change `report` column + other columns as well
+    - `SELECT` needs to query `report` column + other columns as well
+* Conclusion
+    - not planned to be added in near future
+
+Horizontal partitioning
+-----------------------
+* Creating tables with fewer rows
+    - additional tables to store the remaining rows
+    - specific syntax in PostgreSQL 10.x
+* When
+    - old data (not used much) vs new data
+    - partitioned "naturally" by country, date range etc.
+* And this is our case!
+    - head: new data added recently
+    - body: data with age > 25 minutes and < 8 days
+    - tail: data with age >= 8 days
+* Conclusion
+    - possible future spike
+
+Number of records reduction
+---------------------------
+* We should do an `INSERT` + `on conflict do update`
+    - do not add a new row to the DB for each report that is not re-notified on each run
+* Calculation
+    - we are processing roughly 65k reports per run, and notifying something in the range of hundreds
+    - that's an estimated 64k rows with not sent same state rows added per run (every 15 minutes)
+* Conclusion
+    - possible future spike
+
+Size of records reduction
+-------------------------
+* What's stored in `reported.report` column after all?
+    - well, some JSON of "any" size
+    - some stats
+
+```
+postgres=# select min(length(report)), max(length(report)), avg(length(report)) from reported;
+ min | max  |         avg
+-----+------+----------------------
+ 421 | 8341 | 426.3675676374453857
+(1 row)
+```
+
+* -> seems like most reports are of similar size 421 chars
+
+* Empty report:
+
+```json
+{
+  "analysis_metadata": {
+    "start": "2022-08-18T14:14:02.947224+00:00",
+    "finish": "2022-08-18T14:14:03.826569+00:00",
+    "execution_context": "ccx_ocp_core.context.InsightsOperatorContext",
+    "plugin_sets": {
+      "insights-core": {
+        "version": "insights-core-3.0.290-1",
+        "commit": "placeholder"
+      },
+      "ccx_rules_ocp": {
+        "version": "ccx_rules_ocp-2022.8.17-1",
+        "commit": null
+      },
+      "ccx_ocp_core": {
+        "version": "ccx_ocp_core-2022.8.17-1",
+        "commit": null
+      }
+    }
+  },
+  "reports": []
+}
+```
+
+
+* Non empty report:
+- at most 8341 characters long
+- [It's huge](https://github.com/RedHatInsights/insights-results-aggregator-data/blob/master/messages/normal/05_rules_hits.json)
+
+* What's really needed for CCX Notification Service to work?
+
+```go
+func issuesEqual(issue1, issue2 types.ReportItem) bool {
+        if issue1.Type == issue2.Type &&
+                issue1.Module == issue2.Module &&
+                issue1.ErrorKey == issue2.ErrorKey &&
+                bytes.Equal(issue1.Details, issue2.Details) {
+                return true
+        }
+        return false
+}
+```
+
+Conclusion
+----------
+* 421 chars/bytes are stored for all reports, even empty ones
+    - 21 GB of "garbage" for 50MB reports
+    - out of circa 26 GB -> ~80% of the overall size!
+    - can be droped before DB write (PR already reviewed)
+* Most of `report` attributes are not used and can be dropped as well
+    - tags
+    - links
+    - ~320 chars/bytes per non-empty reports
+    - ~3GB of "garbage"
+
+Further shrinking
+-----------------
+* TOAST
+* gzip `report.reported` column programmatically
