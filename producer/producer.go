@@ -24,12 +24,8 @@ package producer
 // Documentation in literate-programming-style is available at:
 // https://redhatinsights.github.io/ccx-notification-service/packages/producer/producer.html
 
-import (
-	"github.com/RedHatInsights/ccx-notification-service/types"
-)
-
 // Producer represents any producer
 type Producer interface {
-	ProduceMessage(msg types.NotificationMessage) (int32, int64, error)
+	ProduceMessage(msg []byte) (int32, int64, error)
 	Close() error
 }

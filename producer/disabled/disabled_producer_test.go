@@ -14,19 +14,24 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package producer_test
+package disabled
 
 import (
+	"encoding/json"
+	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
 	"testing"
 
-	"github.com/RedHatInsights/ccx-notification-service/producer"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/stretchr/testify/assert"
 )
 
 func TestDisabledProducer(t *testing.T) {
-	p := producer.DisabledProducer{}
-	_, _, err := p.ProduceMessage(types.NotificationMessage{})
+	p := Producer{}
+
+	msgBytes, err := json.Marshal(types.NotificationMessage{})
+	helpers.FailOnError(t, err)
+
+	_, _, err = p.ProduceMessage(msgBytes)
 	assert.NoError(t, err, "error producing message")
 	assert.NoError(t, p.Close(), "error closing producer")
 }

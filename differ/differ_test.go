@@ -20,6 +20,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
+	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
 	"io"
 	"os"
 	"os/exec"
@@ -29,7 +31,6 @@ import (
 	utypes "github.com/RedHatInsights/insights-results-types"
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
-	"github.com/RedHatInsights/ccx-notification-service/producer"
 	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/Shopify/sarama"
@@ -383,14 +384,14 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 		},
 	}
 
-	kafkaProducer := producer.KafkaProducer{
+	kafkaProducer := kafka.Producer{
 		Configuration: conf.GetKafkaBrokerConfiguration(testConfig),
 		Producer:      nil,
 	}
 
 	setupNotificationProducer(testConfig)
 
-	prod := notifier.(*producer.KafkaProducer)
+	prod := notifier.(*kafka.Producer)
 
 	assert.Equal(t, kafkaProducer.Configuration.Address, prod.Configuration.Address)
 	assert.Equal(t, kafkaProducer.Configuration.Topic, prod.Configuration.Topic)
@@ -411,7 +412,10 @@ func TestSetupNotificationProducerDisabledBrokerConfig(t *testing.T) {
 
 	setupNotificationProducer(testConfig)
 
-	_, _, err := notifier.ProduceMessage(types.NotificationMessage{})
+	msgBytes, err := json.Marshal(types.NotificationMessage{})
+	helpers.FailOnError(t, err)
+
+	_, _, err = notifier.ProduceMessage(msgBytes)
 	assert.NoError(t, err, "error producing message")
 	assert.NoError(t, notifier.Close(), "error closing producer")
 }
@@ -542,16 +546,16 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 		})
 
 	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
-		func(msg types.NotificationMessage) int32 {
+	producerMock.On("ProduceMessage", mock.AnythingOfType("[]uint8")).Return(
+		func(msg []byte) int32 {
 			testPartitionID++
 			return int32(testPartitionID)
 		},
-		func(msg types.NotificationMessage) int64 {
+		func(msg []byte) int64 {
 			testOffset++
 			return int64(testOffset)
 		},
-		func(msg types.NotificationMessage) error {
+		func(msg []byte) error {
 			return nil
 		},
 	)
@@ -701,16 +705,16 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 		})
 
 	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
-		func(msg types.NotificationMessage) int32 {
+	producerMock.On("ProduceMessage", mock.AnythingOfType("[]uint8")).Return(
+		func(msg []byte) int32 {
 			testPartitionID++
 			return int32(testPartitionID)
 		},
-		func(msg types.NotificationMessage) int64 {
+		func(msg []byte) int64 {
 			testOffset++
 			return int64(testOffset)
 		},
-		func(msg types.NotificationMessage) error {
+		func(msg []byte) error {
 			return nil
 		},
 	)
@@ -1035,16 +1039,16 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	)
 
 	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
-		func(msg types.NotificationMessage) int32 {
+	producerMock.On("ProduceMessage", mock.AnythingOfType("[]uint8")).Return(
+		func(msg []byte) int32 {
 			testPartitionID++
 			return int32(testPartitionID)
 		},
-		func(msg types.NotificationMessage) int64 {
+		func(msg []byte) int64 {
 			testOffset++
 			return int64(testOffset)
 		},
-		func(msg types.NotificationMessage) error {
+		func(msg []byte) error {
 			return nil
 		},
 	)
@@ -1181,16 +1185,16 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	)
 
 	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
-		func(msg types.NotificationMessage) int32 {
+	producerMock.On("ProduceMessage", mock.AnythingOfType("[]uint8")).Return(
+		func(msg []byte) int32 {
 			testPartitionID++
 			return int32(testPartitionID)
 		},
-		func(msg types.NotificationMessage) int64 {
+		func(msg []byte) int64 {
 			testOffset++
 			return int64(testOffset)
 		},
-		func(msg types.NotificationMessage) error {
+		func(msg []byte) error {
 			return nil
 		},
 	)

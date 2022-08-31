@@ -26,6 +26,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/RedHatInsights/ccx-notification-service/producer/disabled"
+	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
 	"os"
 	"strings"
 	"time"
@@ -373,7 +375,13 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 		}
 
 		log.Info().Msgf("Producing instant notification for cluster %s with %d events", string(cluster.ClusterName), len(notificationMsg.Events))
-		_, _, err = notifier.ProduceMessage(notificationMsg)
+
+		msgBytes, err := json.Marshal(notificationMsg)
+		if err != nil {
+			log.Error().Err(err).Msg(invalidJSONContent)
+			continue
+		}
+		_, _, err = notifier.ProduceMessage(msgBytes)
 		if err != nil {
 			log.Error().
 				Str(errorStr, err.Error()).
@@ -481,7 +489,12 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storag
 			Msg("Producing weekly notification for ")
 
 		notification := generateWeeklyNotificationMessage(&notificationInsightsAdvisorURL, fmt.Sprint(account), digest)
-		_, _, err := notifier.ProduceMessage(notification)
+		msgBytes, err := json.Marshal(notification)
+		if err != nil {
+			log.Error().Err(err).Msg(invalidJSONContent)
+			continue
+		}
+		_, _, err = notifier.ProduceMessage(msgBytes)
 		if err != nil {
 			log.Error().
 				Str(errorStr, err.Error()).
@@ -508,11 +521,11 @@ func setupNotificationProducer(config conf.ConfigStruct) {
 		log.Info().Msg("Broker config for Notification Service is enabled")
 	} else {
 		log.Info().Msg("Broker config for Notification Service is disabled")
-		notifier = &producer.DisabledProducer{}
+		notifier = &disabled.Producer{}
 		return
 	}
 
-	producer, err := producer.New(config)
+	producer, err := kafka.New(config)
 	if err != nil {
 		ProducerSetupErrors.Inc()
 		log.Error().
