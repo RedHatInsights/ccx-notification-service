@@ -546,16 +546,16 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 		})
 
 	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("[]uint8")).Return(
-		func(msg []byte) int32 {
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.ProducerMessage")).Return(
+		func(msg types.ProducerMessage) int32 {
 			testPartitionID++
 			return int32(testPartitionID)
 		},
-		func(msg []byte) int64 {
+		func(msg types.ProducerMessage) int64 {
 			testOffset++
 			return int64(testOffset)
 		},
-		func(msg []byte) error {
+		func(msg types.ProducerMessage) error {
 			return nil
 		},
 	)
@@ -705,16 +705,16 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 		})
 
 	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("[]uint8")).Return(
-		func(msg []byte) int32 {
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.ProducerMessage")).Return(
+		func(msg types.ProducerMessage) int32 {
 			testPartitionID++
 			return int32(testPartitionID)
 		},
-		func(msg []byte) int64 {
+		func(msg types.ProducerMessage) int64 {
 			testOffset++
 			return int64(testOffset)
 		},
-		func(msg []byte) error {
+		func(msg types.ProducerMessage) error {
 			return nil
 		},
 	)
@@ -1039,16 +1039,16 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	)
 
 	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("[]uint8")).Return(
-		func(msg []byte) int32 {
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.ProducerMessage")).Return(
+		func(msg types.ProducerMessage) int32 {
 			testPartitionID++
 			return int32(testPartitionID)
 		},
-		func(msg []byte) int64 {
+		func(msg types.ProducerMessage) int64 {
 			testOffset++
 			return int64(testOffset)
 		},
-		func(msg []byte) error {
+		func(msg types.ProducerMessage) error {
 			return nil
 		},
 	)
@@ -1185,16 +1185,16 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	)
 
 	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("[]uint8")).Return(
-		func(msg []byte) int32 {
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.ProducerMessage")).Return(
+		func(msg types.ProducerMessage) int32 {
 			testPartitionID++
 			return int32(testPartitionID)
 		},
-		func(msg []byte) int64 {
+		func(msg types.ProducerMessage) int64 {
 			testOffset++
 			return int64(testOffset)
 		},
-		func(msg []byte) error {
+		func(msg types.ProducerMessage) error {
 			return nil
 		},
 	)

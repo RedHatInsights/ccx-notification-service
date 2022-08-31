@@ -16,12 +16,14 @@ limitations under the License.
 
 package disabled
 
+import "github.com/RedHatInsights/ccx-notification-service/types"
+
 // Producer is an implementation of Producer interface where no message is sent
 type Producer struct {
 }
 
 // ProduceMessage doesn't publish any message.
-func (producer *Producer) ProduceMessage(msg []byte) (int32, int64, error) {
+func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (int32, int64, error) {
 	return 0, 0, nil
 }
 

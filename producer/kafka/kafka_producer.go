@@ -25,6 +25,7 @@ package kafka
 // https://redhatinsights.github.io/ccx-notification-service/packages/producer/kafka_producer.html
 
 import (
+	"github.com/RedHatInsights/ccx-notification-service/types"
 	"strings"
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
@@ -63,7 +64,7 @@ func New(config conf.ConfigStruct) (*Producer, error) {
 // ProduceMessage produces message to selected topic. That function returns
 // partition ID and offset of new message or an error value in case of any
 // problem on broker side.
-func (producer *Producer) ProduceMessage(msg []byte) (partitionID int32, offset int64, err error) {
+func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID int32, offset int64, err error) {
 	// no-op when producer is disabled
 	// (this logic allows us to enable/disable producer on the fly
 	if !producer.Configuration.Enabled {

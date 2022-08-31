@@ -18,6 +18,8 @@ limitations under the License.
 // send) messages to properly configured Kafka broker.
 package producer
 
+import "github.com/RedHatInsights/ccx-notification-service/types"
+
 // Generated documentation is available at:
 // https://pkg.go.dev/github.com/RedHatInsights/ccx-notification-service/producer
 //
@@ -26,6 +28,6 @@ package producer
 
 // Producer represents any producer
 type Producer interface {
-	ProduceMessage(msg []byte) (int32, int64, error)
+	ProduceMessage(msg types.ProducerMessage) (int32, int64, error)
 	Close() error
 }

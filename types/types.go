@@ -62,6 +62,9 @@ type StateID int
 // EventTarget matches the backend int code in the database where the notifications are sent (CCXDEV-8767)
 type EventTarget int8
 
+// ProducerMessage is a byte array (typically converted JSON) to be processed by one of the Producer implementations
+type ProducerMessage []byte
+
 const (
 	// DBDriverSQLite3 shows that db driver is sqlite
 	DBDriverSQLite3 DBDriver = iota
