@@ -60,7 +60,11 @@ style: fmt vet lint cyclo shellcheck errcheck goconst gosec ineffassign abcgo ##
 run: ${BINARY} ## Build the project and executes the binary
 	./$^
 
-test: ${BINARY} ## Run the unit tests
+gen-mocks: ## Generates the mocks using mockery. Needs go >= 1.18
+	go install github.com/vektra/mockery/v2@latest  
+	mockery --all --output tests/mocks
+
+test: ${BINARY} gen-mocks ## Run the unit tests
 	./unit-tests.sh
 
 profiler: ${BINARY} ## Run the unit tests with profiler enabled
