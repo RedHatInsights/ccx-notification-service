@@ -48,9 +48,6 @@ import (
 	"github.com/rs/zerolog/log"
 )
 
-// NotificationBackendEventTypeID represent an event for the notification backend
-const NotificationBackendEventTypeID = 1
-
 // Storage represents an interface to almost any database or storage system
 type Storage interface {
 	Close() error
@@ -89,7 +86,7 @@ type Storage interface {
 		updatedAt types.Timestamp,
 		notifiedAt types.Timestamp,
 		errorLog string,
-		eventType int) error
+		eventType types.EventTarget) error
 	CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
 	CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
 	DeleteRowFromNewReports(
@@ -486,7 +483,7 @@ func (storage DBStorage) WriteNotificationRecord(
 		notificationRecord.NotificationTypeID, notificationRecord.StateID,
 		notificationRecord.Report, notificationRecord.UpdatedAt,
 		notificationRecord.NotifiedAt, notificationRecord.ErrorLog,
-		NotificationBackendEventTypeID)
+		types.NotificationBackendTarget)
 }
 
 // WriteNotificationRecordImpl method writes a report (with given state and
@@ -504,7 +501,7 @@ func (storage DBStorage) WriteNotificationRecordImpl(
 	updatedAt types.Timestamp,
 	notifiedAt types.Timestamp,
 	errorLog string,
-	eventTarget int) error {
+	eventTarget types.EventTarget) error {
 
 	const insertStatement = `
             INSERT INTO reported
@@ -533,10 +530,11 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 	notifiedAt types.Timestamp,
 	errorLog string) error {
 
+	// TODO: Accept event target too!!!!!
 	return storage.WriteNotificationRecordImpl(clusterEntry.OrgID,
 		clusterEntry.AccountNumber, clusterEntry.ClusterName,
 		notificationTypeID, stateID, report, clusterEntry.UpdatedAt,
-		notifiedAt, errorLog, NotificationBackendEventTypeID)
+		notifiedAt, errorLog, types.NotificationBackendTarget)
 }
 
 // ReadLastNotifiedRecordForClusterList method returns the last notification
