@@ -503,6 +503,8 @@ func setupNotificationProducer(config conf.ConfigStruct) {
 		log.Info().Msg("Broker config for Notification Service is enabled")
 	} else {
 		log.Info().Msg("Broker config for Notification Service is disabled")
+		notifier = &producer.DisabledProducer{}
+		return
 	}
 
 	producer, err := producer.New(config)
