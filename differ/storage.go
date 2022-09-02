@@ -66,7 +66,7 @@ type Storage interface {
 		offset types.KafkaOffset) (types.ClusterReport, error,
 	)
 	ReadLastNotifiedRecordForClusterList(
-		clusterEntries []types.ClusterEntry, timeOffset string) (types.NotifiedRecordsPerCluster, error)
+		clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) (types.NotifiedRecordsPerCluster, error)
 	WriteNotificationRecord(
 		notificationRecord types.NotificationRecord) error
 	WriteNotificationRecordForCluster(
@@ -539,7 +539,7 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 
 // ReadLastNotifiedRecordForClusterList method returns the last notification
 // with state = 'sent' for given org IDs and clusters.
-func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []types.ClusterEntry, timeOffset string) (types.NotifiedRecordsPerCluster, error) {
+func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) (types.NotifiedRecordsPerCluster, error) {
 	if len(clusterEntries) == 0 {
 		return types.NotifiedRecordsPerCluster{}, nil
 	}
@@ -551,8 +551,8 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []t
 		clusterIDs[idx] = string(entry.ClusterName)
 	}
 
-	whereClause := fmt.Sprintf(` WHERE event_type_id = 1 AND state = 1 AND org_id IN (%v) AND cluster IN (%v)`,
-		inClauseFromStringSlice(orgIDs), inClauseFromStringSlice(clusterIDs))
+	whereClause := fmt.Sprintf(` WHERE event_type_id = %v AND state = 1 AND org_id IN (%v) AND cluster IN (%v)`,
+		eventTarget, inClauseFromStringSlice(orgIDs), inClauseFromStringSlice(clusterIDs))
 
 	query := `SELECT org_id, cluster, report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
 		whereClause +

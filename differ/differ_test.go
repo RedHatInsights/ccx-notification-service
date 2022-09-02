@@ -888,7 +888,7 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 		},
 	)
 
-	previouslyReported[types.ClusterOrgKey{OrgID: types.OrgID(1), ClusterName: "first_cluster"}] = types.NotificationRecord{
+	previouslyReported[types.NotificationBackendTarget][types.ClusterOrgKey{OrgID: types.OrgID(1), ClusterName: "first_cluster"}] = types.NotificationRecord{
 		OrgID:              1,
 		AccountNumber:      4,
 		ClusterName:        "first_cluster",
@@ -900,7 +900,7 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 		ErrorLog:           "",
 	}
 
-	previouslyReported[types.ClusterOrgKey{OrgID: types.OrgID(2), ClusterName: "second_cluster"}] = types.NotificationRecord{
+	previouslyReported[types.NotificationBackendTarget][types.ClusterOrgKey{OrgID: types.OrgID(2), ClusterName: "second_cluster"}] = types.NotificationRecord{
 		OrgID:              2,
 		AccountNumber:      4,
 		ClusterName:        "second_cluster",
@@ -918,7 +918,10 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster second_cluster\"}\n", "Notification already sent for second_cluster's report, but corresponding log not found.")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	previouslyReported = make(types.NotifiedRecordsPerCluster)
+	previouslyReported = types.NotifiedRecordsPerClusterByTarget{
+		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
+		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
+	}
 }
 
 func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
@@ -1049,7 +1052,7 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	originalNotifier := notifier
 	notifier = &producerMock
 
-	previouslyReported[types.ClusterOrgKey{OrgID: types.OrgID(3), ClusterName: "a cluster"}] = types.NotificationRecord{
+	previouslyReported[types.NotificationBackendTarget][types.ClusterOrgKey{OrgID: types.OrgID(3), ClusterName: "a cluster"}] = types.NotificationRecord{
 		OrgID:              3,
 		AccountNumber:      4,
 		ClusterName:        "a cluster",
@@ -1070,7 +1073,10 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	notifier = originalNotifier
-	previouslyReported = make(types.NotifiedRecordsPerCluster)
+	previouslyReported = types.NotifiedRecordsPerClusterByTarget{
+		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
+		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
+	}
 }
 
 //---------------------------------------------------------------------------------------
