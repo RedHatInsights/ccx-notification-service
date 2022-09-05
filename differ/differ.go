@@ -26,6 +26,8 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/RedHatInsights/ccx-notification-service/producer/disabled"
+	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
 	"os"
 	"strings"
 	"time"
@@ -157,8 +159,11 @@ var (
 		Impact:     DefaultImpactThreshold,
 		Severity:   DefaultSeverityThreshold,
 	}
-	previouslyReported types.NotifiedRecordsPerCluster
-	eventFilter        string = DefaultEventFilter
+	previouslyReported = types.NotifiedRecordsPerClusterByTarget{
+		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
+		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
+	}
+	eventFilter string = DefaultEventFilter
 )
 
 // showVersion function displays version information.
@@ -353,7 +358,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 					Int("impact", impact).
 					Int(totalRiskAttribute, totalRisk).
 					Msg("Report with high impact detected")
-				if !shouldNotify(cluster, r) {
+				if !shouldNotify(cluster, r, types.NotificationBackendTarget) {
 					continue
 				}
 				// if new report differs from the older one -> send notification
@@ -370,7 +375,13 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 		}
 
 		log.Info().Msgf("Producing instant notification for cluster %s with %d events", string(cluster.ClusterName), len(notificationMsg.Events))
-		_, _, err = notifier.ProduceMessage(notificationMsg)
+
+		msgBytes, err := json.Marshal(notificationMsg)
+		if err != nil {
+			log.Error().Err(err).Msg(invalidJSONContent)
+			continue
+		}
+		_, _, err = notifier.ProduceMessage(msgBytes)
 		if err != nil {
 			log.Error().
 				Str(errorStr, err.Error()).
@@ -478,7 +489,12 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storag
 			Msg("Producing weekly notification for ")
 
 		notification := generateWeeklyNotificationMessage(&notificationInsightsAdvisorURL, fmt.Sprint(account), digest)
-		_, _, err := notifier.ProduceMessage(notification)
+		msgBytes, err := json.Marshal(notification)
+		if err != nil {
+			log.Error().Err(err).Msg(invalidJSONContent)
+			continue
+		}
+		_, _, err = notifier.ProduceMessage(msgBytes)
 		if err != nil {
 			log.Error().
 				Str(errorStr, err.Error()).
@@ -505,11 +521,11 @@ func setupNotificationProducer(config conf.ConfigStruct) {
 		log.Info().Msg("Broker config for Notification Service is enabled")
 	} else {
 		log.Info().Msg("Broker config for Notification Service is disabled")
-		notifier = &producer.DisabledProducer{}
+		notifier = &disabled.Producer{}
 		return
 	}
 
-	producer, err := producer.New(config)
+	producer, err := kafka.New(config)
 	if err != nil {
 		ProducerSetupErrors.Inc()
 		log.Error().
@@ -797,7 +813,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Int(clustersAttribute, entries).Msg("Read cluster list: done")
 	log.Info().Msg(separator)
 	log.Info().Msg("Read previously reported issues for cluster list")
-	previouslyReported, err = storage.ReadLastNotifiedRecordForClusterList(clusters, notifConfig.Cooldown)
+	previouslyReported[types.NotificationBackendTarget], err = storage.ReadLastNotifiedRecordForClusterList(clusters, notifConfig.Cooldown, types.NotificationBackendTarget)
 	if err != nil {
 		ReadReportedErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)

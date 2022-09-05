@@ -307,7 +307,7 @@ func updateConfigFromClowder(c *ConfigStruct) error {
 			c.Kafka.SaslUsername = *broker.Sasl.Username
 			c.Kafka.SaslPassword = *broker.Sasl.Password
 			c.Kafka.SaslMechanism = *broker.Sasl.SaslMechanism
-
+			c.Kafka.SecurityProtocol = *broker.Sasl.SecurityProtocol
 			if caPath, err := clowder.LoadedConfig.KafkaCa(broker); err == nil {
 				c.Kafka.CertPath = caPath
 			}

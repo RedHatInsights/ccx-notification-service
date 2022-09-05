@@ -4,6 +4,7 @@ go 1.16
 
 require (
 	github.com/BurntSushi/toml v0.3.1
+	github.com/DATA-DOG/go-sqlmock v1.4.1 // indirect
 	github.com/RedHatInsights/insights-operator-utils v1.23.9
 	github.com/RedHatInsights/insights-results-types v1.3.12
 	github.com/Shopify/sarama v1.27.1

@@ -28,25 +28,25 @@ func (_m *Producer) Close() error {
 }
 
 // ProduceMessage provides a mock function with given fields: msg
-func (_m *Producer) ProduceMessage(msg types.NotificationMessage) (int32, int64, error) {
+func (_m *Producer) ProduceMessage(msg types.ProducerMessage) (int32, int64, error) {
 	ret := _m.Called(msg)
 
 	var r0 int32
-	if rf, ok := ret.Get(0).(func(types.NotificationMessage) int32); ok {
+	if rf, ok := ret.Get(0).(func(types.ProducerMessage) int32); ok {
 		r0 = rf(msg)
 	} else {
 		r0 = ret.Get(0).(int32)
 	}
 
 	var r1 int64
-	if rf, ok := ret.Get(1).(func(types.NotificationMessage) int64); ok {
+	if rf, ok := ret.Get(1).(func(types.ProducerMessage) int64); ok {
 		r1 = rf(msg)
 	} else {
 		r1 = ret.Get(1).(int64)
 	}
 
 	var r2 error
-	if rf, ok := ret.Get(2).(func(types.NotificationMessage) error); ok {
+	if rf, ok := ret.Get(2).(func(types.ProducerMessage) error); ok {
 		r2 = rf(msg)
 	} else {
 		r2 = ret.Error(2)

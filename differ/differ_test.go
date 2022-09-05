@@ -20,6 +20,8 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
+	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
+	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
 	"io"
 	"os"
 	"os/exec"
@@ -29,7 +31,6 @@ import (
 	utypes "github.com/RedHatInsights/insights-results-types"
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
-	"github.com/RedHatInsights/ccx-notification-service/producer"
 	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/Shopify/sarama"
@@ -383,14 +384,14 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 		},
 	}
 
-	kafkaProducer := producer.KafkaProducer{
+	kafkaProducer := kafka.Producer{
 		Configuration: conf.GetKafkaBrokerConfiguration(testConfig),
 		Producer:      nil,
 	}
 
 	setupNotificationProducer(testConfig)
 
-	prod := notifier.(*producer.KafkaProducer)
+	prod := notifier.(*kafka.Producer)
 
 	assert.Equal(t, kafkaProducer.Configuration.Address, prod.Configuration.Address)
 	assert.Equal(t, kafkaProducer.Configuration.Topic, prod.Configuration.Topic)
@@ -411,7 +412,10 @@ func TestSetupNotificationProducerDisabledBrokerConfig(t *testing.T) {
 
 	setupNotificationProducer(testConfig)
 
-	_, _, err := notifier.ProduceMessage(types.NotificationMessage{})
+	msgBytes, err := json.Marshal(types.NotificationMessage{})
+	helpers.FailOnError(t, err)
+
+	_, _, err = notifier.ProduceMessage(msgBytes)
 	assert.NoError(t, err, "error producing message")
 	assert.NoError(t, notifier.Close(), "error closing producer")
 }
@@ -542,16 +546,16 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 		})
 
 	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
-		func(msg types.NotificationMessage) int32 {
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.ProducerMessage")).Return(
+		func(msg types.ProducerMessage) int32 {
 			testPartitionID++
 			return int32(testPartitionID)
 		},
-		func(msg types.NotificationMessage) int64 {
+		func(msg types.ProducerMessage) int64 {
 			testOffset++
 			return int64(testOffset)
 		},
-		func(msg types.NotificationMessage) error {
+		func(msg types.ProducerMessage) error {
 			return nil
 		},
 	)
@@ -701,16 +705,16 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 		})
 
 	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
-		func(msg types.NotificationMessage) int32 {
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.ProducerMessage")).Return(
+		func(msg types.ProducerMessage) int32 {
 			testPartitionID++
 			return int32(testPartitionID)
 		},
-		func(msg types.NotificationMessage) int64 {
+		func(msg types.ProducerMessage) int64 {
 			testOffset++
 			return int64(testOffset)
 		},
-		func(msg types.NotificationMessage) error {
+		func(msg types.ProducerMessage) error {
 			return nil
 		},
 	)
@@ -888,7 +892,7 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 		},
 	)
 
-	previouslyReported[types.ClusterOrgKey{OrgID: types.OrgID(1), ClusterName: "first_cluster"}] = types.NotificationRecord{
+	previouslyReported[types.NotificationBackendTarget][types.ClusterOrgKey{OrgID: types.OrgID(1), ClusterName: "first_cluster"}] = types.NotificationRecord{
 		OrgID:              1,
 		AccountNumber:      4,
 		ClusterName:        "first_cluster",
@@ -900,7 +904,7 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 		ErrorLog:           "",
 	}
 
-	previouslyReported[types.ClusterOrgKey{OrgID: types.OrgID(2), ClusterName: "second_cluster"}] = types.NotificationRecord{
+	previouslyReported[types.NotificationBackendTarget][types.ClusterOrgKey{OrgID: types.OrgID(2), ClusterName: "second_cluster"}] = types.NotificationRecord{
 		OrgID:              2,
 		AccountNumber:      4,
 		ClusterName:        "second_cluster",
@@ -918,7 +922,10 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster second_cluster\"}\n", "Notification already sent for second_cluster's report, but corresponding log not found.")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	previouslyReported = make(types.NotifiedRecordsPerCluster)
+	previouslyReported = types.NotifiedRecordsPerClusterByTarget{
+		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
+		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
+	}
 }
 
 func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
@@ -1032,16 +1039,16 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	)
 
 	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
-		func(msg types.NotificationMessage) int32 {
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.ProducerMessage")).Return(
+		func(msg types.ProducerMessage) int32 {
 			testPartitionID++
 			return int32(testPartitionID)
 		},
-		func(msg types.NotificationMessage) int64 {
+		func(msg types.ProducerMessage) int64 {
 			testOffset++
 			return int64(testOffset)
 		},
-		func(msg types.NotificationMessage) error {
+		func(msg types.ProducerMessage) error {
 			return nil
 		},
 	)
@@ -1049,7 +1056,7 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	originalNotifier := notifier
 	notifier = &producerMock
 
-	previouslyReported[types.ClusterOrgKey{OrgID: types.OrgID(3), ClusterName: "a cluster"}] = types.NotificationRecord{
+	previouslyReported[types.NotificationBackendTarget][types.ClusterOrgKey{OrgID: types.OrgID(3), ClusterName: "a cluster"}] = types.NotificationRecord{
 		OrgID:              3,
 		AccountNumber:      4,
 		ClusterName:        "a cluster",
@@ -1070,7 +1077,10 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	notifier = originalNotifier
-	previouslyReported = make(types.NotifiedRecordsPerCluster)
+	previouslyReported = types.NotifiedRecordsPerClusterByTarget{
+		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
+		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
+	}
 }
 
 //---------------------------------------------------------------------------------------
@@ -1175,16 +1185,16 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	)
 
 	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("types.NotificationMessage")).Return(
-		func(msg types.NotificationMessage) int32 {
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.ProducerMessage")).Return(
+		func(msg types.ProducerMessage) int32 {
 			testPartitionID++
 			return int32(testPartitionID)
 		},
-		func(msg types.NotificationMessage) int64 {
+		func(msg types.ProducerMessage) int64 {
 			testOffset++
 			return int64(testOffset)
 		},
-		func(msg types.NotificationMessage) error {
+		func(msg types.ProducerMessage) error {
 			return nil
 		},
 	)

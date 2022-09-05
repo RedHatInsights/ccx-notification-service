@@ -14,10 +14,10 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package producer
+package kafka
 
 import (
-	"errors"
+	"encoding/json"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
@@ -65,7 +65,7 @@ func TestNewProducerBadBroker(t *testing.T) {
 // TestProducerClose makes sure it's possible to close the connection
 func TestProducerClose(t *testing.T) {
 	mockProducer := mocks.NewSyncProducer(t, nil)
-	prod := KafkaProducer{
+	prod := Producer{
 		Configuration: brokerCfg,
 		Producer:      mockProducer,
 	}
@@ -108,12 +108,15 @@ func TestProducerSendEmptyNotificationMessage(t *testing.T) {
 	mockProducer := mocks.NewSyncProducer(t, nil)
 	mockProducer.ExpectSendMessageAndSucceed()
 
-	kafkaProducer := KafkaProducer{
+	kafkaProducer := Producer{
 		Configuration: brokerCfg,
 		Producer:      mockProducer,
 	}
 
-	_, _, err := kafkaProducer.ProduceMessage(types.NotificationMessage{})
+	msgBytes, err := json.Marshal(types.NotificationMessage{})
+	helpers.FailOnError(t, err)
+
+	_, _, err = kafkaProducer.ProduceMessage(msgBytes)
 	assert.NoError(t, err, "Couldn't produce message with given broker configuration")
 	helpers.FailOnError(t, kafkaProducer.Close())
 }
@@ -122,7 +125,7 @@ func TestProducerSendNotificationMessageNoEvents(t *testing.T) {
 	mockProducer := mocks.NewSyncProducer(t, nil)
 	mockProducer.ExpectSendMessageAndSucceed()
 
-	kafkaProducer := KafkaProducer{
+	kafkaProducer := Producer{
 		Configuration: brokerCfg,
 		Producer:      mockProducer,
 	}
@@ -137,7 +140,10 @@ func TestProducerSendNotificationMessageNoEvents(t *testing.T) {
 		Context:     "{}",
 	}
 
-	_, _, err := kafkaProducer.ProduceMessage(msg)
+	msgBytes, err := json.Marshal(msg)
+	helpers.FailOnError(t, err)
+
+	_, _, err = kafkaProducer.ProduceMessage(msgBytes)
 	assert.NoError(t, err, "Couldn't produce message with given broker configuration")
 	helpers.FailOnError(t, kafkaProducer.Close())
 }
@@ -146,7 +152,7 @@ func TestProducerSendNotificationMessageSingleEvent(t *testing.T) {
 	mockProducer := mocks.NewSyncProducer(t, nil)
 	mockProducer.ExpectSendMessageAndSucceed()
 
-	kafkaProducer := KafkaProducer{
+	kafkaProducer := Producer{
 		Configuration: brokerCfg,
 		Producer:      mockProducer,
 	}
@@ -168,7 +174,10 @@ func TestProducerSendNotificationMessageSingleEvent(t *testing.T) {
 		Context:     "{}",
 	}
 
-	_, _, err := kafkaProducer.ProduceMessage(msg)
+	msgBytes, err := json.Marshal(msg)
+	helpers.FailOnError(t, err)
+
+	_, _, err = kafkaProducer.ProduceMessage(msgBytes)
 	assert.NoError(t, err, "Couldn't produce message with given broker configuration")
 	helpers.FailOnError(t, kafkaProducer.Close())
 }
@@ -177,7 +186,7 @@ func TestProducerSendNotificationMessageMultipleEvents(t *testing.T) {
 	mockProducer := mocks.NewSyncProducer(t, nil)
 	mockProducer.ExpectSendMessageAndSucceed()
 
-	kafkaProducer := KafkaProducer{
+	kafkaProducer := Producer{
 		Configuration: brokerCfg,
 		Producer:      mockProducer,
 	}
@@ -203,48 +212,12 @@ func TestProducerSendNotificationMessageMultipleEvents(t *testing.T) {
 		Context:     "{}",
 	}
 
-	_, _, err := kafkaProducer.ProduceMessage(msg)
+	msgBytes, err := json.Marshal(msg)
+	helpers.FailOnError(t, err)
+
+	_, _, err = kafkaProducer.ProduceMessage(msgBytes)
 	assert.NoError(t, err, "Couldn't produce message with given broker configuration")
 	helpers.FailOnError(t, kafkaProducer.Close())
-}
-
-func TestProducerSendNotificationMessageEventContentNotValidJson(t *testing.T) {
-	const jsonParseErrorMessage = "json: unsupported type: chan int" //TODO: Using a mocked function for json.Marshall that throws an error is cooler than this =)
-
-	mockProducer := mocks.NewSyncProducer(t, nil)
-	mockProducer.ExpectSendMessageAndFail(errors.New(jsonParseErrorMessage))
-
-	kafkaProducer := KafkaProducer{
-		Configuration: brokerCfg,
-		Producer:      mockProducer,
-	}
-
-	events := []types.Event{
-		{
-			Metadata: types.EventMetadata{},
-			Payload:  "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\"}",
-		},
-		{
-			Metadata: map[string]interface{}{
-				"foo": make(chan int), // A value that cannot be represented in JSON
-			},
-			Payload: "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\", \"more_random_data\": \"why not...\"}",
-		},
-	}
-
-	msg := types.NotificationMessage{
-		Bundle:      "openshift",
-		Application: "advisor",
-		EventType:   "critical",
-		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
-		AccountID:   "000001",
-		Events:      events,
-		Context:     "{}",
-	}
-
-	_, _, err := kafkaProducer.ProduceMessage(msg)
-
-	assert.EqualError(t, err, jsonParseErrorMessage)
 }
 
 /*
