@@ -113,7 +113,7 @@ objects:
               cpu: ${CPU_REQUEST}
               memory: ${MEMORY_REQUEST}
           env:
-          - name: CCX_NOTIFICATION_SERVICE__KAFKA__ENABLED
+          - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__ENABLED
             value: 'false'
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__ENABLED
             value: 'false'  # TODO: Enable
