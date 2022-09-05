@@ -116,7 +116,7 @@ objects:
           - name: CCX_NOTIFICATION_SERVICE__KAFKA__ENABLED
             value: 'false'
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__ENABLED
-            value: 'true'
+            value: 'false'  # TODO: Enable
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__ACCESS_TOKEN
             value: ${SERVICE_LOG__ACCESS_TOKEN}
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__URL
