@@ -1,5 +1,5 @@
 /*
-Copyright © 2021 Red Hat, Inc.
+Copyright © 2022 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -14,19 +14,20 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package producer_test
+package disabled
 
-import (
-	"testing"
+import "github.com/RedHatInsights/ccx-notification-service/types"
 
-	"github.com/RedHatInsights/ccx-notification-service/producer"
-	"github.com/RedHatInsights/ccx-notification-service/types"
-	"github.com/stretchr/testify/assert"
-)
+// Producer is an implementation of Producer interface where no message is sent
+type Producer struct {
+}
 
-func TestDisabledProducer(t *testing.T) {
-	p := producer.DisabledProducer{}
-	_, _, err := p.ProduceMessage(types.NotificationMessage{})
-	assert.NoError(t, err, "error producing message")
-	assert.NoError(t, p.Close(), "error closing producer")
+// ProduceMessage doesn't publish any message.
+func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (int32, int64, error) {
+	return 0, 0, nil
+}
+
+// Close return nil
+func (producer *Producer) Close() error {
+	return nil
 }
