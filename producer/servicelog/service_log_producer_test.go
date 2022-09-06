@@ -57,6 +57,9 @@ func TestServiceLogProducerNew(t *testing.T) {
 
 	assert.Equal(t, producer.Configuration, conf.GetServiceLogConfiguration(config))
 	assert.Equal(t, producer.AccessToken, "online_token")
+	assert.Equal(t, producer.TokenRefreshmentStartDelay, time.Second)
+	assert.Equal(t, producer.TokenRefreshmentDelay, time.Second)
+	assert.Equal(t, producer.TokenRefreshmentThreshold, 30*time.Second)
 }
 
 func TestServiceLogProducerSendMessage(t *testing.T) {
@@ -139,7 +142,7 @@ func TestServiceLogProducerInvalidMessage(t *testing.T) {
 	helpers.FailOnError(t, err)
 
 	_, _, err = producer.ProduceMessage(msgBytes)
-	assert.EqualError(t, err, "service log could not process the message")
+	assert.EqualError(t, err, "received unexpected response status code - 400 Bad Request")
 }
 
 func TestServiceLogProducerTooLongSummary(t *testing.T) {
@@ -177,7 +180,7 @@ func TestServiceLogProducerTooLongSummary(t *testing.T) {
 	helpers.FailOnError(t, err)
 
 	_, _, err = producer.ProduceMessage(msgBytes)
-	assert.EqualError(t, err, "service log could not process the message")
+	assert.EqualError(t, err, "received unexpected response status code - 500 Internal Server Error")
 }
 
 func TestServiceLogProducerClose(t *testing.T) {
