@@ -17,12 +17,14 @@ limitations under the License.
 package conf_test
 
 import (
+	"fmt"
 	"os"
 	"time"
 
 	"testing"
 
 	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
+	clowder "github.com/redhatinsights/app-common-go/pkg/api/v1"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 
@@ -223,4 +225,64 @@ func TestLoadCleanerConfiguration(t *testing.T) {
 	conf := conf.GetCleanerConfiguration(config)
 
 	assert.Equal(t, "90 days", conf.MaxAge)
+}
+
+// TestLoadClowderConfiguration tests loading a clowder config that should overwrite some
+// values of the default loaded config
+func TestLoadClowderConfiguration(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	os.Clearenv()
+	mustSetEnv(t, "ACG_CONFIG", "tests/clowder_config.json")
+	hostname := "kafka"
+	port := 9092
+
+	clowder.LoadedConfig = &clowder.AppConfig{
+		Kafka: &clowder.KafkaConfig{
+			Brokers: []clowder.BrokerConfig{
+				clowder.BrokerConfig{
+					Hostname: hostname,
+					Port:     &port,
+				},
+			},
+		},
+	}
+
+	cfg, err := conf.LoadConfiguration(envVar, "../tests/config1")
+	assert.NoError(t, err, "error loading configuration")
+
+	brokerCfg := conf.GetKafkaBrokerConfiguration(cfg)
+	assert.Equal(t, fmt.Sprintf("%s:%d", hostname, port), brokerCfg.Address)
+}
+
+// TestLoadStorageConfigFromClowder tests loading a clowder config that should overwrite some
+// values of the default loaded config
+func TestLoadStorageConfigFromClowder(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	os.Clearenv()
+	mustSetEnv(t, "ACG_CONFIG", "tests/clowder_config.json")
+	dbName := "a_name"
+	hostname := "pg_hostname"
+	port := 5154
+	user := "myusername"
+	pass := "secretpassword"
+
+	clowder.LoadedConfig = &clowder.AppConfig{
+		Database: &clowder.DatabaseConfig{
+			Name:     dbName,
+			Hostname: hostname,
+			Port:     port,
+			Username: user,
+			Password: pass,
+		},
+	}
+
+	cfg, err := conf.LoadConfiguration(envVar, "../tests/config1")
+	assert.NoError(t, err, "error loading configuration")
+
+	storageCfg := conf.GetStorageConfiguration(cfg)
+	assert.Equal(t, dbName, storageCfg.PGDBName)
+	assert.Equal(t, hostname, storageCfg.PGHost)
+	assert.Equal(t, port, storageCfg.PGPort)
+	assert.Equal(t, user, storageCfg.PGUsername)
+	assert.Equal(t, pass, storageCfg.PGPassword)
 }
