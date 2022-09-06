@@ -25,7 +25,7 @@ package differ
 import (
 	"bytes"
 	"encoding/gob"
-	"github.com/RedHatInsights/ccx-notification-service/utils"
+	"github.com/RedHatInsights/insights-operator-utils/http"
 	"net/http"
 	"os"
 	"time"
@@ -38,7 +38,7 @@ import (
 
 // fetchAllRulesContent fetches the parsed rules provided by the content-service
 func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.RulesMap, err error) {
-	contentURL := utils.SetHTTPPrefix(config.ContentServiceServer + config.ContentServiceEndpoint)
+	contentURL := httputils.SetHTTPPrefix(config.ContentServiceServer + config.ContentServiceEndpoint)
 
 	log.Info().Msgf("Fetching rules content from %s", contentURL)
 
@@ -48,7 +48,7 @@ func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.Ru
 		return nil, err
 	}
 
-	body, err := utils.SendRequest(req, 10*time.Second)
+	body, err := httputils.SendRequest(req, 10*time.Second)
 	if err != nil {
 		return nil, err
 	}
