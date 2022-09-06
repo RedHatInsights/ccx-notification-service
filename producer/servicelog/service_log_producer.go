@@ -34,15 +34,21 @@ import (
 
 // Producer is an implementation of Producer interface for Service Log
 type Producer struct {
-	Configuration           conf.ServiceLogConfiguration
-	AccessToken             string
-	TokenRefreshmentCounter int
+	Configuration              conf.ServiceLogConfiguration
+	AccessToken                string
+	TokenRefreshmentCounter    int
+	TokenRefreshmentStartDelay time.Duration
+	TokenRefreshmentDelay      time.Duration
+	TokenRefreshmentThreshold  time.Duration
 }
 
 // New constructs a new instance of Producer implementation
 func New(config conf.ConfigStruct) (*Producer, error) {
 	prod := &Producer{
-		Configuration: conf.GetServiceLogConfiguration(config),
+		Configuration:              conf.GetServiceLogConfiguration(config),
+		TokenRefreshmentStartDelay: time.Second,
+		TokenRefreshmentDelay:      time.Second,
+		TokenRefreshmentThreshold:  30 * time.Second,
 	}
 	err := prod.refreshToken()
 	if err != nil {
@@ -75,10 +81,20 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 	switch response.StatusCode {
 	case http.StatusUnauthorized:
 		err = producer.refreshToken()
-		if err != nil {
-			log.Error().Err(err).Msg("Access token could not be refreshed")
-			return -1, -1, err
+		for {
+			if err == nil {
+				break
+			}
+			if producer.TokenRefreshmentDelay >= producer.TokenRefreshmentThreshold {
+				log.Error().Err(err).Msg("Access token could not be refreshed")
+				return -1, -1, err
+			}
+			log.Error().Err(err).Msgf("Could not receive a new access token; trying again after %s s", producer.TokenRefreshmentDelay)
+			time.Sleep(producer.TokenRefreshmentDelay)
+			err = producer.refreshToken()
+			producer.TokenRefreshmentDelay = 2 * producer.TokenRefreshmentDelay
 		}
+		producer.TokenRefreshmentDelay = producer.TokenRefreshmentStartDelay
 		return producer.ProduceMessage(msg)
 	case http.StatusCreated:
 		return 0, 0, nil
