@@ -50,6 +50,7 @@ func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.Ru
 
 	body, err := httputils.SendRequest(req, 10*time.Second)
 	if err != nil {
+		log.Error().Msgf("Got error while processing HTTP request - %s", err.Error())
 		return nil, err
 	}
 
