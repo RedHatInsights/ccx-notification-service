@@ -321,6 +321,8 @@ func updateConfigFromClowder(c *ConfigStruct) error {
 				if caPath, err := clowder.LoadedConfig.KafkaCa(broker); err == nil {
 					c.Kafka.CertPath = caPath
 				}
+			} else {
+				fmt.Println(noSaslConfig)
 			}
 
 		} else {
@@ -328,7 +330,7 @@ func updateConfigFromClowder(c *ConfigStruct) error {
 		}
 
 		if err := updateTopicsMapping(c); err != nil {
-			fmt.Printf(mappingTopicsError)
+			fmt.Println(mappingTopicsError)
 		}
 	}
 
