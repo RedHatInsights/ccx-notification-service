@@ -255,3 +255,16 @@ type NotifiedRecordsPerCluster map[ClusterOrgKey]NotificationRecord
 
 // NotifiedRecordsPerClusterByTarget let us split the notified records by their target (CCXDEV-8767)
 type NotifiedRecordsPerClusterByTarget map[EventTarget]NotifiedRecordsPerCluster
+
+// ServiceLogEntry is a structure to be sent to Service Log
+type ServiceLogEntry struct {
+	ClusterUUID string `json:"cluster_uuid"`
+	Description string `json:"description"`
+	ServiceName string `json:"service_name"`
+	Summary     string `json:"summary"`
+}
+
+// AccessTokenOutput is a structure containing fresh access token
+type AccessTokenOutput struct {
+	AccessToken string `json:"access_token"`
+}
