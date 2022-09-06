@@ -75,7 +75,8 @@ type Storage interface {
 		stateID types.StateID,
 		report types.ClusterReport,
 		notifiedAt types.Timestamp,
-		errorLog string) error
+		errorLog string,
+		eventTarget types.EventTarget) error
 	WriteNotificationRecordImpl(
 		orgID types.OrgID,
 		accountNumber types.AccountNumber,
@@ -528,13 +529,13 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 	stateID types.StateID,
 	report types.ClusterReport,
 	notifiedAt types.Timestamp,
-	errorLog string) error {
+	errorLog string,
+	eventTarget types.EventTarget) error {
 
-	// TODO: Accept event target too!!!!!
 	return storage.WriteNotificationRecordImpl(clusterEntry.OrgID,
 		clusterEntry.AccountNumber, clusterEntry.ClusterName,
 		notificationTypeID, stateID, report, clusterEntry.UpdatedAt,
-		notifiedAt, errorLog, types.NotificationBackendTarget)
+		notifiedAt, errorLog, eventTarget)
 }
 
 // ReadLastNotifiedRecordForClusterList method returns the last notification

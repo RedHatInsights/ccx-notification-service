@@ -97,29 +97,29 @@ func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem, eventTarge
 	return getNotificationResolution(issue, reported)
 }
 
-func updateNotificationRecordSameState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp) {
+func updateNotificationRecordSameState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp, eventTarget types.EventTarget) {
 	log.Info().Msgf("No new issues to notify for cluster %s", cluster.ClusterName)
 	NotificationNotSentSameState.Inc()
 	// store notification info about not sending the notification
-	err := storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SameState, report, notifiedAt, "")
+	err := storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SameState, report, notifiedAt, "", eventTarget)
 	if err != nil {
 		writeNotificationRecordFailed(err)
 	}
 }
 
-func updateNotificationRecordSentState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp) {
+func updateNotificationRecordSentState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp, eventTarget types.EventTarget) {
 	log.Info().Msgf("New issues notified for cluster %s", string(cluster.ClusterName))
 	NotificationSent.Inc()
-	err := storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SentState, report, notifiedAt, "")
+	err := storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SentState, report, notifiedAt, "", eventTarget)
 	if err != nil {
 		writeNotificationRecordFailed(err)
 	}
 }
 
-func updateNotificationRecordErrorState(storage Storage, err error, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp) {
+func updateNotificationRecordErrorState(storage Storage, err error, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp, eventTarget types.EventTarget) {
 	log.Info().Msgf("New issues couldn't be notified for cluster %s", string(cluster.ClusterName))
 	NotificationNotSentErrorState.Inc()
-	err = storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.ErrorState, report, notifiedAt, err.Error())
+	err = storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.ErrorState, report, notifiedAt, err.Error(), eventTarget)
 	if err != nil {
 		writeNotificationRecordFailed(err)
 	}

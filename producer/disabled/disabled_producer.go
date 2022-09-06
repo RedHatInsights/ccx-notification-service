@@ -24,7 +24,7 @@ type Producer struct {
 
 // ProduceMessage doesn't publish any message.
 func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (int32, int64, error) {
-	return 0, 0, nil
+	return 0, -1, nil
 }
 
 // Close return nil
