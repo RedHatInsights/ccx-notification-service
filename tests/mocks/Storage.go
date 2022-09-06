@@ -356,13 +356,13 @@ func (_m *Storage) WriteNotificationRecord(notificationRecord types.Notification
 	return r0
 }
 
-// WriteNotificationRecordForCluster provides a mock function with given fields: clusterEntry, notificationTypeID, stateID, report, notifiedAt, errorLog
-func (_m *Storage) WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error {
-	ret := _m.Called(clusterEntry, notificationTypeID, stateID, report, notifiedAt, errorLog)
+// WriteNotificationRecordForCluster provides a mock function with given fields: clusterEntry, notificationTypeID, stateID, report, notifiedAt, errorLog, eventTarget
+func (_m *Storage) WriteNotificationRecordForCluster(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string, eventTarget types.EventTarget) error {
+	ret := _m.Called(clusterEntry, notificationTypeID, stateID, report, notifiedAt, errorLog, eventTarget)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.ClusterEntry, types.NotificationTypeID, types.StateID, types.ClusterReport, types.Timestamp, string) error); ok {
-		r0 = rf(clusterEntry, notificationTypeID, stateID, report, notifiedAt, errorLog)
+	if rf, ok := ret.Get(0).(func(types.ClusterEntry, types.NotificationTypeID, types.StateID, types.ClusterReport, types.Timestamp, string, types.EventTarget) error); ok {
+		r0 = rf(clusterEntry, notificationTypeID, stateID, report, notifiedAt, errorLog, eventTarget)
 	} else {
 		r0 = ret.Error(0)
 	}

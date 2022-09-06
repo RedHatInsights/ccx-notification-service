@@ -26,11 +26,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/RedHatInsights/ccx-notification-service/producer/disabled"
-	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/RedHatInsights/ccx-notification-service/producer/disabled"
+	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
 
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
@@ -370,7 +371,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 		}
 
 		if len(notificationMsg.Events) == 0 {
-			updateNotificationRecordSameState(storage, cluster, report, notifiedAt)
+			updateNotificationRecordSameState(storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
 			continue
 		}
 
@@ -381,16 +382,21 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			log.Error().Err(err).Msg(invalidJSONContent)
 			continue
 		}
-		_, _, err = notifier.ProduceMessage(msgBytes)
+		_, offset, err := notifier.ProduceMessage(msgBytes)
 		if err != nil {
 			log.Error().
 				Str(errorStr, err.Error()).
 				Msg("Couldn't send notification message to kafka topic.")
-			updateNotificationRecordErrorState(storage, err, cluster, report, notifiedAt)
+			updateNotificationRecordErrorState(storage, err, cluster, report, notifiedAt, types.NotificationBackendTarget)
 			os.Exit(ExitStatusKafkaProducerError)
 		}
-		updateNotificationRecordSentState(storage, cluster, report, notifiedAt)
-		notifiedIssues += len(notificationMsg.Events)
+
+		if offset != -1 {
+			// update the database if any message is sent (not a DisabledProducer)
+			log.Debug().Msg("notifier is not disabled so DB is updated")
+			updateNotificationRecordSentState(storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
+			notifiedIssues += len(notificationMsg.Events)
+		}
 	}
 	log.Info().Msgf("Number of high impact issues notified: %d", notifiedIssues)
 }

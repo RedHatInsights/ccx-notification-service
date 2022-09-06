@@ -20,13 +20,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
-	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
 	"io"
 	"os"
 	"os/exec"
 	"testing"
 	"time"
+
+	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
+	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
 
 	utypes "github.com/RedHatInsights/insights-results-types"
 
@@ -507,8 +508,9 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 		mock.AnythingOfType("types.StateID"),
 		mock.AnythingOfType("types.ClusterReport"),
 		mock.AnythingOfType("types.Timestamp"),
-		mock.AnythingOfType("string")).Return(
-		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error {
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("types.EventTarget")).Return(
+		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string, eventTarget types.EventTarget) error {
 			return nil
 		},
 	)
@@ -664,8 +666,9 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 		mock.AnythingOfType("types.StateID"),
 		mock.AnythingOfType("types.ClusterReport"),
 		mock.AnythingOfType("types.Timestamp"),
-		mock.AnythingOfType("string")).Return(
-		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error {
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("types.EventTarget")).Return(
+		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string, eventTarget types.EventTarget) error {
 			return nil
 		},
 	)
@@ -802,8 +805,9 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 		mock.AnythingOfType("types.StateID"),
 		mock.AnythingOfType("types.ClusterReport"),
 		mock.AnythingOfType("types.Timestamp"),
-		mock.AnythingOfType("string")).Return(
-		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error {
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("types.EventTarget")).Return(
+		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string, eventTarget types.EventTarget) error {
 			return nil
 		},
 	)
@@ -886,8 +890,9 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 		mock.AnythingOfType("types.StateID"),
 		mock.AnythingOfType("types.ClusterReport"),
 		mock.AnythingOfType("types.Timestamp"),
-		mock.AnythingOfType("string")).Return(
-		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error {
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("types.EventTarget")).Return(
+		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string, eventTarget types.EventTarget) error {
 			return nil
 		},
 	)
@@ -1032,8 +1037,9 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 		mock.AnythingOfType("types.StateID"),
 		mock.AnythingOfType("types.ClusterReport"),
 		mock.AnythingOfType("types.Timestamp"),
-		mock.AnythingOfType("string")).Return(
-		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string) error {
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("types.EventTarget")).Return(
+		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string, eventTarget types.EventTarget) error {
 			return nil
 		},
 	)
