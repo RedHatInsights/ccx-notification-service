@@ -41,6 +41,10 @@ github.com/RedHatInsights/insights-operator-utils v1.21.2/go.mod h1:3Pfsgsi7GCu2
 github.com/RedHatInsights/insights-operator-utils v1.21.8/go.mod h1:qa1a8NdarIzcZkr5mu9fBw4OarOfg1qZFZC1vNGbyas=
 github.com/RedHatInsights/insights-operator-utils v1.23.9 h1:wmx0FiboKRu0NMwt31jOwDXujrxMzXojmUzxixavSP0=
 github.com/RedHatInsights/insights-operator-utils v1.23.9/go.mod h1:xsmvqwngwHqFvHPK+XARoZH8aR5Qcr13AGh4SJa3f40=
+github.com/RedHatInsights/insights-operator-utils v1.24.0 h1:XpMqjXPVbPl9Jj94wIxmHzUnBmDRv9Je+mB3hFpWk0I=
+github.com/RedHatInsights/insights-operator-utils v1.24.0/go.mod h1:RdQ4bGMPSFNynvACdLwCsRXhHL0qxT5U1hHxUppR4VI=
+github.com/RedHatInsights/insights-operator-utils v1.24.1 h1:xhjjja6kt1WaC/06mHhfKyXP315LPGrGsQweVxkj30Y=
+github.com/RedHatInsights/insights-operator-utils v1.24.1/go.mod h1:RdQ4bGMPSFNynvACdLwCsRXhHL0qxT5U1hHxUppR4VI=
 github.com/RedHatInsights/insights-results-aggregator v0.0.0-20200604090056-3534f6dd9c1c/go.mod h1:7Pc15NYXErx7BMJ4rF1Hacm+29G6atzjhwBpXNFMt+0=
 github.com/RedHatInsights/insights-results-aggregator-data v0.0.0-20200825113234-e84e924194bc/go.mod h1:DcDgoCCmBuUSKQOGrTi0BfFLdSjAp/KxIwyqKUd46sM=
 github.com/RedHatInsights/insights-results-aggregator-data v0.0.0-20201014142608-de97c4b07d5c/go.mod h1:x8IvreR2g24veCKVMXDPOR6a0D86QK9UCBfi5Xm5Gnc=
