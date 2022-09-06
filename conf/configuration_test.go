@@ -124,7 +124,8 @@ func TestLoadServiceLogConfiguration(t *testing.T) {
 
 	assert.False(t, serviceLogCfg.Enabled)
 	assert.Equal(t, 3, serviceLogCfg.TotalRiskThreshold)
-	assert.Equal(t, "test", serviceLogCfg.AccessToken)
+	assert.Equal(t, "test", serviceLogCfg.OfflineToken)
+	assert.Equal(t, "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token", serviceLogCfg.TokenRefreshmentURL)
 	assert.Equal(t, "localhost:8000/api/service_logs/v1/cluster_logs/", serviceLogCfg.URL)
 	assert.Equal(t, expectedTimeout, serviceLogCfg.Timeout)
 }
