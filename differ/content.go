@@ -25,10 +25,9 @@ package differ
 import (
 	"bytes"
 	"encoding/gob"
-	"io"
+	"github.com/RedHatInsights/ccx-notification-service/utils"
 	"net/http"
 	"os"
-	"strings"
 	"time"
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
@@ -39,39 +38,19 @@ import (
 
 // fetchAllRulesContent fetches the parsed rules provided by the content-service
 func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.RulesMap, err error) {
-	contentURL := config.ContentServiceServer + config.ContentServiceEndpoint
-	if !strings.HasPrefix(config.ContentServiceServer, "http") {
-		// if no protocol is specified in given URL, assume it is not
-		// needed to use https
-		contentURL = "http://" + contentURL
-	}
+	contentURL := utils.SetHTTPPrefix(config.ContentServiceServer + config.ContentServiceEndpoint)
+
 	log.Info().Msgf("Fetching rules content from %s", contentURL)
 
-	client := &http.Client{
-		Timeout: time.Second * 10,
-	}
 	req, err := http.NewRequest("GET", contentURL, http.NoBody)
 	if err != nil {
-		log.Error().Msgf("Got error while setting up HTTP request -  %s", err.Error())
+		log.Error().Msgf("Got error while setting up HTTP request for content service -  %s", err.Error())
 		return nil, err
 	}
 
-	response, err := client.Do(req)
+	body, err := utils.SendRequest(req, 10*time.Second)
 	if err != nil {
-		log.Error().Msgf("Got error while making the HTTP request - %s", err.Error())
 		return nil, err
-	}
-
-	// Read body from response
-	body, err := io.ReadAll(response.Body)
-	if err != nil {
-		log.Error().Msgf("Got error while reading the response's body - %s", err.Error())
-		return nil, err
-	}
-
-	err = response.Body.Close()
-	if err != nil {
-		log.Error().Msgf("Got error while closing the response body - %s", err.Error())
 	}
 
 	var receivedContent utypes.RuleContentDirectory
