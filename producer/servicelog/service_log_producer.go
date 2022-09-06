@@ -130,13 +130,14 @@ func (producer *Producer) refreshToken() error {
 
 	response, err := httputils.SendRequest(req, 15*time.Second)
 	if err != nil {
+		log.Error().Err(err).Msg("The request to token refreshment server could not be processed")
 		return err
 	}
 
 	var receivedToken *types.AccessTokenOutput
 	err = json.Unmarshal(response, &receivedToken)
 	if err != nil {
-		log.Error().Err(err).Msg("Error trying to decode template renderer output from received answer")
+		log.Error().Err(err).Msg("Error trying to decode token from received answer")
 		return err
 	}
 	producer.AccessToken = receivedToken.AccessToken
