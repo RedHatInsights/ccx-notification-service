@@ -15,7 +15,8 @@ event_filter = "totalRisk >= totalRiskThreshold"
 
 [service_log]
 enabled = false
-access_token = ""
+offline_token = ""
+token_refreshment_url = "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
 url = "localhost:8000/api/service_logs/v1/cluster_logs/"
 timeout = "15s"
 likelihood_threshold = 0

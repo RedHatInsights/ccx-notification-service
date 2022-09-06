@@ -117,8 +117,10 @@ objects:
             value: 'false'
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__ENABLED
             value: 'false'  # TODO: Enable
-          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__ACCESS_TOKEN
-            value: ${SERVICE_LOG__ACCESS_TOKEN}
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__OFFLINE_TOKEN
+            value: ${SERVICE_LOG__OFFLINE_TOKEN}
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__TOKEN_REFRESHMENT_URL
+            value: "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__URL
             value: ${SERVICE_LOG__URL}
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__TIMEOUT
@@ -242,7 +244,7 @@ parameters:
   name: CLEANUP_MAX_AGE
   value: '8 days'
 # Service Log
-- description: Access token to publish to Service Log
-  name: SERVICE_LOG__ACCESS_TOKEN
+- description: Offline token for retrieving access tokens to publish to Service Log
+  name: SERVICE_LOG__OFFLINE_TOKEN
 - description: URL of the Service Log API
   name: SERVICE_LOG__URL
