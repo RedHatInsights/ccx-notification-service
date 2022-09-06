@@ -89,7 +89,10 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 				log.Error().Err(err).Msg("Access token could not be refreshed")
 				return -1, -1, err
 			}
-			log.Error().Err(err).Msgf("Could not receive a new access token; trying again after %s s", producer.TokenRefreshmentDelay)
+			log.Error().
+				Err(err).
+				Dur("delay", producer.TokenRefreshmentDelay).
+				Msgf("Could not receive a new access token. Retrying...")
 			time.Sleep(producer.TokenRefreshmentDelay)
 			err = producer.refreshToken()
 			producer.TokenRefreshmentDelay = 2 * producer.TokenRefreshmentDelay
