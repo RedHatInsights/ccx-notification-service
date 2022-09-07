@@ -307,7 +307,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 		if err != nil {
 			ReadReportForClusterErrors.Inc()
 			log.Err(err).Msg(operationFailedMessage)
-			os.Exit(ExitStatusStorageError)
+			continue
 		}
 
 		var deserialized types.Report
@@ -315,7 +315,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 		if err != nil {
 			DeserializeReportErrors.Inc()
 			log.Err(err).Msg("Deserialization error - Couldn't create report object")
-			os.Exit(ExitStatusStorageError)
+			continue
 		}
 
 		if len(deserialized.Reports) == 0 {
