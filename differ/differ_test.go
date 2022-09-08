@@ -18,6 +18,7 @@ package differ
 
 import (
 	"bytes"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -422,6 +423,230 @@ func TestSetupNotificationProducerDisabledBrokerConfig(t *testing.T) {
 }
 
 //---------------------------------------------------------------------------------------
+// TestProcessClustersNoReportForClusterEntry tests that when no report is found for
+// a given cluster entry, the processing is not stopped
+func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
+	storage := mocks.Storage{}
+	storage.On("ReadReportForClusterAtTime",
+		mock.MatchedBy(func(orgID types.OrgID) bool { return orgID == 1 }),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) types.ClusterReport {
+			return ""
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
+			return sql.ErrNoRows
+		},
+	)
+	storage.On("ReadReportForClusterAtTime",
+		mock.MatchedBy(func(orgID types.OrgID) bool { return orgID == 2 }),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) types.ClusterReport {
+			return "{\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}"
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
+			return nil
+		},
+	)
+	storage.On("WriteNotificationRecordForCluster",
+		mock.AnythingOfType("types.ClusterEntry"),
+		mock.AnythingOfType("types.NotificationTypeID"),
+		mock.AnythingOfType("types.StateID"),
+		mock.AnythingOfType("types.ClusterReport"),
+		mock.AnythingOfType("types.Timestamp"),
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("types.EventTarget")).Return(
+		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string, eventTarget types.EventTarget) error {
+			return nil
+		},
+	)
+
+	errorKeys := map[string]utypes.RuleErrorKeyContent{
+		"RULE_1": {
+			Metadata: utypes.ErrorKeyMetadata{
+				Description: "rule 1 error key description",
+				Impact: utypes.Impact{
+					Name:   "impact_1",
+					Impact: 3,
+				},
+				Likelihood: 2,
+			},
+			Reason:    "rule 1 reason",
+			HasReason: true,
+		},
+		"RULE_2": {
+			Metadata: utypes.ErrorKeyMetadata{
+				Description: "rule 2 error key description",
+				Impact: utypes.Impact{
+					Name:   "impact_2",
+					Impact: 2,
+				},
+				Likelihood: 3,
+			},
+			HasReason: false,
+		},
+	}
+	ruleContent := types.RulesMap{
+		"rule_1": {
+			Summary:    "rule 1 summary",
+			Reason:     "rule 1 reason",
+			Resolution: "rule 1 resolution",
+			MoreInfo:   "rule 1 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  true,
+		},
+		"rule_2": {
+			Summary:    "rule 2 summary",
+			Reason:     "",
+			Resolution: "rule 2 resolution",
+			MoreInfo:   "rule 2 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  false,
+		},
+	}
+	clusters := []types.ClusterEntry{
+		{
+			OrgID:         1,
+			AccountNumber: 1,
+			ClusterName:   "first_cluster",
+			KafkaOffset:   0,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+		{
+			OrgID:         2,
+			AccountNumber: 2,
+			ClusterName:   "second_cluster",
+			KafkaOffset:   100,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+	}
+
+	buf := new(bytes.Buffer)
+	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
+	processClusters(ruleContent, &storage, clusters)
+
+	executionLog := buf.String()
+	assert.Contains(t, executionLog, "no rows in result set", "No report should be retrieved for the first cluster")
+	assert.Contains(t, executionLog, "No new issues to notify for cluster second_cluster", "the processReportsByCluster loop did not continue as extpected")
+
+	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+}
+
+// TestProcessClustersInvalidReportFormatForClusterEntry tests that when the report found
+// for a given cluster entry cannot be deserialized, the processing is not stopped
+func TestProcessClustersInvalidReportFormatForClusterEntry(t *testing.T) {
+	storage := mocks.Storage{}
+	storage.On("ReadReportForClusterAtTime",
+		mock.MatchedBy(func(orgID types.OrgID) bool { return orgID == 1 }),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) types.ClusterReport {
+			return "{\"reports\":{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}}"
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
+			return nil
+		},
+	)
+	storage.On("ReadReportForClusterAtTime",
+		mock.MatchedBy(func(orgID types.OrgID) bool { return orgID == 2 }),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) types.ClusterReport {
+			return "{\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}"
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
+			return nil
+		},
+	)
+	storage.On("WriteNotificationRecordForCluster",
+		mock.AnythingOfType("types.ClusterEntry"),
+		mock.AnythingOfType("types.NotificationTypeID"),
+		mock.AnythingOfType("types.StateID"),
+		mock.AnythingOfType("types.ClusterReport"),
+		mock.AnythingOfType("types.Timestamp"),
+		mock.AnythingOfType("string"),
+		mock.AnythingOfType("types.EventTarget")).Return(
+		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string, eventTarget types.EventTarget) error {
+			return nil
+		},
+	)
+
+	errorKeys := map[string]utypes.RuleErrorKeyContent{
+		"RULE_1": {
+			Metadata: utypes.ErrorKeyMetadata{
+				Description: "rule 1 error key description",
+				Impact: utypes.Impact{
+					Name:   "impact_1",
+					Impact: 3,
+				},
+				Likelihood: 2,
+			},
+			Reason:    "rule 1 reason",
+			HasReason: true,
+		},
+		"RULE_2": {
+			Metadata: utypes.ErrorKeyMetadata{
+				Description: "rule 2 error key description",
+				Impact: utypes.Impact{
+					Name:   "impact_2",
+					Impact: 2,
+				},
+				Likelihood: 3,
+			},
+			HasReason: false,
+		},
+	}
+	ruleContent := types.RulesMap{
+		"rule_1": {
+			Summary:    "rule 1 summary",
+			Reason:     "rule 1 reason",
+			Resolution: "rule 1 resolution",
+			MoreInfo:   "rule 1 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  true,
+		},
+		"rule_2": {
+			Summary:    "rule 2 summary",
+			Reason:     "",
+			Resolution: "rule 2 resolution",
+			MoreInfo:   "rule 2 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  false,
+		},
+	}
+	clusters := []types.ClusterEntry{
+		{
+			OrgID:         1,
+			AccountNumber: 1,
+			ClusterName:   "first_cluster",
+			KafkaOffset:   0,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+		{
+			OrgID:         2,
+			AccountNumber: 2,
+			ClusterName:   "second_cluster",
+			KafkaOffset:   100,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+	}
+
+	buf := new(bytes.Buffer)
+	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+
+	processClusters(ruleContent, &storage, clusters)
+
+	executionLog := buf.String()
+	assert.Contains(t, executionLog, "cannot unmarshal object into Go struct field Report.reports of type []types.ReportItem", "The string retrieved is not a list of reports. It should not deserialize correctly")
+	assert.Contains(t, executionLog, "No new issues to notify for cluster second_cluster", "the processReportsByCluster loop did not continue as extpected")
+
+	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+}
+
 func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
