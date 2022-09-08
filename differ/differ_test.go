@@ -531,6 +531,7 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "no rows in result set", "No report should be retrieved for the first cluster")
 	assert.Contains(t, executionLog, "No new issues to notify for cluster second_cluster", "the processReportsByCluster loop did not continue as extpected")
+	assert.Contains(t, executionLog, "Number of entries not processed: 1", "the first cluster should have been skipped")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 }
@@ -643,6 +644,7 @@ func TestProcessClustersInvalidReportFormatForClusterEntry(t *testing.T) {
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "cannot unmarshal object into Go struct field Report.reports of type []types.ReportItem", "The string retrieved is not a list of reports. It should not deserialize correctly")
 	assert.Contains(t, executionLog, "No new issues to notify for cluster second_cluster", "the processReportsByCluster loop did not continue as extpected")
+	assert.Contains(t, executionLog, "Number of entries not processed: 1", "the first cluster should have been skipped")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 }

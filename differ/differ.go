@@ -293,6 +293,7 @@ func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, ev
 func processReportsByCluster(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
 	notifiedIssues := 0
 	clustersCount := len(clusters)
+	skippedEntries := 0
 
 	for i, cluster := range clusters {
 		log.Info().
@@ -306,6 +307,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 		report, err := storage.ReadReportForClusterAtTime(cluster.OrgID, cluster.ClusterName, cluster.UpdatedAt)
 		if err != nil {
 			ReadReportForClusterErrors.Inc()
+			skippedEntries++
 			log.Err(err).Msg(operationFailedMessage)
 			continue
 		}
@@ -314,12 +316,14 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 		err = json.Unmarshal([]byte(report), &deserialized)
 		if err != nil {
 			DeserializeReportErrors.Inc()
+			skippedEntries++
 			log.Err(err).Msg("Deserialization error - Couldn't create report object")
 			continue
 		}
 
 		if len(deserialized.Reports) == 0 {
 			log.Info().Msgf("No reports in notification database for cluster %s", cluster.ClusterName)
+			skippedEntries++
 			continue
 		}
 
@@ -398,6 +402,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			notifiedIssues += len(notificationMsg.Events)
 		}
 	}
+	log.Info().Msgf("Number of entries not processed: %d", skippedEntries)
 	log.Info().Msgf("Number of high impact issues notified: %d", notifiedIssues)
 }
 
