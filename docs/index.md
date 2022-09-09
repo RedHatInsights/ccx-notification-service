@@ -18,8 +18,8 @@ CCX Notification Service
 The "end-to-end" data flow is described there (including Notification Writer service part):
 
 1. A customer cluster with *Insights Operator* installed sends new data containing info about the cluster into *Ingress service*
-1. The *Ingress service* consumes the data, writes them into an S3 Bucket, and produces a new message into a Kafka topic named `platform.upload.buckit`.
-1. The *CCX Data pipeline* service consumes the message from the `platform.upload.buckit` Kafka topic.
+1. The *Ingress service* consumes the data, writes them into an S3 Bucket, and produces a new message into a Kafka topic named `platform.upload.announce`.
+1. The *CCX Data pipeline* service consumes the message from the `platform.upload.announce` Kafka topic.
 1. That message represents an event that contains (among other things) an URL to S3 Bucket.
 1. Insights operator data is read from S3 Bucket and *insights rules* are applied to that data in `ccx-data-pipeline` service.
 1. Results (basically `organization ID` + `cluster name` + `insights results JSON`) are stored back into Kafka, but into different topic named `ccx.ocp.results`.

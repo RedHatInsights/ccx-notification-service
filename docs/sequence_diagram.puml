@@ -3,7 +3,7 @@ participant Cluster
 participant "Ingress\nservice"
 participant "Insights-storage-broker\nservice"
 participant "S3 bucket"
-participant "Kafka topic\nplatform.upload.buckit"
+participant "Kafka topic\nplatform.upload.announce"
 participant "ccx-data-pipeline\nservice"
 participant "Kafka topic\nccx.ocp.results"
 participant "ccx-notification-writer\nservice"
@@ -21,17 +21,17 @@ activate "S3 bucket"
 deactivate "S3 bucket"
 "Ingress\nservice" <-- "Insights-storage-broker\nservice": success, path to object=XYZ
 deactivate "Insights-storage-broker\nservice"
-"Ingress\nservice" -> "Kafka topic\nplatform.upload.buckit" : produce(new data, cluster=UUID, path=XYZ)
-activate "Kafka topic\nplatform.upload.buckit"
-"Ingress\nservice" <-- "Kafka topic\nplatform.upload.buckit": stored
-deactivate "Kafka topic\nplatform.upload.buckit"
+"Ingress\nservice" -> "Kafka topic\nplatform.upload.announce" : produce(new data, cluster=UUID, path=XYZ)
+activate "Kafka topic\nplatform.upload.announce"
+"Ingress\nservice" <-- "Kafka topic\nplatform.upload.announce": stored
+deactivate "Kafka topic\nplatform.upload.announce"
 Cluster <-- "Ingress\nservice": accept
 deactivate "Ingress\nservice"
 loop
-"ccx-data-pipeline\nservice" -> "Kafka topic\nplatform.upload.buckit" : request(get message)
-activate "Kafka topic\nplatform.upload.buckit"
-"ccx-data-pipeline\nservice" <-- "Kafka topic\nplatform.upload.buckit": cluster=UUID, path=XYZ
-deactivate "Kafka topic\nplatform.upload.buckit"
+"ccx-data-pipeline\nservice" -> "Kafka topic\nplatform.upload.announce" : request(get message)
+activate "Kafka topic\nplatform.upload.announce"
+"ccx-data-pipeline\nservice" <-- "Kafka topic\nplatform.upload.announce": cluster=UUID, path=XYZ
+deactivate "Kafka topic\nplatform.upload.announce"
 "ccx-data-pipeline\nservice" -> "S3 bucket" : read_object(path=XYZ)
 activate "S3 bucket"
 "ccx-data-pipeline\nservice" <-- "S3 bucket": data from IO
