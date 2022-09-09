@@ -26,7 +26,7 @@ The "end-to-end" data flow is described there (including Notification Writer ser
 1. That results are consumed by `ccx-notification-writer` service.
 1. `ccx-notification-writer` service stores insights results into AWS RDS database into `new_reports` table.
 1. Content of that table is consumed by `ccx-notification-service` periodically.
-1. Newest results from `new_reports` table is compared with results stored in `reported` table.
+1. Newest results from `new_reports` table is compared with results stored in `reported` table. The records used for the comparison depend on the configured cooldown time.
 1. If changes (new issues) has been found, notification message is sent into Kafka topic named `platform.notifications.ingress`. The expected format of the message can be found [here](https://core-platform-apps.pages.redhat.com/notifications-docs/dev/user-guide/send-notification.html#_kafka).
 1. New issues is also sent to Service Log via REST API. To use the Service Log API, the `ccx-notification-service` uses the credentials stored in [vault](https://vault.devshift.net/ui/vault/secrets/insights/show/secrets/insights-prod/ccx-data-pipeline-prod/ccx-notification-service-auth).
 1. The newest result is stored into `reported` table to be used in the next `ccx-notification-service` iteration.
@@ -104,3 +104,26 @@ Templates used by this notification service are available at:
 * [producer/producer_test.go](./packages/producer/producer_test.html)
 * [tests/mocks/Producer.go](./packages/tests/mocks/Producer.html)
 * [tests/mocks/Storage.go](./packages/tests/mocks/Storage.html)
+
+## Cooldown mechanism
+
+The cooldown mechanism is used to filter the previously reported issues so that they are not continuously sent to the customers. It works by defining a miminum amount of time that must elapse between two notifications. That cooldown time is applied to all the issues processed during an iteration.
+
+### Data flow of the notification service without cooldown
+
+See steps 9 to 12 of the [data flow section](#data-flow)
+
+### Data flow of the notification service with cooldown
+
+1. The latest entry for each distinct cluster in the `new_reports` table is consumed by the `ccx-notification-service`.
+1. Results stored in `reported` table within the cooldown time are retrieved. Therefore all the reported issues that are not older than the configured cooldown are cached in a `previouslyReported` map by the service in each iteration.
+1. When checking for new issues in the report, the `ccx-notification-service` looks up each issue in the `previouslyReported` map, and if found, that issue is considered to still be in cooldown and is not processed further. If not found, the processing of the issue continues.
+1. If changes (new issues) has been found between the previous report and the new one, a notification message is sent into Kafka topic named `platform.notifications.ingress`. The expected format of the message can be found [here](https://core-platform-apps.pages.redhat.com/notifications-docs/dev/user-guide/send-notification.html#_kafka).
+1. New issues is also sent to Service Log via REST API. To use the Service Log API, the `ccx-notification-service` uses the credentials stored in [vault](https://vault.devshift.net/ui/vault/secrets/insights/show/secrets/insights-prod/ccx-data-pipeline-prod/ccx-notification-service-auth).
+1. The newest result is stored into `reported` table to be used in the next `ccx-notification-service` iteration.
+
+### Configuring the cooldown mechanism
+
+The cooldown mechanism can be configured by specifying the `cooldown` field under the `notifications` configuration in the [config.toml](../config.toml) file or by setting the `CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__COOLDOWN` environment variable.
+
+The value set is used directly within an SQL query, so the expected format is an integer followed by a valid SQL epoch time units (year[s] month[s] day[s] hour[s] minute[s] second[s])
