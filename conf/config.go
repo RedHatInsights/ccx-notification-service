@@ -57,7 +57,9 @@ package conf
 import (
 	"bytes"
 	"fmt"
+	"net/url"
 	"os"
+	"path"
 	"path/filepath"
 	"strings"
 	"time"
@@ -121,8 +123,11 @@ type StorageConfiguration struct {
 
 // DependenciesConfiguration represents configuration of external services and other dependencies
 type DependenciesConfiguration struct {
-	ContentServiceServer   string `mapstructure:"content_server" toml:"content_server"`
-	ContentServiceEndpoint string `mapstructure:"content_endpoint" toml:"content_endpoint"`
+	ContentServiceServer     string `mapstructure:"content_server" toml:"content_server"`
+	ContentServiceEndpoint   string `mapstructure:"content_endpoint" toml:"content_endpoint"`
+	TemplateRendererServer   string `mapstructure:"template_renderer_server" toml:"template_renderer_server"`
+	TemplateRendererEndpoint string `mapstructure:"template_renderer_endpoint" toml:"template_renderer_endpoint"`
+	TemplateRendererURL      string
 }
 
 // CleanerConfiguration represents configuration for the main cleaner
@@ -249,8 +254,25 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 		return config, err
 	}
 
+	config.Dependencies.TemplateRendererURL, err = createURL(
+		config.Dependencies.TemplateRendererServer,
+		config.Dependencies.TemplateRendererEndpoint)
+	if err != nil {
+		fmt.Println("error creating content template renderer URL")
+		return config, err
+	}
+
 	// everything's should be ok
 	return config, nil
+}
+
+func createURL(server string, endpoint string) (string, error) {
+	u, err := url.Parse(server)
+	if err != nil {
+		return "", err
+	}
+	u.Path = path.Join(u.Path, endpoint)
+	return u.String(), nil
 }
 
 // GetStorageConfiguration returns storage configuration
