@@ -47,12 +47,6 @@ Notification templates used to send e-mails etc. to customers are stored in diff
 Templates used by this notification service are available at:
 [https://github.com/RedHatInsights/notifications-backend/tree/master/backend/src/main/resources/templates/AdvisorOpenshift](https://github.com/RedHatInsights/notifications-backend/tree/master/backend/src/main/resources/templates/AdvisorOpenshift)
 
-## Class diagram
-
-![class_diagram.png](images/class_diagram.png)
-
-[Class diagram, full scale](images/class_diagram.png)
-
 ## Sequence diagram for the whole pipeline - notification service integration
 
 ![sequence_diagram.png](images/sequence_diagram.png)
