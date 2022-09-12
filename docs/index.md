@@ -1,5 +1,7 @@
 ---
 layout: default
+title: Home
+nav_order: 0
 ---
 
 # Description
@@ -78,11 +80,6 @@ Templates used by this notification service are available at:
 ## Sequence diagram for CCX Notification Writer service
 
 [Sequence diagram for CCX Notification Writer service](sequence_diagram_notification_writer.png)
-
-## Database description
-
-* PostgreSQL database is used as a storage.
-* Database description is available [here](./db-description/index.html)
 
 ## Documentation for source files from this repository
 

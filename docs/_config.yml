@@ -10,7 +10,7 @@ aux_links:
   "Github repository":
     - "https://github.com/RedHatInsights/ccx-notification-service"
 
-footer_content: "Copyright &copy; 2021 Red Hat, Inc.</a>"
+footer_content: "Copyright &copy; 2021, 2022 Red Hat, Inc.</a>"
 
 # Build settings
 markdown: kramdown
