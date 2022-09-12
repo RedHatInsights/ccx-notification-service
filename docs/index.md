@@ -10,9 +10,9 @@ CCX Notification Service
 
 ## Architecture
 
-![architecture_diagram.png](architecture_diagram.png)
+![architecture_diagram.png](images/architecture_diagram.png)
 
-[Architecture diagram, full scale](architecture_diagram.png)
+[Architecture diagram, full scale](images/architecture_diagram.png)
 
 
 ## Data flow
@@ -49,9 +49,9 @@ Templates used by this notification service are available at:
 
 ## Class diagram
 
-![class_diagram.png](class_diagram.png)
+![class_diagram.png](images/class_diagram.png)
 
-[Class diagram, full scale](class_diagram.png)
+[Class diagram, full scale](images/class_diagram.png)
 
 ## Sequence diagram for the whole pipeline - notification service integration
 
