@@ -73,9 +73,9 @@ Templates used by this notification service are available at:
 
 ## Sequence diagram for weekly reports
 
-![weekly_reports.png](weekly_reports.png)
+![weekly_reports.png](images/weekly_reports.png)
 
-[Full scale](weekly_reports.png)
+[Full scale](images/weekly_reports.png)
 
 ## Sequence diagram for CCX Notification Writer service
 
