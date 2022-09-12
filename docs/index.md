@@ -10,9 +10,9 @@ CCX Notification Service
 
 ## Architecture
 
-![architecture_diagram.png](architecture_diagram.png)
+![architecture_diagram.png](images/architecture_diagram.png)
 
-[Architecture diagram, full scale](architecture_diagram.png)
+[Architecture diagram, full scale](images/architecture_diagram.png)
 
 
 ## Data flow
@@ -49,33 +49,33 @@ Templates used by this notification service are available at:
 
 ## Class diagram
 
-![class_diagram.png](class_diagram.png)
+![class_diagram.png](images/class_diagram.png)
 
-[Class diagram, full scale](class_diagram.png)
+[Class diagram, full scale](images/class_diagram.png)
 
 ## Sequence diagram for the whole pipeline - notification service integration
 
-![sequence_diagram.png](sequence_diagram.png)
+![sequence_diagram.png](images/sequence_diagram.png)
 
-[Sequence diagram, full scale](sequence_diagram.png)
+[Sequence diagram, full scale](images/sequence_diagram.png)
 
 ## Sequence diagram for the whole pipeline - Service Log integration
 
-![sequence_diagram_service_log.png](sequence_diagram_service_log.png)
+![sequence_diagram_service_log.png](images/sequence_diagram_service_log.png)
 
-[Sequence diagram, full scale](sequence_diagram._service_logpng)
+[Sequence diagram, full scale](images/sequence_diagram._service_logpng)
 
 ## Sequence diagram for instant reports
 
-![instant_reports.png](instant_reports.png)
+![instant_reports.png](images/instant_reports.png)
 
-[Full scale](instant_reports.png)
+[Full scale](images/instant_reports.png)
 
 ## Sequence diagram for weekly reports
 
-![weekly_reports.png](weekly_reports.png)
+![weekly_reports.png](images/weekly_reports.png)
 
-[Full scale](weekly_reports.png)
+[Full scale](images/weekly_reports.png)
 
 ## Sequence diagram for CCX Notification Writer service
 
