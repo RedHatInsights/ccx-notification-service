@@ -80,6 +80,7 @@ const (
 
 // Messages
 const (
+	serviceName                 = "CCX Notification Service"
 	versionMessage              = "Notification service version 1.0"
 	authorsMessage              = "Pavel Tisnovsky, Papa Bakary Camara, Red Hat Inc."
 	separator                   = "------------------------------------------------------------"
@@ -88,6 +89,9 @@ const (
 	organizationIDAttribute     = "org id"
 	AccountNumberAttribute      = "account number"
 	clusterAttribute            = "cluster"
+	ruleAttribute               = "rule"
+	errorKeyAttribute           = "error key"
+	numberOfEventsAttribute     = "number of events"
 	clustersAttribute           = "clusters"
 	totalRiskAttribute          = "totalRisk"
 	errorStr                    = "Error:"
@@ -96,6 +100,9 @@ const (
 	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
 	eventFilterNotSetMessage    = "Event filter not set"
 	evaluationErrorMessage      = "Evaluation error"
+	serviceLogSendErrorMessage  = "Sending entry to service log failed for this report"
+	renderReportsFailedMessage  = "Rendering reports failed for this cluster"
+	ReportNotFoundError         = "report for rule ID %v and error key %v has not been found"
 )
 
 // Constants for notification message top level fields
@@ -133,6 +140,13 @@ const (
 	DefaultImpactThreshold     = 0
 	DefaultSeverityThreshold   = 0
 	DefaultEventFilter         = "totalRisk >= totalRiskThreshold"
+)
+
+// Constants used for creating Service Log entries - there is a length limit on text fields in Service Log,
+// which will return an error status code in case this limit is exceeded
+const (
+	serviceLogSummaryMaxLength     = 255
+	serviceLogDescriptionMaxLength = 4000
 )
 
 // EventThresholds structure contains all threshold values for event filter
@@ -302,6 +316,96 @@ func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, ev
 	return evaluator.Evaluate(eventFilter, values)
 }
 
+func findRenderedReport(reports []types.RenderedReport, ruleName types.RuleName, errorKey types.ErrorKey) (types.RenderedReport, error) {
+	for _, report := range reports {
+		reportRuleName := string(report.RuleID)[strings.LastIndex(string(report.RuleID), ".")+1:]
+		if reportRuleName == string(ruleName) && report.ErrorKey == errorKey {
+			return report, nil
+		}
+	}
+	return types.RenderedReport{}, fmt.Errorf(ReportNotFoundError, ruleName, errorKey)
+}
+
+func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEntry) types.ServiceLogEntry {
+	logEntry := types.ServiceLogEntry{
+		ClusterUUID: cluster.ClusterName,
+		Description: report.Description,
+		ServiceName: serviceName,
+		Summary:     report.Reason,
+	}
+
+	// It is necessary to truncate the fields because of Service Log limitations
+	if len(logEntry.Summary) > serviceLogSummaryMaxLength {
+		logEntry.Summary = logEntry.Summary[:serviceLogSummaryMaxLength]
+	}
+
+	if len(logEntry.Description) > serviceLogDescriptionMaxLength {
+		logEntry.Description = logEntry.Description[:serviceLogDescriptionMaxLength]
+	}
+
+	return logEntry
+}
+
+func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterEntry,
+	ruleContent types.RulesMap, reports []types.ReportItem) {
+	renderedReports, err := renderReportsForCluster(
+		conf.GetDependenciesConfiguration(config), cluster.ClusterName,
+		reports, ruleContent)
+	if err != nil {
+		log.Err(err).
+			Str("cluster name", string(cluster.ClusterName)).
+			Msg(renderReportsFailedMessage)
+		return
+	}
+	for _, r := range reports {
+		module := r.Module
+		ruleName := moduleToRuleName(module)
+		errorKey := r.ErrorKey
+
+		likelihood, impact, totalRisk, _ := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
+		eventValue := EventValue{
+			Likelihood: likelihood,
+			Impact:     impact,
+			TotalRisk:  totalRisk,
+		}
+
+		// try to evaluate event filter expression
+		result, err := evaluateFilterExpression(serviceLogEventFilter,
+			serviceLogEventThresholds, eventValue)
+
+		if err != nil {
+			log.Err(err).Msg(evaluationErrorMessage)
+			continue
+		}
+
+		if result > 0 {
+			renderedReport, err := findRenderedReport(renderedReports, ruleName, errorKey)
+			if err != nil {
+				log.Err(err).Msgf("Output from content template renderer does not contain "+
+					"result for cluster %s, rule %s and error key %s", cluster.ClusterName, ruleName, errorKey)
+				continue
+			}
+
+			logEntry := createServiceLogEntry(renderedReport, cluster)
+
+			msgBytes, err := json.Marshal(logEntry)
+			if err != nil {
+				log.Error().Err(err).Msg(invalidJSONContent)
+				continue
+			}
+
+			_, _, err = serviceLogNotifier.ProduceMessage(msgBytes)
+			if err != nil {
+				log.Err(err).
+					Str(clusterAttribute, string(cluster.ClusterName)).
+					Str(ruleAttribute, string(ruleName)).
+					Str(errorKeyAttribute, string(errorKey)).
+					Msg(serviceLogSendErrorMessage)
+			}
+		}
+	}
+}
+
 func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMap,
 	reportItems []types.ReportItem, storage Storage, report types.ClusterReport) (int, error) {
 
@@ -335,8 +439,8 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 		if result > 0 {
 			log.Warn().
 				Str("type", r.Type).
-				Str("rule", string(ruleName)).
-				Str("error key", string(errorKey)).
+				Str(ruleAttribute, string(ruleName)).
+				Str(errorKeyAttribute, string(errorKey)).
 				Int("likelihood", likelihood).
 				Int("impact", impact).
 				Int(totalRiskAttribute, totalRisk).
@@ -358,8 +462,8 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 	}
 
 	log.Info().
-		Str("cluster", string(cluster.ClusterName)).
-		Int("number of events", len(notificationMsg.Events)).
+		Str(clusterAttribute, string(cluster.ClusterName)).
+		Int(numberOfEventsAttribute, len(notificationMsg.Events)).
 		Msg("Producing instant notification")
 
 	msgBytes, err := json.Marshal(notificationMsg)
@@ -385,7 +489,7 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 	return 0, nil
 }
 
-func processReportsByCluster(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
+func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
 	notifiedIssues := 0
 	clustersCount := len(clusters)
 	skippedEntries := 0
@@ -422,10 +526,14 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			continue
 		}
 
+		if conf.GetServiceLogConfiguration(config).Enabled {
+			produceEntriesToServiceLog(config, cluster, ruleContent, deserialized.Reports)
+		}
+
 		newNotifiedIssues, err := produceEntriesToKafka(cluster, ruleContent, deserialized.Reports, storage, report)
 		if err != nil {
 			log.Err(err).
-				Str("cluster", string(cluster.ClusterName)).
+				Str(clusterAttribute, string(cluster.ClusterName)).
 				Msg("Unable to send the notification message to Kafka")
 			continue
 		}
@@ -503,8 +611,8 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storag
 			log.Info().
 				Int("#", i).
 				Str("type", r.Type).
-				Str("rule", string(ruleName)).
-				Str("error key", string(errorKey)).
+				Str(ruleAttribute, string(ruleName)).
+				Str(errorKeyAttribute, string(errorKey)).
 				Int("likelihood", likelihood).
 				Int("impact", impact).
 				Int(totalRiskAttribute, totalRisk).
@@ -545,9 +653,10 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storag
 }
 
 // processClusters function creates desired notification messages for all the clusters obtained from the database
-func processClusters(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
+func processClusters(config conf.ConfigStruct, ruleContent types.RulesMap,
+	storage Storage, clusters []types.ClusterEntry) {
 	if notificationType == types.InstantNotif {
-		processReportsByCluster(ruleContent, storage, clusters)
+		processReportsByCluster(config, ruleContent, storage, clusters)
 	} else if notificationType == types.WeeklyDigest {
 		processAllReportsFromCurrentWeek(ruleContent, storage, clusters)
 	}
@@ -888,7 +997,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg("Service Log producer ready")
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
-	processClusters(ruleContent, storage, clusters)
+	processClusters(config, ruleContent, storage, clusters)
 	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
 	closeDiffer(storage)
 	log.Info().Msg("Differ finished. Pushing metrics to the configured prometheus gateway.")
