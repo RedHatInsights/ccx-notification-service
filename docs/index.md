@@ -13,33 +13,6 @@ Notification templates used to send e-mails etc. to customers are stored in diff
 Templates used by this notification service are available at:
 [https://github.com/RedHatInsights/notifications-backend/tree/master/backend/src/main/resources/templates/AdvisorOpenshift](https://github.com/RedHatInsights/notifications-backend/tree/master/backend/src/main/resources/templates/AdvisorOpenshift)
 
-## Sequence diagram for the whole pipeline - notification service integration
-
-![sequence_diagram.png](images/sequence_diagram.png)
-
-[Sequence diagram, full scale](images/sequence_diagram.png)
-
-## Sequence diagram for the whole pipeline - Service Log integration
-
-![sequence_diagram_service_log.png](images/sequence_diagram_service_log.png)
-
-[Sequence diagram, full scale](images/sequence_diagram._service_logpng)
-
-## Sequence diagram for instant reports
-
-![instant_reports.png](images/instant_reports.png)
-
-[Full scale](images/instant_reports.png)
-
-## Sequence diagram for weekly reports
-
-![weekly_reports.png](images/weekly_reports.png)
-
-[Full scale](images/weekly_reports.png)
-
-## Sequence diagram for CCX Notification Writer service
-
-[Sequence diagram for CCX Notification Writer service](sequence_diagram_notification_writer.png)
 
 ## Cooldown mechanism
 
