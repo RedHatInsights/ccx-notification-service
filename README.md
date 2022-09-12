@@ -1,5 +1,5 @@
 # ccx-notification-service
-CCX notification service
+CCX Notification Service
 
 [![GoDoc](https://godoc.org/github.com/RedHatInsights/ccx-notification-service?status.svg)](https://godoc.org/github.com/RedHatInsights/ccx-notification-service)
 [![GitHub Pages](https://img.shields.io/badge/%20-GitHub%20Pages-informational)](https://redhatinsights.github.io/ccx-notification-service/)
@@ -12,7 +12,10 @@ CCX notification service
 <!-- vim-markdown-toc GFM -->
 
 * [Description](#description)
+    * [Architecture](#architecture)
 * [Building](#building)
+    * [Makefile targets](#makefile-targets)
+* [Configuration](#configuration)
 * [BDD tests](#bdd-tests)
 * [Usage](#usage)
     * [All command line options](#all-command-line-options)
@@ -33,7 +36,7 @@ that the
 [notification-backend](https://github.com/RedHatInsights/notifications-backend)
 can process them and create email notifications based on the provided events.
 Additionally ServiceLog events are created, these can be displayed on cluster
-pages.  Currently the events are only created for the **important** and
+pages. Currently the events are only created for the **important** and
 **critical** issues found in the `new_reports` table of the configured
 PostgreSQL database. Once the reports are processed, the DB is updated with
 info about sent events by populating the `reported` table with the
@@ -44,9 +47,16 @@ repository](https://github.com/RedHatInsights/ccx-notification-writer).
 In the instant notification mode, one email will be received for each cluster
 with important or critical issues.
 
+### Architecture
+
+Overall architecture and integration of this service is described
+[in this document](https://redhatinsights.github.io/ccx-notification-service/architecture.html)
+
 ## Building
 
 Use `make build` to build executable file with this service.
+
+### Makefile targets
 
 All Makefile targets:
 
@@ -80,6 +90,11 @@ before_commit        Checks done before commit
 help                 Show this help screen
 ```
 
+## Configuration
+
+Configuration is described
+[in this document](https://redhatinsights.github.io/ccx-notification-service/configuration.html)
+
 ## BDD tests
 
 Behaviour tests for this service are included in [Insights Behavioral
@@ -105,27 +120,27 @@ List of all available command line options:
 
 ```
   -instant-reports
-    	create instant reports
+        create instant reports
   -cleanup-on-startup
         perform database clean up on startup
   -show-authors
-    	show authors and exit
+        show authors and exit
   -show-configuration
-    	show configuration
+        show configuration
   -show-version
-    	show version and exit
+        show version and exit
   -weekly-reports
-    	create weekly reports
+        create weekly reports
   -max-age string
-    	max age for displaying/cleaning old records
+        max age for displaying/cleaning old records
   -new-reports-cleanup
-    	perform new reports clean up
+        perform new reports clean up
   -old-reports-cleanup
-    	perform old reports clean up
+        perform old reports clean up
   -print-new-reports-for-cleanup
-    	print new reports to be cleaned up
+        print new reports to be cleaned up
   -print-old-reports-for-cleanup
-    	print old reports to be cleaned up
+        print old reports to be cleaned up
 ```
 
 ## Database
@@ -154,4 +169,3 @@ Templates used by this notification service are available at:
 ## Package manifest
 
 Package manifest is available at [docs/manifest.txt](docs/manifest.txt).
-
