@@ -55,15 +55,15 @@ Templates used by this notification service are available at:
 
 ## Sequence diagram for the whole pipeline - notification service integration
 
-![sequence_diagram.png](sequence_diagram.png)
+![sequence_diagram.png](images/sequence_diagram.png)
 
-[Sequence diagram, full scale](sequence_diagram.png)
+[Sequence diagram, full scale](images/sequence_diagram.png)
 
 ## Sequence diagram for the whole pipeline - Service Log integration
 
-![sequence_diagram_service_log.png](sequence_diagram_service_log.png)
+![sequence_diagram_service_log.png](images/sequence_diagram_service_log.png)
 
-[Sequence diagram, full scale](sequence_diagram._service_logpng)
+[Sequence diagram, full scale](images/sequence_diagram._service_logpng)
 
 ## Sequence diagram for instant reports
 
