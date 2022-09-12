@@ -256,6 +256,33 @@ type NotifiedRecordsPerCluster map[ClusterOrgKey]NotificationRecord
 // NotifiedRecordsPerClusterByTarget let us split the notified records by their target (CCXDEV-8767)
 type NotifiedRecordsPerClusterByTarget map[EventTarget]NotifiedRecordsPerCluster
 
+// RenderedReport contains all rendered text fields for specific cluster report
+type RenderedReport struct {
+	RuleID      RuleID   `json:"rule_id"`
+	ErrorKey    ErrorKey `json:"error_key"`
+	Resolution  string   `json:"resolution"`
+	Reason      string   `json:"reason"`
+	Description string   `json:"description"`
+}
+
+// TemplateRendererOutput is an output structure from content template renderer
+type TemplateRendererOutput struct {
+	Clusters []ClusterName                    `json:"clusters"`
+	Reports  map[ClusterName][]RenderedReport `json:"reports"`
+}
+
+// ReportData is part of the request to content template renderer containing report data
+type ReportData struct {
+	Clusters []ClusterName          `json:"clusters"`
+	Reports  map[ClusterName]Report `json:"reports"`
+}
+
+// TemplateRendererRequestBody is a structure to be sent in request body to content template renderer
+type TemplateRendererRequestBody struct {
+	Content    []types.RuleContent `json:"content"`
+	ReportData ReportData          `json:"report_data"`
+}
+
 // ServiceLogEntry is a structure to be sent to Service Log
 type ServiceLogEntry struct {
 	ClusterUUID string `json:"cluster_uuid"`

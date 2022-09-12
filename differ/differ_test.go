@@ -86,7 +86,7 @@ func captureStdout(f func()) string {
 	return buf.String()
 }
 
-//---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
 func TestToJSONEscapedStringValidJSON(t *testing.T) {
 	type testStruct struct {
 		Name         string
@@ -123,7 +123,7 @@ func TestToJSONEscapedStringInvalidJSON(t *testing.T) {
 	assert.Equal(t, expectedEscapedJSONString, toJSONEscapedString(tested))
 }
 
-//---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
 func TestGenerateInstantReportNotificationMessage(t *testing.T) {
 	clusterURI := "the_cluster_uri_in_ocm_for_{cluster_id}"
 	accountID := "a_stringified_account_id"
@@ -173,7 +173,7 @@ func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	assert.Equal(t, notificationMsg.Events[1].Metadata, types.EventMetadata{}, "All notification messages should have empty metadata")
 }
 
-//---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
 func TestUpdateDigestNotificationCounters(t *testing.T) {
 	digest := types.Digest{}
 	expectedDigest := types.Digest{}
@@ -231,7 +231,7 @@ func TestGenerateWeeklyDigestNotificationMessage(t *testing.T) {
 	assert.Equal(t, expectedEvent, notificationMsg.Events[0])
 }
 
-//---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
 func TestShowVersion(t *testing.T) {
 	assert.Contains(t, captureStdout(showVersion), versionMessage, "showVersion function is not displaying the expected content")
 }
@@ -302,7 +302,7 @@ func TestShowConfiguration(t *testing.T) {
 	assert.Contains(t, output, metricsGateway)
 }
 
-//---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
 func TestTotalRiskCalculation(t *testing.T) {
 	type testStruct struct {
 		impact       int
@@ -332,7 +332,7 @@ func TestModuleNameToRuleNameValidRuleName(t *testing.T) {
 	assert.Equal(t, ruleName, moduleToRuleName(moduleName))
 }
 
-//---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
 func TestSetupNotificationProducerInvalidBrokerConf(t *testing.T) {
 	if os.Getenv("SETUP_PRODUCER") == "1" {
 		testConfig := conf.ConfigStruct{
@@ -422,7 +422,7 @@ func TestSetupNotificationProducerDisabledBrokerConfig(t *testing.T) {
 	assert.NoError(t, notifier.Close(), "error closing producer")
 }
 
-//---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
 // TestProcessClustersNoReportForClusterEntry tests that when no report is found for
 // a given cluster entry, the processing is not stopped
 func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
@@ -1316,7 +1316,7 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	}
 }
 
-//---------------------------------------------------------------------------------------
+// ---------------------------------------------------------------------------------------
 func TestProcessClustersWeeklyDigest(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)

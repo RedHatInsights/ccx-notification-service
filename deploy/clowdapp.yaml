@@ -149,6 +149,10 @@ objects:
             value: http://ccx-insights-content-service:${CONTENT_SERVICE_PORT}/api/v1/
           - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_ENDPOINT
             value: content
+          - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__TEMPLATE_RENDERER_SERVER
+            value: ${TEMPLATE_RENDERER_SERVER}
+          - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__TEMPLATE_RENDERER_ENDPOINT
+            value: rendered_reports
           - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__INSIGHTS_ADVISOR_URL
             value: "https://${PLATFORM_UI_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}"
           - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__CLUSTER_DETAILS_URI
@@ -243,6 +247,8 @@ parameters:
 - description: Maximum age for reports cleanup on startup
   name: CLEANUP_MAX_AGE
   value: '8 days'
+- description: Domain name and port of the content template renderer API
+  name: TEMPLATE_RENDERER_SERVER
 # Service Log
 - description: Offline token for retrieving access tokens to publish to Service Log
   name: SERVICE_LOG__OFFLINE_TOKEN
