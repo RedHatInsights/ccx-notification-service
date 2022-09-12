@@ -67,9 +67,9 @@ Templates used by this notification service are available at:
 
 ## Sequence diagram for instant reports
 
-![instant_reports.png](instant_reports.png)
+![instant_reports.png](images/instant_reports.png)
 
-[Full scale](instant_reports.png)
+[Full scale](images/instant_reports.png)
 
 ## Sequence diagram for weekly reports
 
