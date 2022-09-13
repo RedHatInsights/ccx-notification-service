@@ -4,6 +4,8 @@ title: Home
 nav_order: 0
 ---
 
+# CCX Notification Service
+
 The purpose of this service is to enable sending automatic email notifications
 and ServiceLog events to users for all serious issues found in their OpenShift
 clusters. The "instant" mode of this service runs as a cronjob every fifteen
