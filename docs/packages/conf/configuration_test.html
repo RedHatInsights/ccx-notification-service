@@ -136,12 +136,14 @@ limitations under the License.
 <div class="keyword">package</div> <div class="ident">conf_test</div><div class="operator"></div>
 
 <div class="keyword">import</div> <div class="operator">(</div>
+	<div class="literal">&#34;fmt&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;os&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;time&#34;</div><div class="operator"></div>
 
 	<div class="literal">&#34;testing&#34;</div><div class="operator"></div>
 
 	<div class="literal">&#34;github.com/RedHatInsights/insights-operator-utils/tests/helpers&#34;</div><div class="operator"></div>
+	<div class="ident">clowder</div> <div class="literal">&#34;github.com/redhatinsights/app-common-go/pkg/api/v1&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;github.com/rs/zerolog&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;github.com/stretchr/testify/assert&#34;</div><div class="operator"></div>
 
@@ -256,9 +258,35 @@ limitations under the License.
 
 	<div class="ident">brokerCfg</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetKafkaBrokerConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
 
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">True</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">brokerCfg</div><div class="operator">.</div><div class="ident">Enabled</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;localhost:29092&#34;</div><div class="operator">,</div> <div class="ident">brokerCfg</div><div class="operator">.</div><div class="ident">Address</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;ccx_test_notifications&#34;</div><div class="operator">,</div> <div class="ident">brokerCfg</div><div class="operator">.</div><div class="ident">Topic</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">expectedTimeout</div><div class="operator">,</div> <div class="ident">brokerCfg</div><div class="operator">.</div><div class="ident">Timeout</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>TestLoadServiceLogConfiguration tests loading the ServiceLog configuration
+sub-tree</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestLoadServiceLogConfiguration</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">envVar</div> <div class="operator">:=</div> <div class="literal">&#34;CCX_NOTIFICATION_SERVICE_CONFIG_FILE&#34;</div><div class="operator"></div>
+	<div class="ident">expectedTimeout</div><div class="operator">,</div> <div class="ident">_</div> <div class="operator">:=</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">ParseDuration</div><div class="operator">(</div><div class="literal">&#34;15s&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">mustSetEnv</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;../tests/config2&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">LoadConfiguration</div><div class="operator">(</div><div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Nil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">,</div> <div class="literal">&#34;Failed loading configuration file from env var!&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">serviceLogCfg</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetServiceLogConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">False</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">serviceLogCfg</div><div class="operator">.</div><div class="ident">Enabled</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">3</div><div class="operator">,</div> <div class="ident">serviceLogCfg</div><div class="operator">.</div><div class="ident">TotalRiskThreshold</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;test&#34;</div><div class="operator">,</div> <div class="ident">serviceLogCfg</div><div class="operator">.</div><div class="ident">OfflineToken</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token&#34;</div><div class="operator">,</div> <div class="ident">serviceLogCfg</div><div class="operator">.</div><div class="ident">TokenRefreshmentURL</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;localhost:8000/api/service_logs/v1/cluster_logs/&#34;</div><div class="operator">,</div> <div class="ident">serviceLogCfg</div><div class="operator">.</div><div class="ident">URL</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">expectedTimeout</div><div class="operator">,</div> <div class="ident">serviceLogCfg</div><div class="operator">.</div><div class="ident">Timeout</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -374,6 +402,94 @@ this case.</p>
 	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;ccx_notification_service_namespace&#34;</div><div class="operator">,</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">Namespace</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;:9091&#34;</div><div class="operator">,</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GatewayURL</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">,</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GatewayAuthToken</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>TestLoadNotificationsConfiguration tests loading the notifications configuration sub-tree</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestLoadCleanerConfiguration</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">envVar</div> <div class="operator">:=</div> <div class="literal">&#34;CCX_NOTIFICATION_SERVICE_CONFIG_FILE&#34;</div><div class="operator"></div>
+
+	<div class="ident">mustSetEnv</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;../tests/config2&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">LoadConfiguration</div><div class="operator">(</div><div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Nil</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">,</div> <div class="literal">&#34;Failed loading configuration file from env var!&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">conf</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetCleanerConfiguration</div><div class="operator">(</div><div class="ident">config</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;90 days&#34;</div><div class="operator">,</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">MaxAge</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>TestLoadClowderConfiguration tests loading a clowder config that should overwrite some
+values of the default loaded config</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestLoadClowderConfiguration</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">envVar</div> <div class="operator">:=</div> <div class="literal">&#34;CCX_NOTIFICATION_SERVICE_CONFIG_FILE&#34;</div><div class="operator"></div>
+	<div class="ident">os</div><div class="operator">.</div><div class="ident">Clearenv</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">mustSetEnv</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;ACG_CONFIG&#34;</div><div class="operator">,</div> <div class="literal">&#34;tests/clowder_config.json&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">hostname</div> <div class="operator">:=</div> <div class="literal">&#34;kafka&#34;</div><div class="operator"></div>
+	<div class="ident">port</div> <div class="operator">:=</div> <div class="literal">9092</div><div class="operator"></div>
+
+	<div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div> <div class="operator">=</div> <div class="operator">&amp;</div><div class="ident">clowder</div><div class="operator">.</div><div class="ident">AppConfig</div><div class="operator">{</div>
+		<div class="ident">Kafka</div><div class="operator">:</div> <div class="operator">&amp;</div><div class="ident">clowder</div><div class="operator">.</div><div class="ident">KafkaConfig</div><div class="operator">{</div>
+			<div class="ident">Brokers</div><div class="operator">:</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">clowder</div><div class="operator">.</div><div class="ident">BrokerConfig</div><div class="operator">{</div>
+				<div class="ident">clowder</div><div class="operator">.</div><div class="ident">BrokerConfig</div><div class="operator">{</div>
+					<div class="ident">Hostname</div><div class="operator">:</div> <div class="ident">hostname</div><div class="operator">,</div>
+					<div class="ident">Port</div><div class="operator">:</div>     <div class="operator">&amp;</div><div class="ident">port</div><div class="operator">,</div>
+				<div class="operator">}</div><div class="operator">,</div>
+			<div class="operator">}</div><div class="operator">,</div>
+		<div class="operator">}</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="ident">cfg</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">LoadConfiguration</div><div class="operator">(</div><div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;../tests/config1&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NoError</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">,</div> <div class="literal">&#34;error loading configuration&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">brokerCfg</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetKafkaBrokerConfiguration</div><div class="operator">(</div><div class="ident">cfg</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div><div class="literal">&#34;%s:%d&#34;</div><div class="operator">,</div> <div class="ident">hostname</div><div class="operator">,</div> <div class="ident">port</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">brokerCfg</div><div class="operator">.</div><div class="ident">Address</div><div class="operator">)</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>TestLoadStorageConfigFromClowder tests loading a clowder config that should overwrite some
+values of the default loaded config</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">TestLoadStorageConfigFromClowder</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">envVar</div> <div class="operator">:=</div> <div class="literal">&#34;CCX_NOTIFICATION_SERVICE_CONFIG_FILE&#34;</div><div class="operator"></div>
+	<div class="ident">os</div><div class="operator">.</div><div class="ident">Clearenv</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">mustSetEnv</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="literal">&#34;ACG_CONFIG&#34;</div><div class="operator">,</div> <div class="literal">&#34;tests/clowder_config.json&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">dbName</div> <div class="operator">:=</div> <div class="literal">&#34;a_name&#34;</div><div class="operator"></div>
+	<div class="ident">hostname</div> <div class="operator">:=</div> <div class="literal">&#34;pg_hostname&#34;</div><div class="operator"></div>
+	<div class="ident">port</div> <div class="operator">:=</div> <div class="literal">5154</div><div class="operator"></div>
+	<div class="ident">user</div> <div class="operator">:=</div> <div class="literal">&#34;myusername&#34;</div><div class="operator"></div>
+	<div class="ident">pass</div> <div class="operator">:=</div> <div class="literal">&#34;secretpassword&#34;</div><div class="operator"></div>
+
+	<div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div> <div class="operator">=</div> <div class="operator">&amp;</div><div class="ident">clowder</div><div class="operator">.</div><div class="ident">AppConfig</div><div class="operator">{</div>
+		<div class="ident">Database</div><div class="operator">:</div> <div class="operator">&amp;</div><div class="ident">clowder</div><div class="operator">.</div><div class="ident">DatabaseConfig</div><div class="operator">{</div>
+			<div class="ident">Name</div><div class="operator">:</div>     <div class="ident">dbName</div><div class="operator">,</div>
+			<div class="ident">Hostname</div><div class="operator">:</div> <div class="ident">hostname</div><div class="operator">,</div>
+			<div class="ident">Port</div><div class="operator">:</div>     <div class="ident">port</div><div class="operator">,</div>
+			<div class="ident">Username</div><div class="operator">:</div> <div class="ident">user</div><div class="operator">,</div>
+			<div class="ident">Password</div><div class="operator">:</div> <div class="ident">pass</div><div class="operator">,</div>
+		<div class="operator">}</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="ident">cfg</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">LoadConfiguration</div><div class="operator">(</div><div class="ident">envVar</div><div class="operator">,</div> <div class="literal">&#34;../tests/config1&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NoError</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">,</div> <div class="literal">&#34;error loading configuration&#34;</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="ident">storageCfg</div> <div class="operator">:=</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">GetStorageConfiguration</div><div class="operator">(</div><div class="ident">cfg</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">dbName</div><div class="operator">,</div> <div class="ident">storageCfg</div><div class="operator">.</div><div class="ident">PGDBName</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">hostname</div><div class="operator">,</div> <div class="ident">storageCfg</div><div class="operator">.</div><div class="ident">PGHost</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">port</div><div class="operator">,</div> <div class="ident">storageCfg</div><div class="operator">.</div><div class="ident">PGPort</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">user</div><div class="operator">,</div> <div class="ident">storageCfg</div><div class="operator">.</div><div class="ident">PGUsername</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">Equal</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">pass</div><div class="operator">,</div> <div class="ident">storageCfg</div><div class="operator">.</div><div class="ident">PGPassword</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>

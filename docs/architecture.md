@@ -4,7 +4,7 @@ title: Architecture
 nav_order: 1
 ---
 
-## Architecture
+# Architecture
 
 ![architecture_diagram.png](images/architecture_diagram.png)
 

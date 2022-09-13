@@ -17,7 +17,7 @@
 
 <html>
 <head>
-<title>export_test.go</title>
+<title>disabled_producer_test.go</title>
 <meta charset="utf-8"/>
 <style type="text/css">body {
     background: rgb(225, 225, 225);
@@ -112,13 +112,13 @@
 <div id="docgo">
   <div id="background"></div>
   <table>
-    <thead><tr><th class="doc"><h1>export_test.go</h1></th><th class="code"></th></tr></thead>
+    <thead><tr><th class="doc"><h1>disabled_producer_test.go</h1></th><th class="code"></th></tr></thead>
     <tbody>
       
       <tr class="section">
 	<td class="doc"></td>
 	<td class="code"><pre><code><div class="comment">/*
-Copyright © 2020 Red Hat, Inc.
+Copyright © 2021 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
 you may not use this file except in compliance with the License.
@@ -133,33 +133,19 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */</div>
 
-<div class="keyword">package</div> <div class="ident">differ</div><div class="operator"></div>
+<div class="keyword">package</div> <div class="ident">disabled</div><div class="operator"></div>
 
 <div class="keyword">import</div> <div class="operator">(</div>
-	<div class="literal">&#34;github.com/RedHatInsights/ccx-notification-service/conf&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;testing&#34;</div><div class="operator"></div>
+
+	<div class="literal">&#34;github.com/stretchr/testify/assert&#34;</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>Export for testing</p>
-
-<p>This source file contains name aliases of all package-private functions
-that need to be called from unit tests. Aliases should start with uppercase
-letter because unit tests belong to different package.</p>
-
-<p>Please look into the following blogpost:
-https://medium.com/@robiplus/golang-trick-export-for-test-aa16cbd7b8cd
-to see why this trick is needed.</p>
-</td>
-	<td class="code"><pre><code>
-<div class="keyword">func</div> <div class="ident">PushMetrics</div><div class="operator">(</div><div class="ident">metricsConf</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">MetricsConfiguration</div><div class="operator">)</div> <div class="operator">{</div>
-	<div class="ident">pushMetrics</div><div class="operator">(</div><div class="ident">metricsConf</div><div class="operator">)</div><div class="operator"></div>
-<div class="operator">}</div><div class="operator"></div>
-
-<div class="keyword">func</div> <div class="ident">InClauseFromStringSlice</div><div class="operator">(</div><div class="ident">slice</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">string</div><div class="operator">)</div> <div class="ident">string</div> <div class="operator">{</div>
-	<div class="keyword">return</div> <div class="ident">inClauseFromStringSlice</div><div class="operator">(</div><div class="ident">slice</div><div class="operator">)</div><div class="operator"></div>
+<div class="keyword">func</div> <div class="ident">TestDisabledProducer</div><div class="operator">(</div><div class="ident">t</div> <div class="operator">*</div><div class="ident">testing</div><div class="operator">.</div><div class="ident">T</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">p</div> <div class="operator">:=</div> <div class="ident">Producer</div><div class="operator">{</div><div class="operator">}</div><div class="operator"></div>
+	<div class="ident">_</div><div class="operator">,</div> <div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">p</div><div class="operator">.</div><div class="ident">ProduceMessage</div><div class="operator">(</div><div class="operator">[</div><div class="operator">]</div><div class="ident">byte</div><div class="operator">{</div><div class="operator">}</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NoError</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">,</div> <div class="literal">&#34;error producing message&#34;</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">assert</div><div class="operator">.</div><div class="ident">NoError</div><div class="operator">(</div><div class="ident">t</div><div class="operator">,</div> <div class="ident">p</div><div class="operator">.</div><div class="ident">Close</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div> <div class="literal">&#34;error closing producer&#34;</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>

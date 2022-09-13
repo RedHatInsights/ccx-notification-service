@@ -200,7 +200,7 @@ DataSource - specification of data source. The content of this parameter depends
 		<div class="ident">offset</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">KafkaOffset</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterReport</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">,</div>
 	<div class="operator">)</div><div class="operator"></div>
 	<div class="ident">ReadLastNotifiedRecordForClusterList</div><div class="operator">(</div>
-		<div class="ident">clusterEntries</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">timeOffset</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotifiedRecordsPerCluster</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">clusterEntries</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">timeOffset</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">eventTarget</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">EventTarget</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotifiedRecordsPerCluster</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">WriteNotificationRecord</div><div class="operator">(</div>
 		<div class="ident">notificationRecord</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationRecord</div><div class="operator">)</div> <div class="ident">error</div><div class="operator"></div>
 	<div class="ident">WriteNotificationRecordForCluster</div><div class="operator">(</div>
@@ -209,7 +209,8 @@ DataSource - specification of data source. The content of this parameter depends
 		<div class="ident">stateID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">StateID</div><div class="operator">,</div>
 		<div class="ident">report</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterReport</div><div class="operator">,</div>
 		<div class="ident">notifiedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">,</div>
-		<div class="ident">errorLog</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">error</div><div class="operator"></div>
+		<div class="ident">errorLog</div> <div class="ident">string</div><div class="operator">,</div>
+		<div class="ident">eventTarget</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">EventTarget</div><div class="operator">)</div> <div class="ident">error</div><div class="operator"></div>
 	<div class="ident">WriteNotificationRecordImpl</div><div class="operator">(</div>
 		<div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div>
 		<div class="ident">accountNumber</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">AccountNumber</div><div class="operator">,</div>
@@ -219,7 +220,8 @@ DataSource - specification of data source. The content of this parameter depends
 		<div class="ident">report</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterReport</div><div class="operator">,</div>
 		<div class="ident">updatedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">,</div>
 		<div class="ident">notifiedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">,</div>
-		<div class="ident">errorLog</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">error</div><div class="operator"></div>
+		<div class="ident">errorLog</div> <div class="ident">string</div><div class="operator">,</div>
+		<div class="ident">eventType</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">EventTarget</div><div class="operator">)</div> <div class="ident">error</div><div class="operator"></div>
 	<div class="ident">CleanupNewReportsForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">CleanupOldReportsForOrganization</div><div class="operator">(</div><div class="ident">orgID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div> <div class="ident">maxAge</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">DeleteRowFromNewReports</div><div class="operator">(</div>
@@ -745,7 +747,8 @@ columns are passed via NotificationRecord structure.</p>
 		<div class="ident">notificationRecord</div><div class="operator">.</div><div class="ident">AccountNumber</div><div class="operator">,</div> <div class="ident">notificationRecord</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">,</div>
 		<div class="ident">notificationRecord</div><div class="operator">.</div><div class="ident">NotificationTypeID</div><div class="operator">,</div> <div class="ident">notificationRecord</div><div class="operator">.</div><div class="ident">StateID</div><div class="operator">,</div>
 		<div class="ident">notificationRecord</div><div class="operator">.</div><div class="ident">Report</div><div class="operator">,</div> <div class="ident">notificationRecord</div><div class="operator">.</div><div class="ident">UpdatedAt</div><div class="operator">,</div>
-		<div class="ident">notificationRecord</div><div class="operator">.</div><div class="ident">NotifiedAt</div><div class="operator">,</div> <div class="ident">notificationRecord</div><div class="operator">.</div><div class="ident">ErrorLog</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">notificationRecord</div><div class="operator">.</div><div class="ident">NotifiedAt</div><div class="operator">,</div> <div class="ident">notificationRecord</div><div class="operator">.</div><div class="ident">ErrorLog</div><div class="operator">,</div>
+		<div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationBackendTarget</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -767,17 +770,18 @@ are passed explicitly.</p>
 	<div class="ident">report</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterReport</div><div class="operator">,</div>
 	<div class="ident">updatedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">,</div>
 	<div class="ident">notifiedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">,</div>
-	<div class="ident">errorLog</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+	<div class="ident">errorLog</div> <div class="ident">string</div><div class="operator">,</div>
+	<div class="ident">eventTarget</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">EventTarget</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
 
 	<div class="keyword">const</div> <div class="ident">insertStatement</div> <div class="operator">=</div> <div class="literal">`
             INSERT INTO reported
-            (org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log)
+            (org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log, event_type_id)
             VALUES
-            ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)
         `</div><div class="operator"></div>
 	<div class="ident">_</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">connection</div><div class="operator">.</div><div class="ident">Exec</div><div class="operator">(</div><div class="ident">insertStatement</div><div class="operator">,</div> <div class="ident">orgID</div><div class="operator">,</div>
 		<div class="ident">accountNumber</div><div class="operator">,</div> <div class="ident">clusterName</div><div class="operator">,</div> <div class="ident">notificationTypeID</div><div class="operator">,</div> <div class="ident">stateID</div><div class="operator">,</div>
-		<div class="ident">report</div><div class="operator">,</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Time</div><div class="operator">(</div><div class="ident">updatedAt</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Time</div><div class="operator">(</div><div class="ident">notifiedAt</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">errorLog</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">report</div><div class="operator">,</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Time</div><div class="operator">(</div><div class="ident">updatedAt</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Time</div><div class="operator">(</div><div class="ident">notifiedAt</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">errorLog</div><div class="operator">,</div> <div class="ident">eventTarget</div><div class="operator">)</div><div class="operator"></div>
 
 	<div class="keyword">return</div> <div class="ident">err</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
@@ -799,12 +803,13 @@ ReadReportForClusterAtTime and ReadReportForClusterAtOffset methods).</p>
 	<div class="ident">stateID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">StateID</div><div class="operator">,</div>
 	<div class="ident">report</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterReport</div><div class="operator">,</div>
 	<div class="ident">notifiedAt</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator">,</div>
-	<div class="ident">errorLog</div> <div class="ident">string</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+	<div class="ident">errorLog</div> <div class="ident">string</div><div class="operator">,</div>
+	<div class="ident">eventTarget</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">EventTarget</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
 
 	<div class="keyword">return</div> <div class="ident">storage</div><div class="operator">.</div><div class="ident">WriteNotificationRecordImpl</div><div class="operator">(</div><div class="ident">clusterEntry</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator">,</div>
 		<div class="ident">clusterEntry</div><div class="operator">.</div><div class="ident">AccountNumber</div><div class="operator">,</div> <div class="ident">clusterEntry</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">,</div>
 		<div class="ident">notificationTypeID</div><div class="operator">,</div> <div class="ident">stateID</div><div class="operator">,</div> <div class="ident">report</div><div class="operator">,</div> <div class="ident">clusterEntry</div><div class="operator">.</div><div class="ident">UpdatedAt</div><div class="operator">,</div>
-		<div class="ident">notifiedAt</div><div class="operator">,</div> <div class="ident">errorLog</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">notifiedAt</div><div class="operator">,</div> <div class="ident">errorLog</div><div class="operator">,</div> <div class="ident">eventTarget</div><div class="operator">)</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -814,7 +819,7 @@ ReadReportForClusterAtTime and ReadReportForClusterAtOffset methods).</p>
 	<td class="doc"><p>ReadLastNotifiedRecordForClusterList method returns the last notification
 with state = 'sent' for given org IDs and clusters.</p>
 </td>
-	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">ReadLastNotifiedRecordForClusterList</div><div class="operator">(</div><div class="ident">clusterEntries</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">timeOffset</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotifiedRecordsPerCluster</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="operator">(</div><div class="ident">storage</div> <div class="ident">DBStorage</div><div class="operator">)</div> <div class="ident">ReadLastNotifiedRecordForClusterList</div><div class="operator">(</div><div class="ident">clusterEntries</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterEntry</div><div class="operator">,</div> <div class="ident">timeOffset</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">eventTarget</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">EventTarget</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">types</div><div class="operator">.</div><div class="ident">NotifiedRecordsPerCluster</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
 	<div class="keyword">if</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">clusterEntries</div><div class="operator">)</div> <div class="operator">==</div> <div class="literal">0</div> <div class="operator">{</div>
 		<div class="keyword">return</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotifiedRecordsPerCluster</div><div class="operator">{</div><div class="operator">}</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
@@ -826,10 +831,10 @@ with state = 'sent' for given org IDs and clusters.</p>
 		<div class="ident">clusterIDs</div><div class="operator">[</div><div class="ident">idx</div><div class="operator">]</div> <div class="operator">=</div> <div class="ident">string</div><div class="operator">(</div><div class="ident">entry</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
-	<div class="ident">whereClause</div> <div class="operator">:=</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div><div class="literal">` WHERE org_id IN (%v) AND cluster IN (%v) AND state = 1 `</div><div class="operator">,</div>
-		<div class="ident">inClauseFromStringSlice</div><div class="operator">(</div><div class="ident">orgIDs</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">inClauseFromStringSlice</div><div class="operator">(</div><div class="ident">clusterIDs</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">whereClause</div> <div class="operator">:=</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div><div class="literal">` WHERE event_type_id = %v AND state = 1 AND org_id IN (%v) AND cluster IN (%v)`</div><div class="operator">,</div>
+		<div class="ident">eventTarget</div><div class="operator">,</div> <div class="ident">inClauseFromStringSlice</div><div class="operator">(</div><div class="ident">orgIDs</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">inClauseFromStringSlice</div><div class="operator">(</div><div class="ident">clusterIDs</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
 
-	<div class="ident">query</div> <div class="operator">:=</div> <div class="literal">`SELECT * FROM ( SELECT DISTINCT ON (cluster) * FROM reported `</div> <div class="operator">&#43;</div>
+	<div class="ident">query</div> <div class="operator">:=</div> <div class="literal">`SELECT org_id, cluster, report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported `</div> <div class="operator">&#43;</div>
 		<div class="ident">whereClause</div> <div class="operator">&#43;</div>
 		<div class="literal">` ORDER BY cluster, notified_at DESC) t WHERE notified_at &gt; NOW() - $1::INTERVAL;`</div><div class="operator"></div>
 
@@ -849,19 +854,13 @@ with state = 'sent' for given org IDs and clusters.</p>
 
 	<div class="keyword">for</div> <div class="ident">rows</div><div class="operator">.</div><div class="ident">Next</div><div class="operator">(</div><div class="operator">)</div> <div class="operator">{</div>
 		<div class="keyword">var</div> <div class="operator">(</div>
-			<div class="ident">orgID</div>              <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator"></div>
-			<div class="ident">accountNumber</div>      <div class="ident">types</div><div class="operator">.</div><div class="ident">AccountNumber</div><div class="operator"></div>
-			<div class="ident">clusterName</div>        <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator"></div>
-			<div class="ident">updatedAt</div>          <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator"></div>
-			<div class="ident">notificationTypeID</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationTypeID</div><div class="operator"></div>
-			<div class="ident">stateID</div>            <div class="ident">types</div><div class="operator">.</div><div class="ident">StateID</div><div class="operator"></div>
-			<div class="ident">report</div>             <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterReport</div><div class="operator"></div>
-			<div class="ident">notifiedAt</div>         <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator"></div>
-			<div class="ident">errorLog</div>           <div class="ident">string</div><div class="operator"></div>
+			<div class="ident">orgID</div>       <div class="ident">types</div><div class="operator">.</div><div class="ident">OrgID</div><div class="operator"></div>
+			<div class="ident">clusterName</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterName</div><div class="operator"></div>
+			<div class="ident">report</div>      <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterReport</div><div class="operator"></div>
+			<div class="ident">notifiedAt</div>  <div class="ident">types</div><div class="operator">.</div><div class="ident">Timestamp</div><div class="operator"></div>
 		<div class="operator">)</div><div class="operator"></div>
 
-		<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">rows</div><div class="operator">.</div><div class="ident">Scan</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">orgID</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">accountNumber</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">notificationTypeID</div><div class="operator">,</div>
-			<div class="operator">&amp;</div><div class="ident">stateID</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">report</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">updatedAt</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">notifiedAt</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">errorLog</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">err</div> <div class="operator">:=</div> <div class="ident">rows</div><div class="operator">.</div><div class="ident">Scan</div><div class="operator">(</div><div class="operator">&amp;</div><div class="ident">orgID</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">clusterName</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">report</div><div class="operator">,</div> <div class="operator">&amp;</div><div class="ident">notifiedAt</div><div class="operator">)</div><div class="operator"></div>
 		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
 			<div class="keyword">if</div> <div class="ident">closeErr</div> <div class="operator">:=</div> <div class="ident">rows</div><div class="operator">.</div><div class="ident">Close</div><div class="operator">(</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">closeErr</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
 				<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Err</div><div class="operator">(</div><div class="ident">closeErr</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msg</div><div class="operator">(</div><div class="ident">unableToCloseDBRowsHandle</div><div class="operator">)</div><div class="operator"></div>
@@ -869,22 +868,11 @@ with state = 'sent' for given org IDs and clusters.</p>
 			<div class="keyword">return</div> <div class="ident">notificationRecords</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
 		<div class="operator">}</div><div class="operator"></div>
 		<div class="ident">key</div> <div class="operator">:=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ClusterOrgKey</div><div class="operator">{</div><div class="ident">OrgID</div><div class="operator">:</div> <div class="ident">orgID</div><div class="operator">,</div> <div class="ident">ClusterName</div><div class="operator">:</div> <div class="ident">clusterName</div><div class="operator">}</div><div class="operator"></div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>TODO: get only the necessary columns when selecting (e.g state is not needed, errorLog is not needed, I already have cluster and org, etc.</p>
-</td>
-	<td class="code"><pre><code>		<div class="ident">notificationRecords</div><div class="operator">[</div><div class="ident">key</div><div class="operator">]</div> <div class="operator">=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationRecord</div><div class="operator">{</div>
-			<div class="ident">OrgID</div><div class="operator">:</div>              <div class="ident">orgID</div><div class="operator">,</div>
-			<div class="ident">AccountNumber</div><div class="operator">:</div>      <div class="ident">accountNumber</div><div class="operator">,</div>
-			<div class="ident">ClusterName</div><div class="operator">:</div>        <div class="ident">clusterName</div><div class="operator">,</div>
-			<div class="ident">UpdatedAt</div><div class="operator">:</div>          <div class="ident">updatedAt</div><div class="operator">,</div>
-			<div class="ident">NotificationTypeID</div><div class="operator">:</div> <div class="ident">notificationTypeID</div><div class="operator">,</div>
-			<div class="ident">StateID</div><div class="operator">:</div>            <div class="ident">stateID</div><div class="operator">,</div>
-			<div class="ident">Report</div><div class="operator">:</div>             <div class="ident">report</div><div class="operator">,</div>
-			<div class="ident">NotifiedAt</div><div class="operator">:</div>         <div class="ident">notifiedAt</div><div class="operator">,</div>
-			<div class="ident">ErrorLog</div><div class="operator">:</div>           <div class="ident">errorLog</div><div class="operator">,</div>
+		<div class="ident">notificationRecords</div><div class="operator">[</div><div class="ident">key</div><div class="operator">]</div> <div class="operator">=</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationRecord</div><div class="operator">{</div>
+			<div class="ident">OrgID</div><div class="operator">:</div>       <div class="ident">orgID</div><div class="operator">,</div>
+			<div class="ident">ClusterName</div><div class="operator">:</div> <div class="ident">clusterName</div><div class="operator">,</div>
+			<div class="ident">Report</div><div class="operator">:</div>      <div class="ident">report</div><div class="operator">,</div>
+			<div class="ident">NotifiedAt</div><div class="operator">:</div>  <div class="ident">notifiedAt</div><div class="operator">,</div>
 		<div class="operator">}</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 

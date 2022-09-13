@@ -149,8 +149,9 @@ https://redhatinsights.github.io/ccx-notification-service/packages/types/types.h
 <div class="keyword">import</div> <div class="operator">(</div>
 	<div class="literal">&#34;encoding/json&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;fmt&#34;</div><div class="operator"></div>
-	<div class="literal">&#34;github.com/RedHatInsights/insights-operator-utils/types&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;time&#34;</div><div class="operator"></div>
+
+	<div class="ident">types</div> <div class="literal">&#34;github.com/RedHatInsights/insights-results-types&#34;</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
 </code></pre></td>
@@ -227,6 +228,22 @@ c8590f31-e97e-4b85-b506-c45ce1911a12 (ie. in UUID format).</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">StateID</div> <div class="ident">int</div><div class="operator"></div>
 
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>EventTarget matches the backend int code in the database where the notifications are sent (CCXDEV-8767)</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">EventTarget</div> <div class="ident">int8</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ProducerMessage is a byte array (typically converted JSON) to be processed by one of the Producer implementations</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">ProducerMessage</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">byte</div><div class="operator"></div>
+
 <div class="keyword">const</div> <div class="operator">(</div>
 </code></pre></td>
       </tr>
@@ -249,6 +266,20 @@ c8590f31-e97e-4b85-b506-c45ce1911a12 (ie. in UUID format).</p>
 	<td class="doc"><p>DBDriverGeneral general sql(used for mock now)</p>
 </td>
 	<td class="code"><pre><code>	<div class="ident">DBDriverGeneral</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotificationBackendTarget matches the notification backend int code in the database (CCXDEV-8767)</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">NotificationBackendTarget</div> <div class="ident">EventTarget</div> <div class="operator">=</div> <div class="literal">1</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ServiceLogTarget matches the service log int code in the database (CCXDEV-8767)</p>
+</td>
+	<td class="code"><pre><code>	<div class="ident">ServiceLogTarget</div> <div class="ident">EventTarget</div> <div class="operator">=</div> <div class="literal">2</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
 </code></pre></td>
@@ -353,6 +384,7 @@ c8590f31-e97e-4b85-b506-c45ce1911a12 (ie. in UUID format).</p>
 	<div class="ident">PrintOldReportsForCleanup</div> <div class="ident">bool</div><div class="operator"></div>
 	<div class="ident">PerformOldReportsCleanup</div>  <div class="ident">bool</div><div class="operator"></div>
 	<div class="ident">CleanupOnStartup</div>          <div class="ident">bool</div><div class="operator"></div>
+	<div class="ident">Verbose</div>                   <div class="ident">bool</div><div class="operator"></div>
 	<div class="ident">MaxAge</div>                    <div class="ident">string</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
@@ -517,6 +549,7 @@ sent to the notification platform topic in Kafka.</p>
 	<div class="ident">EventType</div>   <div class="ident">string</div>  <div class="literal">`json:&#34;event_type&#34;`</div><div class="operator"></div>
 	<div class="ident">Timestamp</div>   <div class="ident">string</div>  <div class="literal">`json:&#34;timestamp&#34;`</div><div class="operator"></div>
 	<div class="ident">AccountID</div>   <div class="ident">string</div>  <div class="literal">`json:&#34;account_id&#34;`</div><div class="operator"></div>
+	<div class="ident">OrgID</div>       <div class="ident">string</div>  <div class="literal">`json:&#34;org_id&#34;`</div><div class="operator"></div>
 	<div class="ident">Events</div>      <div class="operator">[</div><div class="operator">]</div><div class="ident">Event</div> <div class="literal">`json:&#34;events&#34;`</div><div class="operator"></div>
 	<div class="ident">Context</div>     <div class="ident">string</div>  <div class="literal">`json:&#34;context&#34;`</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
@@ -537,6 +570,7 @@ sent to the notification platform topic in Kafka.</p>
 	<div class="ident">Report</div>             <div class="ident">ClusterReport</div><div class="operator"></div>
 	<div class="ident">NotifiedAt</div>         <div class="ident">Timestamp</div><div class="operator"></div>
 	<div class="ident">ErrorLog</div>           <div class="ident">string</div><div class="operator"></div>
+	<div class="ident">EventTarget</div>        <div class="ident">EventTarget</div> <div class="operator"></div><div class="comment">// this is the event_type_id (CCXDEV-8767)</div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -557,6 +591,84 @@ sent to the notification platform topic in Kafka.</p>
 	<td class="doc"><p>NotifiedRecordsPerCluster maps a string representation of ClusterOrgKey to a NotificationRecord</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">NotifiedRecordsPerCluster</div> <div class="keyword">map</div><div class="operator">[</div><div class="ident">ClusterOrgKey</div><div class="operator">]</div><div class="ident">NotificationRecord</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>NotifiedRecordsPerClusterByTarget let us split the notified records by their target (CCXDEV-8767)</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">NotifiedRecordsPerClusterByTarget</div> <div class="keyword">map</div><div class="operator">[</div><div class="ident">EventTarget</div><div class="operator">]</div><div class="ident">NotifiedRecordsPerCluster</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>RenderedReport contains all rendered text fields for specific cluster report</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">RenderedReport</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">RuleID</div>      <div class="ident">RuleID</div>   <div class="literal">`json:&#34;rule_id&#34;`</div><div class="operator"></div>
+	<div class="ident">ErrorKey</div>    <div class="ident">ErrorKey</div> <div class="literal">`json:&#34;error_key&#34;`</div><div class="operator"></div>
+	<div class="ident">Resolution</div>  <div class="ident">string</div>   <div class="literal">`json:&#34;resolution&#34;`</div><div class="operator"></div>
+	<div class="ident">Reason</div>      <div class="ident">string</div>   <div class="literal">`json:&#34;reason&#34;`</div><div class="operator"></div>
+	<div class="ident">Description</div> <div class="ident">string</div>   <div class="literal">`json:&#34;description&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>TemplateRendererOutput is an output structure from content template renderer</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">TemplateRendererOutput</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Clusters</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">ClusterName</div>                    <div class="literal">`json:&#34;clusters&#34;`</div><div class="operator"></div>
+	<div class="ident">Reports</div>  <div class="keyword">map</div><div class="operator">[</div><div class="ident">ClusterName</div><div class="operator">]</div><div class="operator">[</div><div class="operator">]</div><div class="ident">RenderedReport</div> <div class="literal">`json:&#34;reports&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ReportData is part of the request to content template renderer containing report data</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">ReportData</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Clusters</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">ClusterName</div>          <div class="literal">`json:&#34;clusters&#34;`</div><div class="operator"></div>
+	<div class="ident">Reports</div>  <div class="keyword">map</div><div class="operator">[</div><div class="ident">ClusterName</div><div class="operator">]</div><div class="ident">Report</div> <div class="literal">`json:&#34;reports&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>TemplateRendererRequestBody is a structure to be sent in request body to content template renderer</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">TemplateRendererRequestBody</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Content</div>    <div class="operator">[</div><div class="operator">]</div><div class="ident">types</div><div class="operator">.</div><div class="ident">RuleContent</div> <div class="literal">`json:&#34;content&#34;`</div><div class="operator"></div>
+	<div class="ident">ReportData</div> <div class="ident">ReportData</div>          <div class="literal">`json:&#34;report_data&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ServiceLogEntry is a structure to be sent to Service Log</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">ServiceLogEntry</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">ClusterUUID</div> <div class="ident">string</div> <div class="literal">`json:&#34;cluster_uuid&#34;`</div><div class="operator"></div>
+	<div class="ident">Description</div> <div class="ident">string</div> <div class="literal">`json:&#34;description&#34;`</div><div class="operator"></div>
+	<div class="ident">ServiceName</div> <div class="ident">string</div> <div class="literal">`json:&#34;service_name&#34;`</div><div class="operator"></div>
+	<div class="ident">Summary</div>     <div class="ident">string</div> <div class="literal">`json:&#34;summary&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>AccessTokenOutput is a structure containing fresh access token</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">AccessTokenOutput</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">AccessToken</div> <div class="ident">string</div> <div class="literal">`json:&#34;access_token&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
       </tr>
