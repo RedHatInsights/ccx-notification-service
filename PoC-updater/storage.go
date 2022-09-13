@@ -81,7 +81,6 @@ type Storage interface {
 		updatedAt types.Timestamp,
 		notifiedAt types.Timestamp,
 		errorLog string) error
-	CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error)
 	DeleteRowFromNewReports(
 		orgID types.OrgID,
 		clusterName types.ClusterName,
@@ -538,49 +537,6 @@ func (storage DBStorage) ReadLastNNotificationRecords(clusterEntry types.Cluster
 	}
 
 	return notificationRecords, nil
-}
-
-// CleanupForOrganization method deletes all reports older than specified
-// relative time for given organization ID.
-//
-// This method is to be used to cleanup older reports after weekly summary is
-// sent.
-//
-// The method return number of deleted records.
-func (storage DBStorage) CleanupForOrganization(orgID types.OrgID, maxAge string, statement string) (int, error) {
-	printableStatement := getPrintableStatement(statement)
-
-	log.Info().
-		Str(MaxAgeAttribute, maxAge).
-		Str("delete statement", printableStatement).
-		Int(OrgIDMessage, int(orgID)).
-		Msg("Cleanup operation")
-
-	// perform the SQL statement
-	result, err := storage.connection.Exec(statement, int(orgID), maxAge)
-	if err != nil {
-		return 0, err
-	}
-
-	// read number of affected (deleted) rows
-	affected, err := result.RowsAffected()
-	if err != nil {
-		return 0, err
-	}
-	return int(affected), nil
-}
-
-// CleanupOldReportsForOrganization method deletes all reports from `reported`
-// table older than specified relative time. Delete operation is restricted for
-// given organization ID.
-//
-// This method is to be used to cleanup older reports after weekly summary is
-// sent.
-//
-// The method return number of deleted records.
-func (storage DBStorage) CleanupOldReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
-	sqlStatement := deleteOldRecordsFromReportedTable
-	return storage.CleanupForOrganization(orgID, maxAge, sqlStatement)
 }
 
 // DeleteRowFromNewReports deletes one selected row from `new_reports` table.
