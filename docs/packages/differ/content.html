@@ -149,15 +149,14 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/conten
 <div class="keyword">import</div> <div class="operator">(</div>
 	<div class="literal">&#34;bytes&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;encoding/gob&#34;</div><div class="operator"></div>
-	<div class="literal">&#34;io&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;github.com/RedHatInsights/insights-operator-utils/http&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;net/http&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;os&#34;</div><div class="operator"></div>
-	<div class="literal">&#34;strings&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;time&#34;</div><div class="operator"></div>
 
 	<div class="literal">&#34;github.com/RedHatInsights/ccx-notification-service/conf&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;github.com/RedHatInsights/ccx-notification-service/types&#34;</div><div class="operator"></div>
-	<div class="ident">utypes</div> <div class="literal">&#34;github.com/RedHatInsights/insights-operator-utils/types&#34;</div><div class="operator"></div>
+	<div class="ident">utypes</div> <div class="literal">&#34;github.com/RedHatInsights/insights-results-types&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;github.com/rs/zerolog/log&#34;</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
@@ -168,49 +167,20 @@ https://redhatinsights.github.io/ccx-notification-service/packages/differ/conten
 	<td class="doc"><p>fetchAllRulesContent fetches the parsed rules provided by the content-service</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">fetchAllRulesContent</div><div class="operator">(</div><div class="ident">config</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">DependenciesConfiguration</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">rules</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">RulesMap</div><div class="operator">,</div> <div class="ident">err</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
-	<div class="ident">contentURL</div> <div class="operator">:=</div> <div class="ident">config</div><div class="operator">.</div><div class="ident">ContentServiceServer</div> <div class="operator">&#43;</div> <div class="ident">config</div><div class="operator">.</div><div class="ident">ContentServiceEndpoint</div><div class="operator"></div>
-	<div class="keyword">if</div> <div class="operator">!</div><div class="ident">strings</div><div class="operator">.</div><div class="ident">HasPrefix</div><div class="operator">(</div><div class="ident">config</div><div class="operator">.</div><div class="ident">ContentServiceServer</div><div class="operator">,</div> <div class="literal">&#34;http&#34;</div><div class="operator">)</div> <div class="operator">{</div>
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>if no protocol is specified in given URL, assume it is not
-needed to use https</p>
-</td>
-	<td class="code"><pre><code>		<div class="ident">contentURL</div> <div class="operator">=</div> <div class="literal">&#34;http://&#34;</div> <div class="operator">&#43;</div> <div class="ident">contentURL</div><div class="operator"></div>
-	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">contentURL</div> <div class="operator">:=</div> <div class="ident">httputils</div><div class="operator">.</div><div class="ident">SetHTTPPrefix</div><div class="operator">(</div><div class="ident">config</div><div class="operator">.</div><div class="ident">ContentServiceServer</div> <div class="operator">&#43;</div> <div class="ident">config</div><div class="operator">.</div><div class="ident">ContentServiceEndpoint</div><div class="operator">)</div><div class="operator"></div>
+
 	<div class="ident">log</div><div class="operator">.</div><div class="ident">Info</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div><div class="literal">&#34;Fetching rules content from %s&#34;</div><div class="operator">,</div> <div class="ident">contentURL</div><div class="operator">)</div><div class="operator"></div>
 
-	<div class="ident">client</div> <div class="operator">:=</div> <div class="operator">&amp;</div><div class="ident">http</div><div class="operator">.</div><div class="ident">Client</div><div class="operator">{</div>
-		<div class="ident">Timeout</div><div class="operator">:</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Second</div> <div class="operator">*</div> <div class="literal">10</div><div class="operator">,</div>
-	<div class="operator">}</div><div class="operator"></div>
 	<div class="ident">req</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">http</div><div class="operator">.</div><div class="ident">NewRequest</div><div class="operator">(</div><div class="literal">&#34;GET&#34;</div><div class="operator">,</div> <div class="ident">contentURL</div><div class="operator">,</div> <div class="ident">http</div><div class="operator">.</div><div class="ident">NoBody</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div><div class="literal">&#34;Got error while setting up HTTP request -  %s&#34;</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div><div class="literal">&#34;Got error while setting up HTTP request for content service -  %s&#34;</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
 		<div class="keyword">return</div> <div class="ident">nil</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
-	<div class="ident">response</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">client</div><div class="operator">.</div><div class="ident">Do</div><div class="operator">(</div><div class="ident">req</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">body</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">httputils</div><div class="operator">.</div><div class="ident">SendRequest</div><div class="operator">(</div><div class="ident">req</div><div class="operator">,</div> <div class="literal">10</div><div class="operator">*</div><div class="ident">time</div><div class="operator">.</div><div class="ident">Second</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div><div class="literal">&#34;Got error while making the HTTP request - %s&#34;</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div><div class="literal">&#34;Got error while processing HTTP request - %s&#34;</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
 		<div class="keyword">return</div> <div class="ident">nil</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
-	<div class="operator">}</div><div class="operator"></div>
-
-</code></pre></td>
-      </tr>
-      
-      <tr class="section">
-	<td class="doc"><p>Read body from response</p>
-</td>
-	<td class="code"><pre><code>	<div class="ident">body</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">io</div><div class="operator">.</div><div class="ident">ReadAll</div><div class="operator">(</div><div class="ident">response</div><div class="operator">.</div><div class="ident">Body</div><div class="operator">)</div><div class="operator"></div>
-	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div><div class="literal">&#34;Got error while reading the response&#39;s body - %s&#34;</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
-		<div class="keyword">return</div> <div class="ident">nil</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
-	<div class="operator">}</div><div class="operator"></div>
-
-	<div class="ident">err</div> <div class="operator">=</div> <div class="ident">response</div><div class="operator">.</div><div class="ident">Body</div><div class="operator">.</div><div class="ident">Close</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
-	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="ident">log</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">.</div><div class="ident">Msgf</div><div class="operator">(</div><div class="literal">&#34;Got error while closing the response body - %s&#34;</div><div class="operator">,</div> <div class="ident">err</div><div class="operator">.</div><div class="ident">Error</div><div class="operator">(</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
 	<div class="keyword">var</div> <div class="ident">receivedContent</div> <div class="ident">utypes</div><div class="operator">.</div><div class="ident">RuleContentDirectory</div><div class="operator"></div>

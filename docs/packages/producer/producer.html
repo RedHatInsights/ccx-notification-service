@@ -142,6 +142,8 @@ send) messages to properly configured Kafka broker.</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">package</div> <div class="ident">producer</div><div class="operator"></div>
 
+<div class="keyword">import</div> <div class="literal">&#34;github.com/RedHatInsights/ccx-notification-service/types&#34;</div><div class="operator"></div>
+
 </code></pre></td>
       </tr>
       
@@ -153,11 +155,6 @@ https://pkg.go.dev/github.com/RedHatInsights/ccx-notification-service/producer</
 https://redhatinsights.github.io/ccx-notification-service/packages/producer/producer.html</p>
 </td>
 	<td class="code"><pre><code>
-<div class="keyword">import</div> <div class="operator">(</div>
-	<div class="literal">&#34;github.com/RedHatInsights/ccx-notification-service/conf&#34;</div><div class="operator"></div>
-	<div class="literal">&#34;github.com/RedHatInsights/ccx-notification-service/types&#34;</div><div class="operator"></div>
-<div class="operator">)</div><div class="operator"></div>
-
 </code></pre></td>
       </tr>
       
@@ -165,8 +162,7 @@ https://redhatinsights.github.io/ccx-notification-service/packages/producer/prod
 	<td class="doc"><p>Producer represents any producer</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">Producer</div> <div class="keyword">interface</div> <div class="operator">{</div>
-	<div class="ident">New</div><div class="operator">(</div><div class="ident">brokerCfg</div> <div class="ident">conf</div><div class="operator">.</div><div class="ident">KafkaConfiguration</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">Producer</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
-	<div class="ident">ProduceMessage</div><div class="operator">(</div><div class="ident">msg</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">NotificationMessage</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int32</div><div class="operator">,</div> <div class="ident">int64</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
+	<div class="ident">ProduceMessage</div><div class="operator">(</div><div class="ident">msg</div> <div class="ident">types</div><div class="operator">.</div><div class="ident">ProducerMessage</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">int32</div><div class="operator">,</div> <div class="ident">int64</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div><div class="operator"></div>
 	<div class="ident">Close</div><div class="operator">(</div><div class="operator">)</div> <div class="ident">error</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 

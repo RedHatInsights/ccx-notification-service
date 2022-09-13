@@ -118,7 +118,7 @@
       <tr class="section">
 	<td class="doc"></td>
 	<td class="code"><pre><code><div class="comment">/*
-Copyright © 2021 Red Hat, Inc.
+Copyright © 2021, 2022 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
 you may not use this file except in compliance with the License.
@@ -196,7 +196,9 @@ TBD</p>
 <div class="keyword">import</div> <div class="operator">(</div>
 	<div class="literal">&#34;bytes&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;fmt&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;net/url&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;os&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;path&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;path/filepath&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;strings&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;time&#34;</div><div class="operator"></div>
@@ -206,6 +208,15 @@ TBD</p>
 
 	<div class="literal">&#34;github.com/rs/zerolog/log&#34;</div><div class="operator"></div>
 	<div class="literal">&#34;github.com/spf13/viper&#34;</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+<div class="keyword">const</div> <div class="operator">(</div>
+	<div class="ident">noKafkaConfig</div>      <div class="operator">=</div> <div class="literal">&#34;No Kafka configuration available in Clowder, using default one&#34;</div><div class="operator"></div>
+	<div class="ident">noBrokerConfig</div>     <div class="operator">=</div> <div class="literal">&#34;warning: no broker configurations found in clowder config&#34;</div><div class="operator"></div>
+	<div class="ident">noSaslConfig</div>       <div class="operator">=</div> <div class="literal">&#34;warning: SASL configuration is missing&#34;</div><div class="operator"></div>
+	<div class="ident">noTopicMapping</div>     <div class="operator">=</div> <div class="literal">&#34;warning: no kafka mapping found for topic %s&#34;</div><div class="operator"></div>
+	<div class="ident">mappingTopicsError</div> <div class="operator">=</div> <div class="literal">&#34;warning: an error occurred when applying new topics&#34;</div><div class="operator"></div>
+	<div class="ident">noStorage</div>          <div class="operator">=</div> <div class="literal">&#34;warning: no storage section in Clowder config&#34;</div><div class="operator"></div>
 <div class="operator">)</div><div class="operator"></div>
 
 </code></pre></td>
@@ -219,6 +230,7 @@ configuration</p>
 	<div class="ident">Logging</div>       <div class="ident">LoggingConfiguration</div>       <div class="literal">`mapstructure:&#34;logging&#34; toml:&#34;logging&#34;`</div><div class="operator"></div>
 	<div class="ident">Storage</div>       <div class="ident">StorageConfiguration</div>       <div class="literal">`mapstructure:&#34;storage&#34; toml:&#34;storage&#34;`</div><div class="operator"></div>
 	<div class="ident">Kafka</div>         <div class="ident">KafkaConfiguration</div>         <div class="literal">`mapstructure:&#34;kafka_broker&#34; toml:&#34;kafka_broker&#34;`</div><div class="operator"></div>
+	<div class="ident">ServiceLog</div>    <div class="ident">ServiceLogConfiguration</div>    <div class="literal">`mapstructure:&#34;service_log&#34; toml:&#34;service_log&#34;`</div><div class="operator"></div>
 	<div class="ident">Dependencies</div>  <div class="ident">DependenciesConfiguration</div>  <div class="literal">`mapstructure:&#34;dependencies&#34; toml:&#34;dependencies&#34;`</div><div class="operator"></div>
 	<div class="ident">Notifications</div> <div class="ident">NotificationsConfiguration</div> <div class="literal">`mapstructure:&#34;notifications&#34; toml:&#34;notifications&#34;`</div><div class="operator"></div>
 	<div class="ident">Metrics</div>       <div class="ident">MetricsConfiguration</div>       <div class="literal">`mapstructure:&#34;metrics&#34; toml:&#34;metrics&#34;`</div><div class="operator"></div>
@@ -280,8 +292,11 @@ configuration</p>
 	<td class="doc"><p>DependenciesConfiguration represents configuration of external services and other dependencies</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">DependenciesConfiguration</div> <div class="keyword">struct</div> <div class="operator">{</div>
-	<div class="ident">ContentServiceServer</div>   <div class="ident">string</div> <div class="literal">`mapstructure:&#34;content_server&#34; toml:&#34;content_server&#34;`</div><div class="operator"></div>
-	<div class="ident">ContentServiceEndpoint</div> <div class="ident">string</div> <div class="literal">`mapstructure:&#34;content_endpoint&#34; toml:&#34;content_endpoint&#34;`</div><div class="operator"></div>
+	<div class="ident">ContentServiceServer</div>     <div class="ident">string</div> <div class="literal">`mapstructure:&#34;content_server&#34; toml:&#34;content_server&#34;`</div><div class="operator"></div>
+	<div class="ident">ContentServiceEndpoint</div>   <div class="ident">string</div> <div class="literal">`mapstructure:&#34;content_endpoint&#34; toml:&#34;content_endpoint&#34;`</div><div class="operator"></div>
+	<div class="ident">TemplateRendererServer</div>   <div class="ident">string</div> <div class="literal">`mapstructure:&#34;template_renderer_server&#34; toml:&#34;template_renderer_server&#34;`</div><div class="operator"></div>
+	<div class="ident">TemplateRendererEndpoint</div> <div class="ident">string</div> <div class="literal">`mapstructure:&#34;template_renderer_endpoint&#34; toml:&#34;template_renderer_endpoint&#34;`</div><div class="operator"></div>
+	<div class="ident">TemplateRendererURL</div>      <div class="ident">string</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -307,9 +322,39 @@ configuration</p>
 	<td class="doc"><p>KafkaConfiguration represents configuration of Kafka brokers and topics</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">KafkaConfiguration</div> <div class="keyword">struct</div> <div class="operator">{</div>
-	<div class="ident">Address</div> <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;address&#34; toml:&#34;address&#34;`</div><div class="operator"></div>
-	<div class="ident">Topic</div>   <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;topic&#34;   toml:&#34;topic&#34;`</div><div class="operator"></div>
-	<div class="ident">Timeout</div> <div class="ident">time</div><div class="operator">.</div><div class="ident">Duration</div> <div class="literal">`mapstructure:&#34;timeout&#34; toml:&#34;timeout&#34;`</div><div class="operator"></div>
+	<div class="ident">Enabled</div>             <div class="ident">bool</div>          <div class="literal">`mapstructure:&#34;enabled&#34; toml:&#34;enabled&#34;`</div><div class="operator"></div>
+	<div class="ident">Address</div>             <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;address&#34; toml:&#34;address&#34;`</div><div class="operator"></div>
+	<div class="ident">SecurityProtocol</div>    <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;security_protocol&#34; toml:&#34;security_protocol&#34;`</div><div class="operator"></div>
+	<div class="ident">CertPath</div>            <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;cert_path&#34; toml:&#34;cert_path&#34;`</div><div class="operator"></div>
+	<div class="ident">SaslMechanism</div>       <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;sasl_mechanism&#34; toml:&#34;sasl_mechanism&#34;`</div><div class="operator"></div>
+	<div class="ident">SaslUsername</div>        <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;sasl_username&#34; toml:&#34;sasl_username&#34;`</div><div class="operator"></div>
+	<div class="ident">SaslPassword</div>        <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;sasl_password&#34; toml:&#34;sasl_password&#34;`</div><div class="operator"></div>
+	<div class="ident">Topic</div>               <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;topic&#34;   toml:&#34;topic&#34;`</div><div class="operator"></div>
+	<div class="ident">Timeout</div>             <div class="ident">time</div><div class="operator">.</div><div class="ident">Duration</div> <div class="literal">`mapstructure:&#34;timeout&#34; toml:&#34;timeout&#34;`</div><div class="operator"></div>
+	<div class="ident">LikelihoodThreshold</div> <div class="ident">int</div>           <div class="literal">`mapstructure:&#34;likelihood_threshold&#34; toml:&#34;likelihood_threshold&#34;`</div><div class="operator"></div>
+	<div class="ident">ImpactThreshold</div>     <div class="ident">int</div>           <div class="literal">`mapstructure:&#34;impact_threshold&#34; toml:&#34;impact_threshold&#34;`</div><div class="operator"></div>
+	<div class="ident">SeverityThreshold</div>   <div class="ident">int</div>           <div class="literal">`mapstructure:&#34;severity_threshold&#34; toml:&#34;severity_threshold&#34;`</div><div class="operator"></div>
+	<div class="ident">TotalRiskThreshold</div>  <div class="ident">int</div>           <div class="literal">`mapstructure:&#34;total_risk_threshold&#34; toml:&#34;total_risk_threshold&#34;`</div><div class="operator"></div>
+	<div class="ident">EventFilter</div>         <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;event_filter&#34; toml:&#34;event_filter&#34;`</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>ServiceLogConfiguration represents configuration of ServiceLog REST API</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">type</div> <div class="ident">ServiceLogConfiguration</div> <div class="keyword">struct</div> <div class="operator">{</div>
+	<div class="ident">Enabled</div>             <div class="ident">bool</div>          <div class="literal">`mapstructure:&#34;enabled&#34; toml:&#34;enabled&#34;`</div><div class="operator"></div>
+	<div class="ident">OfflineToken</div>        <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;offline_token&#34; toml:&#34;offline_token&#34;`</div><div class="operator"></div>
+	<div class="ident">TokenRefreshmentURL</div> <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;token_refreshment_url&#34; toml:&#34;token_refreshment_url&#34;`</div><div class="operator"></div>
+	<div class="ident">URL</div>                 <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;url&#34; toml:&#34;url&#34;`</div><div class="operator"></div>
+	<div class="ident">Timeout</div>             <div class="ident">time</div><div class="operator">.</div><div class="ident">Duration</div> <div class="literal">`mapstructure:&#34;timeout&#34; toml:&#34;timeout&#34;`</div><div class="operator"></div>
+	<div class="ident">LikelihoodThreshold</div> <div class="ident">int</div>           <div class="literal">`mapstructure:&#34;likelihood_threshold&#34; toml:&#34;likelihood_threshold&#34;`</div><div class="operator"></div>
+	<div class="ident">ImpactThreshold</div>     <div class="ident">int</div>           <div class="literal">`mapstructure:&#34;impact_threshold&#34; toml:&#34;impact_threshold&#34;`</div><div class="operator"></div>
+	<div class="ident">SeverityThreshold</div>   <div class="ident">int</div>           <div class="literal">`mapstructure:&#34;severity_threshold&#34; toml:&#34;severity_threshold&#34;`</div><div class="operator"></div>
+	<div class="ident">TotalRiskThreshold</div>  <div class="ident">int</div>           <div class="literal">`mapstructure:&#34;total_risk_threshold&#34; toml:&#34;total_risk_threshold&#34;`</div><div class="operator"></div>
+	<div class="ident">EventFilter</div>         <div class="ident">string</div>        <div class="literal">`mapstructure:&#34;event_filter&#34; toml:&#34;event_filter&#34;`</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -453,6 +498,14 @@ we need to read fake config file</p>
 		<div class="keyword">return</div> <div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
+	<div class="ident">config</div><div class="operator">.</div><div class="ident">Dependencies</div><div class="operator">.</div><div class="ident">TemplateRendererURL</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">=</div> <div class="ident">createURL</div><div class="operator">(</div>
+		<div class="ident">config</div><div class="operator">.</div><div class="ident">Dependencies</div><div class="operator">.</div><div class="ident">TemplateRendererServer</div><div class="operator">,</div>
+		<div class="ident">config</div><div class="operator">.</div><div class="ident">Dependencies</div><div class="operator">.</div><div class="ident">TemplateRendererEndpoint</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="literal">&#34;error creating content template renderer URL&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">return</div> <div class="ident">config</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
 </code></pre></td>
       </tr>
       
@@ -460,6 +513,15 @@ we need to read fake config file</p>
 	<td class="doc"><p>everything's should be ok</p>
 </td>
 	<td class="code"><pre><code>	<div class="keyword">return</div> <div class="ident">config</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+<div class="keyword">func</div> <div class="ident">createURL</div><div class="operator">(</div><div class="ident">server</div> <div class="ident">string</div><div class="operator">,</div> <div class="ident">endpoint</div> <div class="ident">string</div><div class="operator">)</div> <div class="operator">(</div><div class="ident">string</div><div class="operator">,</div> <div class="ident">error</div><div class="operator">)</div> <div class="operator">{</div>
+	<div class="ident">u</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">url</div><div class="operator">.</div><div class="ident">Parse</div><div class="operator">(</div><div class="ident">server</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+		<div class="keyword">return</div> <div class="literal">&#34;&#34;</div><div class="operator">,</div> <div class="ident">err</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+	<div class="ident">u</div><div class="operator">.</div><div class="ident">Path</div> <div class="operator">=</div> <div class="ident">path</div><div class="operator">.</div><div class="ident">Join</div><div class="operator">(</div><div class="ident">u</div><div class="operator">.</div><div class="ident">Path</div><div class="operator">,</div> <div class="ident">endpoint</div><div class="operator">)</div><div class="operator"></div>
+	<div class="keyword">return</div> <div class="ident">u</div><div class="operator">.</div><div class="ident">String</div><div class="operator">(</div><div class="operator">)</div><div class="operator">,</div> <div class="ident">nil</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -490,6 +552,16 @@ we need to read fake config file</p>
 </td>
 	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">GetKafkaBrokerConfiguration</div><div class="operator">(</div><div class="ident">config</div> <div class="ident">ConfigStruct</div><div class="operator">)</div> <div class="ident">KafkaConfiguration</div> <div class="operator">{</div>
 	<div class="keyword">return</div> <div class="ident">config</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>GetServiceLogConfiguration returns ServiceLog configuration</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">GetServiceLogConfiguration</div><div class="operator">(</div><div class="ident">config</div> <div class="ident">ConfigStruct</div><div class="operator">)</div> <div class="ident">ServiceLogConfiguration</div> <div class="operator">{</div>
+	<div class="keyword">return</div> <div class="ident">config</div><div class="operator">.</div><div class="ident">ServiceLog</div><div class="operator"></div>
 <div class="operator">}</div><div class="operator"></div>
 
 </code></pre></td>
@@ -546,19 +618,46 @@ we need to read fake config file</p>
 
 	<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="literal">&#34;Clowder is enabled&#34;</div><div class="operator">)</div><div class="operator"></div>
 	<div class="keyword">if</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Kafka</div> <div class="operator">==</div> <div class="ident">nil</div> <div class="operator">{</div>
-		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="literal">&#34;No Kafka configuration available in Clowder, using default one&#34;</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="ident">noKafkaConfig</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
-		<div class="ident">broker</div> <div class="operator">:=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Brokers</div><div class="operator">[</div><div class="literal">0</div><div class="operator">]</div><div class="operator"></div>
+		<div class="keyword">if</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Brokers</div><div class="operator">)</div> <div class="operator">&gt;</div> <div class="literal">0</div> <div class="operator">{</div>
+			<div class="ident">broker</div> <div class="operator">:=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Brokers</div><div class="operator">[</div><div class="literal">0</div><div class="operator">]</div><div class="operator"></div>
 </code></pre></td>
       </tr>
       
       <tr class="section">
 	<td class="doc"><p>port can be empty in clowder, so taking it into account</p>
 </td>
-	<td class="code"><pre><code>		<div class="keyword">if</div> <div class="ident">broker</div><div class="operator">.</div><div class="ident">Port</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
-			<div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Address</div> <div class="operator">=</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div><div class="literal">&#34;%s:%d&#34;</div><div class="operator">,</div> <div class="ident">broker</div><div class="operator">.</div><div class="ident">Hostname</div><div class="operator">,</div> <div class="operator">*</div><div class="ident">broker</div><div class="operator">.</div><div class="ident">Port</div><div class="operator">)</div><div class="operator"></div>
+	<td class="code"><pre><code>			<div class="keyword">if</div> <div class="ident">broker</div><div class="operator">.</div><div class="ident">Port</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+				<div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Address</div> <div class="operator">=</div> <div class="ident">fmt</div><div class="operator">.</div><div class="ident">Sprintf</div><div class="operator">(</div><div class="literal">&#34;%s:%d&#34;</div><div class="operator">,</div> <div class="ident">broker</div><div class="operator">.</div><div class="ident">Hostname</div><div class="operator">,</div> <div class="operator">*</div><div class="ident">broker</div><div class="operator">.</div><div class="ident">Port</div><div class="operator">)</div><div class="operator"></div>
+			<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+				<div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Address</div> <div class="operator">=</div> <div class="ident">broker</div><div class="operator">.</div><div class="ident">Hostname</div><div class="operator"></div>
+			<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>SSL config</p>
+</td>
+	<td class="code"><pre><code>			<div class="keyword">if</div> <div class="ident">broker</div><div class="operator">.</div><div class="ident">Authtype</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+				<div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">SaslUsername</div> <div class="operator">=</div> <div class="operator">*</div><div class="ident">broker</div><div class="operator">.</div><div class="ident">Sasl</div><div class="operator">.</div><div class="ident">Username</div><div class="operator"></div>
+				<div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">SaslPassword</div> <div class="operator">=</div> <div class="operator">*</div><div class="ident">broker</div><div class="operator">.</div><div class="ident">Sasl</div><div class="operator">.</div><div class="ident">Password</div><div class="operator"></div>
+				<div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">SaslMechanism</div> <div class="operator">=</div> <div class="operator">*</div><div class="ident">broker</div><div class="operator">.</div><div class="ident">Sasl</div><div class="operator">.</div><div class="ident">SaslMechanism</div><div class="operator"></div>
+				<div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">SecurityProtocol</div> <div class="operator">=</div> <div class="operator">*</div><div class="ident">broker</div><div class="operator">.</div><div class="ident">Sasl</div><div class="operator">.</div><div class="ident">SecurityProtocol</div><div class="operator"></div>
+				<div class="keyword">if</div> <div class="ident">caPath</div><div class="operator">,</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">KafkaCa</div><div class="operator">(</div><div class="ident">broker</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">==</div> <div class="ident">nil</div> <div class="operator">{</div>
+					<div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">CertPath</div> <div class="operator">=</div> <div class="ident">caPath</div><div class="operator"></div>
+				<div class="operator">}</div><div class="operator"></div>
+			<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+				<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="ident">noSaslConfig</div><div class="operator">)</div><div class="operator"></div>
+			<div class="operator">}</div><div class="operator"></div>
+
 		<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
-			<div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Address</div> <div class="operator">=</div> <div class="ident">broker</div><div class="operator">.</div><div class="ident">Hostname</div><div class="operator"></div>
+			<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="ident">noBrokerConfig</div><div class="operator">)</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+
+		<div class="keyword">if</div> <div class="ident">err</div> <div class="operator">:=</div> <div class="ident">updateTopicsMapping</div><div class="operator">(</div><div class="ident">c</div><div class="operator">)</div><div class="operator">;</div> <div class="ident">err</div> <div class="operator">!=</div> <div class="ident">nil</div> <div class="operator">{</div>
+			<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="ident">mappingTopicsError</div><div class="operator">)</div><div class="operator"></div>
 		<div class="operator">}</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
@@ -574,6 +673,24 @@ we need to read fake config file</p>
 		<div class="ident">c</div><div class="operator">.</div><div class="ident">Storage</div><div class="operator">.</div><div class="ident">PGPort</div> <div class="operator">=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Database</div><div class="operator">.</div><div class="ident">Port</div><div class="operator"></div>
 		<div class="ident">c</div><div class="operator">.</div><div class="ident">Storage</div><div class="operator">.</div><div class="ident">PGUsername</div> <div class="operator">=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Database</div><div class="operator">.</div><div class="ident">Username</div><div class="operator"></div>
 		<div class="ident">c</div><div class="operator">.</div><div class="ident">Storage</div><div class="operator">.</div><div class="ident">PGPassword</div> <div class="operator">=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">LoadedConfig</div><div class="operator">.</div><div class="ident">Database</div><div class="operator">.</div><div class="ident">Password</div><div class="operator"></div>
+	<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="ident">noStorage</div><div class="operator">)</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="keyword">return</div> <div class="ident">nil</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+<div class="keyword">func</div> <div class="ident">updateTopicsMapping</div><div class="operator">(</div><div class="ident">c</div> <div class="operator">*</div><div class="ident">ConfigStruct</div><div class="operator">)</div> <div class="ident">error</div> <div class="operator">{</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>Updating topics from clowder mapping if available</p>
+</td>
+	<td class="code"><pre><code>	<div class="keyword">if</div> <div class="ident">topicCfg</div><div class="operator">,</div> <div class="ident">ok</div> <div class="operator">:=</div> <div class="ident">clowder</div><div class="operator">.</div><div class="ident">KafkaTopics</div><div class="operator">[</div><div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Topic</div><div class="operator">]</div><div class="operator">;</div> <div class="ident">ok</div> <div class="operator">{</div>
+		<div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Topic</div> <div class="operator">=</div> <div class="ident">topicCfg</div><div class="operator">.</div><div class="ident">Name</div><div class="operator"></div>
+	<div class="operator">}</div> <div class="keyword">else</div> <div class="operator">{</div>
+		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Printf</div><div class="operator">(</div><div class="ident">noTopicMapping</div><div class="operator">,</div> <div class="ident">c</div><div class="operator">.</div><div class="ident">Kafka</div><div class="operator">.</div><div class="ident">Topic</div><div class="operator">)</div><div class="operator"></div>
 	<div class="operator">}</div><div class="operator"></div>
 
 	<div class="keyword">return</div> <div class="ident">nil</div><div class="operator"></div>

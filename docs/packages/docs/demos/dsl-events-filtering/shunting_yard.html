@@ -1,0 +1,370 @@
+<!DOCTYPE html>
+<!--
+ Copyright 2022 Red Hat, Inc
+
+ Licensed under the Apache License, Version 2.0 (the "License");
+ you may not use this file except in compliance with the License.
+ You may obtain a copy of the License at
+
+      http://www.apache.org/licenses/LICENSE-2.0
+
+ Unless required by applicable law or agreed to in writing, software
+ distributed under the License is distributed on an "AS IS" BASIS,
+ WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+ See the License for the specific language governing permissions and
+ limitations under the License.
+-->
+
+<html>
+<head>
+<title>shunting_yard.go</title>
+<meta charset="utf-8"/>
+<style type="text/css">body {
+    background: rgb(225, 225, 225);
+    margin: 0px;
+    padding: 0px;
+}
+
+#docgo p {
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 15px;
+    margin-left: 0px;
+}
+
+#docgo div {
+    display: inline;
+}
+
+#docgo #background {
+    position: fixed;
+    top: 0; left: 525px; right: 0; bottom: 0;
+    background: rgb(47, 47, 47);
+    border-left: 1px solid #e5e5ee;
+    z-index: -1;
+}
+
+#docgo .keyword {
+    color: rgb(250, 200, 100);
+}
+
+#docgo .literal {
+    color: rgb(140, 190, 100);
+}
+
+#docgo .ident {
+    color: white;
+}
+
+#docgo .operator {
+    color: white;
+}
+
+#docgo .comment {
+}
+
+#docgo h1, h2, h3, h4, h5 {
+    text-align: left;
+    margin-top: 0px;
+    margin-right: 0px;
+    margin-bottom: 15px;
+    margin-left: 0px;
+}
+
+#docgo h1 {
+    margin-top: 40px;
+}
+
+#docgo .doc {
+    vertical-align: top;
+    font-family: 'Palatino Linotype', 'Book Antiqua', Palatino, FreeSerif, serif;
+    font-size: 15px;
+    line-height: 22px;
+    color: black;
+    min-width: 450px;
+    max-width: 450px;
+    padding-top: 10px;
+    padding-right: 25px;
+    padding-bottom: 1px;
+    padding-left: 50px;
+    overflow-x: hidden;
+}
+
+#docgo .code {
+    min-width: 650px;
+    max-width: 650px;
+    padding-left: 25px;
+    padding-right: 15px;
+    border-left: 1px;
+    overflow-x: hidden;
+    vertical-align: top;
+}
+
+#docgo .code pre code  {
+    font-size: 12px;
+    line-height: 18px;
+    font-family: Menlo, Monaco, Consolas, "Lucida Console", monospace;
+    color: rgb(120, 120, 120);
+}
+</style>
+</head>
+<body>
+<div id="docgo">
+  <div id="background"></div>
+  <table>
+    <thead><tr><th class="doc"><h1>shunting_yard.go</h1></th><th class="code"></th></tr></thead>
+    <tbody>
+      
+      <tr class="section">
+	<td class="doc"></td>
+	<td class="code"><pre><code><div class="comment">/*
+Copyright © 2022 Pavel Tisnovsky
+
+Licensed under the Apache License, Version 2.0 (the &#34;License&#34;);
+you may not use this file except in compliance with the License.
+You may obtain a copy of the License at
+
+    http://www.apache.org/licenses/LICENSE-2.0
+
+Unless required by applicable law or agreed to in writing, software
+distributed under the License is distributed on an &#34;AS IS&#34; BASIS,
+WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+See the License for the specific language governing permissions and
+limitations under the License.
+*/</div>
+
+<div class="keyword">package</div> <div class="ident">main</div><div class="operator"></div>
+
+<div class="keyword">import</div> <div class="operator">(</div>
+	<div class="literal">&#34;fmt&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;strconv&#34;</div><div class="operator"></div>
+
+	<div class="literal">&#34;go/scanner&#34;</div><div class="operator"></div>
+	<div class="literal">&#34;go/token&#34;</div><div class="operator"></div>
+<div class="operator">)</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>toRPN function transforms sequence of tokens with expression into PRN code</p>
+</td>
+	<td class="code"><pre><code><div class="keyword">func</div> <div class="ident">toRPN</div><div class="operator">(</div><div class="ident">s</div> <div class="ident">scanner</div><div class="operator">.</div><div class="ident">Scanner</div><div class="operator">)</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">TokenWithValue</div> <div class="operator">{</div>
+	<div class="keyword">const</div> <div class="ident">stringFmt</div> <div class="operator">=</div> <div class="literal">&#34;%s &#34;</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>operators with precedence</p>
+</td>
+	<td class="code"><pre><code>	<div class="keyword">var</div> <div class="ident">operators</div> <div class="operator">=</div> <div class="keyword">map</div><div class="operator">[</div><div class="ident">token</div><div class="operator">.</div><div class="ident">Token</div><div class="operator">]</div><div class="ident">int</div><div class="operator">{</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>arithmetic operators</p>
+</td>
+	<td class="code"><pre><code>		<div class="ident">token</div><div class="operator">.</div><div class="ident">MUL</div><div class="operator">:</div> <div class="literal">5</div><div class="operator">,</div>
+		<div class="ident">token</div><div class="operator">.</div><div class="ident">QUO</div><div class="operator">:</div> <div class="literal">5</div><div class="operator">,</div>
+		<div class="ident">token</div><div class="operator">.</div><div class="ident">REM</div><div class="operator">:</div> <div class="literal">5</div><div class="operator">,</div>
+		<div class="ident">token</div><div class="operator">.</div><div class="ident">ADD</div><div class="operator">:</div> <div class="literal">4</div><div class="operator">,</div>
+		<div class="ident">token</div><div class="operator">.</div><div class="ident">SUB</div><div class="operator">:</div> <div class="literal">4</div><div class="operator">,</div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>relational operators</p>
+</td>
+	<td class="code"><pre><code>		<div class="ident">token</div><div class="operator">.</div><div class="ident">EQL</div><div class="operator">:</div> <div class="literal">3</div><div class="operator">,</div>
+		<div class="ident">token</div><div class="operator">.</div><div class="ident">LSS</div><div class="operator">:</div> <div class="literal">3</div><div class="operator">,</div>
+		<div class="ident">token</div><div class="operator">.</div><div class="ident">GTR</div><div class="operator">:</div> <div class="literal">3</div><div class="operator">,</div>
+		<div class="ident">token</div><div class="operator">.</div><div class="ident">NEQ</div><div class="operator">:</div> <div class="literal">3</div><div class="operator">,</div>
+		<div class="ident">token</div><div class="operator">.</div><div class="ident">LEQ</div><div class="operator">:</div> <div class="literal">3</div><div class="operator">,</div>
+		<div class="ident">token</div><div class="operator">.</div><div class="ident">GEQ</div><div class="operator">:</div> <div class="literal">3</div><div class="operator">,</div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>logic operators</p>
+</td>
+	<td class="code"><pre><code>		<div class="ident">token</div><div class="operator">.</div><div class="ident">LAND</div><div class="operator">:</div> <div class="literal">2</div><div class="operator">,</div>
+		<div class="ident">token</div><div class="operator">.</div><div class="ident">LOR</div><div class="operator">:</div>  <div class="literal">1</div><div class="operator">,</div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="keyword">var</div> <div class="ident">stack</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">token</div><div class="operator">.</div><div class="ident">Token</div><div class="operator"></div>
+
+	<div class="keyword">var</div> <div class="ident">output</div> <div class="operator">[</div><div class="operator">]</div><div class="ident">TokenWithValue</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>tokenization implementation and token processing</p>
+</td>
+	<td class="code"><pre><code><div class="ident">loop</div><div class="operator">:</div>
+	<div class="keyword">for</div> <div class="operator">{</div>
+		<div class="ident">_</div><div class="operator">,</div> <div class="ident">tok</div><div class="operator">,</div> <div class="ident">value</div> <div class="operator">:=</div> <div class="ident">s</div><div class="operator">.</div><div class="ident">Scan</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+
+		<div class="keyword">switch</div> <div class="ident">tok</div> <div class="operator">{</div>
+		<div class="keyword">case</div> <div class="ident">token</div><div class="operator">.</div><div class="ident">INT</div><div class="operator">:</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>integer value can be added directly into output</p>
+</td>
+	<td class="code"><pre><code>			<div class="ident">intValue</div><div class="operator">,</div> <div class="ident">_</div> <div class="operator">:=</div> <div class="ident">strconv</div><div class="operator">.</div><div class="ident">Atoi</div><div class="operator">(</div><div class="ident">value</div><div class="operator">)</div><div class="operator"></div>
+			<div class="ident">output</div> <div class="operator">=</div> <div class="ident">append</div><div class="operator">(</div><div class="ident">output</div><div class="operator">,</div> <div class="ident">ValueToken</div><div class="operator">(</div><div class="ident">tok</div><div class="operator">,</div> <div class="ident">intValue</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+			<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Printf</div><div class="operator">(</div><div class="literal">&#34;%d &#34;</div><div class="operator">,</div> <div class="ident">intValue</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">case</div> <div class="ident">token</div><div class="operator">.</div><div class="ident">IDENT</div><div class="operator">:</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>identifier can be added directly into output</p>
+</td>
+	<td class="code"><pre><code>			<div class="ident">output</div> <div class="operator">=</div> <div class="ident">append</div><div class="operator">(</div><div class="ident">output</div><div class="operator">,</div> <div class="ident">IdentifierToken</div><div class="operator">(</div><div class="ident">tok</div><div class="operator">,</div> <div class="ident">value</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+			<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Printf</div><div class="operator">(</div><div class="ident">stringFmt</div><div class="operator">,</div> <div class="ident">value</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">case</div> <div class="ident">token</div><div class="operator">.</div><div class="ident">LPAREN</div><div class="operator">:</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>left paren is pushed into stack</p>
+</td>
+	<td class="code"><pre><code>			<div class="ident">stack</div> <div class="operator">=</div> <div class="ident">append</div><div class="operator">(</div><div class="ident">stack</div><div class="operator">,</div> <div class="ident">tok</div><div class="operator">)</div><div class="operator"></div>
+		<div class="keyword">case</div> <div class="ident">token</div><div class="operator">.</div><div class="ident">RPAREN</div><div class="operator">:</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>right paren start processing operands on stack (until first left paren is found)</p>
+</td>
+	<td class="code"><pre><code>			<div class="keyword">var</div> <div class="ident">tok</div> <div class="ident">token</div><div class="operator">.</div><div class="ident">Token</div><div class="operator"></div>
+			<div class="keyword">for</div> <div class="operator">{</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>read value from stack (POP)</p>
+</td>
+	<td class="code"><pre><code>				<div class="ident">tok</div><div class="operator">,</div> <div class="ident">stack</div> <div class="operator">=</div> <div class="ident">stack</div><div class="operator">[</div><div class="ident">len</div><div class="operator">(</div><div class="ident">stack</div><div class="operator">)</div><div class="operator">-</div><div class="literal">1</div><div class="operator">]</div><div class="operator">,</div> <div class="ident">stack</div><div class="operator">[</div><div class="operator">:</div><div class="ident">len</div><div class="operator">(</div><div class="ident">stack</div><div class="operator">)</div><div class="operator">-</div><div class="literal">1</div><div class="operator">]</div><div class="operator"></div>
+				<div class="keyword">if</div> <div class="ident">tok</div> <div class="operator">==</div> <div class="ident">token</div><div class="operator">.</div><div class="ident">LPAREN</div> <div class="operator">{</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>remove left paren if found + stop operand processing</p>
+</td>
+	<td class="code"><pre><code>					<div class="keyword">break</div><div class="operator"></div>
+				<div class="operator">}</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>other tokens poped from stack can be added to output</p>
+</td>
+	<td class="code"><pre><code>				<div class="ident">output</div> <div class="operator">=</div> <div class="ident">append</div><div class="operator">(</div><div class="ident">output</div><div class="operator">,</div> <div class="ident">OperatorToken</div><div class="operator">(</div><div class="ident">tok</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+				<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Printf</div><div class="operator">(</div><div class="literal">&#34;%v &#34;</div><div class="operator">,</div> <div class="ident">tok</div><div class="operator">)</div><div class="operator"></div>
+			<div class="operator">}</div><div class="operator"></div>
+		<div class="keyword">case</div> <div class="ident">token</div><div class="operator">.</div><div class="ident">EOF</div><div class="operator">:</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>special token marking end of tokenization</p>
+</td>
+	<td class="code"><pre><code>			<div class="keyword">break</div> <div class="ident">loop</div><div class="operator"></div>
+		<div class="keyword">default</div><div class="operator">:</div>
+			<div class="ident">priority1</div><div class="operator">,</div> <div class="ident">isOperator</div> <div class="operator">:=</div> <div class="ident">operators</div><div class="operator">[</div><div class="ident">tok</div><div class="operator">]</div><div class="operator"></div>
+			<div class="keyword">if</div> <div class="ident">isOperator</div> <div class="operator">{</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>traverse through values on stack</p>
+</td>
+	<td class="code"><pre><code>				<div class="keyword">for</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">stack</div><div class="operator">)</div> <div class="operator">&gt;</div> <div class="literal">0</div> <div class="operator">{</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>TOP operation</p>
+</td>
+	<td class="code"><pre><code>					<div class="ident">tok</div> <div class="operator">:=</div> <div class="ident">stack</div><div class="operator">[</div><div class="ident">len</div><div class="operator">(</div><div class="ident">stack</div><div class="operator">)</div><div class="operator">-</div><div class="literal">1</div><div class="operator">]</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>read priority for operator read from stack</p>
+</td>
+	<td class="code"><pre><code>					<div class="ident">priority2</div> <div class="operator">:=</div> <div class="ident">operators</div><div class="operator">[</div><div class="ident">tok</div><div class="operator">]</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>compare operator priorities</p>
+</td>
+	<td class="code"><pre><code>					<div class="keyword">if</div> <div class="ident">priority1</div> <div class="operator">&gt;</div> <div class="ident">priority2</div> <div class="operator">{</div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>priority of read operator is greater than:
+-&gt; end of processing</p>
+</td>
+	<td class="code"><pre><code>						<div class="keyword">break</div><div class="operator"></div>
+					<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>priority of read operator is less than or equal:
+-&gt; process read operator and POP it from stack</p>
+</td>
+	<td class="code"><pre><code>					<div class="ident">stack</div> <div class="operator">=</div> <div class="ident">stack</div><div class="operator">[</div><div class="operator">:</div><div class="ident">len</div><div class="operator">(</div><div class="ident">stack</div><div class="operator">)</div><div class="operator">-</div><div class="literal">1</div><div class="operator">]</div> <div class="operator"></div><div class="comment">// POP</div>
+					<div class="ident">output</div> <div class="operator">=</div> <div class="ident">append</div><div class="operator">(</div><div class="ident">output</div><div class="operator">,</div> <div class="ident">OperatorToken</div><div class="operator">(</div><div class="ident">tok</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+					<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Printf</div><div class="operator">(</div><div class="ident">stringFmt</div><div class="operator">,</div> <div class="ident">tok</div><div class="operator">)</div><div class="operator"></div>
+				<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>newly read operator needs to be pushed onto stack</p>
+</td>
+	<td class="code"><pre><code>				<div class="ident">stack</div> <div class="operator">=</div> <div class="ident">append</div><div class="operator">(</div><div class="ident">stack</div><div class="operator">,</div> <div class="ident">tok</div><div class="operator">)</div><div class="operator"></div>
+			<div class="operator">}</div><div class="operator"></div>
+		<div class="operator">}</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+</code></pre></td>
+      </tr>
+      
+      <tr class="section">
+	<td class="doc"><p>clean out the stack at end of processing</p>
+</td>
+	<td class="code"><pre><code>	<div class="keyword">for</div> <div class="ident">len</div><div class="operator">(</div><div class="ident">stack</div><div class="operator">)</div> <div class="operator">&gt;</div> <div class="literal">0</div> <div class="operator">{</div>
+		<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Printf</div><div class="operator">(</div><div class="ident">stringFmt</div><div class="operator">,</div> <div class="ident">stack</div><div class="operator">[</div><div class="ident">len</div><div class="operator">(</div><div class="ident">stack</div><div class="operator">)</div><div class="operator">-</div><div class="literal">1</div><div class="operator">]</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">output</div> <div class="operator">=</div> <div class="ident">append</div><div class="operator">(</div><div class="ident">output</div><div class="operator">,</div> <div class="ident">OperatorToken</div><div class="operator">(</div><div class="ident">stack</div><div class="operator">[</div><div class="ident">len</div><div class="operator">(</div><div class="ident">stack</div><div class="operator">)</div><div class="operator">-</div><div class="literal">1</div><div class="operator">]</div><div class="operator">)</div><div class="operator">)</div><div class="operator"></div>
+		<div class="ident">stack</div> <div class="operator">=</div> <div class="ident">stack</div><div class="operator">[</div><div class="operator">:</div><div class="ident">len</div><div class="operator">(</div><div class="ident">stack</div><div class="operator">)</div><div class="operator">-</div><div class="literal">1</div><div class="operator">]</div><div class="operator"></div>
+	<div class="operator">}</div><div class="operator"></div>
+
+	<div class="ident">fmt</div><div class="operator">.</div><div class="ident">Println</div><div class="operator">(</div><div class="operator">)</div><div class="operator"></div>
+
+	<div class="keyword">return</div> <div class="ident">output</div><div class="operator"></div>
+<div class="operator">}</div><div class="operator"></div>
+
+</code></pre></td>
+      </tr>
+      
+    </tbody>
+  </table>
+</div>
+</body>
+</html>
