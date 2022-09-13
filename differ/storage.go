@@ -138,14 +138,6 @@ const (
 		 WHERE updated_at < NOW() - $1::INTERVAL
 `
 
-	// Delete older records from new_reports table for given organization ID
-	deleteOldRecordsFromNewReportsTableForOrganization = `
-                DELETE
-		  FROM new_reports
-		 WHERE org_id = $1
-		   AND updated_at < NOW() - $2::INTERVAL 
-`
-
 	// Delete older records from reported table
 	deleteOldRecordsFromReportedTable = `
                 DELETE
