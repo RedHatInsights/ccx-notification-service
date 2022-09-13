@@ -20,7 +20,7 @@ CCX Notification Service
 * [Usage](#usage)
     * [All command line options](#all-command-line-options)
 * [Database](#database)
-* [Schema description](#schema-description)
+    * [Schema description](#schema-description)
 * [Notification templates](#notification-templates)
 * [Testing](#testing)
 * [Package manifest](#package-manifest)
