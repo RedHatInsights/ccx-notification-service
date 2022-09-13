@@ -33,27 +33,6 @@ func (_m *Storage) CleanupNewReports(maxAge string) (int, error) {
 	return r0, r1
 }
 
-// CleanupNewReportsForOrganization provides a mock function with given fields: orgID, maxAge
-func (_m *Storage) CleanupNewReportsForOrganization(orgID types.OrgID, maxAge string) (int, error) {
-	ret := _m.Called(orgID, maxAge)
-
-	var r0 int
-	if rf, ok := ret.Get(0).(func(types.OrgID, string) int); ok {
-		r0 = rf(orgID, maxAge)
-	} else {
-		r0 = ret.Get(0).(int)
-	}
-
-	var r1 error
-	if rf, ok := ret.Get(1).(func(types.OrgID, string) error); ok {
-		r1 = rf(orgID, maxAge)
-	} else {
-		r1 = ret.Error(1)
-	}
-
-	return r0, r1
-}
-
 // CleanupOldReports provides a mock function with given fields: maxAge
 func (_m *Storage) CleanupOldReports(maxAge string) (int, error) {
 	ret := _m.Called(maxAge)
