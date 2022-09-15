@@ -16,6 +16,9 @@ limitations under the License.
 
 package differ
 
+// Documentation in literate-programming-style is available at:
+// https://redhatinsights.github.io/ccx-notification-writer/packages/differ/evaluator_test.html
+
 import (
 	"testing"
 

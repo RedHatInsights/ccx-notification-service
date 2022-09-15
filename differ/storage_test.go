@@ -16,6 +16,9 @@ limitations under the License.
 
 package differ_test
 
+// Documentation in literate-programming-style is available at:
+// https://redhatinsights.github.io/ccx-notification-writer/packages/differ/storage_test.html
+
 import (
 	"database/sql"
 	"fmt"
