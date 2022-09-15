@@ -16,6 +16,9 @@ limitations under the License.
 
 package differ
 
+// Documentation in literate-programming-style is available at:
+// https://redhatinsights.github.io/ccx-notification-writer/packages/differ/differ_cli_args_test.html
+
 import (
 	"os"
 	"os/exec"

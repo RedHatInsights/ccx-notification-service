@@ -16,6 +16,12 @@ limitations under the License.
 
 package disabled
 
+// Generated documentation is available at:
+// https://pkg.go.dev/github.com/RedHatInsights/ccx-notification-service/producer
+//
+// Documentation in literate-programming-style is available at:
+// https://redhatinsights.github.io/ccx-notification-service/packages/disabled/disabled_producer.html
+
 import "github.com/RedHatInsights/ccx-notification-service/types"
 
 // Producer is an implementation of Producer interface where no message is sent

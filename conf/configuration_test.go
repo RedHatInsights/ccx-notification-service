@@ -16,6 +16,9 @@ limitations under the License.
 
 package conf_test
 
+// Documentation in literate-programming-style is available at:
+// https://redhatinsights.github.io/ccx-notification-writer/packages/conf_test/configuration_test.html
+
 import (
 	"fmt"
 	"os"
