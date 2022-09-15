@@ -532,13 +532,12 @@ func processClusters(ruleContent types.RulesMap, storage Storage, clusters []typ
 func setupKafkaProducer(config conf.ConfigStruct) {
 	// broker enable/disable is very important information, let's inform
 	// admins about the state
-	if conf.GetKafkaBrokerConfiguration(config).Enabled {
-		log.Info().Msg("Broker config for Notification Service is enabled")
-	} else {
+	if !conf.GetKafkaBrokerConfiguration(config).Enabled {
 		log.Info().Msg("Broker config for Notification Service is disabled")
 		kafkaNotifier = &disabled.Producer{}
 		return
 	}
+	log.Info().Msg("Broker config for Notification Service is enabled")
 
 	kafkaProducer, err := kafka.New(config)
 	if err != nil {
@@ -554,13 +553,12 @@ func setupKafkaProducer(config conf.ConfigStruct) {
 func setupServiceLogProducer(config conf.ConfigStruct) {
 	// broker enable/disable is very important information, let's inform
 	// admins about the state
-	if conf.GetServiceLogConfiguration(config).Enabled {
-		log.Info().Msg("Service Log config for Notification Service is enabled")
-	} else {
+	if !conf.GetServiceLogConfiguration(config).Enabled {
 		log.Info().Msg("Service Log config for Notification Service is disabled")
 		serviceLogNotifier = &disabled.Producer{}
 		return
 	}
+	log.Info().Msg("Service Log config for Notification Service is enabled")
 
 	producer, err := servicelog.New(config)
 	if err != nil {
