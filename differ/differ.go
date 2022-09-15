@@ -723,20 +723,22 @@ func registerMetrics(metricsConfig conf.MetricsConfiguration) {
 	}
 }
 
-func closeStorage(storage *DBStorage) {
+func closeStorage(storage *DBStorage) error {
 	err := storage.Close()
 	if err != nil {
 		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusStorageError)
+		return err
 	}
+	return nil
 }
 
-func closeKafkaNotifier() {
+func closeKafkaNotifier() error {
 	err := kafkaNotifier.Close()
 	if err != nil {
 		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusKafkaConnectionNotClosedError)
+		return err
 	}
+	return nil
 }
 
 func pushMetrics(metricsConf conf.MetricsConfiguration) {
@@ -795,17 +797,8 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	notificationClusterDetailsURI = notifConfig.ClusterDetailsURI
 	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
 	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
-	kafkaEventThresholds.Likelihood = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
-	kafkaEventThresholds.Impact = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
-	kafkaEventThresholds.Severity = conf.GetKafkaBrokerConfiguration(config).SeverityThreshold
-	kafkaEventThresholds.TotalRisk = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
-	kafkaEventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
 
-	if kafkaEventFilter == "" {
-		err := fmt.Errorf("Configuration problem")
-		log.Err(err).Msg(eventFilterNotSetMessage)
-		os.Exit(ExitStatusEventFilterError)
-	}
+	setupFiltersAndThresholds(config)
 
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)
@@ -839,14 +832,38 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg("Checking new issues for all new reports")
 	processClusters(ruleContent, storage, clusters)
 	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
-	log.Info().Msg(separator)
-	closeStorage(storage)
-	log.Info().Msg(separator)
-	closeKafkaNotifier()
-	log.Info().Msg(separator)
+	closeDiffer(storage)
 	log.Info().Msg("Differ finished. Pushing metrics to the configured prometheus gateway.")
 	pushMetrics(conf.GetMetricsConfiguration(config))
 	log.Info().Msg(separator)
+}
+
+func closeDiffer(storage *DBStorage) {
+	log.Info().Msg(separator)
+	err := closeStorage(storage)
+	if err != nil {
+		defer os.Exit(ExitStatusStorageError)
+	}
+	log.Info().Msg(separator)
+	err = closeKafkaNotifier()
+	if err != nil {
+		defer os.Exit(ExitStatusKafkaBrokerError)
+	}
+	log.Info().Msg(separator)
+}
+
+func setupFiltersAndThresholds(config conf.ConfigStruct) {
+	kafkaEventThresholds.Likelihood = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
+	kafkaEventThresholds.Impact = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
+	kafkaEventThresholds.Severity = conf.GetKafkaBrokerConfiguration(config).SeverityThreshold
+	kafkaEventThresholds.TotalRisk = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
+	kafkaEventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
+
+	if kafkaEventFilter == "" {
+		err := fmt.Errorf("Configuration problem")
+		log.Err(err).Msg(eventFilterNotSetMessage)
+		os.Exit(ExitStatusEventFilterError)
+	}
 }
 
 // Run function is entry point to the differ
