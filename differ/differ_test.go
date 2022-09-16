@@ -348,7 +348,7 @@ func TestSetupNotificationProducerInvalidBrokerConf(t *testing.T) {
 			},
 		}
 
-		setupNotificationProducer(testConfig)
+		setupKafkaProducer(testConfig)
 	}
 	cmd := exec.Command(os.Args[0], "-test.run=TestSetupNotificationProducerInvalidBrokerConf")
 	cmd.Env = append(os.Environ(), "SETUP_PRODUCER=1")
@@ -394,9 +394,9 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 		Producer:      nil,
 	}
 
-	setupNotificationProducer(testConfig)
+	setupKafkaProducer(testConfig)
 
-	prod := notifier.(*kafka.Producer)
+	prod := kafkaNotifier.(*kafka.Producer)
 
 	assert.Equal(t, kafkaProducer.Configuration.Address, prod.Configuration.Address)
 	assert.Equal(t, kafkaProducer.Configuration.Topic, prod.Configuration.Topic)
@@ -404,7 +404,7 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 	assert.Nil(t, kafkaProducer.Producer, "Unexpected behavior: Producer was not set up correctly")
 	assert.NotNil(t, prod.Producer, "Unexpected behavior: Producer was not set up correctly")
 
-	err := notifier.Close()
+	err := kafkaNotifier.Close()
 	assert.Nil(t, err, "Unexpected behavior: Producer was not closed successfully")
 }
 
@@ -415,14 +415,14 @@ func TestSetupNotificationProducerDisabledBrokerConfig(t *testing.T) {
 		},
 	}
 
-	setupNotificationProducer(testConfig)
+	setupKafkaProducer(testConfig)
 
 	msgBytes, err := json.Marshal(types.NotificationMessage{})
 	helpers.FailOnError(t, err)
 
-	_, _, err = notifier.ProduceMessage(msgBytes)
+	_, _, err = kafkaNotifier.ProduceMessage(msgBytes)
 	assert.NoError(t, err, "error producing message")
-	assert.NoError(t, notifier.Close(), "error closing producer")
+	assert.NoError(t, kafkaNotifier.Close(), "error closing producer")
 }
 
 // ---------------------------------------------------------------------------------------
@@ -792,8 +792,8 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 		},
 	)
 
-	originalNotifier := notifier
-	notifier = &producerMock
+	originalNotifier := kafkaNotifier
+	kafkaNotifier = &producerMock
 
 	errorKeys := map[string]utypes.RuleErrorKeyContent{
 		"RULE_1": {
@@ -911,7 +911,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 	assert.Contains(t, executionLog, "Producing instant notification for cluster second_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	notifier = originalNotifier
+	kafkaNotifier = originalNotifier
 }
 
 func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
@@ -952,8 +952,8 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 		},
 	)
 
-	originalNotifier := notifier
-	notifier = &producerMock
+	originalNotifier := kafkaNotifier
+	kafkaNotifier = &producerMock
 
 	errorKeys := map[string]utypes.RuleErrorKeyContent{
 		"RULE_1": {
@@ -1050,7 +1050,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 	assert.Contains(t, executionLog, "Producing instant notification for cluster second_cluster with 1 events", "processClusters should generate one notification for 'first_cluster' with given data")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	notifier = originalNotifier
+	kafkaNotifier = originalNotifier
 }
 
 func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) {
@@ -1289,8 +1289,8 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 		},
 	)
 
-	originalNotifier := notifier
-	notifier = &producerMock
+	originalNotifier := kafkaNotifier
+	kafkaNotifier = &producerMock
 
 	previouslyReported[types.NotificationBackendTarget][types.ClusterOrgKey{OrgID: types.OrgID(3), ClusterName: "a cluster"}] = types.NotificationRecord{
 		OrgID:              3,
@@ -1312,7 +1312,7 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	assert.Contains(t, executionLog, "Producing instant notification for cluster second_cluster with 1 events", "processClusters should generate one notification for 'second_cluster' with given data")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	notifier = originalNotifier
+	kafkaNotifier = originalNotifier
 	previouslyReported = types.NotifiedRecordsPerClusterByTarget{
 		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
 		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
@@ -1435,8 +1435,8 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 		},
 	)
 
-	originalNotifier := notifier
-	notifier = &producerMock
+	originalNotifier := kafkaNotifier
+	kafkaNotifier = &producerMock
 
 	notificationType = types.WeeklyDigest
 	processClusters(ruleContent, &storage, clusters)
@@ -1449,5 +1449,5 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"account number\":2,\"total recommendations\":1,\"clusters affected\":1,\"critical notifications\":0,\"important notifications\":0,\"message\":\"Producing weekly notification for \"}")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	notifier = originalNotifier
+	kafkaNotifier = originalNotifier
 }

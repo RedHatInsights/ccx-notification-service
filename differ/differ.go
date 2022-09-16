@@ -150,11 +150,11 @@ type EventValue struct {
 
 var (
 	notificationType               types.EventType
-	notifier                       producer.Producer
+	kafkaNotifier                  producer.Producer
 	notificationClusterDetailsURI  string
 	notificationRuleDetailsURI     string
 	notificationInsightsAdvisorURL string
-	eventThresholds                EventThresholds = EventThresholds{
+	kafkaEventThresholds           EventThresholds = EventThresholds{
 		TotalRisk:  DefaultTotalRiskThreshold,
 		Likelihood: DefaultLikelihoodThreshold,
 		Impact:     DefaultImpactThreshold,
@@ -164,7 +164,7 @@ var (
 		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
 		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
 	}
-	eventFilter string = DefaultEventFilter
+	kafkaEventFilter string = DefaultEventFilter
 )
 
 // showVersion function displays version information.
@@ -346,8 +346,8 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			}
 
 			// try to evaluate event filter expression
-			result, err := evaluateFilterExpression(eventFilter,
-				eventThresholds, eventValue)
+			result, err := evaluateFilterExpression(kafkaEventFilter,
+				kafkaEventThresholds, eventValue)
 
 			if err != nil {
 				log.Err(err).Msg(evaluationErrorMessage)
@@ -386,7 +386,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			log.Error().Err(err).Msg(invalidJSONContent)
 			continue
 		}
-		_, offset, err := notifier.ProduceMessage(msgBytes)
+		_, offset, err := kafkaNotifier.ProduceMessage(msgBytes)
 		if err != nil {
 			log.Error().
 				Str(errorStr, err.Error()).
@@ -505,7 +505,7 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storag
 			log.Error().Err(err).Msg(invalidJSONContent)
 			continue
 		}
-		_, _, err = notifier.ProduceMessage(msgBytes)
+		_, _, err = kafkaNotifier.ProduceMessage(msgBytes)
 		if err != nil {
 			log.Error().
 				Str(errorStr, err.Error()).
@@ -524,15 +524,15 @@ func processClusters(ruleContent types.RulesMap, storage Storage, clusters []typ
 	}
 }
 
-// setupNotificationProducer function creates a Kafka producer using the provided configuration
-func setupNotificationProducer(config conf.ConfigStruct) {
+// setupKafkaProducer function creates a Kafka producer using the provided configuration
+func setupKafkaProducer(config conf.ConfigStruct) {
 	// broker enable/disable is very important information, let's inform
 	// admins about the state
 	if conf.GetKafkaBrokerConfiguration(config).Enabled {
 		log.Info().Msg("Broker config for Notification Service is enabled")
 	} else {
 		log.Info().Msg("Broker config for Notification Service is disabled")
-		notifier = &disabled.Producer{}
+		kafkaNotifier = &disabled.Producer{}
 		return
 	}
 
@@ -544,7 +544,7 @@ func setupNotificationProducer(config conf.ConfigStruct) {
 			Msg("Couldn't initialize Kafka producer with the provided config.")
 		os.Exit(ExitStatusKafkaBrokerError)
 	}
-	notifier = kafkaProducer
+	kafkaNotifier = kafkaProducer
 }
 
 // generateInstantNotificationMessage function generates a notification message
@@ -723,20 +723,22 @@ func registerMetrics(metricsConfig conf.MetricsConfiguration) {
 	}
 }
 
-func closeStorage(storage *DBStorage) {
+func closeStorage(storage *DBStorage) error {
 	err := storage.Close()
 	if err != nil {
 		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusStorageError)
+		return err
 	}
+	return nil
 }
 
-func closeNotifier() {
-	err := notifier.Close()
+func closeKafkaNotifier() error {
+	err := kafkaNotifier.Close()
 	if err != nil {
 		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusKafkaConnectionNotClosedError)
+		return err
 	}
+	return nil
 }
 
 func pushMetrics(metricsConf conf.MetricsConfiguration) {
@@ -795,17 +797,8 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	notificationClusterDetailsURI = notifConfig.ClusterDetailsURI
 	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
 	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
-	eventThresholds.Likelihood = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
-	eventThresholds.Impact = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
-	eventThresholds.Severity = conf.GetKafkaBrokerConfiguration(config).SeverityThreshold
-	eventThresholds.TotalRisk = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
-	eventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
 
-	if eventFilter == "" {
-		err := fmt.Errorf("Configuration problem")
-		log.Err(err).Msg(eventFilterNotSetMessage)
-		os.Exit(ExitStatusEventFilterError)
-	}
+	setupFiltersAndThresholds(config)
 
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)
@@ -833,20 +826,44 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Int("previously reported issues still in cooldown", len(previouslyReported)).Msg("Get previously reported issues: done")
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
-	setupNotificationProducer(config)
+	setupKafkaProducer(config)
 	log.Info().Msg("Kafka producer ready")
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
 	processClusters(ruleContent, storage, clusters)
 	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
-	log.Info().Msg(separator)
-	closeStorage(storage)
-	log.Info().Msg(separator)
-	closeNotifier()
-	log.Info().Msg(separator)
+	closeDiffer(storage)
 	log.Info().Msg("Differ finished. Pushing metrics to the configured prometheus gateway.")
 	pushMetrics(conf.GetMetricsConfiguration(config))
 	log.Info().Msg(separator)
+}
+
+func closeDiffer(storage *DBStorage) {
+	log.Info().Msg(separator)
+	err := closeStorage(storage)
+	if err != nil {
+		defer os.Exit(ExitStatusStorageError)
+	}
+	log.Info().Msg(separator)
+	err = closeKafkaNotifier()
+	if err != nil {
+		defer os.Exit(ExitStatusKafkaBrokerError)
+	}
+	log.Info().Msg(separator)
+}
+
+func setupFiltersAndThresholds(config conf.ConfigStruct) {
+	kafkaEventThresholds.Likelihood = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
+	kafkaEventThresholds.Impact = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
+	kafkaEventThresholds.Severity = conf.GetKafkaBrokerConfiguration(config).SeverityThreshold
+	kafkaEventThresholds.TotalRisk = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
+	kafkaEventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
+
+	if kafkaEventFilter == "" {
+		err := fmt.Errorf("Configuration problem")
+		log.Err(err).Msg(eventFilterNotSetMessage)
+		os.Exit(ExitStatusEventFilterError)
+	}
 }
 
 // Run function is entry point to the differ
@@ -920,5 +937,4 @@ func Run() {
 	}
 
 	startDiffer(config, storage, cliFlags.Verbose)
-
 }
