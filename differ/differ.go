@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/RedHatInsights/ccx-notification-service/producer/servicelog"
 	"os"
 	"strings"
 	"time"
@@ -72,6 +73,8 @@ const (
 	ExitStatusMetricsError
 	// ExitStatusEventFilterError is raised when event filter is not set correctly
 	ExitStatusEventFilterError
+	// ExitStatusServiceLogError is raised when Service Log notifier cannot be initialized
+	ExitStatusServiceLogError
 )
 
 // Messages
@@ -151,6 +154,7 @@ type EventValue struct {
 var (
 	notificationType               types.EventType
 	kafkaNotifier                  producer.Producer
+	serviceLogNotifier             producer.Producer
 	notificationClusterDetailsURI  string
 	notificationRuleDetailsURI     string
 	notificationInsightsAdvisorURL string
@@ -528,13 +532,12 @@ func processClusters(ruleContent types.RulesMap, storage Storage, clusters []typ
 func setupKafkaProducer(config conf.ConfigStruct) {
 	// broker enable/disable is very important information, let's inform
 	// admins about the state
-	if conf.GetKafkaBrokerConfiguration(config).Enabled {
-		log.Info().Msg("Broker config for Notification Service is enabled")
-	} else {
+	if !conf.GetKafkaBrokerConfiguration(config).Enabled {
 		log.Info().Msg("Broker config for Notification Service is disabled")
 		kafkaNotifier = &disabled.Producer{}
 		return
 	}
+	log.Info().Msg("Broker config for Notification Service is enabled")
 
 	kafkaProducer, err := kafka.New(config)
 	if err != nil {
@@ -545,6 +548,27 @@ func setupKafkaProducer(config conf.ConfigStruct) {
 		os.Exit(ExitStatusKafkaBrokerError)
 	}
 	kafkaNotifier = kafkaProducer
+}
+
+func setupServiceLogProducer(config conf.ConfigStruct) {
+	// broker enable/disable is very important information, let's inform
+	// admins about the state
+	if !conf.GetServiceLogConfiguration(config).Enabled {
+		log.Info().Msg("Service Log config for Notification Service is disabled")
+		serviceLogNotifier = &disabled.Producer{}
+		return
+	}
+	log.Info().Msg("Service Log config for Notification Service is enabled")
+
+	producer, err := servicelog.New(config)
+	if err != nil {
+		ProducerSetupErrors.Inc()
+		log.Error().
+			Str(errorStr, err.Error()).
+			Msg("Couldn't initialize Service Log producer with the provided config.")
+		os.Exit(ExitStatusServiceLogError)
+	}
+	serviceLogNotifier = producer
 }
 
 // generateInstantNotificationMessage function generates a notification message
@@ -732,8 +756,8 @@ func closeStorage(storage *DBStorage) error {
 	return nil
 }
 
-func closeKafkaNotifier() error {
-	err := kafkaNotifier.Close()
+func closeNotifier(notifier producer.Producer) error {
+	err := notifier.Close()
 	if err != nil {
 		log.Err(err).Msg(operationFailedMessage)
 		return err
@@ -781,7 +805,6 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	registerMetrics(conf.GetMetricsConfiguration(config))
 
 	log.Info().Msg(separator)
-
 	log.Info().Msg("Getting rule content and impacts from content service")
 
 	ruleContent, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
@@ -829,6 +852,10 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	setupKafkaProducer(config)
 	log.Info().Msg("Kafka producer ready")
 	log.Info().Msg(separator)
+	log.Info().Msg("Preparing Service Log producer")
+	setupServiceLogProducer(config)
+	log.Info().Msg("Service Log producer ready")
+	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
 	processClusters(ruleContent, storage, clusters)
 	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
@@ -845,9 +872,14 @@ func closeDiffer(storage *DBStorage) {
 		defer os.Exit(ExitStatusStorageError)
 	}
 	log.Info().Msg(separator)
-	err = closeKafkaNotifier()
+	err = closeNotifier(kafkaNotifier)
 	if err != nil {
 		defer os.Exit(ExitStatusKafkaBrokerError)
+	}
+	log.Info().Msg(separator)
+	err = closeNotifier(serviceLogNotifier)
+	if err != nil {
+		defer os.Exit(ExitStatusServiceLogError)
 	}
 	log.Info().Msg(separator)
 }
