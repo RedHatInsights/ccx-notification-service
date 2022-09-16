@@ -295,7 +295,7 @@ func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, ev
 }
 
 func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMap,
-	reportItems []types.ReportItem, storage Storage, report types.ClusterReport) int {
+	reportItems []types.ReportItem, storage Storage, report types.ClusterReport) (int, error) {
 
 	notificationMsg := generateInstantNotificationMessage(
 		&notificationClusterDetailsURI,
@@ -346,15 +346,18 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 
 	if len(notificationMsg.Events) == 0 {
 		updateNotificationRecordSameState(storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
-		return 0
+		return 0, nil
 	}
 
-	log.Info().Msgf("Producing instant notification for cluster %s with %d events", string(cluster.ClusterName), len(notificationMsg.Events))
+	log.Info().
+		Str("cluster", string(cluster.ClusterName)).
+		Int("number of events", len(notificationMsg.Events)).
+		Msg("Producing instant notification")
 
 	msgBytes, err := json.Marshal(notificationMsg)
 	if err != nil {
 		log.Error().Err(err).Msg(invalidJSONContent)
-		return 0
+		return -1, err
 	}
 	_, offset, err := kafkaNotifier.ProduceMessage(msgBytes)
 	if err != nil {
@@ -362,16 +365,16 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 			Str(errorStr, err.Error()).
 			Msg("Couldn't send notification message to kafka topic.")
 		updateNotificationRecordErrorState(storage, err, cluster, report, notifiedAt, types.NotificationBackendTarget)
-		os.Exit(ExitStatusKafkaProducerError)
+		return -1, err
 	}
 
 	if offset != -1 {
 		// update the database if any message is sent (not a DisabledProducer)
 		log.Debug().Msg("notifier is not disabled so DB is updated")
 		updateNotificationRecordSentState(storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
-		return len(notificationMsg.Events)
+		return len(notificationMsg.Events), nil
 	}
-	return 0
+	return 0, nil
 }
 
 func processReportsByCluster(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
@@ -411,7 +414,14 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			continue
 		}
 
-		notifiedIssues += produceEntriesToKafka(cluster, ruleContent, deserialized.Reports, storage, report)
+		newNotifiedIssues, err := produceEntriesToKafka(cluster, ruleContent, deserialized.Reports, storage, report)
+		if err != nil {
+			log.Err(err).
+				Str("cluster", string(cluster.ClusterName)).
+				Msg("Unable to send the notification message to Kafka")
+			continue
+		}
+		notifiedIssues += newNotifiedIssues
 	}
 	log.Info().Msgf("Number of entries not processed: %d", skippedEntries)
 	log.Info().Msgf("Number of high impact issues notified: %d", notifiedIssues)
