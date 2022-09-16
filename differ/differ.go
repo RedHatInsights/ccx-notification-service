@@ -164,11 +164,18 @@ var (
 		Impact:     DefaultImpactThreshold,
 		Severity:   DefaultSeverityThreshold,
 	}
+	serviceLogEventThresholds EventThresholds = EventThresholds{
+		TotalRisk:  DefaultTotalRiskThreshold,
+		Likelihood: DefaultLikelihoodThreshold,
+		Impact:     DefaultImpactThreshold,
+		Severity:   DefaultSeverityThreshold,
+	}
 	previouslyReported = types.NotifiedRecordsPerClusterByTarget{
 		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
 		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
 	}
-	kafkaEventFilter string = DefaultEventFilter
+	kafkaEventFilter      string = DefaultEventFilter
+	serviceLogEventFilter string = DefaultEventFilter
 )
 
 // showVersion function displays version information.
@@ -909,6 +916,18 @@ func setupFiltersAndThresholds(config conf.ConfigStruct) {
 	kafkaEventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
 
 	if kafkaEventFilter == "" {
+		err := fmt.Errorf("Configuration problem")
+		log.Err(err).Msg(eventFilterNotSetMessage)
+		os.Exit(ExitStatusEventFilterError)
+	}
+
+	serviceLogEventThresholds.Likelihood = conf.GetServiceLogConfiguration(config).LikelihoodThreshold
+	serviceLogEventThresholds.Impact = conf.GetServiceLogConfiguration(config).ImpactThreshold
+	serviceLogEventThresholds.Severity = conf.GetServiceLogConfiguration(config).SeverityThreshold
+	serviceLogEventThresholds.TotalRisk = conf.GetServiceLogConfiguration(config).TotalRiskThreshold
+	serviceLogEventFilter = conf.GetServiceLogConfiguration(config).EventFilter
+
+	if serviceLogEventFilter == "" {
 		err := fmt.Errorf("Configuration problem")
 		log.Err(err).Msg(eventFilterNotSetMessage)
 		os.Exit(ExitStatusEventFilterError)
