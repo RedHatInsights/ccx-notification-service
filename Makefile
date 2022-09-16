@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: default clean build fmt lint vet cyclo ineffassign shellcheck errcheck goconst gosec abcgo style run test test-postgres cover integration_tests rest_api_tests sqlite_db license before_commit bdd_tests help godoc install_docgo install_addlicense
+.PHONY: default clean build build-tests fmt lint vet cyclo ineffassign shellcheck errcheck goconst gosec abcgo style run test test-postgres cover integration_tests rest_api_tests sqlite_db license before_commit bdd_tests help godoc install_docgo install_addlicense
 
 SOURCES:=$(shell find . -name '*.go')
 BINARY:=ccx-notification-service
@@ -66,6 +66,9 @@ gen-mocks: ## Generates the mocks using mockery. Needs go >= 1.18
 
 test: ${BINARY} gen-mocks ## Run the unit tests
 	./unit-tests.sh
+
+build-test: gen-mocks ## Build native binary with unit tests and benchmarks
+	go test -c
 
 profiler: ${BINARY} ## Run the unit tests with profiler enabled
 	./profile.sh
