@@ -266,7 +266,7 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 	return config, nil
 }
 
-func createURL(server string, endpoint string) (string, error) {
+func createURL(server, endpoint string) (string, error) {
 	u, err := url.Parse(server)
 	if err != nil {
 		return "", err

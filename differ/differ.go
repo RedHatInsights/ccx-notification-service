@@ -524,7 +524,7 @@ func processClusters(ruleContent types.RulesMap, storage Storage, clusters []typ
 	}
 }
 
-// setupKafkaProducer function creates a kafka producer using the provided configuration
+// setupKafkaProducer function creates a Kafka producer using the provided configuration
 func setupKafkaProducer(config conf.ConfigStruct) {
 	// broker enable/disable is very important information, let's inform
 	// admins about the state
@@ -536,7 +536,7 @@ func setupKafkaProducer(config conf.ConfigStruct) {
 		return
 	}
 
-	producer, err := kafka.New(config)
+	kafkaProducer, err := kafka.New(config)
 	if err != nil {
 		ProducerSetupErrors.Inc()
 		log.Error().
@@ -544,7 +544,7 @@ func setupKafkaProducer(config conf.ConfigStruct) {
 			Msg("Couldn't initialize Kafka producer with the provided config.")
 		os.Exit(ExitStatusKafkaBrokerError)
 	}
-	kafkaNotifier = producer
+	kafkaNotifier = kafkaProducer
 }
 
 // generateInstantNotificationMessage function generates a notification message

@@ -185,11 +185,11 @@ func TestLoadNotificationsConfiguration(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	conf := conf.GetNotificationsConfiguration(config)
+	configuration := conf.GetNotificationsConfiguration(config)
 
-	assert.Equal(t, "url_to_specific_rule", conf.RuleDetailsURI)
-	assert.Equal(t, "url_to_advisor", conf.InsightsAdvisorURL)
-	assert.Equal(t, "url_to_specific_cluster", conf.ClusterDetailsURI)
+	assert.Equal(t, "url_to_specific_rule", configuration.RuleDetailsURI)
+	assert.Equal(t, "url_to_advisor", configuration.InsightsAdvisorURL)
+	assert.Equal(t, "url_to_specific_cluster", configuration.ClusterDetailsURI)
 }
 
 // TestLoadConfigurationFromEnvVariableClowderEnabled tests loading the config.
@@ -211,11 +211,11 @@ func TestLoadMetricsConfiguration(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	conf := conf.GetMetricsConfiguration(config)
+	configuration := conf.GetMetricsConfiguration(config)
 
-	assert.Equal(t, "ccx_notification_service_namespace", conf.Namespace)
-	assert.Equal(t, ":9091", conf.GatewayURL)
-	assert.Equal(t, "", conf.GatewayAuthToken)
+	assert.Equal(t, "ccx_notification_service_namespace", configuration.Namespace)
+	assert.Equal(t, ":9091", configuration.GatewayURL)
+	assert.Equal(t, "", configuration.GatewayAuthToken)
 }
 
 // TestLoadNotificationsConfiguration tests loading the notifications configuration sub-tree
@@ -226,9 +226,9 @@ func TestLoadCleanerConfiguration(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	conf := conf.GetCleanerConfiguration(config)
+	configuration := conf.GetCleanerConfiguration(config)
 
-	assert.Equal(t, "90 days", conf.MaxAge)
+	assert.Equal(t, "90 days", configuration.MaxAge)
 }
 
 // TestLoadClowderConfiguration tests loading a clowder config that should overwrite some
