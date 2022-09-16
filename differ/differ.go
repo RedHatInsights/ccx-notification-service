@@ -294,6 +294,86 @@ func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, ev
 	return evaluator.Evaluate(eventFilter, values)
 }
 
+func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMap,
+	reportItems []types.ReportItem, storage Storage, report types.ClusterReport) int {
+
+	notificationMsg := generateInstantNotificationMessage(
+		&notificationClusterDetailsURI,
+		fmt.Sprint(cluster.AccountNumber),
+		fmt.Sprint(cluster.OrgID),
+		string(cluster.ClusterName))
+	notifiedAt := types.Timestamp(time.Now())
+
+	for _, r := range reportItems {
+		module := r.Module
+		ruleName := moduleToRuleName(module)
+		errorKey := r.ErrorKey
+		likelihood, impact, totalRisk, description := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
+		eventValue := EventValue{
+			Likelihood: likelihood,
+			Impact:     impact,
+			TotalRisk:  totalRisk,
+		}
+
+		// try to evaluate event filter expression
+		result, err := evaluateFilterExpression(kafkaEventFilter,
+			kafkaEventThresholds, eventValue)
+
+		if err != nil {
+			log.Err(err).Msg(evaluationErrorMessage)
+			continue
+		}
+
+		if result > 0 {
+			log.Warn().
+				Str("type", r.Type).
+				Str("rule", string(ruleName)).
+				Str("error key", string(errorKey)).
+				Int("likelihood", likelihood).
+				Int("impact", impact).
+				Int(totalRiskAttribute, totalRisk).
+				Msg("Report with high impact detected")
+			if !shouldNotify(cluster, r, types.NotificationBackendTarget) {
+				continue
+			}
+			// if new report differs from the older one -> send notification
+			log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Different report from the last one")
+			ReportWithHighImpact.Inc()
+			notificationPayloadURL := generateNotificationPayloadURL(&notificationRuleDetailsURI, string(cluster.ClusterName), module, errorKey)
+			appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano))
+		}
+	}
+
+	if len(notificationMsg.Events) == 0 {
+		updateNotificationRecordSameState(storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
+		return 0
+	}
+
+	log.Info().Msgf("Producing instant notification for cluster %s with %d events", string(cluster.ClusterName), len(notificationMsg.Events))
+
+	msgBytes, err := json.Marshal(notificationMsg)
+	if err != nil {
+		log.Error().Err(err).Msg(invalidJSONContent)
+		return 0
+	}
+	_, offset, err := kafkaNotifier.ProduceMessage(msgBytes)
+	if err != nil {
+		log.Error().
+			Str(errorStr, err.Error()).
+			Msg("Couldn't send notification message to kafka topic.")
+		updateNotificationRecordErrorState(storage, err, cluster, report, notifiedAt, types.NotificationBackendTarget)
+		os.Exit(ExitStatusKafkaProducerError)
+	}
+
+	if offset != -1 {
+		// update the database if any message is sent (not a DisabledProducer)
+		log.Debug().Msg("notifier is not disabled so DB is updated")
+		updateNotificationRecordSentState(storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
+		return len(notificationMsg.Events)
+	}
+	return 0
+}
+
 func processReportsByCluster(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
 	notifiedIssues := 0
 	clustersCount := len(clusters)
@@ -331,80 +411,7 @@ func processReportsByCluster(ruleContent types.RulesMap, storage Storage, cluste
 			continue
 		}
 
-		notificationMsg := generateInstantNotificationMessage(
-			&notificationClusterDetailsURI,
-			fmt.Sprint(cluster.AccountNumber),
-			fmt.Sprint(cluster.OrgID),
-			string(cluster.ClusterName))
-		notifiedAt := types.Timestamp(time.Now())
-
-		for _, r := range deserialized.Reports {
-			module := r.Module
-			ruleName := moduleToRuleName(module)
-			errorKey := r.ErrorKey
-			likelihood, impact, totalRisk, description := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
-			eventValue := EventValue{
-				Likelihood: likelihood,
-				Impact:     impact,
-				TotalRisk:  totalRisk,
-			}
-
-			// try to evaluate event filter expression
-			result, err := evaluateFilterExpression(kafkaEventFilter,
-				kafkaEventThresholds, eventValue)
-
-			if err != nil {
-				log.Err(err).Msg(evaluationErrorMessage)
-				continue
-			}
-
-			if result > 0 {
-				log.Warn().
-					Str("type", r.Type).
-					Str("rule", string(ruleName)).
-					Str("error key", string(errorKey)).
-					Int("likelihood", likelihood).
-					Int("impact", impact).
-					Int(totalRiskAttribute, totalRisk).
-					Msg("Report with high impact detected")
-				if !shouldNotify(cluster, r, types.NotificationBackendTarget) {
-					continue
-				}
-				// if new report differs from the older one -> send notification
-				log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Different report from the last one")
-				ReportWithHighImpact.Inc()
-				notificationPayloadURL := generateNotificationPayloadURL(&notificationRuleDetailsURI, string(cluster.ClusterName), module, errorKey)
-				appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano))
-			}
-		}
-
-		if len(notificationMsg.Events) == 0 {
-			updateNotificationRecordSameState(storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
-			continue
-		}
-
-		log.Info().Msgf("Producing instant notification for cluster %s with %d events", string(cluster.ClusterName), len(notificationMsg.Events))
-
-		msgBytes, err := json.Marshal(notificationMsg)
-		if err != nil {
-			log.Error().Err(err).Msg(invalidJSONContent)
-			continue
-		}
-		_, offset, err := kafkaNotifier.ProduceMessage(msgBytes)
-		if err != nil {
-			log.Error().
-				Str(errorStr, err.Error()).
-				Msg("Couldn't send notification message to kafka topic.")
-			updateNotificationRecordErrorState(storage, err, cluster, report, notifiedAt, types.NotificationBackendTarget)
-			os.Exit(ExitStatusKafkaProducerError)
-		}
-
-		if offset != -1 {
-			// update the database if any message is sent (not a DisabledProducer)
-			log.Debug().Msg("notifier is not disabled so DB is updated")
-			updateNotificationRecordSentState(storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
-			notifiedIssues += len(notificationMsg.Events)
-		}
+		notifiedIssues += produceEntriesToKafka(cluster, ruleContent, deserialized.Reports, storage, report)
 	}
 	log.Info().Msgf("Number of entries not processed: %d", skippedEntries)
 	log.Info().Msgf("Number of high impact issues notified: %d", notifiedIssues)
