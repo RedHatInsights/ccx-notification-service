@@ -26,21 +26,20 @@ package servicelog
 
 import (
 	"bytes"
-	"encoding/json"
 	"fmt"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
+	"github.com/RedHatInsights/ccx-notification-service/ocmclient"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	httputils "github.com/RedHatInsights/insights-operator-utils/http"
 	"github.com/rs/zerolog/log"
 	"net/http"
-	"net/url"
-	"strings"
 	"time"
 )
 
 // Producer is an implementation of Producer interface for Service Log
 type Producer struct {
 	Configuration              conf.ServiceLogConfiguration
+	OCMClient                  ocmclient.OCMClient
 	AccessToken                string
 	TokenRefreshmentCounter    int
 	TokenRefreshmentStartDelay time.Duration
@@ -49,13 +48,14 @@ type Producer struct {
 }
 
 // New constructs a new instance of Producer implementation
-func New(config conf.ConfigStruct) (*Producer, error) {
+func New(config conf.ServiceLogConfiguration, ocmClient ocmclient.OCMClient) (*Producer, error) {
 	prod := &Producer{
-		Configuration:              conf.GetServiceLogConfiguration(config),
+		Configuration:              config,
 		TokenRefreshmentStartDelay: time.Second,
 		TokenRefreshmentDelay:      time.Second,
 		TokenRefreshmentThreshold:  30 * time.Second,
 	}
+	prod.OCMClient = ocmClient
 	err := prod.refreshToken()
 	if err != nil {
 		return prod, err
@@ -120,32 +120,10 @@ func (producer *Producer) Close() error {
 }
 
 func (producer *Producer) refreshToken() error {
-	params := url.Values{}
-	params.Add("grant_type", `refresh_token`)
-	params.Add("client_id", `rhsm-api`)
-	params.Add("refresh_token", producer.Configuration.OfflineToken)
-	body := strings.NewReader(params.Encode())
-
-	tokenRefreshmentURL := httputils.SetHTTPPrefix(producer.Configuration.TokenRefreshmentURL)
-	req, err := http.NewRequest(http.MethodPost, tokenRefreshmentURL, body)
-	req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
+	accessToken, _, err := producer.OCMClient.GetTokens(producer.TokenRefreshmentDelay)
 	if err != nil {
-		log.Error().Err(err).Msg("Got error while setting up HTTP request for refreshing access token")
 		return err
 	}
-
-	response, err := httputils.SendRequest(req, 15*time.Second)
-	if err != nil {
-		log.Error().Err(err).Msg("The request to token refreshment server could not be processed")
-		return err
-	}
-
-	var receivedToken *types.AccessTokenOutput
-	err = json.Unmarshal(response, &receivedToken)
-	if err != nil {
-		log.Error().Err(err).Msg("Error trying to decode token from received answer")
-		return err
-	}
-	producer.AccessToken = receivedToken.AccessToken
+	producer.AccessToken = accessToken
 	return nil
 }
