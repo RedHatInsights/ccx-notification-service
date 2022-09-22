@@ -157,8 +157,8 @@ type KafkaConfiguration struct {
 // ServiceLogConfiguration represents configuration of ServiceLog REST API
 type ServiceLogConfiguration struct {
 	Enabled             bool          `mapstructure:"enabled" toml:"enabled"`
-	OfflineToken        string        `mapstructure:"offline_token" toml:"offline_token"`
-	TokenRefreshmentURL string        `mapstructure:"token_refreshment_url" toml:"token_refreshment_url"`
+	ClientID            string        `mapstructure:"client_id" toml:"client_id"`
+	ClientSecret        string        `mapstructure:"client_secret" toml:"client_secret"`
 	URL                 string        `mapstructure:"url" toml:"url"`
 	Timeout             time.Duration `mapstructure:"timeout" toml:"timeout"`
 	LikelihoodThreshold int           `mapstructure:"likelihood_threshold" toml:"likelihood_threshold"`

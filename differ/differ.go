@@ -26,6 +26,7 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
+	"github.com/RedHatInsights/ccx-notification-service/ocmclient"
 	"github.com/RedHatInsights/ccx-notification-service/producer/servicelog"
 	"os"
 	"strings"
@@ -577,14 +578,20 @@ func setupKafkaProducer(config conf.ConfigStruct) {
 func setupServiceLogProducer(config conf.ConfigStruct) {
 	// broker enable/disable is very important information, let's inform
 	// admins about the state
-	if !conf.GetServiceLogConfiguration(config).Enabled {
+	serviceLogConfig := conf.GetServiceLogConfiguration(config)
+	if !serviceLogConfig.Enabled {
 		log.Info().Msg("Service Log config for Notification Service is disabled")
 		serviceLogNotifier = &disabled.Producer{}
 		return
 	}
 	log.Info().Msg("Service Log config for Notification Service is enabled")
 
-	producer, err := servicelog.New(config)
+	conn, err := ocmclient.NewOCMClient(serviceLogConfig.ClientID, serviceLogConfig.ClientSecret, serviceLogConfig.URL)
+	if err != nil {
+		log.Error().Err(err).Msg("got error while setting up the connection to OCM API gateway")
+		return
+	}
+	producer, err := servicelog.New(serviceLogConfig, conn)
 	if err != nil {
 		ProducerSetupErrors.Inc()
 		log.Error().

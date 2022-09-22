@@ -22,40 +22,47 @@ package servicelog
 import (
 	"encoding/json"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
+	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
+	"github.com/stretchr/testify/mock"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
 )
 
+func setupMockOCMGateway() *mocks.OCMClient {
+	gateway := mocks.OCMClient{}
+	gateway.On("GetTokens",
+		mock.AnythingOfType("time.Duration")).Return(
+		func(delay time.Duration) string {
+			return "online_token"
+		},
+		func(delay time.Duration) string {
+			return "refresh_token"
+		},
+		func(delay time.Duration) error {
+			return nil
+		},
+	)
+	return &gateway
+}
 func TestServiceLogProducerNew(t *testing.T) {
-	tokenServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
-			t.Errorf("Expected 'Content-Type: application/x-www-form-urlencoded' header, got: '%s'", r.Header.Get("Content-Type"))
-		}
-		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(`{"access_token": "online_token"}`))
-		if err != nil {
-			log.Fatal().Msg(err.Error())
-		}
-	}))
-	defer tokenServer.Close()
-
+	gateway := setupMockOCMGateway()
 	config := conf.ConfigStruct{
 		ServiceLog: conf.ServiceLogConfiguration{
-			Enabled:             true,
-			OfflineToken:        "offline_token",
-			URL:                 "http://testserver:8000/",
-			TokenRefreshmentURL: tokenServer.URL,
-			Timeout:             15 * time.Second,
+			ClientID:     "test_id",
+			ClientSecret: "test_secret",
+			Enabled:      true,
+			URL:          "http://testserver:8000/",
+			Timeout:      15 * time.Second,
 		},
 	}
 
-	producer, err := New(config)
+	producer, err := New(conf.GetServiceLogConfiguration(config), gateway)
 	helpers.FailOnError(t, err)
 
 	assert.Equal(t, producer.Configuration, conf.GetServiceLogConfiguration(config))
@@ -79,10 +86,9 @@ func TestServiceLogProducerSendMessage(t *testing.T) {
 	defer server.Close()
 
 	config := conf.ServiceLogConfiguration{
-		Enabled:      true,
-		OfflineToken: "token",
-		URL:          server.URL,
-		Timeout:      15 * time.Second,
+		Enabled: true,
+		URL:     server.URL,
+		Timeout: 15 * time.Second,
 	}
 
 	producer := Producer{
@@ -116,24 +122,10 @@ func TestServiceLogProducerInvalidMessage(t *testing.T) {
 	}))
 	defer serviceLogServer.Close()
 
-	tokenServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Content-Type") != "application/x-www-form-urlencoded\"" {
-			t.Errorf("Expected 'Content-Type: application/x-www-form-urlencoded\"' header, got: %s", r.Header.Get("Content-Type"))
-		}
-		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(`{"access_token": "online_token"}`))
-		if err != nil {
-			log.Fatal().Msg(err.Error())
-		}
-	}))
-	defer tokenServer.Close()
-
 	config := conf.ServiceLogConfiguration{
-		Enabled:             true,
-		OfflineToken:        "offline_token",
-		URL:                 serviceLogServer.URL,
-		TokenRefreshmentURL: tokenServer.URL,
-		Timeout:             15 * time.Second,
+		Enabled: true,
+		URL:     serviceLogServer.URL,
+		Timeout: 15 * time.Second,
 	}
 
 	producer := Producer{
@@ -162,10 +154,9 @@ func TestServiceLogProducerTooLongSummary(t *testing.T) {
 	defer server.Close()
 
 	config := conf.ServiceLogConfiguration{
-		Enabled:      true,
-		OfflineToken: "token",
-		URL:          server.URL,
-		Timeout:      15 * time.Second,
+		Enabled: true,
+		URL:     server.URL,
+		Timeout: 15 * time.Second,
 	}
 
 	producer := Producer{
@@ -187,16 +178,8 @@ func TestServiceLogProducerTooLongSummary(t *testing.T) {
 }
 
 func TestServiceLogProducerClose(t *testing.T) {
-	config := conf.ServiceLogConfiguration{
-		Enabled:      true,
-		OfflineToken: "token",
-		URL:          "http://testserver:8000/",
-		Timeout:      15 * time.Second,
-	}
-
 	producer := Producer{
-		Configuration: config,
-		AccessToken:   "online_token",
+		Configuration: conf.ServiceLogConfiguration{},
 	}
 
 	err := producer.Close()
@@ -205,10 +188,9 @@ func TestServiceLogProducerClose(t *testing.T) {
 
 func TestServiceLogProducerInvalidURL(t *testing.T) {
 	config := conf.ServiceLogConfiguration{
-		Enabled:      true,
-		OfflineToken: "token",
-		URL:          "http://testserver:8000/",
-		Timeout:      15 * time.Second,
+		Enabled: true,
+		URL:     "http://testserver:8000/",
+		Timeout: 15 * time.Second,
 	}
 
 	producer := Producer{
@@ -243,28 +225,16 @@ func TestServiceLogProducerOldToken(t *testing.T) {
 	}))
 	defer serviceLogServer.Close()
 
-	tokenServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-		if r.Header.Get("Content-Type") != "application/x-www-form-urlencoded" {
-			t.Errorf("Expected 'Content-Type: application/x-www-form-urlencoded' header, got: '%s'", r.Header.Get("Content-Type"))
-		}
-		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(`{"access_token": "online_token"}`))
-		if err != nil {
-			log.Fatal().Msg(err.Error())
-		}
-	}))
-	defer tokenServer.Close()
-
 	config := conf.ServiceLogConfiguration{
-		Enabled:             true,
-		OfflineToken:        "offline_token",
-		URL:                 serviceLogServer.URL,
-		TokenRefreshmentURL: tokenServer.URL,
-		Timeout:             15 * time.Second,
+		Enabled: true,
+		URL:     serviceLogServer.URL,
+		Timeout: 15 * time.Second,
 	}
 
+	gateway := setupMockOCMGateway()
 	producer := Producer{
 		Configuration: config,
+		OCMClient:     gateway,
 		AccessToken:   "old_token",
 	}
 
