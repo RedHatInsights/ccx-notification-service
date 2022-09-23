@@ -47,7 +47,8 @@ func percentage(l1, l2 int) string {
 func gzipFile(filename string) {
 	fmt.Printf("Filename: %s\n", filename)
 
-	content, err := os.ReadFile(filename)
+	// disable "G304 (CWE-22): Potential file inclusion via variable"
+	content, err := os.ReadFile(filename) // #nosec G304
 	if err != nil {
 		panic(err)
 	}
