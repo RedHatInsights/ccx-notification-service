@@ -1,0 +1,53 @@
+ {"analysis_metadata":{"start":"2022-08-18T14:14:05.354895+00:00","finish":"2022-08-18T14:14:07.036047+00:00","execution_context":"ccx_ocp_core.context.Insight
+sOperatorContext","plugin_sets":{"insights-core":{"version":"insights-core-3.0.290-1","commit":"placeholder"},"ccx_rules_ocp":{"version":"ccx_rules_ocp-2022.8.
+17-1","commit":null},"ccx_ocp_core":{"version":"ccx_ocp_core-2022.8.17-1","commit":null}}},"reports":[{"rule_id":"container_max_root_partition_size|CONTAINER_R
+OOT_PARTITION_SIZE","component":"ccx_rules_ocp.external.rules.container_max_root_partition_size.report","type":"rule","key":"CONTAINER_ROOT_PARTITION_SIZE","de
+tails":{"mcps":["master","worker","master"],"type":"rule","error_key":"CONTAINER_ROOT_PARTITION_SIZE"},"tags":[],"links":{"kcs":["https://access.redhat.com/sol
+utions/5216861"]}},{"rule_id":"operator_unmanaged|OPERATOR_UNMANAGED","component":"ccx_rules_ocp.external.rules.operator_unmanaged.report","type":"rule","key":
+"OPERATOR_UNMANAGED","details":{"unmanaged_operators":["authentication"],"type":"rule","error_key":"OPERATOR_UNMANAGED"},"tags":[],"links":{"jira":["https://is
+sues.redhat.com/browse/INSIGHTOCP-49"],"Documentation":["https://docs.openshift.com/container-platform/4.4/architecture/architecture-installation.html#unmanage
+d-operators_architecture-installation"]}},{"rule_id":"master_defined_as_machinesets|MASTER_DEFINED_AS_MACHINESETS","component":"ccx_rules_ocp.external.rules.ma
+ster_defined_as_machinesets.report","type":"rule","key":"MASTER_DEFINED_AS_MACHINESETS","details":{"result":["d50d0126-c90b-4428-a75f-dc08cd02960a-master-test"
+,"ju8d0126-c90b-4428-a75f-dc08cd02960a-master-test"],"type":"rule","error_key":"MASTER_DEFINED_AS_MACHINESETS"},"tags":[],"links":{"jira":["https://issues.redh
+at.com/browse/INSIGHTOCP-89"],"kcs":["https://access.redhat.com/solutions/5238591"]}},{"rule_id":"sap_sdi_backup_not_enabled|SAP_SDI_BACKUP_NOT_ENABLED","compo
+nent":"ccx_rules_ocp.external.rules.sap_sdi_backup_not_enabled.report","type":"rule","key":"SAP_SDI_BACKUP_NOT_ENABLED","details":{"type":"rule","error_key":"S
+AP_SDI_BACKUP_NOT_ENABLED"},"tags":[],"links":{"jira":["https://issues.redhat.com/browse/INSIGHTOCP-474"]}},{"rule_id":"samples_op_failed_image_import_check|SA
+MPLES_FAILED_IMAGE_IMPORT_ERR","component":"ccx_rules_ocp.external.rules.samples_op_failed_image_import_check.report","type":"rule","key":"SAMPLES_FAILED_IMAGE
+_IMPORT_ERR","details":{"info":{"name":"openshift-samples","condition":"Degraded","reason":"Error","message":"Samples installed at 4.2.2, with image import fai
+lures for these imagestreams: \u003cImageStream name\u003e","lastTransitionTime":"2019-09-09T06:41:24Z"},"type":"rule","error_key":"SAMPLES_FAILED_IMAGE_IMPORT
+_ERR"},"tags":[],"links":{"kcs":["https://access.redhat.com/solutions/4563171"]}},{"rule_id":"nodes_requirements_check|NODES_MINIMUM_REQUIREMENTS_NOT_MET","com
+ponent":"ccx_rules_ocp.external.rules.nodes_requirements_check.report","type":"rule","key":"NODES_MINIMUM_REQUIREMENTS_NOT_MET","details":{"nodes":[{"name":"wo
+rker-2","roles":"worker","cpu":1,"cpu_req":2}],"type":"rule","error_key":"NODES_MINIMUM_REQUIREMENTS_NOT_MET"},"tags":[],"links":{"docs":["https://docs.openshi
+ft.com/container-platform/4.1/installing/installing_bare_metal/installing-bare-metal.html#minimum-resource-requirements_installing-bare-metal"]}},{"rule_id":"m
+cp_set_to_pause|MCP_SET_TO_PAUSE","component":"ccx_rules_ocp.external.rules.mcp_set_to_pause.report","type":"rule","key":"MCP_SET_TO_PAUSE","details":{"pause":
+[{"name":"master"}],"type":"rule","error_key":"MCP_SET_TO_PAUSE"},"tags":[],"links":{"kcs":["https://access.redhat.com/solutions/5317441"],"jira":["https://iss
+ues.redhat.com/browse/INSIGHTOCP-109","https://issues.redhat.com/browse/INSIGHTOCP-396"]}},{"rule_id":"image_registry_multiple_storage_types|IMAGE_REGISTRY_MUL
+TIPLE_STORAGE_TYPES","component":"ccx_rules_ocp.external.rules.image_registry_multiple_storage_types.report","type":"rule","key":"IMAGE_REGISTRY_MULTIPLE_STORA
+GE_TYPES","details":{"info":{"meta":{"name":"console","selfLink":null},"condition":{"type":"Degraded","reason":"Error","message":"Unable to apply resources: un
+able to sync storage configuration: exactly one storage type should be configured at the same time","lastTransitionTime":"2019-09-09T06:41:24Z"}},"type":"rule"
+,"error_key":"IMAGE_REGISTRY_MULTIPLE_STORAGE_TYPES"},"tags":[],"links":{"kcs":["https://access.redhat.com/solutions/4516391"]}},{"rule_id":"vsphere_problem_de
+tector_controller_syncerror|VSPHERE_PROBLEM_DETECTOR_CONTROLLER_SYNCERROR","component":"ccx_rules_ocp.external.rules.vsphere_problem_detector_controller_syncer
+ror.report","type":"rule","key":"VSPHERE_PROBLEM_DETECTOR_CONTROLLER_SYNCERROR","details":{"message":"2021-05-18T12:56:26.897256569-05:00 E0518 17:56:26.897202
+       1 base_controller.go:250] \"VSphereProblemDetectorController\" controller failed to sync \"key\", err: failed to connect to example.cluster.local: Serve
+rFaultCode: Cannot complete login due to an incorrect user name or password.","type":"rule","error_key":"VSPHERE_PROBLEM_DETECTOR_CONTROLLER_SYNCERROR"},"tags"
+:[],"links":{"kcs":["https://access.redhat.com/solutions/5926951","https://access.redhat.com/solutions/4618011"],"jira":["https://issues.redhat.com/browse/INSI
+GHTOCP-419"],"docs":["https://docs.openshift.com/container-platform/4.7/installing/installing_vsphere/installing-vsphere-installer-provisioned.html#installatio
+n-vsphere-installer-infra-requirements_installing-vsphere-installer-provisioned","https://docs.openshift.com/container-platform/4.7/installing/installing_vsphe
+re/using-vsphere-problem-detector-operator.html"]}},{"rule_id":"vsphere_vm_disk_enableuuid_not_set_to_true|VSPHERE_VM_DISK_ENABLEUUID_NOT_SET_TO_TRUE","compone
+nt":"ccx_rules_ocp.external.rules.vsphere_vm_disk_enableuuid_not_set_to_true.report","type":"rule","key":"VSPHERE_VM_DISK_ENABLEUUID_NOT_SET_TO_TRUE","details"
+:{"affected_nodes":["worker-node-1"],"type":"rule","error_key":"VSPHERE_VM_DISK_ENABLEUUID_NOT_SET_TO_TRUE"},"tags":[],"links":{"jira":["https://issues.redhat.
+com/browse/INSIGHTOCP-413"],"kcs":["https://access.redhat.com/solutions/4606201","https://access.redhat.com/solutions/5200161"]}},{"rule_id":"psp_installed|PSP
+_INSTALLED","component":"ccx_rules_ocp.external.rules.psp_installed.report","type":"rule","key":"PSP_INSTALLED","details":{"psps":["100-psp","next-psp-name"],"
+type":"rule","error_key":"PSP_INSTALLED"},"tags":[],"links":{"jira":["https://issues.redhat.com/browse/INSIGHTOCP-433"],"kcs":["https://access.redhat.com/solut
+ions/5622051"]}},{"rule_id":"cluster_wide_proxy_auth_check|AUTH_OPERATOR_PROXY_ERROR","component":"ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.r
+eport","type":"rule","key":"AUTH_OPERATOR_PROXY_ERROR","details":{"op":{"available":{"status":null,"last_trans_time":null,"reason":"","message":""},"degraded":
+{"status":true,"last_trans_time":"2019-10-30T08:44:03Z","reason":"AsExpected","message":"WellKnownEndpointDegraded: failed to GET well-known https://10.1.2.3:4
+/.well-known/oauth-authorization-server: Service Unavailable"},"name":"authentication","progressing":{"status":null,"last_trans_time":null,"reason":"","message
+":""},"upgradeable":{"status":null,"last_trans_time":null,"reason":"","message":""},"version":null},"type":"rule","error_key":"AUTH_OPERATOR_PROXY_ERROR"},"tag
+s":[],"links":{"kcs":["https://access.redhat.com/solutions/4569191"],"docs":["https://docs.openshift.com/container-platform/4.3/networking/enable-cluster-wide-
+proxy.html#nw-proxy-configure-object_config-cluster-wide-proxy"]}},{"rule_id":"check_sap_sdi_observer_pods|SAP_SDI_OBSERVER_POD_ERROR","component":"ccx_rules_o
+cp.external.rules.check_sap_sdi_observer_pods.report","type":"rule","key":"SAP_SDI_OBSERVER_POD_ERROR","details":{"sdi_observer_pods":0,"type":"rule","error_ke
+y":"SAP_SDI_OBSERVER_POD_ERROR"},"tags":[],"links":{"kcs":["https://access.redhat.com/articles/5100521#prereq-sdi-observer"]}},{"rule_id":"control_plane_replic
+as|CONTROL_PLANE_NODE_REPLICAS","component":"ccx_rules_ocp.external.rules.control_plane_replicas.report","type":"rule","key":"CONTROL_PLANE_NODE_REPLICAS","det
+ails":{"version":"4.9","replica_count":4,"type":"rule","error_key":"CONTROL_PLANE_NODE_REPLICAS"},"tags":[],"links":{"jira":["https://issues.redhat.com/browse/
+INSIGHTOCP-120"],"kcs":["https://access.redhat.com/solutions/4833531"]}}]}

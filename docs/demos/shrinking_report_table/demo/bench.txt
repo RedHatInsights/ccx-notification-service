@@ -1,0 +1,8 @@
+Filename: data/empty_report.json
+String: 422  Zipped out: 252  Stripped: 40%
+String: 422  Zipped out: 252  Stripped: 40%
+
+Filename: data/large_report.json
+String: 8395  Zipped out: 2454  Stripped: 71%
+String: 8395  Zipped out: 2454  Stripped: 71%
+
