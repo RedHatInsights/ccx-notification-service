@@ -80,6 +80,8 @@ objects:
             value: ccx_notification_service
           - name: CCX_NOTIFICATION_SERVICE__METRICS__NAMESPACE
             value: ${METRICS_NAMESPACE}
+          - name: CCX_NOTIFICATION_SERVICE__METRICS__SUBSYSTEM
+            value: notification_backend
           - name: CCX_NOTIFICATION_SERVICE__METRICS__GATEWAY_URL
             valueFrom:
               secretKeyRef:
@@ -165,6 +167,8 @@ objects:
             value: ccx_notification_service
           - name: CCX_NOTIFICATION_SERVICE__METRICS__NAMESPACE
             value: ${METRICS_NAMESPACE}
+          - name: CCX_NOTIFICATION_SERVICE__METRICS__SUBSYSTEM
+            value: service_log
           - name: CCX_NOTIFICATION_SERVICE__METRICS__GATEWAY_URL
             valueFrom:
               secretKeyRef:
