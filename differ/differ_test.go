@@ -34,6 +34,7 @@ import (
 
 	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
 	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
+	"github.com/RedHatInsights/insights-results-aggregator-data/testdata"
 
 	utypes "github.com/RedHatInsights/insights-results-types"
 
@@ -1464,7 +1465,7 @@ func TestProduceEntriesToServiceLog(t *testing.T) {
 			t.Errorf("Expected Content-Type: application/json header, got: %s", r.Header.Get("Accept"))
 		}
 		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(`{"clusters":["first_cluster"],"reports":{"first_cluster":[{"rule_id":"ccx_rules_ocp.external.rules.rule_1","error_key":"RULE_1","resolution":"rule 1 resolution","reason":"This reason is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long.","description":"This reason is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long."},{"rule_id":"ccx_rules_ocp.external.rules.rule_2","error_key":"RULE_2","resolution":"rule 2 resolution","reason":"rule 2 reason","description":"rule 2 error key description"}]}}`))
+		_, err := w.Write([]byte(`{"clusters":["84f7eedc-0dd8-49cd-9d4d-f6646df3a5bc"],"reports":{"84f7eedc-0dd8-49cd-9d4d-f6646df3a5bc":[{"rule_id":"node_installer_degraded","error_key":"ek1","resolution":"rule 1 resolution","reason":"This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long.","description":"This reason is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long."},{"rule_id":"rule2","error_key":"ek2","resolution":"rule 2 resolution","reason":"rule 2 reason","description":"rule 2 error key description"}, {"rule_id":"rule3","error_key":"ek3","resolution":"rule 3 resolution","reason":"rule 3 reason","description":"rule 3 error key description"}]}}`))
 		if err != nil {
 			log.Fatal().Msg(err.Error())
 		}
@@ -1486,62 +1487,22 @@ func TestProduceEntriesToServiceLog(t *testing.T) {
 	serviceLogEventThresholds.TotalRisk = 1
 	serviceLogEventFilter = "totalRisk > totalRiskThreshold"
 
-	errorKeys := map[string]utypes.RuleErrorKeyContent{
-		"RULE_1": {
-			Metadata: utypes.ErrorKeyMetadata{
-				Description: "This reason is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long.",
-				Impact: utypes.Impact{
-					Name:   "impact_1",
-					Impact: 3,
-				},
-				Likelihood: 2,
-			},
-			Reason:    "rule 1 reason",
-			HasReason: true,
-		},
-		"RULE_2": {
-			Metadata: utypes.ErrorKeyMetadata{
-				Description: "rule 2 error key description",
-				Impact: utypes.Impact{
-					Name:   "impact_2",
-					Impact: 2,
-				},
-				Likelihood: 3,
-			},
-			HasReason: false,
-		},
-	}
-
 	ruleContent := types.RulesMap{
-		"rule_1": {
-			Summary:    "rule 1 summary",
-			Reason:     "This reason is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long.",
-			Resolution: "rule 1 resolution",
-			MoreInfo:   "rule 1 more info",
-			ErrorKeys:  errorKeys,
-			HasReason:  true,
-		},
-		"rule_2": {
-			Summary:    "rule 2 summary",
-			Reason:     "rule 2 reason",
-			Resolution: "rule 2 resolution",
-			MoreInfo:   "rule 2 more info",
-			ErrorKeys:  errorKeys,
-			HasReason:  false,
-		},
+		"node_installer_degraded": testdata.RuleContent1,
+		"rule2":                   testdata.RuleContent2,
+		"rule3":                   testdata.RuleContent3,
 	}
 
 	cluster := types.ClusterEntry{
 		OrgID:         1,
 		AccountNumber: 1,
-		ClusterName:   "first_cluster",
+		ClusterName:   types.ClusterName(testdata.ClusterName),
 		KafkaOffset:   0,
 		UpdatedAt:     types.Timestamp(testTimestamp),
 	}
 
 	var deserialized types.Report
-	reportsJSON := types.ClusterReport("{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"},{\"rule_id\":\"rule_2|RULE_2\",\"component\":\"ccx_rules_ocp.external.rules.rule_2.report\",\"type\":\"rule\",\"key\":\"RULE_2\",\"details\":\"some details\"}]}")
-	err := json.Unmarshal([]byte(reportsJSON), &deserialized)
+	err := json.Unmarshal([]byte(testdata.ClusterReport3Rules), &deserialized)
 	if err != nil {
 		log.Fatal().Msg(err.Error())
 	}
