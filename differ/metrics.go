@@ -26,12 +26,13 @@ package differ
 // https://redhatinsights.github.io/ccx-notification-service/packages/differ/metrics.html
 
 import (
+	"net/http"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/rs/zerolog/log"
-	"net/http"
 )
 
 // Metrics names
@@ -155,8 +156,8 @@ var NotificationSent = promauto.NewCounter(prometheus.CounterOpts{
 	Help: NotificationSentHelp,
 })
 
-// AddMetricsWithNamespace register the desired metrics using a given namespace
-func AddMetricsWithNamespace(namespace string) {
+// AddMetricsWithNamespaceAndSubsystem register the desired metrics using a given namespace
+func AddMetricsWithNamespaceAndSubsystem(namespace, subsystem string) {
 	// exposed metrics
 
 	// Unregister all metrics and registrer them again
@@ -174,6 +175,7 @@ func AddMetricsWithNamespace(namespace string) {
 	// FetchContentErrors shows number of errors during fetch from content service
 	FetchContentErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
+		Subsystem: subsystem,
 		Name:      FetchContentErrorsName,
 		Help:      FetchContentErrorsHelp,
 	})
@@ -181,6 +183,7 @@ func AddMetricsWithNamespace(namespace string) {
 	// ReadClusterListErrors shows number of errors when reading cluster list from new_reports table
 	ReadClusterListErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
+		Subsystem: subsystem,
 		Name:      ReadClusterListErrorsName,
 		Help:      ReadClusterListErrorsHelp,
 	})
@@ -188,6 +191,7 @@ func AddMetricsWithNamespace(namespace string) {
 	// ProducerSetupErrors shows number of errors when setting up Kafka producer
 	ProducerSetupErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
+		Subsystem: subsystem,
 		Name:      ProducerSetupErrorsName,
 		Help:      ProducerSetupErrorsHelp,
 	})
@@ -195,6 +199,7 @@ func AddMetricsWithNamespace(namespace string) {
 	// StorageSetupErrors shows number of errors when setting up storage
 	StorageSetupErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
+		Subsystem: subsystem,
 		Name:      StorageSetupErrorsName,
 		Help:      StorageSetupErrorsHelp,
 	})
@@ -202,6 +207,7 @@ func AddMetricsWithNamespace(namespace string) {
 	// ReadReportForClusterErrors shows number of errors when getting latest report for a given cluster
 	ReadReportForClusterErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
+		Subsystem: subsystem,
 		Name:      ReadReportForClusterErrorsName,
 		Help:      ReadReportForClusterErrorsHelp,
 	})
@@ -209,6 +215,7 @@ func AddMetricsWithNamespace(namespace string) {
 	// DeserializeReportErrors shows number of errors when deserializing a report retrieved from the new_reports table
 	DeserializeReportErrors = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
+		Subsystem: subsystem,
 		Name:      DeserializeReportErrorsName,
 		Help:      DeserializeReportErrorsHelp,
 	})
@@ -216,6 +223,7 @@ func AddMetricsWithNamespace(namespace string) {
 	// ReportWithHighImpact shows number of reports with total risk higher than the configured threshold
 	ReportWithHighImpact = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
+		Subsystem: subsystem,
 		Name:      ReportWithHighImpactName,
 		Help:      ReportWithHighImpactHelp,
 	})
@@ -223,6 +231,7 @@ func AddMetricsWithNamespace(namespace string) {
 	// NotificationNotSentSameState shows number of notifications not sent because we parsed the same report
 	NotificationNotSentSameState = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
+		Subsystem: subsystem,
 		Name:      NotificationNotSentSameStateName,
 		Help:      NotificationNotSentSameStateHelp,
 	})
@@ -230,6 +239,7 @@ func AddMetricsWithNamespace(namespace string) {
 	// NotificationNotSentErrorState shows number of notifications not sent because of a Kafka producer error
 	NotificationNotSentErrorState = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
+		Subsystem: subsystem,
 		Name:      NotificationNotSentErrorStateName,
 		Help:      NotificationNotSentErrorStateHelp,
 	})
@@ -237,6 +247,7 @@ func AddMetricsWithNamespace(namespace string) {
 	// NotificationSent shows number notifications sent to the configured Kafka topic
 	NotificationSent = promauto.NewCounter(prometheus.CounterOpts{
 		Namespace: namespace,
+		Subsystem: subsystem,
 		Name:      NotificationSentName,
 		Help:      NotificationSentHelp,
 	})

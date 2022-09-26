@@ -774,7 +774,9 @@ func setupNotificationStates(storage *DBStorage) {
 func registerMetrics(metricsConfig conf.MetricsConfiguration) {
 	if metricsConfig.Namespace != "" {
 		log.Info().Str("namespace", metricsConfig.Namespace).Msg("Setting metrics namespace")
-		AddMetricsWithNamespace(metricsConfig.Namespace)
+		AddMetricsWithNamespaceAndSubsystem(
+			metricsConfig.Namespace,
+			metricsConfig.Subsystem)
 	}
 }
 
