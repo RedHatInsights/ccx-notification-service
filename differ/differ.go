@@ -229,6 +229,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Int("Severity threshold", brokerConfig.SeverityThreshold).
 		Int("Total risk threshold", serviceLogConfig.TotalRiskThreshold).
 		Str("Event filter", serviceLogConfig.EventFilter).
+		Str("OCM URL", serviceLogConfig.URL).
 		Msg("ServiceLog configuration")
 
 	storageConfig := conf.GetStorageConfiguration(config)
