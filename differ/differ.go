@@ -275,13 +275,14 @@ func calculateTotalRisk(impact, likelihood int) int {
 // cluster_wide_proxy_auth_check
 func moduleToRuleName(module types.ModuleName) types.RuleName {
 	result := strings.TrimSuffix(string(module), ".report")
-	result = strings.TrimPrefix(result, "ccx_rules_ocp.")
-	result = strings.TrimPrefix(result, "external.")
-	result = strings.TrimPrefix(result, "rules.")
-	result = strings.TrimPrefix(result, "bug_rules.")
-	result = strings.TrimPrefix(result, "ocs.")
+	return ruleIDToRuleName(types.RuleID(result))
+}
 
-	return types.RuleName(result)
+// ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check
+// ->
+// cluster_wide_proxy_auth_check
+func ruleIDToRuleName(ruleID types.RuleID) types.RuleName {
+	return types.RuleName(string(ruleID)[strings.LastIndex(string(ruleID), ".")+1:])
 }
 
 func findRuleByNameAndErrorKey(
@@ -318,8 +319,8 @@ func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, ev
 
 func findRenderedReport(reports []types.RenderedReport, ruleName types.RuleName, errorKey types.ErrorKey) (types.RenderedReport, error) {
 	for _, report := range reports {
-		reportRuleName := string(report.RuleID)[strings.LastIndex(string(report.RuleID), ".")+1:]
-		if reportRuleName == string(ruleName) && report.ErrorKey == errorKey {
+		reportRuleName := ruleIDToRuleName(report.RuleID)
+		if reportRuleName == ruleName && report.ErrorKey == errorKey {
 			return report, nil
 		}
 	}
