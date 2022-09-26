@@ -109,7 +109,7 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 		return 0, 0, nil
 	default:
 		err = fmt.Errorf("received unexpected response status code - %s", response.Status)
-		log.Error().Err(err).Msgf("Got unexpected response status code from token refreshment API")
+		log.Error().Err(err).Msgf("Got unexpected response status code")
 		return -1, -1, err
 	}
 }

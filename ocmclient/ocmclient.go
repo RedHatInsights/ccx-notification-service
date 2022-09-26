@@ -39,7 +39,7 @@ func NewOCMClient(clientID, clientSecret, url string) (OCMClient, error) {
 
 // NewOCMClientWithTransport creates a client that can comunicate with the OCM API, enabling to use a transport wrapper
 func NewOCMClientWithTransport(clientID, clientSecret, url string, transport http.RoundTripper) (OCMClient, error) {
-	log.Info().Msg("creating client for the Openshift Cluster Manager (OXM) API...")
+	log.Info().Msg("creating client for the Openshift Cluster Manager (OCM) API...")
 	builder := gateway.NewConnectionBuilder().URL(url)
 
 	if transport != nil {
@@ -59,6 +59,8 @@ func NewOCMClientWithTransport(clientID, clientSecret, url string, transport htt
 		log.Error().Err(err).Msg("unable to build the connection to OCM gateway API")
 		return nil, err
 	}
+
+	log.Info().Str("url", conn.URL()).Msg("OCM client created successfully...")
 
 	return &OCMGateway{
 		conn,
