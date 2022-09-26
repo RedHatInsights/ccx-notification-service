@@ -26,11 +26,12 @@ import (
 	"encoding/json"
 	"flag"
 	"fmt"
-	"github.com/RedHatInsights/ccx-notification-service/ocmclient"
-	"github.com/RedHatInsights/ccx-notification-service/producer/servicelog"
 	"os"
 	"strings"
 	"time"
+
+	"github.com/RedHatInsights/ccx-notification-service/ocmclient"
+	"github.com/RedHatInsights/ccx-notification-service/producer/servicelog"
 
 	"github.com/RedHatInsights/ccx-notification-service/producer/disabled"
 	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
@@ -260,6 +261,7 @@ func showConfiguration(config conf.ConfigStruct) {
 	// purpose
 	log.Info().
 		Str("Namespace", metricsConfig.Namespace).
+		Str("Subsystem", metricsConfig.Subsystem).
 		Str("Push Gateway", metricsConfig.GatewayURL).
 		Int("Retries", metricsConfig.Retries).
 		Str("Retry after", metricsConfig.RetryAfter.String()).
