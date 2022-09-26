@@ -64,7 +64,7 @@ gen-mocks: ## Generates the mocks using mockery. Needs go >= 1.18
 	go install github.com/vektra/mockery/v2@latest  
 	mockery --all --output tests/mocks
 
-test: ${BINARY} gen-mocks ## Run the unit tests
+test: ${BINARY} ## Run the unit tests
 	./unit-tests.sh
 
 build-test: gen-mocks ## Build native binary with unit tests and benchmarks
