@@ -35,11 +35,11 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-// TestAddMetricsWithNamespace function checks the basic behaviour of function
-// AddMetricsWithNamespace from `metrics.go`
-func TestAddMetricsWithNamespace(t *testing.T) {
+// TestAddMetricsWithNamespaceAndSubsystem function checks the basic behaviour of function
+// AddMetricsWithNamespaceAndSubsystem from `metrics.go`
+func TestAddMetricsWithNamespaceAndSubsystem(t *testing.T) {
 	// add all metrics into the namespace "foobar"
-	differ.AddMetricsWithNamespace("foobar")
+	differ.AddMetricsWithNamespaceAndSubsystem("foo", "bar")
 
 	// check the registration
 	assert.NotNil(t, differ.FetchContentErrors)

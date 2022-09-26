@@ -51,6 +51,7 @@ cooldown = "1 minutes"
 [metrics]
 job_name = "ccx_notification_service"
 namespace = "ccx_notification_service"
+subsystem = "devel"
 gateway_url = "localhost:9091"
 gateway_auth_token = ""
 

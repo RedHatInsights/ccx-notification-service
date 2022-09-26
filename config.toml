@@ -55,7 +55,9 @@ cooldown = "24 hours"
 
 [metrics]
 job_name = "ccx_notification_service"
+# The metrics in Prometheus will be $namespace_$subsystem_$name
 namespace = "ccx_notification_service"
+subsystem = "to_notification_backend"
 gateway_url = "localhost:9091"
 gateway_auth_token = ""
 retries = 3
