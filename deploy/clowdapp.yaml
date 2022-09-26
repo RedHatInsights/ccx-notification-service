@@ -118,7 +118,7 @@ objects:
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__ENABLED
             value: 'false'
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__ENABLED
-            value: 'false'  # TODO: Enable
+            value: 'true'
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__CLIENT_ID
             valueFrom:
               secretKeyRef:
@@ -260,7 +260,5 @@ parameters:
 - description: Domain name and port of the content template renderer API
   name: TEMPLATE_RENDERER_SERVER
 # Service Log
-- description: Offline token for retrieving access tokens to publish to Service Log
-  name: SERVICE_LOG__OFFLINE_TOKEN
 - description: URL of the Service Log API
   name: SERVICE_LOG__URL
