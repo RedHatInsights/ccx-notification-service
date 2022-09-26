@@ -154,7 +154,7 @@ data:
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_fetch_content_errors{namespace=\"$namespace\"}[15m]))",
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "Fetch content",
               "refId": "A"
             },
             {
@@ -170,7 +170,7 @@ data:
               "expr": "sum(rate(ccx_notification_service_producer_setup_errors{namespace=\"$namespace\"}[15m]))",
               "hide": false,
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "Producer setup",
               "refId": "C"
             },
             {
@@ -178,7 +178,7 @@ data:
               "expr": "sum(rate(ccx_notification_service_read_cluster_list_errors{namespace=\"$namespace\"}[15m]))",
               "hide": false,
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "Read cluster list",
               "refId": "D"
             },
             {
@@ -186,7 +186,7 @@ data:
               "expr": "sum(rate(ccx_notification_service_read_report_for_cluster_errors{namespace=\"$namespace\"}[15m]))",
               "hide": false,
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "Read report for cluster",
               "refId": "E"
             },
             {
@@ -194,7 +194,7 @@ data:
               "expr": "sum(rate(ccx_notification_service_storage_setup_errors{namespace=\"$namespace\"}[15m]))",
               "hide": false,
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "Storage setup",
               "refId": "G"
             }
           ],
@@ -622,7 +622,7 @@ data:
       "timezone": "",
       "title": "CCX Notification Services",
       "uid": "ERzLEqdnk",
-      "version": 8
+      "version": 9
     }
 kind: ConfigMap
 metadata:
