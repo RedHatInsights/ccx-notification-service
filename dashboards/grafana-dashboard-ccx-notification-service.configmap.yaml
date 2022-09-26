@@ -159,10 +159,10 @@ data:
             },
             {
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_fetch_content_errors{namespace=\"$namespace\"}[15m]))",
+              "expr": "sum(rate(ccx_notification_service_read_report_for_cluster_errors{namespace=\"$namespace\"}[15m]))",
               "hide": false,
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "Read reported",
               "refId": "B"
             },
             {
