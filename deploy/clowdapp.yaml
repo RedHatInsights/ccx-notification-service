@@ -117,10 +117,16 @@ objects:
             value: 'false'
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__ENABLED
             value: 'false'  # TODO: Enable
-          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__OFFLINE_TOKEN
-            value: ${SERVICE_LOG__OFFLINE_TOKEN}
-          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__TOKEN_REFRESHMENT_URL
-            value: "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__CLIENT_ID
+            valueFrom:
+              secretKeyRef:
+                name: ccx-notification-service-auth
+                key: ocmclient_id
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__CLIENT_SECRET
+            valueFrom:
+              secretKeyRef:
+                name: ccx-notification-service-auth
+                key: ocmclient_secret
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__URL
             value: ${SERVICE_LOG__URL}
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__TIMEOUT
