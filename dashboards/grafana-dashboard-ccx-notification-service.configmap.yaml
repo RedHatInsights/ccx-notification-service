@@ -321,10 +321,17 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_sent{namespace=\"$namespace\"}[15m]))",
+              "expr": "sum(rate(ccx_notification_service_notification_backend_notification_sent{namespace=\"$namespace\"}[15m]))",
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "Notification Backend",
               "refId": "A"
+            },
+            {
+              "exemplar": true,
+              "expr": "sum(rate(ccx_notification_service_service_log_notification_sent{namespace=\"$namespace\"}[15m]))",
+              "interval": "",
+              "legendFormat": "Service Log",
+              "refId": "B"
             }
           ],
           "title": "Notifications sent per execution",
@@ -402,10 +409,17 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_report_with_high_impact{namespace=\"$namespace\"}[15m]))",
+              "expr": "sum(rate(ccx_notification_service_notification_backend_report_with_high_impact{namespace=\"$namespace\"}[15m]))",
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "Notification Backend",
               "refId": "A"
+            },
+            {
+              "exemplar": true,
+              "expr": "sum(rate(ccx_notification_service_service_log_report_with_high_impact{namespace=\"$namespace\"}[15m]))",
+              "interval": "",
+              "legendFormat": "Service Log",
+              "refId": "B"
             }
           ],
           "title": "High Impact Issues",
@@ -484,10 +498,17 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_not_sent_error_state{namespace=\"$namespace\"}[15m]))",
+              "expr": "sum(rate(ccx_notification_service_notification_backend_notification_not_sent_error_state{namespace=\"$namespace\"}[15m]))",
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "Notification Backend",
               "refId": "A"
+            },
+            {
+              "exemplar": true,
+              "expr": "sum(rate(ccx_notification_service_service_log_notification_not_sent_error_state{namespace=\"$namespace\"}[15m]))",
+              "interval": "",
+              "legendFormat": "Service Log",
+              "refId": "B"
             }
           ],
           "title": "Notifications not sent - error",
@@ -591,10 +612,17 @@ data:
           "targets": [
             {
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_not_sent_same_state{namespace=\"$namespace\"}[15m]))",
+              "expr": "sum(rate(ccx_notification_service_notification_backend_notification_not_sent_same_state{namespace=\"$namespace\"}[15m]))",
               "interval": "",
-              "legendFormat": "",
+              "legendFormat": "Notification Backend",
               "refId": "A"
+            },
+            {
+              "exemplar": true,
+              "expr": "sum(rate(ccx_notification_service_service_log_notification_not_sent_same_state{namespace=\"$namespace\"}[15m]))",
+              "interval": "",
+              "legendFormat": "Service Log",
+              "refId": "B"
             }
           ],
           "title": "Notifications not sent - cluster same state",
