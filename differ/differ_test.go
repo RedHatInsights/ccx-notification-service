@@ -25,6 +25,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"net/http"
+	"net/http/httptest"
 	"os"
 	"os/exec"
 	"testing"
@@ -32,6 +34,7 @@ import (
 
 	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
 	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
+	"github.com/RedHatInsights/insights-results-aggregator-data/testdata"
 
 	utypes "github.com/RedHatInsights/insights-results-types"
 
@@ -529,7 +532,7 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
-	processClusters(ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "no rows in result set", "No report should be retrieved for the first cluster")
@@ -642,7 +645,7 @@ func TestProcessClustersInvalidReportFormatForClusterEntry(t *testing.T) {
 	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
-	processClusters(ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "cannot unmarshal object into Go struct field Report.reports of type []types.ReportItem", "The string retrieved is not a list of reports. It should not deserialize correctly")
@@ -745,7 +748,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 		},
 	)
 
-	processClusters(ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "No new issues to notify for cluster first_cluster", "processClusters shouldn't generate any notification for 'first_cluster' with given data")
@@ -903,7 +906,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 		},
 	)
 
-	processClusters(ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "Report with high impact detected", "processClusters should create a notification for 'first_cluster' with given data")
@@ -1042,7 +1045,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 		},
 	)
 
-	processClusters(ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
@@ -1150,7 +1153,7 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 		NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
 		ErrorLog:           "",
 	}
-	processClusters(ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster first_cluster\"}\n", "Notification already sent for first_cluster's report, but corresponding log not found.")
@@ -1304,7 +1307,7 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 		ErrorLog:           "",
 	}
 
-	processClusters(ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
@@ -1439,7 +1442,7 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	kafkaNotifier = &producerMock
 
 	notificationType = types.WeeklyDigest
-	processClusters(ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
 
 	print(buf.String())
 
@@ -1450,4 +1453,79 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	kafkaNotifier = originalNotifier
+}
+
+// ---------------------------------------------------------------------------------------
+func TestProduceEntriesToServiceLog(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.URL.Path != "/rendered_reports" {
+			t.Errorf("Expected to request '/render_reports', got: %s", r.URL.Path)
+		}
+		if r.Header.Get("Content-Type") != "application/json" {
+			t.Errorf("Expected Content-Type: application/json header, got: %s", r.Header.Get("Accept"))
+		}
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte(`{"clusters":["84f7eedc-0dd8-49cd-9d4d-f6646df3a5bc"],"reports":{"84f7eedc-0dd8-49cd-9d4d-f6646df3a5bc":[{"rule_id":"node_installer_degraded","error_key":"ek1","resolution":"rule 1 resolution","reason":"This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long.","description":"This reason is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long."},{"rule_id":"rule2","error_key":"ek2","resolution":"rule 2 resolution","reason":"rule 2 reason","description":"rule 2 error key description"}, {"rule_id":"rule3","error_key":"ek3","resolution":"rule 3 resolution","reason":"rule 3 reason","description":"rule 3 error key description"}]}}`))
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
+	}))
+	defer server.Close()
+
+	config := conf.ConfigStruct{
+		ServiceLog: conf.ServiceLogConfiguration{
+			Enabled:            true,
+			TotalRiskThreshold: 1,
+			EventFilter:        "totalRisk > totalRiskThreshold",
+		},
+		Dependencies: conf.DependenciesConfiguration{
+			TemplateRendererServer:   server.URL,
+			TemplateRendererEndpoint: "/rendered_reports",
+			TemplateRendererURL:      server.URL + "/rendered_reports",
+		},
+	}
+	serviceLogEventThresholds.TotalRisk = 1
+	serviceLogEventFilter = "totalRisk > totalRiskThreshold"
+
+	ruleContent := types.RulesMap{
+		"node_installer_degraded": testdata.RuleContent1,
+		"rule2":                   testdata.RuleContent2,
+		"rule3":                   testdata.RuleContent3,
+	}
+
+	cluster := types.ClusterEntry{
+		OrgID:         1,
+		AccountNumber: 1,
+		ClusterName:   types.ClusterName(testdata.ClusterName),
+		KafkaOffset:   0,
+		UpdatedAt:     types.Timestamp(testTimestamp),
+	}
+
+	var deserialized types.Report
+	err := json.Unmarshal([]byte(testdata.ClusterReport3Rules), &deserialized)
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+	reports := deserialized.Reports
+
+	producerMock := mocks.Producer{}
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.ProducerMessage")).Return(
+		func(msg types.ProducerMessage) int32 {
+			return 0
+		},
+		func(msg types.ProducerMessage) int64 {
+			return 0
+		},
+		func(msg types.ProducerMessage) error {
+			return nil
+		},
+	)
+
+	originalNotifier := serviceLogNotifier
+	serviceLogNotifier = &producerMock
+
+	produceEntriesToServiceLog(config, cluster, ruleContent, reports)
+	producerMock.AssertNumberOfCalls(t, "ProduceMessage", 2)
+
+	serviceLogNotifier = originalNotifier
 }

@@ -285,10 +285,10 @@ type TemplateRendererRequestBody struct {
 
 // ServiceLogEntry is a structure to be sent to Service Log
 type ServiceLogEntry struct {
-	ClusterUUID string `json:"cluster_uuid"`
-	Description string `json:"description"`
-	ServiceName string `json:"service_name"`
-	Summary     string `json:"summary"`
+	ClusterUUID ClusterName `json:"cluster_uuid"`
+	Description string      `json:"description"`
+	ServiceName string      `json:"service_name"`
+	Summary     string      `json:"summary"`
 }
 
 // AccessTokenOutput is a structure containing fresh access token
