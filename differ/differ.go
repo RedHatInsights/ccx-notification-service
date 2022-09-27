@@ -362,7 +362,7 @@ func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEnt
 }
 
 func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterEntry,
-	ruleContent types.RulesMap, reports []types.ReportItem) {
+	ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int) {
 	renderedReports, err := renderReportsForCluster(
 		conf.GetDependenciesConfiguration(config), cluster.ClusterName,
 		reports, ruleContent)
@@ -436,9 +436,13 @@ func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterE
 					Str(ruleAttribute, string(ruleName)).
 					Str(errorKeyAttribute, string(errorKey)).
 					Msg(serviceLogSendErrorMessage)
+			} else {
+				totalMessages++
 			}
 		}
 	}
+
+	return totalMessages
 }
 
 func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMap,
@@ -564,7 +568,8 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 		}
 
 		if conf.GetServiceLogConfiguration(config).Enabled {
-			produceEntriesToServiceLog(config, cluster, ruleContent, deserialized.Reports)
+			newNotifiedIssues := produceEntriesToServiceLog(config, cluster, ruleContent, deserialized.Reports)
+			notifiedIssues += newNotifiedIssues
 		}
 
 		if !conf.GetKafkaBrokerConfiguration(config).Enabled {
