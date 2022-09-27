@@ -33,7 +33,6 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/ocmclient"
 	"github.com/RedHatInsights/ccx-notification-service/producer/servicelog"
 
-	"github.com/RedHatInsights/ccx-notification-service/producer/disabled"
 	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
 
 	"github.com/rs/zerolog"
@@ -109,6 +108,7 @@ const (
 	serviceLogSendErrorMessage  = "Sending entry to service log failed for this report"
 	renderReportsFailedMessage  = "Rendering reports failed for this cluster"
 	ReportNotFoundError         = "report for rule ID %v and error key %v has not been found"
+	destinationNotSet           = "No known event destination configured. Aborting."
 )
 
 // Constants for notification message top level fields
@@ -566,6 +566,9 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 			produceEntriesToServiceLog(config, cluster, ruleContent, deserialized.Reports)
 		}
 
+		if !conf.GetKafkaBrokerConfiguration(config).Enabled {
+			continue
+		}
 		newNotifiedIssues, err := produceEntriesToKafka(cluster, ruleContent, deserialized.Reports, storage, report)
 		if err != nil {
 			log.Err(err).
@@ -704,7 +707,6 @@ func setupKafkaProducer(config conf.ConfigStruct) {
 	// admins about the state
 	if !conf.GetKafkaBrokerConfiguration(config).Enabled {
 		log.Info().Msg("Broker config for Notification Service is disabled")
-		kafkaNotifier = &disabled.Producer{}
 		return
 	}
 	log.Info().Msg("Broker config for Notification Service is enabled")
@@ -727,7 +729,6 @@ func setupServiceLogProducer(config conf.ConfigStruct) {
 	serviceLogConfig := conf.GetServiceLogConfiguration(config)
 	if !serviceLogConfig.Enabled {
 		log.Info().Msg("Service Log config for Notification Service is disabled")
-		serviceLogNotifier = &disabled.Producer{}
 		return
 	}
 	log.Info().Msg("Service Log config for Notification Service is enabled")
@@ -973,6 +974,13 @@ func deleteOperationSpecified(cliFlags types.CliFlags) bool {
 		cliFlags.PerformOldReportsCleanup
 }
 
+func assertNotificationDestination(config conf.ConfigStruct) {
+	if !conf.GetKafkaBrokerConfiguration(config).Enabled && !conf.GetServiceLogConfiguration(config).Enabled {
+		log.Error().Msg(destinationNotSet)
+		os.Exit(ExitStatusConfiguration)
+	}
+}
+
 func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
@@ -981,8 +989,8 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 		showConfiguration(config)
 	}
 
+	assertNotificationDestination(config)
 	registerMetrics(conf.GetMetricsConfiguration(config))
-
 	log.Info().Msg(separator)
 	log.Info().Msg("Getting rule content and impacts from content service")
 

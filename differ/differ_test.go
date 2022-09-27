@@ -33,7 +33,6 @@ import (
 	"time"
 
 	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
-	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
 	"github.com/RedHatInsights/insights-results-aggregator-data/testdata"
 
 	utypes "github.com/RedHatInsights/insights-results-types"
@@ -411,21 +410,21 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 	assert.Nil(t, err, "Unexpected behavior: Producer was not closed successfully")
 }
 
-func TestSetupNotificationProducerDisabledBrokerConfig(t *testing.T) {
-	testConfig := conf.ConfigStruct{
-		Kafka: conf.KafkaConfiguration{
-			Enabled: false,
-		},
+func TestStartDifferNoDestination(t *testing.T) {
+	if os.Getenv("SETUP_PRODUCER") == "1" {
+		testConfig := conf.ConfigStruct{}
+
+		startDiffer(testConfig, nil, false)
 	}
-
-	setupKafkaProducer(testConfig)
-
-	msgBytes, err := json.Marshal(types.NotificationMessage{})
-	helpers.FailOnError(t, err)
-
-	_, _, err = kafkaNotifier.ProduceMessage(msgBytes)
-	assert.NoError(t, err, "error producing message")
-	assert.NoError(t, kafkaNotifier.Close(), "error closing producer")
+	cmd := exec.Command(os.Args[0], "-test.run=TestStartDifferNoDestination")
+	cmd.Env = append(os.Environ(), "SETUP_PRODUCER=1")
+	err := cmd.Run()
+	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != ExitStatusConfiguration {
+		t.Fatalf(
+			"Should exit with status ExitStatusConfiguration(%d). Got status %d",
+			ExitStatusConfiguration,
+			e.ExitCode())
+	}
 }
 
 // ---------------------------------------------------------------------------------------
@@ -532,7 +531,7 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
-	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "no rows in result set", "No report should be retrieved for the first cluster")
@@ -645,7 +644,7 @@ func TestProcessClustersInvalidReportFormatForClusterEntry(t *testing.T) {
 	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
 
-	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "cannot unmarshal object into Go struct field Report.reports of type []types.ReportItem", "The string retrieved is not a list of reports. It should not deserialize correctly")
@@ -748,7 +747,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 		},
 	)
 
-	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "No new issues to notify for cluster first_cluster", "processClusters shouldn't generate any notification for 'first_cluster' with given data")
@@ -906,7 +905,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 		},
 	)
 
-	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "Report with high impact detected", "processClusters should create a notification for 'first_cluster' with given data")
@@ -1045,7 +1044,7 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 		},
 	)
 
-	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
@@ -1153,7 +1152,7 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 		NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
 		ErrorLog:           "",
 	}
-	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster first_cluster\"}\n", "Notification already sent for first_cluster's report, but corresponding log not found.")
@@ -1307,7 +1306,7 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 		ErrorLog:           "",
 	}
 
-	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
@@ -1442,7 +1441,7 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 	kafkaNotifier = &producerMock
 
 	notificationType = types.WeeklyDigest
-	processClusters(conf.ConfigStruct{}, ruleContent, &storage, clusters)
+	processClusters(conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
 
 	print(buf.String())
 

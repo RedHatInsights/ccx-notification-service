@@ -521,8 +521,10 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 }
 
 // ReadLastNotifiedRecordForClusterList method returns the last notification
-// with state = 'sent' for given org IDs and clusters.
-func (storage DBStorage) ReadLastNotifiedRecordForClusterList(clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) (types.NotifiedRecordsPerCluster, error) {
+// with state = 'sent' for given event target, organization IDs and clusters.
+func (storage DBStorage) ReadLastNotifiedRecordForClusterList(
+	clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget,
+) (types.NotifiedRecordsPerCluster, error) {
 	if len(clusterEntries) == 0 {
 		return types.NotifiedRecordsPerCluster{}, nil
 	}

@@ -290,8 +290,3 @@ type ServiceLogEntry struct {
 	ServiceName string      `json:"service_name"`
 	Summary     string      `json:"summary"`
 }
-
-// AccessTokenOutput is a structure containing fresh access token
-type AccessTokenOutput struct {
-	AccessToken string `json:"access_token"`
-}
