@@ -21,14 +21,16 @@ package differ
 
 import (
 	"encoding/json"
-	"github.com/RedHatInsights/ccx-notification-service/conf"
-	"github.com/RedHatInsights/ccx-notification-service/types"
-	utypes "github.com/RedHatInsights/insights-results-types"
-	"github.com/rs/zerolog/log"
-	"github.com/stretchr/testify/assert"
 	"net/http"
 	"net/http/httptest"
 	"testing"
+
+	"github.com/rs/zerolog/log"
+	"github.com/stretchr/testify/assert"
+
+	"github.com/RedHatInsights/ccx-notification-service/conf"
+	"github.com/RedHatInsights/ccx-notification-service/types"
+	utypes "github.com/RedHatInsights/insights-results-types"
 )
 
 func TestRenderReportsForCluster(t *testing.T) {

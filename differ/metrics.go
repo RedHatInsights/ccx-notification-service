@@ -28,11 +28,12 @@ package differ
 import (
 	"net/http"
 
-	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
 	"github.com/prometheus/client_golang/prometheus/push"
 	"github.com/rs/zerolog/log"
+
+	"github.com/RedHatInsights/ccx-notification-service/conf"
 )
 
 // Metrics names

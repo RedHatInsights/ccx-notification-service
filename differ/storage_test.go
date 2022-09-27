@@ -27,9 +27,10 @@ import (
 	"time"
 
 	"github.com/DATA-DOG/go-sqlmock"
+	"github.com/stretchr/testify/assert"
+
 	"github.com/RedHatInsights/ccx-notification-service/differ"
 	"github.com/RedHatInsights/ccx-notification-service/types"
-	"github.com/stretchr/testify/assert"
 )
 
 func TestReadLastNotifiedRecordForClusterList(t *testing.T) {

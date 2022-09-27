@@ -25,14 +25,15 @@ package differ
 import (
 	"bytes"
 	"encoding/json"
-	httputils "github.com/RedHatInsights/insights-operator-utils/http"
 	"net/http"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
+	httputils "github.com/RedHatInsights/insights-operator-utils/http"
 	utypes "github.com/RedHatInsights/insights-results-types"
-	"github.com/rs/zerolog/log"
 )
 
 func renderReportsForCluster(
