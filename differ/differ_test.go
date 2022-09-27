@@ -1524,7 +1524,10 @@ func TestProduceEntriesToServiceLog(t *testing.T) {
 	originalNotifier := serviceLogNotifier
 	serviceLogNotifier = &producerMock
 
-	produceEntriesToServiceLog(config, cluster, ruleContent, reports)
+	var report types.ClusterReport = "test"
+	storage := mocks.Storage{}
+
+	produceEntriesToServiceLog(config, cluster, ruleContent, reports, &storage, report)
 	producerMock.AssertNumberOfCalls(t, "ProduceMessage", 2)
 
 	serviceLogNotifier = originalNotifier

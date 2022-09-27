@@ -361,8 +361,7 @@ func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEnt
 	return logEntry
 }
 
-func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterEntry,
-	ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int) {
+func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterEntry, ruleContent types.RulesMap, reports []types.ReportItem, storage Storage, report types.ClusterReport) (totalMessages int) {
 	renderedReports, err := renderReportsForCluster(
 		conf.GetDependenciesConfiguration(config), cluster.ClusterName,
 		reports, ruleContent)
@@ -372,6 +371,9 @@ func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterE
 			Msg(renderReportsFailedMessage)
 		return
 	}
+
+	notifiedAt := types.Timestamp(time.Now())
+
 	for _, r := range reports {
 		module := r.Module
 		ruleName := moduleToRuleName(module)
@@ -436,9 +438,13 @@ func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterE
 					Str(ruleAttribute, string(ruleName)).
 					Str(errorKeyAttribute, string(errorKey)).
 					Msg(serviceLogSendErrorMessage)
+				updateNotificationRecordErrorState(storage, err, cluster, report, notifiedAt, types.ServiceLogTarget)
 			} else {
 				totalMessages++
+				updateNotificationRecordSentState(storage, cluster, report, notifiedAt, types.ServiceLogTarget)
 			}
+		} else {
+			updateNotificationRecordSameState(storage, cluster, report, notifiedAt, types.ServiceLogTarget)
 		}
 	}
 
@@ -512,7 +518,7 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 		log.Error().Err(err).Msg(invalidJSONContent)
 		return -1, err
 	}
-	_, offset, err := kafkaNotifier.ProduceMessage(msgBytes)
+	_, _, err = kafkaNotifier.ProduceMessage(msgBytes)
 	if err != nil {
 		log.Error().
 			Str(errorStr, err.Error()).
@@ -521,12 +527,8 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 		return -1, err
 	}
 
-	if offset != -1 {
-		// update the database if any message is sent (not a DisabledProducer)
-		log.Debug().Msg("notifier is not disabled so DB is updated")
-		updateNotificationRecordSentState(storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
-		return len(notificationMsg.Events), nil
-	}
+	updateNotificationRecordSentState(storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
+
 	return 0, nil
 }
 
@@ -568,7 +570,7 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 		}
 
 		if conf.GetServiceLogConfiguration(config).Enabled {
-			newNotifiedIssues := produceEntriesToServiceLog(config, cluster, ruleContent, deserialized.Reports)
+			newNotifiedIssues := produceEntriesToServiceLog(config, cluster, ruleContent, deserialized.Reports, storage, report)
 			notifiedIssues += newNotifiedIssues
 		}
 
