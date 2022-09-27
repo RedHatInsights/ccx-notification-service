@@ -60,7 +60,7 @@ func NewOCMClientWithTransport(clientID, clientSecret, url string, transport htt
 		return nil, err
 	}
 
-	log.Info().Str("url", conn.URL()).Msg("OCM client created successfully...")
+	log.Info().Str("url", conn.URL()).Msg("OCM client created successfully")
 
 	return &OCMGateway{
 		conn,

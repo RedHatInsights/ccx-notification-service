@@ -74,13 +74,13 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 	req, err := http.NewRequest(http.MethodPost, serviceLogURL, bytes.NewBuffer(msg))
 	req.Header.Add("Authorization", "Bearer "+producer.AccessToken)
 	if err != nil {
-		log.Error().Err(err).Msg("Got error while setting up HTTP request")
+		log.Error().Err(err).Msg("Error setting up HTTP request")
 		return -1, -1, err
 	}
 
 	response, err := client.Do(req)
 	if err != nil {
-		log.Error().Err(err).Msgf("Got error while making the HTTP request")
+		log.Error().Err(err).Msgf("Error making the HTTP request")
 		return -1, -1, err
 	}
 
