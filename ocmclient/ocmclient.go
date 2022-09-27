@@ -1,4 +1,4 @@
-// Copyright 2021 Red Hat, Inc
+// Copyright 2021, 2022 Red Hat, Inc
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -68,6 +68,6 @@ func NewOCMClientWithTransport(clientID, clientSecret, url string, transport htt
 }
 
 // GetTokens returns the access and refresh tokens that are currently in use by the connection
-func (c *OCMGateway) GetTokens(delay time.Duration) (string, string, error) {
+func (c *OCMGateway) GetTokens(delay time.Duration) (onlineToken string, refreshToken string, err error) {
 	return c.connection.Tokens(delay)
 }
