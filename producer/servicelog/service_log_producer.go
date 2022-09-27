@@ -74,7 +74,7 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 	req, err := http.NewRequest(http.MethodPost, serviceLogURL, bytes.NewBuffer(msg))
 	req.Header.Add("Authorization", "Bearer "+producer.AccessToken)
 	if err != nil {
-		log.Error().Err(err).Msg("Error setting up HTTP request")
+		log.Error().Err(err).Str("url", serviceLogURL).Msg("Error setting up HTTP POST request")
 		return -1, -1, err
 	}
 

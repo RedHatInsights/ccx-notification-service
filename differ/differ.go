@@ -167,14 +167,19 @@ type EventValue struct {
 	Severity   int
 }
 
+// NotificationURLs structure contains all the URLs that are inserted in the notifications
+type NotificationURLs struct {
+	ClusterDetails  string
+	RuleDetails     string
+	InsightsAdvisor string
+}
+
 var (
-	notificationType               types.EventType
-	kafkaNotifier                  producer.Producer
-	serviceLogNotifier             producer.Producer
-	notificationClusterDetailsURI  string
-	notificationRuleDetailsURI     string
-	notificationInsightsAdvisorURL string
-	kafkaEventThresholds           EventThresholds = EventThresholds{
+	notificationType      types.EventType
+	kafkaNotifier         producer.Producer
+	serviceLogNotifier    producer.Producer
+	notificationEventURLs NotificationURLs
+	kafkaEventThresholds  EventThresholds = EventThresholds{
 		TotalRisk:  DefaultTotalRiskThreshold,
 		Likelihood: DefaultLikelihoodThreshold,
 		Impact:     DefaultImpactThreshold,
@@ -414,7 +419,7 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 	reportItems []types.ReportItem, storage Storage, report types.ClusterReport) (int, error) {
 
 	notificationMsg := generateInstantNotificationMessage(
-		&notificationClusterDetailsURI,
+		&notificationEventURLs.ClusterDetails,
 		fmt.Sprint(cluster.AccountNumber),
 		fmt.Sprint(cluster.OrgID),
 		string(cluster.ClusterName))
@@ -455,7 +460,7 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 			// if new report differs from the older one -> send notification
 			log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Different report from the last one")
 			ReportWithHighImpact.Inc()
-			notificationPayloadURL := generateNotificationPayloadURL(&notificationRuleDetailsURI, string(cluster.ClusterName), module, errorKey)
+			notificationPayloadURL := generateNotificationPayloadURL(&notificationEventURLs.RuleDetails, string(cluster.ClusterName), module, errorKey)
 			appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano))
 		}
 	}
@@ -640,7 +645,7 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storag
 			Int("important notifications", digest.ImportantNotifications).
 			Msg("Producing weekly notification for ")
 
-		notification := generateWeeklyNotificationMessage(&notificationInsightsAdvisorURL, fmt.Sprint(account), digest)
+		notification := generateWeeklyNotificationMessage(&notificationEventURLs.InsightsAdvisor, fmt.Sprint(account), digest)
 		msgBytes, err := json.Marshal(notification)
 		if err != nil {
 			log.Error().Err(err).Msg(invalidJSONContent)
@@ -964,12 +969,9 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg("Read cluster list")
 
 	notifConfig := conf.GetNotificationsConfiguration(config)
-	notificationClusterDetailsURI = notifConfig.ClusterDetailsURI
-	notificationRuleDetailsURI = notifConfig.RuleDetailsURI
-	notificationInsightsAdvisorURL = notifConfig.InsightsAdvisorURL
 
+	setupNotificationURLs(notifConfig)
 	setupFiltersAndThresholds(config)
-
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)
 
@@ -1009,6 +1011,12 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg("Differ finished. Pushing metrics to the configured prometheus gateway.")
 	pushMetrics(conf.GetMetricsConfiguration(config))
 	log.Info().Msg(separator)
+}
+
+func setupNotificationURLs(config conf.NotificationsConfiguration) {
+	notificationEventURLs.ClusterDetails = config.ClusterDetailsURI
+	notificationEventURLs.RuleDetails = config.RuleDetailsURI
+	notificationEventURLs.InsightsAdvisor = config.InsightsAdvisorURL
 }
 
 func closeDiffer(storage *DBStorage) {
