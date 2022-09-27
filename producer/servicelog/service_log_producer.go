@@ -120,10 +120,12 @@ func (producer *Producer) Close() error {
 }
 
 func (producer *Producer) refreshToken() error {
+	log.Info().Msg("refreshing access token...")
 	accessToken, _, err := producer.OCMClient.GetTokens(producer.TokenRefreshmentDelay)
 	if err != nil {
 		return err
 	}
 	producer.AccessToken = accessToken
+	log.Info().Msg("access token refreshed successfully")
 	return nil
 }
