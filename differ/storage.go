@@ -43,9 +43,10 @@ import (
 	_ "github.com/lib/pq"           // PostgreSQL database driver
 	_ "github.com/mattn/go-sqlite3" // SQLite database driver
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
-	"github.com/rs/zerolog/log"
 )
 
 // Storage represents an interface to almost any database or storage system

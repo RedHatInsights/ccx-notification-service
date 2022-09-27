@@ -22,11 +22,12 @@ package differ
 import (
 	"testing"
 
-	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
-	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+
+	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
+	"github.com/RedHatInsights/ccx-notification-service/types"
 )
 
 var (

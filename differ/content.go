@@ -25,15 +25,16 @@ package differ
 import (
 	"bytes"
 	"encoding/gob"
-	"github.com/RedHatInsights/insights-operator-utils/http"
 	"net/http"
 	"os"
 	"time"
 
+	"github.com/rs/zerolog/log"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
+	"github.com/RedHatInsights/insights-operator-utils/http"
 	utypes "github.com/RedHatInsights/insights-results-types"
-	"github.com/rs/zerolog/log"
 )
 
 // fetchAllRulesContent fetches the parsed rules provided by the content-service

@@ -29,10 +29,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/RedHatInsights/ccx-notification-service/conf"
-	"github.com/RedHatInsights/ccx-notification-service/differ"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/RedHatInsights/ccx-notification-service/conf"
+	"github.com/RedHatInsights/ccx-notification-service/differ"
 )
 
 // TestAddMetricsWithNamespaceAndSubsystem function checks the basic behaviour of function

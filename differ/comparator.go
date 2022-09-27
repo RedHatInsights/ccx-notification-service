@@ -27,8 +27,9 @@ import (
 	"encoding/json"
 	"os"
 
-	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/rs/zerolog/log"
+
+	"github.com/RedHatInsights/ccx-notification-service/types"
 )
 
 // Messages

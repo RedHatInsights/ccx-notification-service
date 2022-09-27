@@ -24,8 +24,9 @@ import (
 	"os/exec"
 	"testing"
 
-	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/stretchr/testify/assert"
+
+	"github.com/RedHatInsights/ccx-notification-service/types"
 )
 
 // Test the checkArgs function when flag for --show-version is set
