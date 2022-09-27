@@ -388,6 +388,11 @@ func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterE
 		}
 
 		if result > 0 {
+			if !shouldNotify(cluster, r, types.ServiceLogTarget) {
+				continue
+			}
+			ReportWithHighImpact.Inc()
+
 			renderedReport, err := findRenderedReport(renderedReports, ruleName, errorKey)
 			if err != nil {
 				log.Err(err).Msgf("Output from content template renderer does not contain "+
