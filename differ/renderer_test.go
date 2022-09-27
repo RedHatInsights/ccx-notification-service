@@ -163,6 +163,10 @@ func TestGetAllContentFromMapOneItem(t *testing.T) {
 	// result should contain exactly one item
 	assert.NotEmpty(t, allContent)
 	assert.Len(t, allContent, 1)
+
+	// check the content
+	rule1 := allContent[0]
+	assert.Equal(t, rule1, ruleContent["rule_1"])
 }
 
 // TestGetAllContentFromMapTwoItems tests the function getAllContentFromMap
@@ -203,4 +207,19 @@ func TestGetAllContentFromMapTwoItems(t *testing.T) {
 
 	// we are not sure about their order
 	assert.Len(t, allContent, 2)
+
+	// check the content
+	rule1 := allContent[0]
+	rule2 := allContent[1]
+
+	// we are not sure about order
+	if rule1.Summary == "rule 1 summary" {
+		// order seems to be rule1->rule2
+		assert.Equal(t, rule1, ruleContent["rule_1"])
+		assert.Equal(t, rule2, ruleContent["rule_2"])
+	} else {
+		// order seems to be rule2->rule1
+		assert.Equal(t, rule1, ruleContent["rule_2"])
+		assert.Equal(t, rule2, ruleContent["rule_1"])
+	}
 }
