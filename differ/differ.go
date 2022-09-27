@@ -362,7 +362,7 @@ func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEnt
 }
 
 func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterEntry,
-	ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int) {
+	ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int, err error) {
 	renderedReports, err := renderReportsForCluster(
 		conf.GetDependenciesConfiguration(config), cluster.ClusterName,
 		reports, ruleContent)
@@ -436,13 +436,13 @@ func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterE
 					Str(ruleAttribute, string(ruleName)).
 					Str(errorKeyAttribute, string(errorKey)).
 					Msg(serviceLogSendErrorMessage)
-			} else {
-				totalMessages++
+				return totalMessages, err
 			}
+			totalMessages++
 		}
 	}
 
-	return totalMessages
+	return totalMessages, nil
 }
 
 func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMap,
@@ -568,7 +568,9 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 		}
 
 		if conf.GetServiceLogConfiguration(config).Enabled {
-			newNotifiedIssues := produceEntriesToServiceLog(config, cluster, ruleContent, deserialized.Reports)
+			notifiedAt := types.Timestamp(time.Now())
+			newNotifiedIssues, err := produceEntriesToServiceLog(config, cluster, ruleContent, deserialized.Reports)
+			updateNotificationRecordState(storage, cluster, report, newNotifiedIssues, notifiedAt, types.ServiceLogTarget, err)
 			notifiedIssues += newNotifiedIssues
 		}
 

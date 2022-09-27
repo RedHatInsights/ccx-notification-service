@@ -126,6 +126,17 @@ func updateNotificationRecordErrorState(storage Storage, err error, cluster type
 	}
 }
 
+func updateNotificationRecordState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, numEvents int, notifiedAt types.Timestamp, eventTarget types.EventTarget, err error) {
+	if err != nil {
+		log.Warn().Int("issues notified so far", numEvents).Msg("Error sending notification events")
+		updateNotificationRecordErrorState(storage, err, cluster, report, notifiedAt, eventTarget)
+	} else if numEvents == 0 {
+		updateNotificationRecordSameState(storage, cluster, report, notifiedAt, eventTarget)
+	} else if numEvents > 0 {
+		updateNotificationRecordSentState(storage, cluster, report, notifiedAt, eventTarget)
+	}
+}
+
 func writeNotificationRecordFailed(err error) {
 	log.Error().Err(err).Msg("Write notification record failed")
 }
