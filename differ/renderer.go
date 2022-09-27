@@ -65,13 +65,15 @@ func renderReportsForCluster(
 }
 
 func getAllContentFromMap(ruleContent types.RulesMap) []utypes.RuleContent {
-	content := make([]utypes.RuleContent, 0, len(ruleContent))
+	contents := make([]utypes.RuleContent, len(ruleContent))
 
-	for _, r := range ruleContent {
-		content = append(content, r)
+	i := 0
+	for _, content := range ruleContent {
+		contents[i] = content
+		i++
 	}
 
-	return content
+	return contents
 }
 
 func createTemplateRendererRequest(
