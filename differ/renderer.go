@@ -68,8 +68,8 @@ func getAllContentFromMap(ruleContent types.RulesMap) []utypes.RuleContent {
 	contents := make([]utypes.RuleContent, len(ruleContent))
 
 	i := 0
-	for _, content := range ruleContent {
-		contents[i] = content
+	for key := range ruleContent {
+		contents[i] = ruleContent[key]
 		i++
 	}
 
