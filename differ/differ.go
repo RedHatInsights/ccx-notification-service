@@ -31,6 +31,7 @@ import (
 	"time"
 
 	"github.com/RedHatInsights/ccx-notification-service/ocmclient"
+	"github.com/RedHatInsights/ccx-notification-service/producer/disabled"
 	"github.com/RedHatInsights/ccx-notification-service/producer/servicelog"
 
 	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
@@ -706,6 +707,7 @@ func setupKafkaProducer(config conf.ConfigStruct) {
 	// broker enable/disable is very important information, let's inform
 	// admins about the state
 	if !conf.GetKafkaBrokerConfiguration(config).Enabled {
+		kafkaNotifier = &disabled.Producer{}
 		log.Info().Msg("Broker config for Notification Service is disabled")
 		return
 	}
@@ -728,6 +730,7 @@ func setupServiceLogProducer(config conf.ConfigStruct) {
 	// admins about the state
 	serviceLogConfig := conf.GetServiceLogConfiguration(config)
 	if !serviceLogConfig.Enabled {
+		serviceLogNotifier = &disabled.Producer{}
 		log.Info().Msg("Service Log config for Notification Service is disabled")
 		return
 	}
