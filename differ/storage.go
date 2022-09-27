@@ -524,7 +524,7 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 // with state = 'sent' for given event target, organization IDs and clusters.
 func (storage DBStorage) ReadLastNotifiedRecordForClusterList(
 	clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget,
-	) (types.NotifiedRecordsPerCluster, error) {
+) (types.NotifiedRecordsPerCluster, error) {
 	if len(clusterEntries) == 0 {
 		return types.NotifiedRecordsPerCluster{}, nil
 	}
