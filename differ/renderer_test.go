@@ -137,3 +137,70 @@ func TestGetAllContentFromMapEmptyCase(t *testing.T) {
 	// result should be empty as well
 	assert.Empty(t, allContent)
 }
+
+// TestGetAllContentFromMapOneItem tests the function getAllContentFromMap
+// for input with one item
+func TestGetAllContentFromMapOneItem(t *testing.T) {
+	var errorKeys map[string]utypes.RuleErrorKeyContent
+
+	// input with one item
+	ruleContent := types.RulesMap{
+		"rule_1": {
+			Plugin: utypes.RulePluginInfo{
+				PythonModule: "rule_1",
+			},
+			Summary:    "rule 1 summary",
+			Reason:     "rule 1 reason",
+			Resolution: "rule 1 resolution",
+			MoreInfo:   "rule 1 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  true,
+		},
+	}
+
+	allContent := getAllContentFromMap(ruleContent)
+
+	// result should contain exactly one item
+	assert.NotEmpty(t, allContent)
+	assert.Len(t, allContent, 1)
+}
+
+// TestGetAllContentFromMapTwoItems tests the function getAllContentFromMap
+// for input with two items
+func TestGetAllContentFromMapTwoItems(t *testing.T) {
+	var errorKeys map[string]utypes.RuleErrorKeyContent
+
+	// input with one item
+	ruleContent := types.RulesMap{
+		"rule_1": {
+			Plugin: utypes.RulePluginInfo{
+				PythonModule: "rule_1",
+			},
+			Summary:    "rule 1 summary",
+			Reason:     "rule 1 reason",
+			Resolution: "rule 1 resolution",
+			MoreInfo:   "rule 1 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  true,
+		},
+		"rule_2": {
+			Plugin: utypes.RulePluginInfo{
+				PythonModule: "rule_2",
+			},
+			Summary:    "rule 2 summary",
+			Reason:     "",
+			Resolution: "rule 2 resolution",
+			MoreInfo:   "rule 2 more info",
+			ErrorKeys:  errorKeys,
+			HasReason:  false,
+		},
+	}
+
+	allContent := getAllContentFromMap(ruleContent)
+
+	// result should contain exactly two items
+	assert.NotEmpty(t, allContent)
+
+	// we are not sure about their order
+	assert.Len(t, allContent, 2)
+}
