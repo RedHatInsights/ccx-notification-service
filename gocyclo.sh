@@ -28,7 +28,7 @@ then
     GO111MODULE=off go get github.com/fzipp/gocyclo/cmd/gocyclo
 fi
 
-if ! gocyclo -over 13 -avg .
+if ! gocyclo -over 10 -avg .
 then
     echo -e "${RED_BG}[FAIL]${NC} Functions/methods with high cyclomatic complexity detected"
     exit 1
