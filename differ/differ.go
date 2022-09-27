@@ -686,6 +686,7 @@ func setupKafkaProducer(config conf.ConfigStruct) {
 		os.Exit(ExitStatusKafkaBrokerError)
 	}
 	kafkaNotifier = kafkaProducer
+	log.Info().Msg("Kafka producer ready")
 }
 
 func setupServiceLogProducer(config conf.ConfigStruct) {
@@ -996,7 +997,6 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Kafka producer")
 	setupKafkaProducer(config)
-	log.Info().Msg("Kafka producer ready")
 	log.Info().Msg(separator)
 	log.Info().Msg("Preparing Service Log producer")
 	setupServiceLogProducer(config)
