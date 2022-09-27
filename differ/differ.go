@@ -89,13 +89,18 @@ const (
 	clusterEntryMessage         = "cluster entry"
 	organizationIDAttribute     = "org id"
 	AccountNumberAttribute      = "account number"
+	typeAttribute               = "type"
 	clusterAttribute            = "cluster"
 	ruleAttribute               = "rule"
+	likelihoodAttribute         = "likelihood"
+	impactAttribute             = "impact"
 	errorKeyAttribute           = "error key"
 	numberOfEventsAttribute     = "number of events"
 	clustersAttribute           = "clusters"
 	totalRiskAttribute          = "totalRisk"
 	errorStr                    = "Error:"
+	reportWithHighImpactMessage = "Report with high impact detected"
+	differentReportMessage      = "Different report from the last one"
 	invalidJSONContent          = "The provided content cannot be encoded as JSON."
 	contextToEscapedStringError = "Notification message will not be generated as context couldn't be converted to escaped string."
 	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
@@ -388,9 +393,21 @@ func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterE
 		}
 
 		if result > 0 {
+			log.Warn().
+				Str(typeAttribute, r.Type).
+				Str(ruleAttribute, string(ruleName)).
+				Str(errorKeyAttribute, string(errorKey)).
+				Int(likelihoodAttribute, likelihood).
+				Int(impactAttribute, impact).
+				Int(totalRiskAttribute, totalRisk).
+				Msg(reportWithHighImpactMessage)
 			if !shouldNotify(cluster, r, types.ServiceLogTarget) {
 				continue
 			}
+			// if new report differs from the older one -> send notification
+			log.Info().
+				Str(clusterName, string(cluster.ClusterName)).
+				Msg(differentReportMessage)
 			ReportWithHighImpact.Inc()
 
 			renderedReport, err := findRenderedReport(renderedReports, ruleName, errorKey)
@@ -408,6 +425,9 @@ func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterE
 				continue
 			}
 
+			log.Info().
+				Str(clusterAttribute, string(cluster.ClusterName)).
+				Msg("Producing service log message")
 			_, _, err = serviceLogNotifier.ProduceMessage(msgBytes)
 			if err != nil {
 				log.Err(err).
@@ -452,18 +472,20 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 
 		if result > 0 {
 			log.Warn().
-				Str("type", r.Type).
+				Str(typeAttribute, r.Type).
 				Str(ruleAttribute, string(ruleName)).
 				Str(errorKeyAttribute, string(errorKey)).
-				Int("likelihood", likelihood).
-				Int("impact", impact).
+				Int(likelihoodAttribute, likelihood).
+				Int(impactAttribute, impact).
 				Int(totalRiskAttribute, totalRisk).
-				Msg("Report with high impact detected")
+				Msg(reportWithHighImpactMessage)
 			if !shouldNotify(cluster, r, types.NotificationBackendTarget) {
 				continue
 			}
 			// if new report differs from the older one -> send notification
-			log.Info().Str(clusterName, string(cluster.ClusterName)).Msg("Different report from the last one")
+			log.Info().
+				Str(clusterName, string(cluster.ClusterName)).
+				Msg(differentReportMessage)
 			ReportWithHighImpact.Inc()
 			notificationPayloadURL := generateNotificationPayloadURL(&notificationEventURLs.RuleDetails, string(cluster.ClusterName), module, errorKey)
 			appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano))
