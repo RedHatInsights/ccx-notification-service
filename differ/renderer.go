@@ -64,17 +64,24 @@ func renderReportsForCluster(
 	return receivedResult.Reports[clusterName], nil
 }
 
+func getAllContentFromMap(ruleContent types.RulesMap) []utypes.RuleContent {
+	content := make([]utypes.RuleContent, 0, len(ruleContent))
+
+	for _, r := range ruleContent {
+		content = append(content, r)
+	}
+
+	return content
+}
+
 func createTemplateRendererRequest(
 	ruleContent types.RulesMap,
 	reports []types.ReportItem,
 	clusterName types.ClusterName,
 	rendererURL string) (*http.Request, error) {
 
-	content := make([]utypes.RuleContent, 0, len(ruleContent))
+	content := getAllContentFromMap(ruleContent)
 
-	for _, r := range ruleContent {
-		content = append(content, r)
-	}
 	requestBody := types.TemplateRendererRequestBody{
 		Content: content,
 		ReportData: types.ReportData{
