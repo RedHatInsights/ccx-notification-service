@@ -125,3 +125,15 @@ func TestRenderReportsForCluster(t *testing.T) {
 		Description: "rule 1 error key description",
 	})
 }
+
+// TestGetAllContentFromMapEmptyCase tests the function getAllContentFromMap
+// for empty input
+func TestGetAllContentFromMapEmptyCase(t *testing.T) {
+	// empty input
+	var ruleContent types.RulesMap
+
+	allContent := getAllContentFromMap(ruleContent)
+
+	// result should be empty as well
+	assert.Empty(t, allContent)
+}
