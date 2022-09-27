@@ -737,7 +737,7 @@ func setupServiceLogProducer(config conf.ConfigStruct) {
 		log.Error().Err(err).Msg("got error while setting up the connection to OCM API gateway")
 		return
 	}
-	producer, err := servicelog.New(serviceLogConfig, conn)
+	serviceLogProducer, err := servicelog.New(serviceLogConfig, conn)
 	if err != nil {
 		ProducerSetupErrors.Inc()
 		log.Error().
@@ -745,7 +745,7 @@ func setupServiceLogProducer(config conf.ConfigStruct) {
 			Msg("Couldn't initialize Service Log producer with the provided config.")
 		os.Exit(ExitStatusServiceLogError)
 	}
-	serviceLogNotifier = producer
+	serviceLogNotifier = serviceLogProducer
 }
 
 // generateInstantNotificationMessage function generates a notification message
