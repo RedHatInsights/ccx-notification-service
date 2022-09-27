@@ -32,6 +32,9 @@ import (
 // Please look into the following blogpost:
 // https://medium.com/@robiplus/golang-trick-export-for-test-aa16cbd7b8cd
 // to see why this trick is needed.
+var (
+	GetAllContentFromMap = getAllContentFromMap
+)
 
 func PushMetrics(metricsConf conf.MetricsConfiguration) {
 	pushMetrics(metricsConf)
