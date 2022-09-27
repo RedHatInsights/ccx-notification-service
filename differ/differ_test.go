@@ -1504,7 +1504,8 @@ func TestProduceEntriesToServiceLog(t *testing.T) {
 	var deserialized types.Report
 	err := json.Unmarshal([]byte(testdata.ClusterReport3Rules), &deserialized)
 	if err != nil {
-		log.Fatal().Msg(err.Error())
+		log.Error().Msg(err.Error())
+		return
 	}
 	reports := deserialized.Reports
 
