@@ -534,6 +534,7 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 	notifiedIssues := 0
 	clustersCount := len(clusters)
 	skippedEntries := 0
+	emptyEntries := 0
 
 	for i, cluster := range clusters {
 		log.Info().
@@ -563,7 +564,7 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 
 		if len(deserialized.Reports) == 0 {
 			log.Info().Msgf("No reports in notification database for cluster %s", cluster.ClusterName)
-			skippedEntries++
+			emptyEntries++
 			continue
 		}
 
@@ -586,7 +587,8 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 		}
 		notifiedIssues += newNotifiedIssues
 	}
-	log.Info().Msgf("Number of entries not processed: %d", skippedEntries)
+	log.Info().Msgf("Number of reports not retrieved/deserialized: %d", skippedEntries)
+	log.Info().Msgf("Number of empty reports skipped: %d", emptyEntries)
 	log.Info().Msgf("Number of high impact issues notified: %d", notifiedIssues)
 }
 
