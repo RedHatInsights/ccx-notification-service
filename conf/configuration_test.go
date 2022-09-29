@@ -16,8 +16,11 @@ limitations under the License.
 
 package conf_test
 
+// Unit test definitions for functions and methods defined in source file
+// config.go
+//
 // Documentation in literate-programming-style is available at:
-// https://redhatinsights.github.io/ccx-notification-writer/packages/conf_test/configuration_test.html
+// https://redhatinsights.github.io/ccx-notification-service/packages/conf_test/configuration_test.html
 
 import (
 	"fmt"
@@ -38,6 +41,8 @@ func init() {
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 }
 
+// mustLoadConfiguration function loads configuration file or the actual test
+// will fail
 func mustLoadConfiguration(envVar string) {
 	_, err := conf.LoadConfiguration(envVar, "../tests/config1")
 	if err != nil {
@@ -45,18 +50,22 @@ func mustLoadConfiguration(envVar string) {
 	}
 }
 
+// mustSetEnv function set specified environment variable or the actual test
+// will fail
 func mustSetEnv(t *testing.T, key, val string) {
 	err := os.Setenv(key, val)
 	helpers.FailOnError(t, err)
 }
 
-// TestLoadDefaultConfiguration loads a configuration file for testing
+// TestLoadDefaultConfiguration test loads a configuration file for testing
+// with check that load was correct
 func TestLoadDefaultConfiguration(t *testing.T) {
 	os.Clearenv()
 	mustLoadConfiguration("nonExistingEnvVar")
 }
 
-// TestLoadConfigurationFromEnvVariable tests loading the config. file for testing from an environment variable
+// TestLoadConfigurationFromEnvVariable tests loading the config. file for
+// testing from an environment variable
 func TestLoadConfigurationFromEnvVariable(t *testing.T) {
 	os.Clearenv()
 
@@ -64,7 +73,8 @@ func TestLoadConfigurationFromEnvVariable(t *testing.T) {
 	mustLoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE")
 }
 
-// TestLoadConfigurationNonEnvVarUnknownConfigFile tests loading an unexisting config file when no environment variable is provided
+// TestLoadConfigurationNonEnvVarUnknownConfigFile tests loading an unexisting
+// config file when no environment variable is provided
 func TestLoadConfigurationNonEnvVarUnknownConfigFile(t *testing.T) {
 	_, err := conf.LoadConfiguration("", "foobar")
 	assert.Nil(t, err)
