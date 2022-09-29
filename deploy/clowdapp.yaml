@@ -75,7 +75,7 @@ objects:
           - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__RULE_DETAILS_URI
             value: "https://${PLATFORM_UI_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}?first={module}|{error_key}"
           - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__COOLDOWN
-            value: ${NOTIFICATION_RESEND_COOLDOWN}
+            value: ${NOTIFICATION_RESEND_COOLDOWN_NOTIFICATION_BACKEND}
           - name: CCX_NOTIFICATION_SERVICE__METRICS__JOB_NAME
             value: ccx_notification_service
           - name: CCX_NOTIFICATION_SERVICE__METRICS__NAMESPACE
@@ -168,7 +168,7 @@ objects:
           - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__RULE_DETAILS_URI
             value: "https://${PLATFORM_UI_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}?first={module}|{error_key}"
           - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__COOLDOWN
-            value: ${NOTIFICATION_RESEND_COOLDOWN}
+            value: ${NOTIFICATION_RESEND_COOLDOWN_SERVICE_LOG}
           - name: CCX_NOTIFICATION_SERVICE__METRICS__JOB_NAME
             value: ccx_notification_service
           - name: CCX_NOTIFICATION_SERVICE__METRICS__NAMESPACE
@@ -246,7 +246,9 @@ parameters:
   value: ccx-notification-db
 - name: PLATFORM_UI_HOSTNAME
 - name: CONTENT_SERVICE_PORT
-- name: NOTIFICATION_RESEND_COOLDOWN
+- name: NOTIFICATION_RESEND_COOLDOWN_NOTIFICATION_BACKEND
+  value: 24h
+- name: NOTIFICATION_RESEND_COOLDOWN_SERVICE_LOG
   value: 24h
 - name: METRICS_NAMESPACE
   value: ccx_notification_service
