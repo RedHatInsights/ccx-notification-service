@@ -256,15 +256,15 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 
 	if err := updateConfigFromClowder(&configuration); err != nil {
 		fmt.Println("error loading clowder configuration")
-		return config, err
+		return configuration, err
 	}
 
-	config.Dependencies.TemplateRendererURL, err = createURL(
-		config.Dependencies.TemplateRendererServer,
-		config.Dependencies.TemplateRendererEndpoint)
+	configuration.Dependencies.TemplateRendererURL, err = createURL(
+		configuration.Dependencies.TemplateRendererServer,
+		configuration.Dependencies.TemplateRendererEndpoint)
 	if err != nil {
 		fmt.Println("error creating content template renderer URL")
-		return config, err
+		return configuration, err
 	}
 
 	// everything's should be ok
@@ -364,11 +364,11 @@ func updateConfigFromClowder(configuration *ConfigStruct) error {
 
 	if clowder.LoadedConfig.Database != nil {
 		// get DB configuration from clowder
-		c.Storage.PGDBName = clowder.LoadedConfig.Database.Name
-		c.Storage.PGHost = clowder.LoadedConfig.Database.Hostname
-		c.Storage.PGPort = clowder.LoadedConfig.Database.Port
-		c.Storage.PGUsername = clowder.LoadedConfig.Database.Username
-		c.Storage.PGPassword = clowder.LoadedConfig.Database.Password
+		configuration.Storage.PGDBName = clowder.LoadedConfig.Database.Name
+		configuration.Storage.PGHost = clowder.LoadedConfig.Database.Hostname
+		configuration.Storage.PGPort = clowder.LoadedConfig.Database.Port
+		configuration.Storage.PGUsername = clowder.LoadedConfig.Database.Username
+		configuration.Storage.PGPassword = clowder.LoadedConfig.Database.Password
 	} else {
 		fmt.Println(noStorage)
 	}
