@@ -193,7 +193,7 @@ type MetricsConfiguration struct {
 // LoadConfiguration loads configuration from defaultConfigFile, file set in
 // configFileEnvVariableName or from env
 func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (ConfigStruct, error) {
-	var config ConfigStruct
+	var configuration ConfigStruct
 
 	// env. variable holding name of configuration file
 	configFile, specified := os.LookupEnv(configFileEnvVariableName)
@@ -223,9 +223,9 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 		// itself, so we need to read fake config file
 		fakeTomlConfigWriter := new(bytes.Buffer)
 
-		err := toml.NewEncoder(fakeTomlConfigWriter).Encode(config)
+		err := toml.NewEncoder(fakeTomlConfigWriter).Encode(configuration)
 		if err != nil {
-			return config, err
+			return configuration, err
 		}
 
 		fakeTomlConfig := fakeTomlConfigWriter.String()
@@ -234,11 +234,11 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 
 		err = viper.ReadConfig(strings.NewReader(fakeTomlConfig))
 		if err != nil {
-			return config, err
+			return configuration, err
 		}
 	} else if err != nil {
 		// error is processed on caller side
-		return config, fmt.Errorf("fatal error config file: %s", err)
+		return configuration, fmt.Errorf("fatal error config file: %s", err)
 	}
 
 	// override configuration from env if there's variable in env
@@ -249,26 +249,26 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 	viper.SetEnvPrefix(envPrefix)
 	viper.SetEnvKeyReplacer(strings.NewReplacer("-", "_", ".", "__"))
 
-	err = viper.Unmarshal(&config)
+	err = viper.Unmarshal(&configuration)
 	if err != nil {
-		return config, err
+		return configuration, err
 	}
 
-	if err := updateConfigFromClowder(&config); err != nil {
+	if err := updateConfigFromClowder(&configuration); err != nil {
 		fmt.Println("error loading clowder configuration")
-		return config, err
+		return configuration, err
 	}
 
-	config.Dependencies.TemplateRendererURL, err = createURL(
-		config.Dependencies.TemplateRendererServer,
-		config.Dependencies.TemplateRendererEndpoint)
+	configuration.Dependencies.TemplateRendererURL, err = createURL(
+		configuration.Dependencies.TemplateRendererServer,
+		configuration.Dependencies.TemplateRendererEndpoint)
 	if err != nil {
 		fmt.Println("error creating content template renderer URL")
-		return config, err
+		return configuration, err
 	}
 
 	// everything's should be ok
-	return config, nil
+	return configuration, nil
 }
 
 func createURL(server, endpoint string) (string, error) {
@@ -281,47 +281,47 @@ func createURL(server, endpoint string) (string, error) {
 }
 
 // GetStorageConfiguration returns storage configuration
-func GetStorageConfiguration(config ConfigStruct) StorageConfiguration {
-	return config.Storage
+func GetStorageConfiguration(configuration ConfigStruct) StorageConfiguration {
+	return configuration.Storage
 }
 
 // GetLoggingConfiguration returns logging configuration
-func GetLoggingConfiguration(config ConfigStruct) LoggingConfiguration {
-	return config.Logging
+func GetLoggingConfiguration(configuration ConfigStruct) LoggingConfiguration {
+	return configuration.Logging
 }
 
 // GetKafkaBrokerConfiguration returns kafka broker configuration
-func GetKafkaBrokerConfiguration(config ConfigStruct) KafkaConfiguration {
-	return config.Kafka
+func GetKafkaBrokerConfiguration(configuration ConfigStruct) KafkaConfiguration {
+	return configuration.Kafka
 }
 
 // GetServiceLogConfiguration returns ServiceLog configuration
-func GetServiceLogConfiguration(config ConfigStruct) ServiceLogConfiguration {
-	return config.ServiceLog
+func GetServiceLogConfiguration(configuration ConfigStruct) ServiceLogConfiguration {
+	return configuration.ServiceLog
 }
 
 // GetDependenciesConfiguration returns dependencies configuration
-func GetDependenciesConfiguration(config ConfigStruct) DependenciesConfiguration {
-	return config.Dependencies
+func GetDependenciesConfiguration(configuration ConfigStruct) DependenciesConfiguration {
+	return configuration.Dependencies
 }
 
 // GetNotificationsConfiguration returns configuration related with notification content
-func GetNotificationsConfiguration(config ConfigStruct) NotificationsConfiguration {
-	return config.Notifications
+func GetNotificationsConfiguration(configuration ConfigStruct) NotificationsConfiguration {
+	return configuration.Notifications
 }
 
 // GetMetricsConfiguration returns metrics configuration
-func GetMetricsConfiguration(config ConfigStruct) MetricsConfiguration {
-	return config.Metrics
+func GetMetricsConfiguration(configuration ConfigStruct) MetricsConfiguration {
+	return configuration.Metrics
 }
 
 // GetCleanerConfiguration returns cleaner configuration
-func GetCleanerConfiguration(config ConfigStruct) CleanerConfiguration {
-	return config.Cleaner
+func GetCleanerConfiguration(configuration ConfigStruct) CleanerConfiguration {
+	return configuration.Cleaner
 }
 
 // updateConfigFromClowder updates the current config with the values defined in clowder
-func updateConfigFromClowder(c *ConfigStruct) error {
+func updateConfigFromClowder(configuration *ConfigStruct) error {
 	if !clowder.IsClowderEnabled() || clowder.LoadedConfig == nil {
 		fmt.Println("Clowder is disabled")
 		return nil
@@ -335,19 +335,19 @@ func updateConfigFromClowder(c *ConfigStruct) error {
 			broker := clowder.LoadedConfig.Kafka.Brokers[0]
 			// port can be empty in clowder, so taking it into account
 			if broker.Port != nil {
-				c.Kafka.Address = fmt.Sprintf("%s:%d", broker.Hostname, *broker.Port)
+				configuration.Kafka.Address = fmt.Sprintf("%s:%d", broker.Hostname, *broker.Port)
 			} else {
-				c.Kafka.Address = broker.Hostname
+				configuration.Kafka.Address = broker.Hostname
 			}
 
 			// SSL config
 			if broker.Authtype != nil {
-				c.Kafka.SaslUsername = *broker.Sasl.Username
-				c.Kafka.SaslPassword = *broker.Sasl.Password
-				c.Kafka.SaslMechanism = *broker.Sasl.SaslMechanism
-				c.Kafka.SecurityProtocol = *broker.Sasl.SecurityProtocol
+				configuration.Kafka.SaslUsername = *broker.Sasl.Username
+				configuration.Kafka.SaslPassword = *broker.Sasl.Password
+				configuration.Kafka.SaslMechanism = *broker.Sasl.SaslMechanism
+				configuration.Kafka.SecurityProtocol = *broker.Sasl.SecurityProtocol
 				if caPath, err := clowder.LoadedConfig.KafkaCa(broker); err == nil {
-					c.Kafka.CertPath = caPath
+					configuration.Kafka.CertPath = caPath
 				}
 			} else {
 				fmt.Println(noSaslConfig)
@@ -357,18 +357,18 @@ func updateConfigFromClowder(c *ConfigStruct) error {
 			fmt.Println(noBrokerConfig)
 		}
 
-		if err := updateTopicsMapping(c); err != nil {
+		if err := updateTopicsMapping(configuration); err != nil {
 			fmt.Println(mappingTopicsError)
 		}
 	}
 
 	if clowder.LoadedConfig.Database != nil {
 		// get DB configuration from clowder
-		c.Storage.PGDBName = clowder.LoadedConfig.Database.Name
-		c.Storage.PGHost = clowder.LoadedConfig.Database.Hostname
-		c.Storage.PGPort = clowder.LoadedConfig.Database.Port
-		c.Storage.PGUsername = clowder.LoadedConfig.Database.Username
-		c.Storage.PGPassword = clowder.LoadedConfig.Database.Password
+		configuration.Storage.PGDBName = clowder.LoadedConfig.Database.Name
+		configuration.Storage.PGHost = clowder.LoadedConfig.Database.Hostname
+		configuration.Storage.PGPort = clowder.LoadedConfig.Database.Port
+		configuration.Storage.PGUsername = clowder.LoadedConfig.Database.Username
+		configuration.Storage.PGPassword = clowder.LoadedConfig.Database.Password
 	} else {
 		fmt.Println(noStorage)
 	}
@@ -376,12 +376,12 @@ func updateConfigFromClowder(c *ConfigStruct) error {
 	return nil
 }
 
-func updateTopicsMapping(c *ConfigStruct) error {
+func updateTopicsMapping(configuration *ConfigStruct) error {
 	// Updating topics from clowder mapping if available
-	if topicCfg, ok := clowder.KafkaTopics[c.Kafka.Topic]; ok {
-		c.Kafka.Topic = topicCfg.Name
+	if topicCfg, ok := clowder.KafkaTopics[configuration.Kafka.Topic]; ok {
+		configuration.Kafka.Topic = topicCfg.Name
 	} else {
-		fmt.Printf(noTopicMapping, c.Kafka.Topic)
+		fmt.Printf(noTopicMapping, configuration.Kafka.Topic)
 	}
 
 	return nil
