@@ -253,10 +253,7 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 		return configuration, err
 	}
 
-	if err := updateConfigFromClowder(&configuration); err != nil {
-		fmt.Println("error loading clowder configuration")
-		return configuration, err
-	}
+	updateConfigFromClowder(&configuration)
 
 	configuration.Dependencies.TemplateRendererURL, err = createURL(
 		configuration.Dependencies.TemplateRendererServer,
@@ -320,16 +317,17 @@ func GetCleanerConfiguration(configuration ConfigStruct) CleanerConfiguration {
 }
 
 // updateConfigFromClowder updates the current config with the values defined in clowder
-func updateConfigFromClowder(configuration *ConfigStruct) error {
+func updateConfigFromClowder(configuration *ConfigStruct) {
 	if !clowder.IsClowderEnabled() || clowder.LoadedConfig == nil {
 		fmt.Println("Clowder is disabled")
-		return nil
+		return
 	}
 
 	fmt.Println("Clowder is enabled")
 	if clowder.LoadedConfig.Kafka == nil {
 		fmt.Println(noKafkaConfig)
 	} else {
+		// make sure broker(s) are configured in Clowder
 		if len(clowder.LoadedConfig.Kafka.Brokers) > 0 {
 			broker := clowder.LoadedConfig.Kafka.Brokers[0]
 			// port can be empty in clowder, so taking it into account
@@ -369,8 +367,6 @@ func updateConfigFromClowder(configuration *ConfigStruct) error {
 	} else {
 		fmt.Println(noStorage)
 	}
-
-	return nil
 }
 
 func updateTopicsMapping(configuration *ConfigStruct) {
