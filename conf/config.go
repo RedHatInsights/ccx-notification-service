@@ -71,13 +71,16 @@ import (
 	"github.com/spf13/viper"
 )
 
+// Common constants used for logging and error reporting
 const (
-	noKafkaConfig      = "No Kafka configuration available in Clowder, using default one"
-	noBrokerConfig     = "warning: no broker configurations found in clowder config"
-	noSaslConfig       = "warning: SASL configuration is missing"
-	noTopicMapping     = "warning: no kafka mapping found for topic %s"
-	mappingTopicsError = "warning: an error occurred when applying new topics"
-	noStorage          = "warning: no storage section in Clowder config"
+	filenameAttribute               = "filename"
+	parsingConfigurationFileMessage = "parsing configuration file"
+	noKafkaConfig                   = "No Kafka configuration available in Clowder, using default one"
+	noBrokerConfig                  = "warning: no broker configurations found in clowder config"
+	noSaslConfig                    = "warning: SASL configuration is missing"
+	noTopicMapping                  = "warning: no kafka mapping found for topic %s"
+	mappingTopicsError              = "warning: an error occurred when applying new topics"
+	noStorage                       = "warning: no storage section in Clowder config"
 )
 
 // ConfigStruct is a structure holding the whole notification service
@@ -195,6 +198,7 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 	// env. variable holding name of configuration file
 	configFile, specified := os.LookupEnv(configFileEnvVariableName)
 	if specified {
+		log.Info().Str(filenameAttribute, configFile).Msg(parsingConfigurationFileMessage)
 		// we need to separate the directory name and filename without
 		// extension
 		directory, basename := filepath.Split(configFile)
@@ -203,7 +207,7 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 		viper.SetConfigName(file)
 		viper.AddConfigPath(directory)
 	} else {
-		log.Info().Str("filename", defaultConfigFile).Msg("Parsing configuration file")
+		log.Info().Str(filenameAttribute, defaultConfigFile).Msg(parsingConfigurationFileMessage)
 		// parse the configuration
 		viper.SetConfigName(defaultConfigFile)
 		viper.AddConfigPath(".")
@@ -214,9 +218,9 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 	if _, isNotFoundError := err.(viper.ConfigFileNotFoundError); !specified && isNotFoundError {
 		// If config file is not present (which might be correct in
 		// some environment) we need to read configuration from
-		// environment variables The problem is that Viper is not smart
-		// enough to understand the structure of config by itself, so
-		// we need to read fake config file
+		// environment variables. The problem is that Viper is not
+		// smart enough to understand the structure of config by
+		// itself, so we need to read fake config file
 		fakeTomlConfigWriter := new(bytes.Buffer)
 
 		err := toml.NewEncoder(fakeTomlConfigWriter).Encode(config)
@@ -237,7 +241,7 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 		return config, fmt.Errorf("fatal error config file: %s", err)
 	}
 
-	// override config from env if there's variable in env
+	// override configuration from env if there's variable in env
 
 	const envPrefix = "CCX_NOTIFICATION_SERVICE_"
 
