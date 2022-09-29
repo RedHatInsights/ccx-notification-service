@@ -339,15 +339,18 @@ func updateConfigFromClowder(configuration *ConfigStruct) {
 
 			// SSL config
 			if broker.Authtype != nil {
-				configuration.Kafka.SaslUsername = *broker.Sasl.Username
-				configuration.Kafka.SaslPassword = *broker.Sasl.Password
-				configuration.Kafka.SaslMechanism = *broker.Sasl.SaslMechanism
-				configuration.Kafka.SecurityProtocol = *broker.Sasl.SecurityProtocol
-				if caPath, err := clowder.LoadedConfig.KafkaCa(broker); err == nil {
-					configuration.Kafka.CertPath = caPath
+				fmt.Println("kafka is configured to use authentication")
+				if broker.Sasl != nil {
+					configuration.Kafka.SaslUsername = *broker.Sasl.Username
+					configuration.Kafka.SaslPassword = *broker.Sasl.Password
+					configuration.Kafka.SaslMechanism = *broker.Sasl.SaslMechanism
+					configuration.Kafka.SecurityProtocol = *broker.Sasl.SecurityProtocol
+					if caPath, err := clowder.LoadedConfig.KafkaCa(broker); err == nil {
+						configuration.Kafka.CertPath = caPath
+					}
+				} else {
+					fmt.Println(noSaslConfig)
 				}
-			} else {
-				fmt.Println(noSaslConfig)
 			}
 
 		} else {
