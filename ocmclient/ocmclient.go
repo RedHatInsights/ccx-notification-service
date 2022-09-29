@@ -68,6 +68,6 @@ func NewOCMClientWithTransport(clientID, clientSecret, url string, transport htt
 }
 
 // GetTokens returns the access and refresh tokens that are currently in use by the connection
-func (c *OCMGateway) GetTokens(delay time.Duration) (onlineToken string, refreshToken string, err error) {
+func (c *OCMGateway) GetTokens(delay time.Duration) (onlineToken, refreshToken string, err error) {
 	return c.connection.Tokens(delay)
 }
