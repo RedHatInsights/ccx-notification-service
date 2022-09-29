@@ -536,7 +536,8 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "no rows in result set", "No report should be retrieved for the first cluster")
 	assert.Contains(t, executionLog, "No new issues to notify for cluster second_cluster", "the processReportsByCluster loop did not continue as extpected")
-	assert.Contains(t, executionLog, "Number of entries not processed: 1", "the first cluster should have been skipped")
+	assert.Contains(t, executionLog, "Number of reports not retrieved/deserialized: 1", "the first cluster should have been skipped")
+	assert.Contains(t, executionLog, "Number of empty reports skipped: 0")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 }
@@ -649,7 +650,8 @@ func TestProcessClustersInvalidReportFormatForClusterEntry(t *testing.T) {
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "cannot unmarshal object into Go struct field Report.reports of type []types.ReportItem", "The string retrieved is not a list of reports. It should not deserialize correctly")
 	assert.Contains(t, executionLog, "No new issues to notify for cluster second_cluster", "the processReportsByCluster loop did not continue as extpected")
-	assert.Contains(t, executionLog, "Number of entries not processed: 1", "the first cluster should have been skipped")
+	assert.Contains(t, executionLog, "Number of reports not retrieved/deserialized: 1", "the first cluster should have been skipped")
+	assert.Contains(t, executionLog, "Number of empty reports skipped: 0")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 }
@@ -1524,8 +1526,10 @@ func TestProduceEntriesToServiceLog(t *testing.T) {
 	originalNotifier := serviceLogNotifier
 	serviceLogNotifier = &producerMock
 
-	_, _ = produceEntriesToServiceLog(config, cluster, ruleContent, reports)
+	messages, err := produceEntriesToServiceLog(config, cluster, ruleContent, reports)
 	producerMock.AssertNumberOfCalls(t, "ProduceMessage", 2)
+	assert.Nil(t, err)
+	assert.Equal(t, 2, messages)
 
 	serviceLogNotifier = originalNotifier
 }
