@@ -993,6 +993,28 @@ func assertNotificationDestination(config conf.ConfigStruct) {
 	}
 }
 
+func retrievePreviouslyReportedForEventTarget(storage *DBStorage, cooldown string, clusters []types.ClusterEntry, target types.EventTarget) {
+	log.Info().Msg("Reading previously reported issues for given cluster list...")
+	var err error
+	previouslyReported[target], err = storage.ReadLastNotifiedRecordForClusterList(clusters, cooldown, target)
+	if err != nil {
+		ReadReportedErrors.Inc()
+		log.Err(err).Msg(operationFailedMessage)
+		os.Exit(ExitStatusStorageError)
+	}
+	log.Info().Int("target", int(target)).Int("retrieved", len(previouslyReported[target])).Msg("Done reading previously reported issues still in cooldown")
+}
+
+func retrievePreviouslyReportedReports(config conf.ConfigStruct, storage *DBStorage, clusters []types.ClusterEntry) {
+	cooldown := conf.GetNotificationsConfiguration(config).Cooldown
+	if conf.GetKafkaBrokerConfiguration(config).Enabled {
+		retrievePreviouslyReportedForEventTarget(storage, cooldown, clusters, types.NotificationBackendTarget)
+	}
+	if conf.GetServiceLogConfiguration(config).Enabled {
+		retrievePreviouslyReportedForEventTarget(storage, cooldown, clusters, types.ServiceLogTarget)
+	}
+}
+
 func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
@@ -1034,16 +1056,11 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 		os.Exit(ExitStatusOK)
 	}
 	log.Info().Int(clustersAttribute, entries).Msg("Read cluster list: done")
+
 	log.Info().Msg(separator)
-	log.Info().Msg("Read previously reported issues for cluster list")
-	previouslyReported[types.NotificationBackendTarget], err = storage.ReadLastNotifiedRecordForClusterList(clusters, notifConfig.Cooldown, types.NotificationBackendTarget)
-	if err != nil {
-		ReadReportedErrors.Inc()
-		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusStorageError)
-	}
-	log.Info().Int("previously reported issues still in cooldown", len(previouslyReported)).Msg("Get previously reported issues: done")
+	retrievePreviouslyReportedReports(config, storage, clusters)
 	log.Info().Msg(separator)
+
 	log.Info().Msg("Preparing Kafka producer")
 	setupKafkaProducer(config)
 	log.Info().Msg(separator)
