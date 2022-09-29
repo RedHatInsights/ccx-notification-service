@@ -253,10 +253,7 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 		return configuration, err
 	}
 
-	if err := updateConfigFromClowder(&configuration); err != nil {
-		fmt.Println("error loading clowder configuration")
-		return configuration, err
-	}
+	updateConfigFromClowder(&configuration)
 
 	configuration.Dependencies.TemplateRendererURL, err = createURL(
 		configuration.Dependencies.TemplateRendererServer,
