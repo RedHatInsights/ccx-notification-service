@@ -220,8 +220,8 @@ func TestLoadNotificationsConfiguration(t *testing.T) {
 func TestLoadConfigurationFromEnvVariableClowderEnabled(t *testing.T) {
 	os.Clearenv()
 
-	mustSetEnv(t, "CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "tests/config2")
-	mustSetEnv(t, "ACG_CONFIG", "tests/clowder_config.json")
+	mustSetEnv(t, "CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "../tests/config2")
+	mustSetEnv(t, "ACG_CONFIG", "../tests/clowder_config.json")
 	mustLoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE")
 }
 
@@ -258,7 +258,7 @@ func TestLoadCleanerConfiguration(t *testing.T) {
 func TestLoadClowderConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	os.Clearenv()
-	mustSetEnv(t, "ACG_CONFIG", "tests/clowder_config.json")
+	mustSetEnv(t, "ACG_CONFIG", "../tests/clowder_config.json")
 	hostname := "kafka"
 	port := 9092
 
@@ -285,7 +285,7 @@ func TestLoadClowderConfiguration(t *testing.T) {
 func TestLoadStorageConfigFromClowder(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	os.Clearenv()
-	mustSetEnv(t, "ACG_CONFIG", "tests/clowder_config.json")
+	mustSetEnv(t, "ACG_CONFIG", "../tests/clowder_config.json")
 	dbName := "a_name"
 	hostname := "pg_hostname"
 	port := 5154
