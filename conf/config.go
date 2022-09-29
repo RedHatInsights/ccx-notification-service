@@ -321,7 +321,7 @@ func GetCleanerConfiguration(configuration ConfigStruct) CleanerConfiguration {
 }
 
 // updateConfigFromClowder updates the current config with the values defined in clowder
-func updateConfigFromClowder(c *ConfigStruct) error {
+func updateConfigFromClowder(configuration *ConfigStruct) error {
 	if !clowder.IsClowderEnabled() || clowder.LoadedConfig == nil {
 		fmt.Println("Clowder is disabled")
 		return nil
@@ -335,19 +335,19 @@ func updateConfigFromClowder(c *ConfigStruct) error {
 			broker := clowder.LoadedConfig.Kafka.Brokers[0]
 			// port can be empty in clowder, so taking it into account
 			if broker.Port != nil {
-				c.Kafka.Address = fmt.Sprintf("%s:%d", broker.Hostname, *broker.Port)
+				configuration.Kafka.Address = fmt.Sprintf("%s:%d", broker.Hostname, *broker.Port)
 			} else {
-				c.Kafka.Address = broker.Hostname
+				configuration.Kafka.Address = broker.Hostname
 			}
 
 			// SSL config
 			if broker.Authtype != nil {
-				c.Kafka.SaslUsername = *broker.Sasl.Username
-				c.Kafka.SaslPassword = *broker.Sasl.Password
-				c.Kafka.SaslMechanism = *broker.Sasl.SaslMechanism
-				c.Kafka.SecurityProtocol = *broker.Sasl.SecurityProtocol
+				configuration.Kafka.SaslUsername = *broker.Sasl.Username
+				configuration.Kafka.SaslPassword = *broker.Sasl.Password
+				configuration.Kafka.SaslMechanism = *broker.Sasl.SaslMechanism
+				configuration.Kafka.SecurityProtocol = *broker.Sasl.SecurityProtocol
 				if caPath, err := clowder.LoadedConfig.KafkaCa(broker); err == nil {
-					c.Kafka.CertPath = caPath
+					configuration.Kafka.CertPath = caPath
 				}
 			} else {
 				fmt.Println(noSaslConfig)
@@ -357,7 +357,7 @@ func updateConfigFromClowder(c *ConfigStruct) error {
 			fmt.Println(noBrokerConfig)
 		}
 
-		if err := updateTopicsMapping(c); err != nil {
+		if err := updateTopicsMapping(configuration); err != nil {
 			fmt.Println(mappingTopicsError)
 		}
 	}
@@ -376,12 +376,12 @@ func updateConfigFromClowder(c *ConfigStruct) error {
 	return nil
 }
 
-func updateTopicsMapping(c *ConfigStruct) error {
+func updateTopicsMapping(configuration *ConfigStruct) error {
 	// Updating topics from clowder mapping if available
-	if topicCfg, ok := clowder.KafkaTopics[c.Kafka.Topic]; ok {
-		c.Kafka.Topic = topicCfg.Name
+	if topicCfg, ok := clowder.KafkaTopics[configuration.Kafka.Topic]; ok {
+		configuration.Kafka.Topic = topicCfg.Name
 	} else {
-		fmt.Printf(noTopicMapping, c.Kafka.Topic)
+		fmt.Printf(noTopicMapping, configuration.Kafka.Topic)
 	}
 
 	return nil
