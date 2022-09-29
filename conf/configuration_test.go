@@ -312,3 +312,32 @@ func TestLoadStorageConfigFromClowder(t *testing.T) {
 	assert.Equal(t, user, storageCfg.PGUsername)
 	assert.Equal(t, pass, storageCfg.PGPassword)
 }
+
+// TestLoadConfigurationNoKafkaBroker test if number of configured brokers are
+// tested properly when no broker config exists
+func TestLoadConfigurationNoKafkaBroker(t *testing.T) {
+	var testDB = "test_db"
+	os.Clearenv()
+
+	// explicit database and broker configuration
+	clowder.LoadedConfig = &clowder.AppConfig{
+		Database: &clowder.DatabaseConfig{
+			Name: testDB,
+		},
+		Kafka: &clowder.KafkaConfig{}, // no brokers in configuration
+	}
+	mustSetEnv(t, "CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "../tests/config2")
+	mustSetEnv(t, "ACG_CONFIG", "../tests/clowder_config.json")
+
+	// load configuration using Clowder config
+	config, err := conf.LoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "../tests/config2")
+	assert.NoError(t, err, "Failed loading configuration file")
+
+	// retrieve broker configuration that was just loaded
+	brokerCfg := conf.GetKafkaBrokerConfiguration(config)
+
+	// check broker configuration
+	assert.Equal(t, "localhost:29092", brokerCfg.Address)
+	assert.Equal(t, "ccx_test_notifications", brokerCfg.Topic)
+	assert.True(t, brokerCfg.Enabled)
+}
