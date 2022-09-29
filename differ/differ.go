@@ -993,16 +993,9 @@ func assertNotificationDestination(config conf.ConfigStruct) {
 	}
 }
 
-func retrievePreviouslyReportedForEventTarget(config conf.ConfigStruct, storage *DBStorage, clusters []types.ClusterEntry, target types.EventTarget) {
-	if target == types.NotificationBackendTarget && !conf.GetKafkaBrokerConfiguration(config).Enabled {
-		return
-	}
-	if target == types.ServiceLogTarget && !conf.GetServiceLogConfiguration(config).Enabled {
-		return
-	}
+func retrievePreviouslyReportedForEventTarget(storage *DBStorage, cooldown string, clusters []types.ClusterEntry, target types.EventTarget) {
 	log.Info().Msg("Reading previously reported issues for given cluster list...")
 	var err error
-	cooldown := conf.GetNotificationsConfiguration(config).Cooldown
 	previouslyReported[target], err = storage.ReadLastNotifiedRecordForClusterList(clusters, cooldown, target)
 	if err != nil {
 		ReadReportedErrors.Inc()
@@ -1013,8 +1006,13 @@ func retrievePreviouslyReportedForEventTarget(config conf.ConfigStruct, storage 
 }
 
 func retrievePreviouslyReportedReports(config conf.ConfigStruct, storage *DBStorage, clusters []types.ClusterEntry) {
-	retrievePreviouslyReportedForEventTarget(config, storage, clusters, types.NotificationBackendTarget)
-	retrievePreviouslyReportedForEventTarget(config, storage, clusters, types.ServiceLogTarget)
+	cooldown := conf.GetNotificationsConfiguration(config).Cooldown
+	if conf.GetKafkaBrokerConfiguration(config).Enabled {
+		retrievePreviouslyReportedForEventTarget(storage, cooldown, clusters, types.NotificationBackendTarget)
+	}
+	if conf.GetServiceLogConfiguration(config).Enabled {
+		retrievePreviouslyReportedForEventTarget(storage, cooldown, clusters, types.ServiceLogTarget)
+	}
 }
 
 func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
