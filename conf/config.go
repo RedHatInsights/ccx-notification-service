@@ -75,7 +75,7 @@ import (
 const (
 	filenameAttribute               = "filename"
 	parsingConfigurationFileMessage = "parsing configuration file"
-	noKafkaConfig                   = "No Kafka configuration available in Clowder, using default one"
+	noKafkaConfig                   = "no Kafka configuration available in Clowder, using default one"
 	noBrokerConfig                  = "warning: no broker configurations found in clowder config"
 	noSaslConfig                    = "warning: SASL configuration is missing"
 	noTopicMapping                  = "warning: no kafka mapping found for topic %s"
