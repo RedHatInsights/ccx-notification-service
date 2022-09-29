@@ -79,7 +79,6 @@ const (
 	noBrokerConfig                  = "warning: no broker configurations found in clowder config"
 	noSaslConfig                    = "warning: SASL configuration is missing"
 	noTopicMapping                  = "warning: no kafka mapping found for topic %s"
-	mappingTopicsError              = "warning: an error occurred when applying new topics"
 	noStorage                       = "warning: no storage section in Clowder config"
 )
 
