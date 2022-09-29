@@ -79,7 +79,6 @@ const (
 	noBrokerConfig                  = "warning: no broker configurations found in clowder config"
 	noSaslConfig                    = "warning: SASL configuration is missing"
 	noTopicMapping                  = "warning: no kafka mapping found for topic %s"
-	mappingTopicsError              = "warning: an error occurred when applying new topics"
 	noStorage                       = "warning: no storage section in Clowder config"
 )
 
@@ -357,9 +356,7 @@ func updateConfigFromClowder(configuration *ConfigStruct) error {
 			fmt.Println(noBrokerConfig)
 		}
 
-		if err := updateTopicsMapping(configuration); err != nil {
-			fmt.Println(mappingTopicsError)
-		}
+		updateTopicsMapping(configuration)
 	}
 
 	if clowder.LoadedConfig.Database != nil {
@@ -376,13 +373,11 @@ func updateConfigFromClowder(configuration *ConfigStruct) error {
 	return nil
 }
 
-func updateTopicsMapping(configuration *ConfigStruct) error {
+func updateTopicsMapping(configuration *ConfigStruct) {
 	// Updating topics from clowder mapping if available
 	if topicCfg, ok := clowder.KafkaTopics[configuration.Kafka.Topic]; ok {
 		configuration.Kafka.Topic = topicCfg.Name
 	} else {
 		fmt.Printf(noTopicMapping, configuration.Kafka.Topic)
 	}
-
-	return nil
 }
