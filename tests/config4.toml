@@ -1,0 +1,54 @@
+[kafka_broker]
+address = "localhost:29092"
+topic = "ccx_test_notifications"
+timeout = "20s"
+enabled = true
+likelihood_threshold = 0
+impact_threshold = 0
+severity_threshold = 0
+total_risk_threshold = 3
+event_filter = "totalRisk >= totalRiskThreshold"
+
+[service_log]
+enabled = false
+client_id = "test-id"
+client_secret = "test-secret"
+url = "localhost:8000/api/service_logs/v1/cluster_logs/"
+timeout = "15s"
+likelihood_threshold = 0
+impact_threshold = 0
+severity_threshold = 0
+total_risk_threshold = 3
+event_filter = "totalRisk > totalRiskThreshold"
+
+[storage]
+db_driver = "sqlite3"
+sqlite_datasource = ":memory:"
+pg_username = "user"
+pg_password = "password"
+pg_host = "localhost"
+pg_port = 5432
+pg_db_name = "notifications"
+pg_params = ""
+log_sql_queries = true
+
+[logging]
+debug = true
+log_level = ""
+
+[dependencies]
+content_endpoint = ":8081"
+template_renderer_server = ""
+
+[notifications]
+insights_advisor_url = "url_to_advisor"
+cluster_details_uri = "url_to_specific_cluster"
+rule_details_uri = "url_to_specific_rule"
+
+[cleaner]
+max_age = "90 days"
+
+[metrics]
+namespace ="ccx_notification_service_namespace"
+gateway_url = ":9091"
+auth_token = ""
