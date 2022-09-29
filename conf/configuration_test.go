@@ -133,6 +133,18 @@ func TestLoadServiceLogConfiguration(t *testing.T) {
 	assert.Equal(t, expectedTimeout, serviceLogCfg.Timeout)
 }
 
+// TestLoadServiceLogConfigurationBadURL tests loading the ServiceLog
+// configuration sub-tree with invalid URL
+func TestLoadServiceLogConfigurationBadURL(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+
+	// this config file contains invalid character in URL so it should not
+	// be loaded properly
+	mustSetEnv(t, envVar, "../tests/config4")
+	_, err := conf.LoadConfiguration(envVar, "")
+	assert.Error(t, err)
+}
+
 // TestLoadStorageConfiguration tests loading the storage configuration sub-tree
 func TestLoadStorageConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
