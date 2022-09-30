@@ -18,14 +18,14 @@ The "end-to-end" data flow is described there (including Notification Writer ser
 1. Content of that table is consumed by `ccx-notification-service` periodically.
 1. Newest results from `new_reports` table is compared with results stored in `reported` table. The records used for the comparison depend on the configured cooldown time.
 1. If changes (new issues) has been found, notification message is sent into Kafka topic named `platform.notifications.ingress`. The expected format of the message can be found [here](https://core-platform-apps.pages.redhat.com/notifications-docs/dev/user-guide/send-notification.html#_kafka).
-1. New issues is also sent to Service Log via REST API. To use the Service Log API, the `ccx-notification-service` uses the credentials stored in [vault](https://vault.devshift.net/ui/vault/secrets/insights/show/secrets/insights-prod/ccx-data-pipeline-prod/ccx-notification-service-auth).
+1. New issues is also sent to Service Log via REST API. Because Service Log accepts description and content to be represented in Markdown, issues are "rendered" first by [Insights Content Template Renderer](https://github.com/RedHatInsights/insights-content-template-renderer). To use the Service Log API, the `ccx-notification-service` uses the credentials stored in [vault](https://vault.devshift.net/ui/vault/secrets/insights/show/secrets/insights-prod/ccx-data-pipeline-prod/ccx-notification-service-auth).
 1. The newest result is stored into `reported` table to be used in the next `ccx-notification-service` iteration.
 
 ### Remarks
 
 1. Steps 1 to  5 are shared with the CCX Data pipeline
 1. Steps 7 and 8 are performed by `ccx-notification-writer` service.
-1. Steps 9 to 12 are performed by `ccx-notification-service` service.
+1. Steps 9 to 13 are performed by `ccx-notification-service` service with the help of Insights Content Service and Insights Content Template Rendeder.
 
 ## Cooldown mechanism
 
