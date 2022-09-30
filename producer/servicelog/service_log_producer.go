@@ -45,7 +45,6 @@ type Producer struct {
 	TokenRefreshmentStartDelay time.Duration
 	TokenRefreshmentDelay      time.Duration
 	TokenRefreshmentThreshold  time.Duration
-	RequestCooldown            time.Duration
 }
 
 // New constructs a new instance of Producer implementation
@@ -55,7 +54,6 @@ func New(config conf.ServiceLogConfiguration, ocmClient ocmclient.OCMClient) (*P
 		TokenRefreshmentStartDelay: time.Second,
 		TokenRefreshmentDelay:      time.Second,
 		TokenRefreshmentThreshold:  30 * time.Second,
-		RequestCooldown:            1 * time.Second,
 	}
 	prod.OCMClient = ocmClient
 	err := prod.refreshToken()
@@ -65,8 +63,21 @@ func New(config conf.ServiceLogConfiguration, ocmClient ocmclient.OCMClient) (*P
 	return prod, nil
 }
 
-func (producer *Producer) sendRequest(req *http.Request, client *http.Client) (int32, int64, error) {
-	req.Header.Set("Authorization", "Bearer "+producer.AccessToken)
+// ProduceMessage sends the given message to Service Log
+func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID int32, offset int64, err error) {
+	serviceLogURL := httputils.SetHTTPPrefix(producer.Configuration.URL)
+
+	client := &http.Client{
+		Timeout: time.Second * producer.Configuration.Timeout,
+	}
+
+	req, err := http.NewRequest(http.MethodPost, serviceLogURL, bytes.NewBuffer(msg))
+	req.Header.Add("Authorization", "Bearer "+producer.AccessToken)
+	if err != nil {
+		log.Error().Err(err).Str("url", serviceLogURL).Msg("Error setting up HTTP POST request")
+		return -1, -1, err
+	}
+
 	response, err := client.Do(req)
 	if err != nil {
 		log.Error().Err(err).Msgf("Error making the HTTP request")
@@ -93,10 +104,7 @@ func (producer *Producer) sendRequest(req *http.Request, client *http.Client) (i
 			producer.TokenRefreshmentDelay = 2 * producer.TokenRefreshmentDelay
 		}
 		producer.TokenRefreshmentDelay = producer.TokenRefreshmentStartDelay
-		return producer.sendRequest(req, client)
-	case http.StatusTooManyRequests:
-		time.Sleep(producer.RequestCooldown)
-		return producer.sendRequest(req, client)
+		return producer.ProduceMessage(msg)
 	case http.StatusCreated:
 		return 0, 0, nil
 	default:
@@ -104,23 +112,6 @@ func (producer *Producer) sendRequest(req *http.Request, client *http.Client) (i
 		log.Error().Err(err).Msgf("Got unexpected response status code")
 		return -1, -1, err
 	}
-}
-
-// ProduceMessage sends the given message to Service Log
-func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID int32, offset int64, err error) {
-	//TODO: Refactor producer to not expect these return values
-	serviceLogURL := httputils.SetHTTPPrefix(producer.Configuration.URL)
-
-	client := &http.Client{
-		Timeout: time.Second * producer.Configuration.Timeout,
-	}
-
-	req, err := http.NewRequest(http.MethodPost, serviceLogURL, bytes.NewBuffer(msg))
-	if err != nil {
-		log.Error().Err(err).Str("url", serviceLogURL).Msg("Error setting up HTTP POST request")
-		return -1, -1, err
-	}
-	return producer.sendRequest(req, client)
 }
 
 // Close closes Producer (in case of Service Log implementation, it does not do anything)
