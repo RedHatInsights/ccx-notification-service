@@ -79,7 +79,7 @@ type PushGatewayClient struct {
 func (pgc *PushGatewayClient) Do(request *http.Request) (*http.Response, error) {
 	if pgc.AuthToken != "" {
 		log.Debug().Msg("Adding authorization header to HTTP request")
-		request.Header.Set("Authorization", "Basic "+pgc.AuthToken)
+		request.Header.Set(AuthorizationHeader, "Basic "+pgc.AuthToken)
 	} else {
 		log.Debug().Msg("No authorization token provided. Making HTTP request without credentials.")
 	}
