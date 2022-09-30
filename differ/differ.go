@@ -110,6 +110,7 @@ const (
 	renderReportsFailedMessage  = "Rendering reports failed for this cluster"
 	ReportNotFoundError         = "report for rule ID %v and error key %v has not been found"
 	destinationNotSet           = "No known event destination configured. Aborting."
+	AuthorizationHeader         = "Authorization"
 )
 
 // Constants for notification message top level fields
