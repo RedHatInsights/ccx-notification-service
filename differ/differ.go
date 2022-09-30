@@ -362,10 +362,10 @@ func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEnt
 	return logEntry
 }
 
-func produceEntriesToServiceLog(config conf.ConfigStruct, cluster types.ClusterEntry,
+func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.ClusterEntry,
 	ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int, err error) {
 	renderedReports, err := renderReportsForCluster(
-		conf.GetDependenciesConfiguration(config), cluster.ClusterName,
+		conf.GetDependenciesConfiguration(&configuration), cluster.ClusterName,
 		reports, ruleContent)
 	if err != nil {
 		log.Err(err).
