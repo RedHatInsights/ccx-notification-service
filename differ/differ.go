@@ -235,6 +235,7 @@ func showConfiguration(config conf.ConfigStruct) {
 	serviceLogConfig := conf.GetServiceLogConfiguration(config)
 	log.Info().
 		Bool("Enabled", serviceLogConfig.Enabled).
+		Str("CliendID", serviceLogConfig.ClientID).
 		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
 		Int("Impact threshold", brokerConfig.ImpactThreshold).
 		Int("Severity threshold", brokerConfig.SeverityThreshold).
