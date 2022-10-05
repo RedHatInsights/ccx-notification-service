@@ -22,8 +22,8 @@ objects:
         schedule: ${JOB_SCHEDULE__NOTIFICATION_BACKEND}
         restartPolicy: Never
         concurrencyPolicy: Forbid
-        # In PROD 1 cronjob takes around 45 min. Deadline set to 60 mins.
-        activeDeadlineSeconds: 3600
+        activeDeadlineSeconds: ${{JOB_DEADLINE__NOTIFICATION_BACKEND}}
+        suspend: ${{SUSPEND_JOB__NOTIFICATION_BACKEND}}
         podSpec:
           image: ${IMAGE}:${IMAGE_TAG}
           resources:
@@ -104,7 +104,8 @@ objects:
         schedule: ${JOB_SCHEDULE__SERVICE_LOG}
         restartPolicy: Never
         concurrencyPolicy: Forbid
-        activeDeadlineSeconds: 3600
+        activeDeadlineSeconds: ${{JOB_DEADLINE__SERVICE_LOG}}
+        suspend: ${{SUSPEND_JOB__SERVICE_LOG}}
         podSpec:
           image: ${IMAGE}:${IMAGE_TAG}
           resources:
@@ -223,8 +224,17 @@ parameters:
   required: true
   value: platform.notifications.ingress
 - description: Should the cron job be disabled?
-  name: SUSPEND_JOB
+  name: SUSPEND_JOB__NOTIFICATION_BACKEND
   value: 'false'
+- description: Should the cron job be disabled?
+  name: SUSPEND_JOB__SERVICE_LOG
+  value: 'false'
+- description: How many seconds to wait until the notification-backend job is aborted
+  name: JOB_DEADLINE__NOTIFICATION_BACKEND
+  value: "3600"
+- description: How many seconds to wait until the service-log job is aborted
+  name: JOB_DEADLINE__SERVICE_LOG
+  value: "3600"
 - description: When the cronjob runs for the notification backend
   name: JOB_SCHEDULE__NOTIFICATION_BACKEND
   value: '*/3 * * * *'
