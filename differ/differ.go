@@ -279,6 +279,12 @@ func showConfiguration(config conf.ConfigStruct) {
 		Int("Retries", metricsConfig.Retries).
 		Str("Retry after", metricsConfig.RetryAfter.String()).
 		Msg("Metrics configuration")
+
+	processingConfig := conf.GetProcessingConfiguration(config)
+	log.Info().
+		Bool("Filter allowed clusters", processingConfig.FilterAllowedClusters).
+		Strs("List of allowed clusters", processingConfig.AllowedClusters).
+		Msg("Processing configuration")
 }
 
 func calculateTotalRisk(impact, likelihood int) int {

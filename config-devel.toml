@@ -58,3 +58,7 @@ gateway_auth_token = ""
 [cleaner]
 # valid units are SQL epoch time units: months days hours minutes seconds"
 max_age = "90 days"
+
+[processing]
+filter_allowed_clusters = true
+allowed_clusters = ["aa", "bb", "cc"]

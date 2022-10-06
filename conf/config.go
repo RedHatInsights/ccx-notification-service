@@ -93,6 +93,7 @@ type ConfigStruct struct {
 	Notifications NotificationsConfiguration `mapstructure:"notifications" toml:"notifications"`
 	Metrics       MetricsConfiguration       `mapstructure:"metrics" toml:"metrics"`
 	Cleaner       CleanerConfiguration       `mapstructure:"cleaner" toml:"cleaner"`
+	Processing    ProcessingConfiguration    `mapstructure:"processing" toml:"processing"`
 }
 
 // LoggingConfiguration represents configuration for logging in general
@@ -187,6 +188,12 @@ type MetricsConfiguration struct {
 	GatewayAuthToken string        `mapstructure:"gateway_auth_token" toml:"gateway_auth_token"`
 	Retries          int           `mapstructure:"retries" toml:"retries"`
 	RetryAfter       time.Duration `mapstructure:"retry_after" toml:"retry_after"`
+}
+
+// ProcessingConfiguration represents configuration for processing subsystem
+type ProcessingConfiguration struct {
+	FilterAllowedClusters bool     `mapstructure:"filter_allowed_clusters" toml:"filter_allowed_clusters"`
+	AllowedClusters       []string `mapstructure:"allowed_clusters" toml:"allowed_clusters"`
 }
 
 // LoadConfiguration loads configuration from defaultConfigFile, file set in
@@ -314,6 +321,11 @@ func GetMetricsConfiguration(configuration ConfigStruct) MetricsConfiguration {
 // GetCleanerConfiguration returns cleaner configuration
 func GetCleanerConfiguration(configuration ConfigStruct) CleanerConfiguration {
 	return configuration.Cleaner
+}
+
+// GetProcessingConfiguration returns processing configuration
+func GetProcessingConfiguration(configuration ConfigStruct) ProcessingConfiguration {
+	return configuration.Processing
 }
 
 // updateConfigFromClowder updates the current config with the values defined in clowder
