@@ -56,3 +56,5 @@ auth_token = ""
 [processing]
 filter_allowed_clusters = true
 allowed_clusters = ["aa", "bb", "cc"]
+filter_blocked_clusters = true
+blocked_clusters = ["aa", "bb", "cc"]

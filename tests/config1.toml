@@ -24,3 +24,5 @@ log_level = ""
 [processing]
 filter_allowed_clusters = true
 allowed_clusters = ["aa", "bb", "cc"]
+filter_blocked_clusters = true
+blocked_clusters = ["bbbbbbbb-0000-0000-0000-000000000000", "bbbbbbbb-1111-1111-1111-111111111111", "bbbbbbbb-2222-2222-2222-222222222222"]
