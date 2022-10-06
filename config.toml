@@ -67,3 +67,7 @@ retry_after = "60s"
 [cleaner]
 # valid units are SQL epoch time units: months days hours minutes seconds"
 max_age = "90 days"
+
+[processing]
+filter_allowed_clusters = false
+allowed_clusters = []
