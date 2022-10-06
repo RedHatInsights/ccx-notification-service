@@ -21,3 +21,6 @@ log_level = ""
 
 [cloudwatch]
 
+[processing]
+filter_allowed_clusters = true
+allowed_clusters = ["aa", "bb", "cc"]
