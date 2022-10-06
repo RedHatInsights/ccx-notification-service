@@ -174,6 +174,41 @@ func TestLoadStorageConfiguration(t *testing.T) {
 	assert.Equal(t, true, storageCfg.LogSQLQueries)
 }
 
+// TestLoadProcessingConfiguration3Clusters tests loading the processing
+// configuration sub-tree
+func TestLoadProcessingConfiguration3Clusters(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+
+	// configuration file with three clusters in allow list
+	mustSetEnv(t, envVar, "../tests/config2")
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	processingCfg := conf.GetProcessingConfiguration(config)
+
+	assert.True(t, processingCfg.FilterAllowedClusters)
+	assert.Len(t, processingCfg.AllowedClusters, 3)
+	assert.Equal(t, "34c3ecc5-624a-49a5-bab8-4fdc5e51a266", processingCfg.AllowedClusters[0])
+	assert.Equal(t, "a7467445-8d6a-43cc-b82c-7007664bdf69", processingCfg.AllowedClusters[1])
+	assert.Equal(t, "ee7d2bf4-8933-4a3a-8634-3328fe806e08", processingCfg.AllowedClusters[2])
+}
+
+// TestLoadProcessingConfigurationNoClusters tests loading the processing
+// configuration sub-tree
+func TestLoadProcessingConfigurationNoClusters(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+
+	// configuration file with no clusters in allow list
+	mustSetEnv(t, envVar, "../tests/config5")
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	processingCfg := conf.GetProcessingConfiguration(config)
+
+	assert.False(t, processingCfg.FilterAllowedClusters)
+	assert.Len(t, processingCfg.AllowedClusters, 0)
+}
+
 // TestLoadLoggingConfiguration tests loading the logging configuration sub-tree
 func TestLoadLoggingConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
