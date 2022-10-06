@@ -105,5 +105,5 @@ filter_allowed_clusters = true
 allowed_clusters = ["34c3ecc5-624a-49a5-bab8-4fdc5e51a266", "a7467445-8d6a-43cc-b82c-7007664bdf69", "ee7d2bf4-8933-4a3a-8634-3328fe806e08"]
 ```
 
-- `filter_allowed_clusters` enables or disabled cluster filtering according to allow list
+- `filter_allowed_clusters` enables or disables cluster filtering according to allow list
 - `allowed_clusters` contains list of allowed clusters (depends on previous configuration option)
