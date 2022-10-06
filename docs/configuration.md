@@ -95,3 +95,15 @@ template_renderer_endpoint = "/rendered_reports" #provide in deployment env or a
 - `template_renderer_server` is an address of the Content template renderer
 - `template_renderer_endpoint` is a REST API path for rendering content templates based on report details
 
+## Processing configuration
+
+Processing configuration is in section `[processing]` in config file
+
+```
+[processing]
+filter_allowed_clusters = true
+allowed_clusters = ["34c3ecc5-624a-49a5-bab8-4fdc5e51a266", "a7467445-8d6a-43cc-b82c-7007664bdf69", "ee7d2bf4-8933-4a3a-8634-3328fe806e08"]
+```
+
+- `filter_allowed_clusters` enables or disabled cluster filtering according to allow list
+- `allowed_clusters` contains list of allowed clusters (depends on previous configuration option)
