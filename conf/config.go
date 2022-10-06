@@ -194,6 +194,8 @@ type MetricsConfiguration struct {
 type ProcessingConfiguration struct {
 	FilterAllowedClusters bool     `mapstructure:"filter_allowed_clusters" toml:"filter_allowed_clusters"`
 	AllowedClusters       []string `mapstructure:"allowed_clusters" toml:"allowed_clusters"`
+	FilterBlockedClusters bool     `mapstructure:"filter_blocked_clusters" toml:"filter_blocked_clusters"`
+	BlockedClusters       []string `mapstructure:"blocked_clusters" toml:"blocked_clusters"`
 }
 
 // LoadConfiguration loads configuration from defaultConfigFile, file set in
