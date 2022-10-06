@@ -174,9 +174,9 @@ func TestLoadStorageConfiguration(t *testing.T) {
 	assert.Equal(t, true, storageCfg.LogSQLQueries)
 }
 
-// TestLoadProcessingConfiguration3Clusters tests loading the processing
+// TestLoadProcessingConfiguration3AllowedClusters tests loading the processing
 // configuration sub-tree
-func TestLoadProcessingConfiguration3Clusters(t *testing.T) {
+func TestLoadProcessingConfiguration3AllowedClusters(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 
 	// configuration file with three clusters in allow list
@@ -188,14 +188,14 @@ func TestLoadProcessingConfiguration3Clusters(t *testing.T) {
 
 	assert.True(t, processingCfg.FilterAllowedClusters)
 	assert.Len(t, processingCfg.AllowedClusters, 3)
-	assert.Equal(t, "34c3ecc5-624a-49a5-bab8-4fdc5e51a266", processingCfg.AllowedClusters[0])
-	assert.Equal(t, "a7467445-8d6a-43cc-b82c-7007664bdf69", processingCfg.AllowedClusters[1])
-	assert.Equal(t, "ee7d2bf4-8933-4a3a-8634-3328fe806e08", processingCfg.AllowedClusters[2])
+	assert.Equal(t, "aaaaaaaa-0000-0000-0000-000000000000", processingCfg.AllowedClusters[0])
+	assert.Equal(t, "aaaaaaaa-1111-1111-1111-111111111111", processingCfg.AllowedClusters[1])
+	assert.Equal(t, "aaaaaaaa-2222-2222-2222-222222222222", processingCfg.AllowedClusters[2])
 }
 
-// TestLoadProcessingConfigurationNoClusters tests loading the processing
-// configuration sub-tree
-func TestLoadProcessingConfigurationNoClusters(t *testing.T) {
+// TestLoadProcessingConfigurationNoAllowedClusters tests loading the
+// processing configuration sub-tree
+func TestLoadProcessingConfigurationNoAllowedClusters(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 
 	// configuration file with no clusters in allow list
@@ -207,6 +207,41 @@ func TestLoadProcessingConfigurationNoClusters(t *testing.T) {
 
 	assert.False(t, processingCfg.FilterAllowedClusters)
 	assert.Len(t, processingCfg.AllowedClusters, 0)
+}
+
+// TestLoadProcessingConfiguration3BlockedClusters tests loading the processing
+// configuration sub-tree
+func TestLoadProcessingConfiguration3BlockedClusters(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+
+	// configuration file with three clusters in block list
+	mustSetEnv(t, envVar, "../tests/config2")
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	processingCfg := conf.GetProcessingConfiguration(config)
+
+	assert.True(t, processingCfg.FilterBlockedClusters)
+	assert.Len(t, processingCfg.BlockedClusters, 3)
+	assert.Equal(t, "bbbbbbbb-0000-0000-0000-000000000000", processingCfg.BlockedClusters[0])
+	assert.Equal(t, "bbbbbbbb-1111-1111-1111-111111111111", processingCfg.BlockedClusters[1])
+	assert.Equal(t, "bbbbbbbb-2222-2222-2222-222222222222", processingCfg.BlockedClusters[2])
+}
+
+// TestLoadProcessingConfigurationNoBlockedClusters tests loading the
+// processing configuration sub-tree
+func TestLoadProcessingConfigurationNoBlockedClusters(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+
+	// configuration file with no clusters in block list
+	mustSetEnv(t, envVar, "../tests/config5")
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	processingCfg := conf.GetProcessingConfiguration(config)
+
+	assert.False(t, processingCfg.FilterBlockedClusters)
+	assert.Len(t, processingCfg.BlockedClusters, 0)
 }
 
 // TestLoadLoggingConfiguration tests loading the logging configuration sub-tree
