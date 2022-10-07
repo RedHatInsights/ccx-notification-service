@@ -61,3 +61,45 @@ var (
 		KafkaOffset:   0,
 	}
 )
+
+// TestFilterNullClusterList test checks the filtering for null cluster list
+func TestFilterNullClusterList(t *testing.T) {
+	config := conf.ProcessingConfiguration{
+		FilterAllowedClusters: false,
+		FilterBlockedClusters: false,
+	}
+
+	// null value
+	var clusters []types.ClusterEntry
+
+	// start filter
+	filtered, stat := filterClusterList(clusters, config)
+
+	// check filter output
+	assert.Empty(t, filtered)
+	assert.Equal(t, 0, stat.Input)
+	assert.Equal(t, 0, stat.Allowed)
+	assert.Equal(t, 0, stat.Blocked)
+	assert.Equal(t, 0, stat.Filtered)
+}
+
+// TestFilterEmptyClusterList test checks the filtering for null cluster list
+func TestFilterEmptyClusterList(t *testing.T) {
+	config := conf.ProcessingConfiguration{
+		FilterAllowedClusters: false,
+		FilterBlockedClusters: false,
+	}
+
+	// empty cluster list
+	clusters := []types.ClusterEntry{}
+
+	// start filter
+	filtered, stat := filterClusterList(clusters, config)
+
+	// check filter output
+	assert.Empty(t, filtered)
+	assert.Equal(t, 0, stat.Input)
+	assert.Equal(t, 0, stat.Allowed)
+	assert.Equal(t, 0, stat.Blocked)
+	assert.Equal(t, 0, stat.Filtered)
+}
