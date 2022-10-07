@@ -49,20 +49,6 @@ var (
 		FilterAllowedClusters: true,
 		FilterBlockedClusters: true,
 	}
-
-	configurationOneClusterBlockList = conf.ProcessingConfiguration{
-		FilterAllowedClusters: false,
-		FilterBlockedClusters: true,
-		BlockedClusters: []string{
-			string(cluster2.ClusterName)},
-	}
-
-	configurationOneClusterAllowList = conf.ProcessingConfiguration{
-		FilterAllowedClusters: true,
-		FilterBlockedClusters: false,
-		AllowedClusters: []string{
-			string(cluster2.ClusterName)},
-	}
 )
 
 // Benchmark for null cluster list at input when both filters are disabled.
