@@ -73,6 +73,15 @@ build-test: gen-mocks ## Build native binary with unit tests and benchmarks
 profiler: ${BINARY} ## Run the unit tests with profiler enabled
 	./profile.sh
 
+benchmark.txt:	benchmark
+
+benchmark: ${BINARY} ## Run benchmarks
+	go test -bench=. -run ^$ -v `go list ./... | grep -v tests | tr '\n' ' '` | tee benchmark.txt
+	# go test -bench=. -run=^$ | tee benchmark.txt
+
+benchmark.csv:	benchmark.txt ## Export benchmark results into CSV
+	awk '/Benchmark/{count ++; gsub(/BenchmarkTest/,""); printf("%d,%s,%s,%s\n",count,$$1,$$2,$$3)}' $< > $@
+
 cover: test ## Generate HTML pages with code coverage
 	@go tool cover -html=coverage.out
 
