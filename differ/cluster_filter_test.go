@@ -412,3 +412,37 @@ func TestFilterAllowTwoClustersAllUnknown(t *testing.T) {
 	assert.Equal(t, 0, stat.Blocked)
 	assert.Equal(t, 0, stat.Filtered)
 }
+
+// TestFilterAllowAndBlock test checks filtering if both filters are
+// enabled and allow list and block list contain some clusters.
+func TestFilterAllowAndBlock(t *testing.T) {
+	// configuration used during filtering
+	config := conf.ProcessingConfiguration{
+		FilterAllowedClusters: true,
+		FilterBlockedClusters: true,
+		AllowedClusters: []string{
+			string(cluster1.ClusterName),
+			string(cluster2.ClusterName)},
+		BlockedClusters: []string{
+			string(cluster3.ClusterName),
+			string(cluster4.ClusterName)}}
+
+	var clusters []types.ClusterEntry
+
+	// list of clusters at input
+	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
+
+	// start filter
+	filtered, stat := filterClusterList(clusters, config)
+
+	// check filter output
+	assert.Len(t, filtered, 2)
+	assert.Equal(t, 4, stat.Input)
+	assert.Equal(t, 2, stat.Allowed)
+	assert.Equal(t, 0, stat.Blocked)
+	assert.Equal(t, 2, stat.Filtered)
+
+	// check the cluster list
+	assert.Equal(t, cluster1, filtered[0])
+	assert.Equal(t, cluster2, filtered[1])
+}
