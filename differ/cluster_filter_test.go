@@ -62,8 +62,10 @@ var (
 	}
 )
 
-// TestFilterNullClusterList test checks the filtering for null cluster list
+// TestFilterNullClusterList test checks the filtering for null cluster list.
+// In this case empty list of clusters is provided at input.
 func TestFilterNullClusterList(t *testing.T) {
+	// configuration to be used during filtering
 	config := conf.ProcessingConfiguration{
 		FilterAllowedClusters: false,
 		FilterBlockedClusters: false,
@@ -83,8 +85,10 @@ func TestFilterNullClusterList(t *testing.T) {
 	assert.Equal(t, 0, stat.Filtered)
 }
 
-// TestFilterEmptyClusterList test checks the filtering for null cluster list
+// TestFilterEmptyClusterList test checks the filtering for null cluster list.
+// In this case empty list of clusters is provided at input.
 func TestFilterEmptyClusterList(t *testing.T) {
+	// configuration to be used during filtering
 	config := conf.ProcessingConfiguration{
 		FilterAllowedClusters: false,
 		FilterBlockedClusters: false,
@@ -102,4 +106,34 @@ func TestFilterEmptyClusterList(t *testing.T) {
 	assert.Equal(t, 0, stat.Allowed)
 	assert.Equal(t, 0, stat.Blocked)
 	assert.Equal(t, 0, stat.Filtered)
+}
+
+// TestFilterNoFilters test checks filtering if filters are disabled.
+// In this test case, list with three clusters is provided at input.
+func TestFilterNoFilters(t *testing.T) {
+	// configuration used during filtering
+	config := conf.ProcessingConfiguration{
+		FilterAllowedClusters: false,
+		FilterBlockedClusters: false,
+	}
+	var clusters []types.ClusterEntry
+
+	// list of clusters at input
+	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
+
+	// start filter
+	filtered, stat := filterClusterList(clusters, config)
+
+	// check filter output
+	assert.Len(t, filtered, 4)
+	assert.Equal(t, 4, stat.Input)
+	assert.Equal(t, 0, stat.Allowed)
+	assert.Equal(t, 0, stat.Blocked)
+	assert.Equal(t, 4, stat.Filtered)
+
+	// check the cluster list
+	assert.Equal(t, cluster1, filtered[0])
+	assert.Equal(t, cluster2, filtered[1])
+	assert.Equal(t, cluster3, filtered[2])
+	assert.Equal(t, cluster4, filtered[3])
 }
