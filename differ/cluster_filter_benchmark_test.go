@@ -64,3 +64,115 @@ var (
 			string(cluster2.ClusterName)},
 	}
 )
+
+// Benchmark for null cluster list at input when both filters are disabled.
+func BenchmarkNoFiltersNullListOfClustersFiltersDisabled(b *testing.B) {
+	// configuration used during filtering
+	config := configurationFiltersDisabled
+
+	// null value
+	var clusters []types.ClusterEntry
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Benchmark for null cluster list at input when allow filter is enabled.
+func BenchmarkNoFiltersNullListOfClustersAllowFilterEnabled(b *testing.B) {
+	// configuration used during filtering
+	config := configurationAllowFilterEnabled
+
+	// null value
+	var clusters []types.ClusterEntry
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Benchmark for null cluster list at input when block filter is enabled.
+func BenchmarkNoFiltersNullListOfClustersBlockFilterEnabled(b *testing.B) {
+	// configuration used during filtering
+	config := configurationBlockFilterEnabled
+
+	// null value
+	var clusters []types.ClusterEntry
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Benchmark for null cluster list at input when both filters are enabled.
+func BenchmarkNoFiltersNullListOfClustersFiltersEnabled(b *testing.B) {
+	// configuration used during filtering
+	config := configurationFiltersEnabled
+
+	// null value
+	var clusters []types.ClusterEntry
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Benchmark for empty cluster list at input when both filters are disabled.
+func BenchmarkNoFiltersEmptyListOfClustersFiltersDisabled(b *testing.B) {
+	// configuration used during filtering
+	config := configurationFiltersDisabled
+
+	// empty value
+	clusters := []types.ClusterEntry{}
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Benchmark for empty cluster list at input when allow filter is enabled.
+func BenchmarkNoFiltersEmptyListOfClustersAllowFilterEnabled(b *testing.B) {
+	// configuration used during filtering
+	config := configurationAllowFilterEnabled
+
+	// empty value
+	clusters := []types.ClusterEntry{}
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Benchmark for empty cluster list at input when block filter is enabled.
+func BenchmarkNoFiltersEmptyListOfClustersBlockFilterEnabled(b *testing.B) {
+	// configuration used during filtering
+	config := configurationBlockFilterEnabled
+
+	// empty value
+	clusters := []types.ClusterEntry{}
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Benchmark for empty cluster list at input when both filters are enabled.
+func BenchmarkNoFiltersEmptyListOfClustersFiltersEnabled(b *testing.B) {
+	// configuration used during filtering
+	config := configurationFiltersEnabled
+
+	// empty value
+	clusters := []types.ClusterEntry{}
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
