@@ -284,6 +284,8 @@ func showConfiguration(config conf.ConfigStruct) {
 	log.Info().
 		Bool("Filter allowed clusters", processingConfig.FilterAllowedClusters).
 		Strs("List of allowed clusters", processingConfig.AllowedClusters).
+		Bool("Filter blocked clusters", processingConfig.FilterBlockedClusters).
+		Strs("List of blocked clusters", processingConfig.BlockedClusters).
 		Msg("Processing configuration")
 }
 
@@ -1057,6 +1059,16 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 		log.Err(err).Msg(operationFailedMessage)
 		os.Exit(ExitStatusStorageError)
 	}
+
+	// filter clusters according to allow list and block list
+	clusters, statistic := filterClusterList(clusters, conf.GetProcessingConfiguration(config))
+	log.Info().
+		Int("On input", statistic.Input).
+		Int("Allowed", statistic.Allowed).
+		Int("Blocked", statistic.Blocked).
+		Int("Filtered", statistic.Filtered).
+		Msg("Filter cluster list")
+
 	entries := len(clusters)
 	if entries == 0 {
 		log.Info().Msg("Differ finished")
