@@ -176,3 +176,71 @@ func BenchmarkNoFiltersEmptyListOfClustersFiltersEnabled(b *testing.B) {
 		_, _ = filterClusterList(clusters, config)
 	}
 }
+
+// Helper function to prepare list of at least N clusters
+func prepareListOfNClusters(n int) []types.ClusterEntry {
+	var clusters []types.ClusterEntry
+
+	// add 5 clusters at once
+	for i := 0; i < n; i += 5 {
+		clusters = append(clusters, cluster1, cluster2, cluster3, cluster4, cluster5)
+	}
+
+	return clusters
+}
+
+// Check list processing for 10 clusters when both filters are disabled.
+func BenchmarkNoFilters10Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationFiltersDisabled
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(10)
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Check list processing for 100 clusters when both filters are disabled.
+func BenchmarkNoFilters100Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationFiltersDisabled
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(100)
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Check list processing for 1000 clusters when both filters are disabled.
+func BenchmarkNoFilters1000Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationFiltersDisabled
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(1000)
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Check list processing for 10000 clusters when both filters are disabled.
+func BenchmarkNoFilters10000Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationFiltersDisabled
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(10000)
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
