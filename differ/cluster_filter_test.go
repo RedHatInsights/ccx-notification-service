@@ -267,3 +267,148 @@ func TestFilterBlockTwoClustersAllUnknown(t *testing.T) {
 	assert.Equal(t, cluster3, filtered[2])
 	assert.Equal(t, cluster4, filtered[3])
 }
+
+// TestFilterAllowNoClusters test checks filtering if filters are
+// enabled. In this case list of allowed clusters is empty.
+func TestFilterAllowNoClusters(t *testing.T) {
+	// configuration used during filtering
+	config := conf.ProcessingConfiguration{
+		FilterAllowedClusters: true,
+		FilterBlockedClusters: false,
+		AllowedClusters:       []string{}}
+
+	var clusters []types.ClusterEntry
+
+	// list of clusters at input
+	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
+
+	// start filter
+	filtered, stat := filterClusterList(clusters, config)
+
+	// check filter output
+	assert.Len(t, filtered, 0)
+	assert.Equal(t, 4, stat.Input)
+	assert.Equal(t, 0, stat.Allowed)
+	assert.Equal(t, 0, stat.Blocked)
+	assert.Equal(t, 0, stat.Filtered)
+}
+
+// TestFilterAllowOneCluster test checks filtering if filters are
+// enabled. In this case list of allowed clusters contains one known
+// cluster.
+func TestFilterAllowOneCluster(t *testing.T) {
+	// configuration used during filtering
+	config := conf.ProcessingConfiguration{
+		FilterAllowedClusters: true,
+		FilterBlockedClusters: false,
+		AllowedClusters: []string{
+			string(cluster1.ClusterName)}}
+
+	var clusters []types.ClusterEntry
+
+	// list of clusters at input
+	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
+
+	// start filter
+	filtered, stat := filterClusterList(clusters, config)
+
+	// check filter output
+	assert.Len(t, filtered, 1)
+	assert.Equal(t, 4, stat.Input)
+	assert.Equal(t, 1, stat.Allowed)
+	assert.Equal(t, 0, stat.Blocked)
+	assert.Equal(t, 1, stat.Filtered)
+
+	// check the cluster list
+	assert.Equal(t, cluster1, filtered[0])
+}
+
+// TestFilterAllowTwoClusters test checks filtering if filters are
+// enabled. In this case list of allowed clusters contains two known
+// clusters.
+func TestFilterAllowTwoClusters(t *testing.T) {
+	// configuration used during filtering
+	config := conf.ProcessingConfiguration{
+		FilterAllowedClusters: true,
+		FilterBlockedClusters: false,
+		AllowedClusters: []string{
+			string(cluster1.ClusterName),
+			string(cluster2.ClusterName)}}
+
+	var clusters []types.ClusterEntry
+
+	// list of clusters at input
+	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
+
+	// start filter
+	filtered, stat := filterClusterList(clusters, config)
+
+	// check filter output
+	assert.Len(t, filtered, 2)
+	assert.Equal(t, 4, stat.Input)
+	assert.Equal(t, 2, stat.Allowed)
+	assert.Equal(t, 0, stat.Blocked)
+	assert.Equal(t, 2, stat.Filtered)
+
+	// check the cluster list
+	assert.Equal(t, cluster1, filtered[0])
+	assert.Equal(t, cluster2, filtered[1])
+}
+
+// TestFilterAllowTwoClustersOneUnknown test checks filtering if filters
+// are enabled. In this case allow list contains two clusters, one known
+// and one unknown.
+func TestFilterAllowTwoClustersOneUnknown(t *testing.T) {
+	// configuration used during filtering
+	config := conf.ProcessingConfiguration{
+		FilterAllowedClusters: true,
+		FilterBlockedClusters: false,
+		AllowedClusters: []string{
+			string(cluster1.ClusterName),
+			"ffffffff-ffff-ffff-0123456789ab"}}
+
+	var clusters []types.ClusterEntry
+
+	// list of clusters at input
+	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
+
+	// start filter
+	filtered, stat := filterClusterList(clusters, config)
+
+	// check filter output
+	assert.Len(t, filtered, 1)
+	assert.Equal(t, 4, stat.Input)
+	assert.Equal(t, 1, stat.Allowed)
+	assert.Equal(t, 0, stat.Blocked)
+	assert.Equal(t, 1, stat.Filtered)
+
+	// check the cluster list
+	assert.Equal(t, cluster1, filtered[0])
+}
+
+// TestFilterAllowTwoClustersAllUnknown test checks filtering if filters
+// are enabled. In this case allow list contains two unknown clusters.
+func TestFilterAllowTwoClustersAllUnknown(t *testing.T) {
+	// configuration used during filtering
+	config := conf.ProcessingConfiguration{
+		FilterAllowedClusters: true,
+		FilterBlockedClusters: false,
+		AllowedClusters: []string{
+			"ffffffff-ffff-ffff-0123456789ab",
+			"ffffffff-0000-0000-ffffffffffff"},
+	}
+	var clusters []types.ClusterEntry
+
+	// list of clusters at input
+	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
+
+	// start filter
+	filtered, stat := filterClusterList(clusters, config)
+
+	// check filter output
+	assert.Len(t, filtered, 0)
+	assert.Equal(t, 4, stat.Input)
+	assert.Equal(t, 0, stat.Allowed)
+	assert.Equal(t, 0, stat.Blocked)
+	assert.Equal(t, 0, stat.Filtered)
+}
