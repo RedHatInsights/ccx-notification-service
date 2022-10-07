@@ -54,6 +54,12 @@ var (
 		ClusterName:   "dddddddd-0000-0000-0000-00000000000",
 		KafkaOffset:   0,
 	}
+	cluster5 = types.ClusterEntry{
+		OrgID:         1,
+		AccountNumber: 2,
+		ClusterName:   "eeeeeeee-0000-0000-0000-00000000000",
+		KafkaOffset:   0,
+	}
 )
 
 // TestFilterNullClusterList test checks the filtering for null cluster list.
