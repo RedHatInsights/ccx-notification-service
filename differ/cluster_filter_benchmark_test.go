@@ -300,3 +300,59 @@ func BenchmarkEmptyBlockListFilter10000Clusters(b *testing.B) {
 		_, _ = filterClusterList(clusters, config)
 	}
 }
+
+// Check list processing for 10 clusters when allow filter is enabled.
+func BenchmarkEmptyAllowListFilter10Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationAllowFilterEnabled
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(10)
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Check list processing for 100 clusters when allow filter is enabled.
+func BenchmarkEmptyAllowListFilter100Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationAllowFilterEnabled
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(100)
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Check list processing for 1000 clusters when allow filter is enabled.
+func BenchmarkEmptyAllowListFilter1000Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationAllowFilterEnabled
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(1000)
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Check list processing for 10000 clusters when allow filter is enabled.
+func BenchmarkEmptyAllowListFilter10000Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationAllowFilterEnabled
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(10000)
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
