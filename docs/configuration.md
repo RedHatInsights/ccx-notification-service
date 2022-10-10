@@ -58,8 +58,9 @@ Service Log configuration is in section `[service-log]` in config file
 ```
 [service_log]
 enabled = false
-offline_token = ""
-token_refreshment_url = "https://sso.redhat.com/auth/realms/redhat-external/protocol/openid-connect/token"
+client_id = "CLIENT_ID"
+client_secret = "CLIENT_SECRET"
+token_url = ""
 url = "https://api.openshift.com/api/service_logs/v1/cluster_logs/"
 timeout = "15s"
 likelihood_threshold = 0
@@ -70,7 +71,9 @@ event_filter = "totalRisk > totalRiskThreshold"
 ```
 
 - `enabled` determines whether the notifications service sends messages to Service Log
-- `offline_token` is an offline token used to retrieve online token via OpenID Connect
+- `client_id` is a client ID used for access token retrieval
+- `client_secret` is a client secret used for access token retrieval
+- `token_url` is a token refreshment API endpoint (optional, otherwise set to default one)
 - `token_refreshment_url` is a URL of OpenID Connect API for retrieval of new online token
 - `timeout` is a time used as a timeout when sending requests to Service Log API
 - `likelihood_threshold`,`impact_threshold`, `severity_threshold` and `total_risk_threshold` are values which can be used in `event_filter` for filtering messages sent to Service Log
