@@ -63,6 +63,122 @@ var (
 		AllowedClusters: []string{
 			string(cluster2.ClusterName)},
 	}
+
+	configurationTenBlockedClustersConfig = conf.ProcessingConfiguration{
+		FilterAllowedClusters: false,
+		FilterBlockedClusters: true,
+		AllowedClusters: []string{
+			string(cluster1.ClusterName),
+			string(cluster2.ClusterName),
+			string(cluster3.ClusterName),
+			string(cluster4.ClusterName),
+			string(cluster5.ClusterName),
+			"11111111-1111-1111-111111111111",
+			"22222222-2222-2222-222222222222",
+			"33333333-3333-3333-333333333333",
+			"44444444-4444-4444-444444444444",
+			"55555555-5555-5555-555555555555",
+		},
+		BlockedClusters: []string{
+			string(cluster1.ClusterName),
+			string(cluster2.ClusterName),
+			string(cluster3.ClusterName),
+			string(cluster4.ClusterName),
+			string(cluster5.ClusterName),
+			"11111111-1111-1111-111111111111",
+			"22222222-2222-2222-222222222222",
+			"33333333-3333-3333-333333333333",
+			"44444444-4444-4444-444444444444",
+			"55555555-5555-5555-555555555555",
+		},
+	}
+
+	configurationTenAllowClustersConfig = conf.ProcessingConfiguration{
+		FilterAllowedClusters: true,
+		FilterBlockedClusters: false,
+		AllowedClusters: []string{
+			string(cluster1.ClusterName),
+			string(cluster2.ClusterName),
+			string(cluster3.ClusterName),
+			string(cluster4.ClusterName),
+			string(cluster5.ClusterName),
+			"11111111-1111-1111-111111111111",
+			"22222222-2222-2222-222222222222",
+			"33333333-3333-3333-333333333333",
+			"44444444-4444-4444-444444444444",
+			"55555555-5555-5555-555555555555",
+		},
+		BlockedClusters: []string{
+			string(cluster1.ClusterName),
+			string(cluster2.ClusterName),
+			string(cluster3.ClusterName),
+			string(cluster4.ClusterName),
+			string(cluster5.ClusterName),
+			"11111111-1111-1111-111111111111",
+			"22222222-2222-2222-222222222222",
+			"33333333-3333-3333-333333333333",
+			"44444444-4444-4444-444444444444",
+			"55555555-5555-5555-555555555555",
+		},
+	}
+
+	configurationTenUnknownBlockedClustersConfig = conf.ProcessingConfiguration{
+		FilterAllowedClusters: false,
+		FilterBlockedClusters: true,
+		AllowedClusters: []string{
+			"11111111-1111-1111-111111111111",
+			"22222222-2222-2222-222222222222",
+			"33333333-3333-3333-333333333333",
+			"44444444-4444-4444-444444444444",
+			"55555555-5555-5555-555555555555",
+			"66666666-6666-6666-666666666666",
+			"77777777-7777-7777-777777777777",
+			"88888888-8888-8888-888888888888",
+			"99999999-9999-9999-999999999999",
+			"aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+		},
+		BlockedClusters: []string{
+			"11111111-1111-1111-111111111111",
+			"22222222-2222-2222-222222222222",
+			"33333333-3333-3333-333333333333",
+			"44444444-4444-4444-444444444444",
+			"55555555-5555-5555-555555555555",
+			"66666666-6666-6666-666666666666",
+			"77777777-7777-7777-777777777777",
+			"88888888-8888-8888-888888888888",
+			"99999999-9999-9999-999999999999",
+			"aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+		},
+	}
+
+	configurationTenUnknownAllowedClustersConfig = conf.ProcessingConfiguration{
+		FilterAllowedClusters: true,
+		FilterBlockedClusters: false,
+		AllowedClusters: []string{
+			"11111111-1111-1111-111111111111",
+			"22222222-2222-2222-222222222222",
+			"33333333-3333-3333-333333333333",
+			"44444444-4444-4444-444444444444",
+			"55555555-5555-5555-555555555555",
+			"66666666-6666-6666-666666666666",
+			"77777777-7777-7777-777777777777",
+			"88888888-8888-8888-888888888888",
+			"99999999-9999-9999-999999999999",
+			"aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+		},
+		BlockedClusters: []string{
+			"11111111-1111-1111-111111111111",
+			"22222222-2222-2222-222222222222",
+			"33333333-3333-3333-333333333333",
+			"44444444-4444-4444-444444444444",
+			"55555555-5555-5555-555555555555",
+			"66666666-6666-6666-666666666666",
+			"77777777-7777-7777-777777777777",
+			"88888888-8888-8888-888888888888",
+			"99999999-9999-9999-999999999999",
+			"aaaaaaaa-aaaa-aaaa-aaaaaaaaaaaa",
+		},
+	}
 )
 
 // runBenchmark function run the benchmark with specified cluster list and filter configuration
