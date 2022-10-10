@@ -412,3 +412,59 @@ func Benchmark1ClusterInBlockListFilter10000Clusters(b *testing.B) {
 		_, _ = filterClusterList(clusters, config)
 	}
 }
+
+// Check cluster list processing for allow list with 10 clusters
+func Benchmark1ClusterInAllowListFilter10Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationOneClusterAllowList
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(10)
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Check cluster list processing for allow list with 100 clusters
+func Benchmark1ClusterInAllowListFilter100Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationOneClusterAllowList
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(100)
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Check cluster list processing for allow list with 1000 clusters
+func Benchmark1ClusterInAllowListFilter1000Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationOneClusterAllowList
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(1000)
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
+
+// Check cluster list processing for allow list with 10000 clusters
+func Benchmark1ClusterInAllowListFilter10000Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationOneClusterAllowList
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(10000)
+
+	// run benchmark
+	for i := 0; i < b.N; i++ {
+		_, _ = filterClusterList(clusters, config)
+	}
+}
