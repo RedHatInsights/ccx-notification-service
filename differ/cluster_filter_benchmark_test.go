@@ -643,3 +643,99 @@ func Benchmark10ClustersInAllowListFilter10000Clusters(b *testing.B) {
 	// start benchmark
 	runBenchmark(b, clusters, config)
 }
+
+// Check filtering by unknown clusters
+func Benchmark10UnknownClustersInBlockListFilter10Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationTenUnknownBlockedClustersConfig
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(10)
+
+	// start benchmark
+	runBenchmark(b, clusters, config)
+}
+
+// Check filtering by unknown clusters
+func Benchmark10UnknownClustersInBlockListFilter100Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationTenUnknownBlockedClustersConfig
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(100)
+
+	// start benchmark
+	runBenchmark(b, clusters, config)
+}
+
+// Check filtering by unknown clusters
+func Benchmark10UnknownClustersInBlockListFilter1000Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationTenUnknownBlockedClustersConfig
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(1000)
+
+	// start benchmark
+	runBenchmark(b, clusters, config)
+}
+
+// Check filtering by unknown clusters
+func Benchmark10UnknownClustersInBlockListFilter10000Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationTenUnknownBlockedClustersConfig
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(10000)
+
+	// start benchmark
+	runBenchmark(b, clusters, config)
+}
+
+// Check filtering by unknown clusters
+func Benchmark10UnknownClustersInAllowListFilter10Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationTenUnknownAllowedClustersConfig
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(10)
+
+	// start benchmark
+	runBenchmark(b, clusters, config)
+}
+
+// Check filtering by unknown clusters
+func Benchmark10UnknownClustersInAllowListFilter100Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationTenUnknownAllowedClustersConfig
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(100)
+
+	// start benchmark
+	runBenchmark(b, clusters, config)
+}
+
+// Check filtering by unknown clusters
+func Benchmark10UnknownClustersInAllowListFilter1000Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationTenUnknownAllowedClustersConfig
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(1000)
+
+	// start benchmark
+	runBenchmark(b, clusters, config)
+}
+
+// Check filtering by unknown clusters
+func Benchmark10UnknownClustersInAllowListFilter10000Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationTenUnknownAllowedClustersConfig
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(10000)
+
+	// start benchmark
+	runBenchmark(b, clusters, config)
+}
