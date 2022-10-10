@@ -423,3 +423,55 @@ func Benchmark1ClusterInAllowListFilter10000Clusters(b *testing.B) {
 	// start benchmark
 	runBenchmark(b, clusters, config)
 }
+
+// Check cluster list processing for filter with 10 known clusters and cluster
+// list with 10 clusters
+func Benchmark10ClustersInBlockListFilter10Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationTenBlockedClustersConfig
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(10)
+
+	// start benchmark
+	runBenchmark(b, clusters, config)
+}
+
+// Check cluster list processing for filter with 10 known clusters and cluster
+// list with 100 clusters
+func Benchmark10ClustersInBlockListFilter100Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationTenBlockedClustersConfig
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(100)
+
+	// start benchmark
+	runBenchmark(b, clusters, config)
+}
+
+// Check cluster list processing for filter with 10 known clusters and cluster
+// list with 1000 clusters
+func Benchmark10ClustersInBlockListFilter1000Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationTenBlockedClustersConfig
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(1000)
+
+	// start benchmark
+	runBenchmark(b, clusters, config)
+}
+
+// Check cluster list processing for filter with 10 known clusters and cluster
+// list with 10000 clusters
+func Benchmark10ClustersInBlockListFilter10000Clusters(b *testing.B) {
+	// configuration used during filtering
+	config := configurationTenBlockedClustersConfig
+
+	// fill-in list of clusters at input
+	clusters := prepareListOfNClusters(10000)
+
+	// start benchmark
+	runBenchmark(b, clusters, config)
+}
