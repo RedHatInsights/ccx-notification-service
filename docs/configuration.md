@@ -74,7 +74,6 @@ event_filter = "totalRisk > totalRiskThreshold"
 - `client_id` is a client ID used for access token retrieval
 - `client_secret` is a client secret used for access token retrieval
 - `token_url` is a token refreshment API endpoint (optional, otherwise set to default one)
-- `token_refreshment_url` is a URL of OpenID Connect API for retrieval of new online token
 - `timeout` is a time used as a timeout when sending requests to Service Log API
 - `likelihood_threshold`,`impact_threshold`, `severity_threshold` and `total_risk_threshold` are values which can be used in `event_filter` for filtering messages sent to Service Log
 - `event_filter` is a condition string used to determine which messages will be sent to Service Log
