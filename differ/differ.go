@@ -754,7 +754,8 @@ func setupServiceLogProducer(config conf.ConfigStruct) {
 	}
 	log.Info().Msg("Service Log config for Notification Service is enabled")
 
-	conn, err := ocmclient.NewOCMClient(serviceLogConfig.ClientID, serviceLogConfig.ClientSecret, serviceLogConfig.URL)
+	conn, err := ocmclient.NewOCMClient(serviceLogConfig.ClientID, serviceLogConfig.ClientSecret,
+		serviceLogConfig.URL, serviceLogConfig.TokenURL)
 	if err != nil {
 		log.Error().Err(err).Msg("got error while setting up the connection to OCM API gateway")
 		return
