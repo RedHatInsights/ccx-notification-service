@@ -31,7 +31,8 @@ func TestClientCreationError(t *testing.T) {
 	clientID := ""
 	clientSecret := ""
 	url := ""
-	_, err := ocmclient.NewOCMClient(clientID, clientSecret, url)
+	tokenURL := ""
+	_, err := ocmclient.NewOCMClient(clientID, clientSecret, url, tokenURL)
 	assert.NotEqual(t, nil, err)
 }
 
@@ -40,6 +41,7 @@ func TestClientCreationWithTransportError(t *testing.T) {
 	clientID := ""
 	clientSecret := ""
 	url := ""
-	_, err := ocmclient.NewOCMClientWithTransport(clientID, clientSecret, url, nil)
+	tokenURL := ""
+	_, err := ocmclient.NewOCMClientWithTransport(clientID, clientSecret, url, tokenURL, nil)
 	assert.NotEqual(t, nil, err)
 }

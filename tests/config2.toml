@@ -13,6 +13,7 @@ event_filter = "totalRisk >= totalRiskThreshold"
 enabled = false
 client_id = "test-id"
 client_secret = "test-secret"
+token_url = "token url"
 url = "localhost:8000/api/service_logs/v1/cluster_logs/"
 timeout = "15s"
 likelihood_threshold = 0

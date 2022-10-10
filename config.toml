@@ -21,6 +21,7 @@ event_filter = "totalRisk >= totalRiskThreshold"
 [service_log]
 client_id = "a-service-id"
 client_secret = "a-secret"
+token_url = ""
 enabled = false
 url = "https://api.openshift.com/api/service_logs/v1/cluster_logs/"
 timeout = "15s"
