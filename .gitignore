@@ -24,3 +24,5 @@ issues.py
 # Profiler output
 cpuprofile.prof
 memprofile.prof
+
+benchmark.txt
