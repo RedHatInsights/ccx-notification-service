@@ -31,6 +31,6 @@ if (( $(echo "$go_tool_cover_output" | tail -n 1 | awk '{print $NF}' | grep -E "
     exit 0
 else
     echo "$go_tool_cover_output"
-    echo -e "${RED_BG}[WARN]${NC} Code coverage have to be at least $THRESHOLD%"
-    exit 0 # TODO: Set to 1 when possible and change WARN to FAIL
+    echo -e "${RED_BG}[FAIL]${NC} Code coverage have to be at least $THRESHOLD%"
+    exit 1
 fi
