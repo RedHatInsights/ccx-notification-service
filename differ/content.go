@@ -33,7 +33,7 @@ import (
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
-	"github.com/RedHatInsights/insights-operator-utils/http"
+	httputils "github.com/RedHatInsights/insights-operator-utils/http"
 	utypes "github.com/RedHatInsights/insights-results-types"
 )
 
