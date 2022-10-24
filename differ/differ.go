@@ -353,9 +353,9 @@ func findRenderedReport(reports []types.RenderedReport, ruleName types.RuleName,
 func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEntry) types.ServiceLogEntry {
 	logEntry := types.ServiceLogEntry{
 		ClusterUUID: cluster.ClusterName,
-		Description: report.Description,
+		Description: report.Reason,
 		ServiceName: serviceName,
-		Summary:     report.Reason,
+		Summary:     report.Description,
 	}
 
 	// It is necessary to truncate the fields because of Service Log limitations
