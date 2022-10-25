@@ -22,13 +22,13 @@ Two fields needs to be filled using the data mentioned above:
 
 ## "summary" field
 
-Content of this field is read from "reason" field returned in Template
+Content of this field is read from "description" field returned in Template
 renderer's response. If the length of text is longer than 255 characters (UTF-8
 glyphs), it is trimmed to this value.
 
 ## "description" field
 
-Content of this field is read from "description" field returned in Template
+Content of this field is read from "reason" field returned in Template
 renderer's response. If the length of text is longer than 4000 characters
 (UTF-8 glyphs), it is trimmed to this value.
 
