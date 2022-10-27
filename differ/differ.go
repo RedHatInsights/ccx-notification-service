@@ -266,6 +266,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Insights Advisor URL", notificationConfig.InsightsAdvisorURL).
 		Str("Cluster details URI", notificationConfig.ClusterDetailsURI).
 		Str("Rule details URI", notificationConfig.RuleDetailsURI).
+		Str("Cooldown", notificationConfig.Cooldown).
 		Msg("Notifications configuration")
 
 	metricsConfig := conf.GetMetricsConfiguration(config)
