@@ -142,6 +142,7 @@ func TestLoadServiceLogConfiguration(t *testing.T) {
 	assert.Equal(t, "token url", serviceLogCfg.TokenURL)
 	assert.Equal(t, "localhost:8000/api/service_logs/v1/cluster_logs/", serviceLogCfg.URL)
 	assert.Equal(t, expectedTimeout, serviceLogCfg.Timeout)
+	assert.Equal(t, "https://console.redhat.com/openshift/insights/advisor/recommendations/{module}|{error_key}", serviceLog.RuleDetailsURI)
 }
 
 // TestLoadServiceLogConfigurationBadURL tests loading the ServiceLog
