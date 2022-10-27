@@ -68,6 +68,7 @@ impact_threshold = 0
 severity_threshold = 0
 total_risk_threshold = 3
 event_filter = "totalRisk > totalRiskThreshold"
+rule_details_uri = "https://console.redhat.com/openshift/insights/advisor/recommendations/{module}|{error_key}"
 ```
 
 - `enabled` determines whether the notifications service sends messages to Service Log
@@ -77,6 +78,7 @@ event_filter = "totalRisk > totalRiskThreshold"
 - `timeout` is a time used as a timeout when sending requests to Service Log API
 - `likelihood_threshold`,`impact_threshold`, `severity_threshold` and `total_risk_threshold` are values which can be used in `event_filter` for filtering messages sent to Service Log
 - `event_filter` is a condition string used to determine which messages will be sent to Service Log
+- `rule_details_uri` URI to a page with detailed information about rule. Please note that it is not a true URI, but a template to be interpolated with real module name and error key
 
 Please note that for correct functionality of Service Log integration, `dependencies` configuration should be also present.
 
