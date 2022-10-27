@@ -170,6 +170,7 @@ type ServiceLogConfiguration struct {
 	SeverityThreshold   int           `mapstructure:"severity_threshold" toml:"severity_threshold"`
 	TotalRiskThreshold  int           `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
 	EventFilter         string        `mapstructure:"event_filter" toml:"event_filter"`
+	RuleDetailsURI      string        `mapstructure:"rule_details_uri" toml:"rule_details_uri"`
 }
 
 // NotificationsConfiguration represents the configuration specific to the content of notifications
