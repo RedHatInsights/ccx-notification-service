@@ -537,18 +537,24 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(
 		clusterIDs[idx] = string(entry.ClusterName)
 	}
 
+	selectQuery := `SELECT org_id, cluster, report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported`
 	whereClause := fmt.Sprintf(` WHERE event_type_id = %v AND state = 1 AND org_id IN (%v) AND cluster IN (%v)`,
 		eventTarget, inClauseFromStringSlice(orgIDs), inClauseFromStringSlice(clusterIDs))
+	orderByClause := `ORDER BY cluster, notified_at DESC) t`
+	var err error
+	var rows *sql.Rows
 
-	query := `SELECT org_id, cluster, report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported ` +
-		whereClause +
-		` ORDER BY cluster, notified_at DESC) t WHERE notified_at > NOW() - $1::INTERVAL;`
+	if len(timeOffset) == 0 || strings.Split(timeOffset, " ")[0] == "0" {
+		query := strings.Join([]string{selectQuery, whereClause, orderByClause, ";"}, " ")
+		rows, err = storage.connection.Query(query)
+	} else {
+		query := strings.Join([]string{selectQuery, whereClause, orderByClause, "WHERE notified_at > NOW() - $1::INTERVAL;"}, " ")
+		rows, err = storage.connection.Query(query, timeOffset)
+	}
 
-	rows, err := storage.connection.Query(query, timeOffset)
 	if err != nil {
 		return nil, err
 	}
-
 	defer func() {
 		err := rows.Close()
 		if err != nil {
