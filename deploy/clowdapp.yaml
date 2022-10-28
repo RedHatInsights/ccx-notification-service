@@ -144,6 +144,8 @@ objects:
             value: "3"
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__EVENT_FILTER
             value: "totalRisk >= totalRiskThreshold"
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__RULE_DETAILS_URI
+            value: "https://${PLATFORM_UI_HOSTNAME}/openshift/insights/advisor/recommendations/{module}|{error_key}"
           - name: CCX_NOTIFICATION_SERVICE__STORAGE__DB_DRIVER
             value: postgres
           - name: CCX_NOTIFICATION_SERVICE__STORAGE__PG_PARAMS
@@ -168,6 +170,7 @@ objects:
             value: "https://${PLATFORM_UI_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}"
           - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__RULE_DETAILS_URI
             value: "https://${PLATFORM_UI_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}?first={module}|{error_key}"
+
           - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__COOLDOWN
             value: ${NOTIFICATION_RESEND_COOLDOWN_SERVICE_LOG}
           - name: CCX_NOTIFICATION_SERVICE__METRICS__JOB_NAME

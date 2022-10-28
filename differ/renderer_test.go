@@ -229,7 +229,7 @@ func TestGetAllContentFromMapTwoItems(t *testing.T) {
 }
 
 func TestAddDetailedInfoURLToRenderedReport(t *testing.T) {
-	detailsURi := "theUri/{module}|{error_key}"
+	detailsURI := "theUri/{module}|{error_key}"
 	renderedReport := types.RenderedReport{
 		RuleID:      "a.rule.id",
 		ErrorKey:    "THE_ERROR_KEY",
@@ -238,6 +238,6 @@ func TestAddDetailedInfoURLToRenderedReport(t *testing.T) {
 		Description: "this is just a test issue with a bunch of words in it",
 	}
 
-	addDetailedInfoURLToRenderedReport(&renderedReport, &detailsURi)
-	assert.Equal(t, renderedReport.Description, "this is just a test issue with a bunch of words in it\n\nMore details: theUri/a.rule.id|THE_ERROR_KEY")
+	addDetailedInfoURLToRenderedReport(&renderedReport, &detailsURI)
+	assert.Equal(t, renderedReport.Description, "this is just a test issue with a bunch of words in it\n\n[More details](theUri/a.rule.id|THE_ERROR_KEY).")
 }
