@@ -54,7 +54,10 @@ func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 				UpdatedAt:     types.Timestamp(now),
 			},
 		}
-		timeOffset = "1 day"
+		timeOffset           = "1 day"
+		timeOffsetNotSet     = ""
+		timeOffsetSetToZero  = "0"
+		timeOffsetSetToZeroX = "0 hours"
 	)
 
 	db, mock := newMock(t)
@@ -85,6 +88,32 @@ func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 		clusterEntries, timeOffset, types.NotificationBackendTarget)
 	assert.NoError(t, err, "error running ReadLastNotifiedRecordForClusterList")
 	fmt.Println(records)
+
+	//If timeOffset is 0 or empty string, the WHERE clause is not included
+	expectedQuery = fmt.Sprintf(`
+	SELECT org_id, cluster, report, notified_at 
+	FROM ( 
+		SELECT DISTINCT ON (cluster) * 
+		FROM reported
+		WHERE event_type_id = %v AND state = 1 AND org_id IN (%v) AND cluster IN (%v)
+		ORDER BY cluster, notified_at DESC) t ;
+	`, types.NotificationBackendTarget, orgs, clusters)
+
+	mock.ExpectQuery(regexp.QuoteMeta(expectedQuery)).WillReturnRows(rows)
+	_, err = sut.ReadLastNotifiedRecordForClusterList(
+		clusterEntries, timeOffsetNotSet, types.NotificationBackendTarget)
+	assert.NoError(t, err, "unexpected query")
+
+	mock.ExpectQuery(regexp.QuoteMeta(expectedQuery)).WillReturnRows(rows)
+	_, err = sut.ReadLastNotifiedRecordForClusterList(
+		clusterEntries, timeOffsetSetToZero, types.NotificationBackendTarget)
+	assert.NoError(t, err, "unexpected query")
+
+	mock.ExpectQuery(regexp.QuoteMeta(expectedQuery)).WillReturnRows(rows)
+	_, err = sut.ReadLastNotifiedRecordForClusterList(
+		clusterEntries, timeOffsetSetToZeroX, types.NotificationBackendTarget)
+	assert.NoError(t, err, "unexpected query")
+
 }
 
 func newMock(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
