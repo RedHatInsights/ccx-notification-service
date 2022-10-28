@@ -31,6 +31,8 @@ The "end-to-end" data flow is described there (including Notification Writer ser
 
 The cooldown mechanism is used to filter the previously reported issues so that they are not continuously sent to the customers. It works by defining a miminum amount of time that must elapse between two notifications. That cooldown time is applied to all the issues processed during an iteration.
 
+The value expected in the configuration is a string that respects the format of PostgreSQL's [interval type](https://www.postgresql.org/docs/current/datatype-datetime.html#DATATYPE-INTERVAL-INPUT).
+
 ### Data flow of the notification service without cooldown
 
 See steps 9 to 12 of the [data flow section](#data-flow)
