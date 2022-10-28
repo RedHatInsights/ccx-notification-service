@@ -372,10 +372,10 @@ func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEnt
 }
 
 func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.ClusterEntry,
-	ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int, err error) {
+	rules types.Rules, ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int, err error) {
 	renderedReports, err := renderReportsForCluster(
 		conf.GetDependenciesConfiguration(*configuration), cluster.ClusterName,
-		reports, ruleContent)
+		reports, rules)
 	if err != nil {
 		log.Err(err).
 			Str("cluster name", string(cluster.ClusterName)).
@@ -546,6 +546,11 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 	skippedEntries := 0
 	emptyEntries := 0
 
+	var rules types.Rules
+	if conf.GetServiceLogConfiguration(config).Enabled {
+		rules = getAllContentFromMap(ruleContent)
+	}
+
 	for i, cluster := range clusters {
 		log.Info().
 			Int("#", i).
@@ -580,7 +585,7 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 
 		if conf.GetServiceLogConfiguration(config).Enabled {
 			notifiedAt := types.Timestamp(time.Now())
-			newNotifiedIssues, err := produceEntriesToServiceLog(&config, cluster, ruleContent, deserialized.Reports)
+			newNotifiedIssues, err := produceEntriesToServiceLog(&config, cluster, rules, ruleContent, deserialized.Reports)
 			updateNotificationRecordState(storage, cluster, report, newNotifiedIssues, notifiedAt, types.ServiceLogTarget, err)
 			notifiedIssues += newNotifiedIssues
 		}

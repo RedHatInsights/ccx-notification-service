@@ -116,6 +116,9 @@ type States struct {
 	ErrorState      StateID
 }
 
+// Rules is a slice of RuleContent objects
+type Rules []types.RuleContent
+
 // RulesMap contains a map of RuleContent objects accesible indexed by rule names
 type RulesMap map[string]types.RuleContent
 
@@ -279,8 +282,8 @@ type ReportData struct {
 
 // TemplateRendererRequestBody is a structure to be sent in request body to content template renderer
 type TemplateRendererRequestBody struct {
-	Content    []types.RuleContent `json:"content"`
-	ReportData ReportData          `json:"report_data"`
+	Content    Rules      `json:"content"`
+	ReportData ReportData `json:"report_data"`
 }
 
 // ServiceLogEntry is a structure to be sent to Service Log
