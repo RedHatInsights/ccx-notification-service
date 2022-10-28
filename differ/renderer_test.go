@@ -227,3 +227,17 @@ func TestGetAllContentFromMapTwoItems(t *testing.T) {
 		assert.Equal(t, rule2, ruleContent["rule_1"])
 	}
 }
+
+func TestAddDetailedInfoURLToRenderedReport(t *testing.T) {
+	detailsURi := "theUri/{module}|{error_key}"
+	renderedReport := types.RenderedReport{
+		RuleID:      "a.rule.id",
+		ErrorKey:    "THE_ERROR_KEY",
+		Resolution:  "this issue cannot be resolved",
+		Reason:      "there is no real reason",
+		Description: "this is just a test issue with a bunch of words in it",
+	}
+
+	addDetailedInfoURLToRenderedReport(&renderedReport, &detailsURi)
+	assert.Equal(t, renderedReport.Description, "this is just a test issue with a bunch of words in it\n\nMore details: theUri/a.rule.id|THE_ERROR_KEY")
+}

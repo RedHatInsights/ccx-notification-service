@@ -26,6 +26,7 @@ import (
 	"bytes"
 	"encoding/json"
 	"net/http"
+	"strings"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -105,4 +106,10 @@ func createTemplateRendererRequest(
 		return nil, err
 	}
 	return req, nil
+}
+
+func addDetailedInfoURLToRenderedReport(report *types.RenderedReport, infoURL *string) {
+	replacer := strings.NewReplacer("{module}", string(report.RuleID), "{error_key}", string(report.ErrorKey))
+	detailedInfoURL := replacer.Replace(*infoURL)
+	report.Description = strings.Join([]string{report.Description, "\n\nMore details: ", detailedInfoURL}, "")
 }
