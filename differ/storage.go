@@ -544,7 +544,7 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(
 	var err error
 	var rows *sql.Rows
 
-	if len(timeOffset) == 0 || strings.Split(timeOffset, " ")[0] == "0" {
+	if len(strings.TrimSpace(timeOffset)) == 0 || strings.Split(timeOffset, " ")[0] == "0" {
 		query := strings.Join([]string{selectQuery, whereClause, orderByClause, ";"}, " ")
 		rows, err = storage.connection.Query(query)
 	} else {

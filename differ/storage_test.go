@@ -56,6 +56,7 @@ func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 		}
 		timeOffset           = "1 day"
 		timeOffsetNotSet     = ""
+		timeOffsetEmptySpace = "   "
 		timeOffsetSetToZero  = "0"
 		timeOffsetSetToZeroX = "0 hours"
 	)
@@ -114,6 +115,10 @@ func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 		clusterEntries, timeOffsetSetToZeroX, types.NotificationBackendTarget)
 	assert.NoError(t, err, "unexpected query")
 
+	mock.ExpectQuery(regexp.QuoteMeta(expectedQuery)).WillReturnRows(rows)
+	_, err = sut.ReadLastNotifiedRecordForClusterList(
+		clusterEntries, timeOffsetEmptySpace, types.NotificationBackendTarget)
+	assert.NoError(t, err, "unexpected query")
 }
 
 func newMock(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
