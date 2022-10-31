@@ -102,13 +102,13 @@ func TestRenderReportsForCluster(t *testing.T) {
 	rules := getAllContentFromMap(ruleContent)
 
 	reports := []types.ReportItem{
-		types.ReportItem{
+		{
 			Type:     "rule",
 			Module:   "rule_1.report",
 			ErrorKey: "RULE_1",
 			Details:  json.RawMessage("{}"),
 		},
-		types.ReportItem{
+		{
 			Type:     "rule",
 			Module:   "rule_2.report",
 			ErrorKey: "RULE_2",
@@ -239,5 +239,5 @@ func TestAddDetailedInfoURLToRenderedReport(t *testing.T) {
 	}
 
 	addDetailedInfoURLToRenderedReport(&renderedReport, &detailsURI)
-	assert.Equal(t, renderedReport.Description, "this is just a test issue with a bunch of words in it\n\n[More details](theUri/a.rule.id|THE_ERROR_KEY).")
+	assert.Equal(t, renderedReport.Reason, "there is no real reason\n\n[More details](theUri/a.rule.id|THE_ERROR_KEY).")
 }
