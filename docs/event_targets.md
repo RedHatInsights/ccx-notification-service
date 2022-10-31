@@ -130,9 +130,12 @@ the following subset of fields (each entry is associated with a single report):
 
 - `summary` is set to `description` of the rendered report received from 
   [template renderer](https://github.com/RedHatInsights/insights-content-template-renderer)
-  response (for more information go [here](template_renderer.md))
+  response
 - `description` is set to `reason` of the rendered report received from 
   [template renderer](https://github.com/RedHatInsights/insights-content-template-renderer)
-  response (for more information go [here](template_renderer.md))
+  response. It also includes a link to the corresponding `recommendation` page of the Advisor,
+  where more detailed information about the rule can be found.
 - `service_name` is set to `"CCX Notification Service"` for all entries created by this service
 - `cluster_uuid` is set to UUID of the cluster related to the report associated with created entry
+
+More information about the [template renderer can be found here](template_renderer.md)).

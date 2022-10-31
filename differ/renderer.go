@@ -111,5 +111,5 @@ func createTemplateRendererRequest(
 func addDetailedInfoURLToRenderedReport(report *types.RenderedReport, infoURL *string) {
 	replacer := strings.NewReplacer("{module}", string(report.RuleID), "{error_key}", string(report.ErrorKey))
 	detailedInfoURL := replacer.Replace(*infoURL)
-	report.Description += "\n\n[More details](" + detailedInfoURL +")."
+	report.Description += "\n\n[More details](" + detailedInfoURL + ")."
 }
