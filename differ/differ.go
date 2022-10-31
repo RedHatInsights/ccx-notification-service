@@ -422,6 +422,9 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 			ReportWithHighImpact.Inc()
 
 			renderedReport, err := findRenderedReport(renderedReports, ruleName, errorKey)
+
+			addDetailedInfoURLToRenderedReport(&renderedReport, &configuration.ServiceLog.RuleDetailsURI)
+
 			if err != nil {
 				log.Err(err).Msgf("Output from content template renderer does not contain "+
 					"result for cluster %s, rule %s and error key %s", cluster.ClusterName, ruleName, errorKey)
