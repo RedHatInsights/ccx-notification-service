@@ -90,7 +90,7 @@ func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 	assert.NoError(t, err, "error running ReadLastNotifiedRecordForClusterList")
 	fmt.Println(records)
 
-	//If timeOffset is 0 or empty string, the WHERE clause is not included
+	// If timeOffset is 0 or empty string, the WHERE clause is not included
 	expectedQuery = fmt.Sprintf(`
 	SELECT org_id, cluster, report, notified_at 
 	FROM ( 
