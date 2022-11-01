@@ -33,7 +33,7 @@ type OCMClient interface {
 }
 
 // NewOCMClient creates a client that can comunicate with the OCM API
-func NewOCMClient(clientID, clientSecret, url string, tokenURL string) (OCMClient, error) {
+func NewOCMClient(clientID, clientSecret, url, tokenURL string) (OCMClient, error) {
 	return NewOCMClientWithTransport(clientID, clientSecret, url, tokenURL, nil)
 }
 
