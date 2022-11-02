@@ -117,3 +117,25 @@ blocked_clusters = ["bbbbbbbb-0000-0000-0000-000000000000", "bbbbbbbb-1111-1111-
 - `blocked_clusters` contains list of disabled clusters (depends on previous configuration option)
 
 Please note that it is possible to use either allow list or block list, or both, if really needed.
+
+
+## Logging configuration
+
+Logging configuration is specified in section named `[logging]` in config file
+
+```
+[logging]
+debug = true
+log_level = "info"
+```
+
+- `debug` if set enables debug/developer mode logging which uses colors instead of JSON format
+- `log_level` specifies filter for log messages with lower levels
+
+### Log levels
+
+1. `debug` (default one)
+1. `info`
+1. `warn` or `warning`
+1. `error`
+1. `fatal`

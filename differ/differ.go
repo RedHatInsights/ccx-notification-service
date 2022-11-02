@@ -1157,6 +1157,24 @@ func setupFiltersAndThresholds(config conf.ConfigStruct) {
 	}
 }
 
+func convertLogLevel(level string) zerolog.Level {
+	level = strings.ToLower(strings.TrimSpace(level))
+	switch level {
+	case "debug":
+		return zerolog.DebugLevel
+	case "info":
+		return zerolog.InfoLevel
+	case "warn", "warning":
+		return zerolog.WarnLevel
+	case "error":
+		return zerolog.ErrorLevel
+	case "fatal":
+		return zerolog.FatalLevel
+	}
+
+	return zerolog.DebugLevel
+}
+
 // Run function is entry point to the differ
 func Run() {
 	var cliFlags types.CliFlags
@@ -1199,6 +1217,15 @@ func Run() {
 	if config.Logging.Debug {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
+
+	// set log level
+	// TODO: refactor utils/logger appropriately
+	logLevel := convertLogLevel(config.Logging.LogLevel)
+	zerolog.SetGlobalLevel(logLevel)
+	log.Info().
+		Str("configured", config.Logging.LogLevel).
+		Int("internal", int(logLevel)).
+		Msg("Log level")
 
 	// prepare the storage
 	storageConfiguration := conf.GetStorageConfiguration(config)
