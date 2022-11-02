@@ -577,6 +577,7 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 			DeserializeReportErrors.Inc()
 			skippedEntries++
 			log.Err(err).Msg("Deserialization error - Couldn't create report object")
+			log.Debug().Bytes("bytes", []byte(report)).Msg("Data to be deserialized")
 			continue
 		}
 
