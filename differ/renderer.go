@@ -43,6 +43,8 @@ func renderReportsForCluster(
 	reports []types.ReportItem,
 	ruleContent types.Rules) ([]types.RenderedReport, error) {
 
+	log.Debug().Str("cluster", string(clusterName)).Msg("RenderReportsForCluster")
+
 	req, err := createTemplateRendererRequest(ruleContent, reports, clusterName, config.TemplateRendererURL)
 	if err != nil {
 		log.Error().Err(err).Msg("Request to content template renderer could not be created")
@@ -54,6 +56,7 @@ func renderReportsForCluster(
 		log.Error().Err(err).Msg("Request to content template renderer could not be processed")
 		return nil, err
 	}
+	log.Debug().Bytes("response body", body).Msg("Response received from template renderer")
 
 	var receivedResult types.TemplateRendererOutput
 
@@ -62,6 +65,8 @@ func renderReportsForCluster(
 		log.Error().Err(err).Msg("Error trying to decode template renderer output from received answer")
 		return nil, err
 	}
+
+	log.Debug().Interface("unmarshalled", receivedResult).Msg("Received result")
 
 	return receivedResult.Reports[clusterName], nil
 }
