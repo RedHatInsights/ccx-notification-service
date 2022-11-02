@@ -255,6 +255,14 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Parameters", storageConfig.PGParams).
 		Msg("Storage configuration")
 
+	dependenciesConfig := conf.GetDependenciesConfiguration(config)
+	log.Info().
+		Str("Content server", dependenciesConfig.ContentServiceServer).
+		Str("Content endpoint", dependenciesConfig.ContentServiceEndpoint).
+		Str("Template renderer server", dependenciesConfig.TemplateRendererServer).
+		Str("Template renderer endpoint", dependenciesConfig.TemplateRendererEndpoint).
+		Msg("Dependencies configuration")
+
 	loggingConfig := conf.GetLoggingConfiguration(config)
 	log.Info().
 		Str("Level", loggingConfig.LogLevel).

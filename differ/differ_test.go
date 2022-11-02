@@ -248,6 +248,10 @@ func TestShowAuthors(t *testing.T) {
 func TestShowConfiguration(t *testing.T) {
 	brokerAddr := "localhost:29092"
 	brokerTopic := "test_topic"
+	contentServer := "content server"
+	contentEndpoint := "content endpoint"
+	templateRendererServer := "template renderer server"
+	templateRendererEndpoint := "template renderer endpoint"
 	db := "db"
 	driver := "test_driver"
 	advisorURL := "an uri"
@@ -266,6 +270,12 @@ func TestShowConfiguration(t *testing.T) {
 			Driver:   driver,
 			PGDBName: db,
 		},
+		Dependencies: conf.DependenciesConfiguration{
+			ContentServiceServer:     contentServer,
+			ContentServiceEndpoint:   contentEndpoint,
+			TemplateRendererServer:   templateRendererServer,
+			TemplateRendererEndpoint: templateRendererEndpoint,
+		},
 		Kafka: conf.KafkaConfiguration{
 			Address:     brokerAddr,
 			Topic:       brokerTopic,
@@ -273,7 +283,6 @@ func TestShowConfiguration(t *testing.T) {
 			Enabled:     true,
 			EventFilter: "totalRisk >= totalRiskThreshold",
 		},
-		Dependencies: conf.DependenciesConfiguration{},
 		Notifications: conf.NotificationsConfiguration{
 			InsightsAdvisorURL: advisorURL,
 			ClusterDetailsURI:  clustersURI,
@@ -302,6 +311,7 @@ func TestShowConfiguration(t *testing.T) {
 	assert.Contains(t, output, brokerAddr)
 	assert.Contains(t, output, clustersURI)
 	assert.Contains(t, output, db)
+	assert.Contains(t, output, templateRendererServer)
 	assert.Contains(t, output, driver)
 	assert.Contains(t, output, "\"Pretty colored debug logging\":true")
 	assert.Contains(t, output, metricsGateway)
