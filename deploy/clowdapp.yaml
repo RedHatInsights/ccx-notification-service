@@ -62,7 +62,7 @@ objects:
             value: 'true'
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__DEBUG
             value: 'true'
-          - name: CCX_NOTIFICATION_SERVICE__LOGGING__LEVEL
+          - name: CCX_NOTIFICATION_SERVICE__LOGGING__LOG_LEVEL
             value: ${LOG_LEVEL}
           - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_SERVER
             value: http://ccx-insights-content-service:${CONTENT_SERVICE_PORT}/api/v1/
@@ -154,7 +154,7 @@ objects:
             value: 'true'
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__DEBUG
             value: 'true'
-          - name: CCX_NOTIFICATION_SERVICE__LOGGING__LEVEL
+          - name: CCX_NOTIFICATION_SERVICE__LOGGING__LOG_LEVEL
             value: ${LOG_LEVEL}
           - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_SERVER
             value: http://ccx-insights-content-service:${CONTENT_SERVICE_PORT}/api/v1/
