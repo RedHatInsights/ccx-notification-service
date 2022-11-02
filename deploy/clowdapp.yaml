@@ -63,7 +63,7 @@ objects:
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__DEBUG
             value: 'true'
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__LEVEL
-            value: info
+            value: ${LOG_LEVEL}
           - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_SERVER
             value: http://ccx-insights-content-service:${CONTENT_SERVICE_PORT}/api/v1/
           - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_ENDPOINT
@@ -217,6 +217,9 @@ parameters:
 - description: ClowdEnv Name
   name: ENV_NAME
   required: true
+- name: LOG_LEVEL
+  description: logging level
+  value: info
 - name: KAFKA_BOOTSTRAP_HOST
   required: true
   value: mq-kafka
