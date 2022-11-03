@@ -57,8 +57,26 @@ func mustLoadBenchmarkConfiguration(b *testing.B) conf.ConfigStruct {
 	return configuration
 }
 
+// BenchmarkGetStorageConfiguration measures the speed of
+// GetStorageConfiguration function from the conf module.
+func BenchmarkGetStorageConfiguration(b *testing.B) {
+	configuration := mustLoadBenchmarkConfiguration(b)
+
+	for i := 0; i < b.N; i++ {
+		// call benchmarked function
+		m := conf.GetStorageConfiguration(&configuration)
+
+		b.StopTimer()
+		if m.Driver != "sqlite3" {
+			b.Fatal("Wrong configuration: driver = '" + m.Driver + "'")
+		}
+		b.StartTimer()
+	}
+
+}
+
 // BenchmarkGetLoggingConfiguration measures the speed of
-// GetLoggingConfiguration function from the main module.
+// GetLoggingConfiguration function from the conf module.
 func BenchmarkGetLoggingConfiguration(b *testing.B) {
 	configuration := mustLoadBenchmarkConfiguration(b)
 
