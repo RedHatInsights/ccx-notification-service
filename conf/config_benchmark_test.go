@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main_test
+package conf_test
 
 // Benchmark for config module
 
@@ -28,7 +28,7 @@ import (
 // Configuration-related constants
 const (
 	configFileEnvName = "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
-	configFileName    = "tests/benchmark"
+	configFileName    = "../tests/benchmark"
 )
 
 // loadConfiguration function loads configuration prepared to be used by
