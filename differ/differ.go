@@ -263,7 +263,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Template renderer endpoint", dependenciesConfig.TemplateRendererEndpoint).
 		Msg("Dependencies configuration")
 
-	loggingConfig := conf.GetLoggingConfiguration(config)
+	loggingConfig := conf.GetLoggingConfiguration(&config)
 	log.Info().
 		Str("Level", loggingConfig.LogLevel).
 		Bool("Pretty colored debug logging", loggingConfig.Debug).

@@ -253,7 +253,7 @@ func TestLoadLoggingConfiguration(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	loggingCfg := conf.GetLoggingConfiguration(config)
+	loggingCfg := conf.GetLoggingConfiguration(&config)
 
 	assert.Equal(t, true, loggingCfg.Debug)
 	assert.Equal(t, "", loggingCfg.LogLevel)

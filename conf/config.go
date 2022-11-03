@@ -293,7 +293,7 @@ func GetStorageConfiguration(configuration *ConfigStruct) StorageConfiguration {
 }
 
 // GetLoggingConfiguration returns logging configuration
-func GetLoggingConfiguration(configuration ConfigStruct) LoggingConfiguration {
+func GetLoggingConfiguration(configuration *ConfigStruct) LoggingConfiguration {
 	return configuration.Logging
 }
 
