@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package main_test
+package conf_test
 
 // Benchmark for config module
 
@@ -28,7 +28,7 @@ import (
 // Configuration-related constants
 const (
 	configFileEnvName = "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
-	configFileName    = "tests/benchmark"
+	configFileName    = "../tests/benchmark"
 )
 
 // loadConfiguration function loads configuration prepared to be used by
@@ -57,8 +57,26 @@ func mustLoadBenchmarkConfiguration(b *testing.B) conf.ConfigStruct {
 	return configuration
 }
 
+// BenchmarkGetStorageConfiguration measures the speed of
+// GetStorageConfiguration function from the conf module.
+func BenchmarkGetStorageConfiguration(b *testing.B) {
+	configuration := mustLoadBenchmarkConfiguration(b)
+
+	for i := 0; i < b.N; i++ {
+		// call benchmarked function
+		m := conf.GetStorageConfiguration(&configuration)
+
+		b.StopTimer()
+		if m.Driver != "sqlite3" {
+			b.Fatal("Wrong configuration: driver = '" + m.Driver + "'")
+		}
+		b.StartTimer()
+	}
+
+}
+
 // BenchmarkGetLoggingConfiguration measures the speed of
-// GetLoggingConfiguration function from the main module.
+// GetLoggingConfiguration function from the conf module.
 func BenchmarkGetLoggingConfiguration(b *testing.B) {
 	configuration := mustLoadBenchmarkConfiguration(b)
 
