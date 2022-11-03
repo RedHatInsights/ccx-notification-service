@@ -5,7 +5,7 @@ nav_order: 4
 
 # Clowder configuration
 
-As the rest of the services deployed in the Console RedHat platform, the
+As the rest of the services deployed in the Console Red Hat platform, the
 CCX Notification Writer should update its configuration using the relevant
 values extracted from the Clowder configuration file.
 
@@ -16,7 +16,7 @@ in CCX Docs.
 
 ## How can we deal with the Clowder configuration file?
 
-As the service is implemented in Golang, we take advantage of using
+As the service is implemented in Go language, we take advantage of using
 [app-common-go](https://github.com/RedHatInsights/app-common-go/).
 It provides to the service all the needed values for configuring Kafka
 access and the topics name mapping.

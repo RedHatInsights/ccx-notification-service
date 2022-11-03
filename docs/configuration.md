@@ -11,10 +11,12 @@ nav_order: 3
 1. TOC
 {:toc}
 
-Configuration is done by toml config, default one is `config.toml` in working directory,
-but it can be overwritten by `NOTIFICATION_SERVICE_CONFIG_FILE` env var.
+Configuration is done by toml config, default one is `config.toml` in working
+directory, but it can be overwritten by `NOTIFICATION_SERVICE_CONFIG_FILE`
+environment variable.
 
-Also each key in config can be overwritten by corresponding env var. For example if you have config
+Also each key in configuration file can be overwritten by corresponding
+environment variable. For example if you have the following configuration:
 
 ```toml
 [storage]
@@ -38,7 +40,7 @@ NOTIFICATION_SERVICE__STORAGE__PG_PASSWORD="your secret password"
 the actual driver will be postgres with password "your secret password"
 
 It's very useful for deploying docker containers and keeping some of your configuration
-outside of main config file(like passwords).
+outside of main configuration file(like passwords).
 
 ### Clowder configuration
 
@@ -53,7 +55,7 @@ export ACG_CONFIG="clowder_config.json"
 
 ## Service Log configuration
 
-Service Log configuration is in section `[service-log]` in config file
+Service Log configuration is in section `[service-log]` in configuration file
 
 ```
 [service_log]
@@ -84,7 +86,7 @@ Please note that for correct functionality of Service Log integration, `dependen
 
 ## Dependencies configuration
 
-Dependencies configuration is in section `[dependencies]` in config file
+Dependencies configuration is in section `[dependencies]` in configuration file
 
 ```
 [dependencies]
@@ -101,7 +103,7 @@ template_renderer_endpoint = "/rendered_reports" #provide in deployment env or a
 
 ## Processing configuration
 
-Processing configuration is in section `[processing]` in config file
+Processing configuration is in section `[processing]` in configuration file
 
 ```
 [processing]
@@ -121,7 +123,7 @@ Please note that it is possible to use either allow list or block list, or both,
 
 ## Logging configuration
 
-Logging configuration is specified in section named `[logging]` in config file
+Logging configuration is specified in section named `[logging]` in configuration file
 
 ```
 [logging]
