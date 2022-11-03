@@ -288,7 +288,7 @@ func createURL(server, endpoint string) (string, error) {
 }
 
 // GetStorageConfiguration returns storage configuration
-func GetStorageConfiguration(configuration ConfigStruct) StorageConfiguration {
+func GetStorageConfiguration(configuration *ConfigStruct) StorageConfiguration {
 	return configuration.Storage
 }
 
