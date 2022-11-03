@@ -70,7 +70,7 @@ func getNotificationType(notificationTypes []types.NotificationType, value strin
 	return -1
 }
 
-func getNotificationResolution(issue types.ReportItem, record types.NotificationRecord) (resolution bool) {
+func getNotificationResolution(issue types.ReportItem, record *types.NotificationRecord) (resolution bool) {
 	// it is not a brand new cluster -> check if issue was included in older report
 	var oldReport types.Report
 	err := json.Unmarshal([]byte(record.Report), &oldReport)
@@ -95,7 +95,7 @@ func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem, eventTarge
 		return true
 	}
 
-	return getNotificationResolution(issue, reported)
+	return getNotificationResolution(issue, &reported)
 }
 
 func updateNotificationRecordSameState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp, eventTarget types.EventTarget) {
