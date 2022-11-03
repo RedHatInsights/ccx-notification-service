@@ -244,7 +244,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("OCM URL", serviceLogConfig.URL).
 		Msg("ServiceLog configuration")
 
-	storageConfig := conf.GetStorageConfiguration(config)
+	storageConfig := conf.GetStorageConfiguration(&config)
 	log.Info().
 		Str("Driver", storageConfig.Driver).
 		Str("DB Name", storageConfig.PGDBName).
@@ -1237,7 +1237,7 @@ func Run() {
 		Msg("Log level")
 
 	// prepare the storage
-	storageConfiguration := conf.GetStorageConfiguration(config)
+	storageConfiguration := conf.GetStorageConfiguration(&config)
 	storage, err := NewStorage(storageConfiguration)
 	if err != nil {
 		StorageSetupErrors.Inc()
