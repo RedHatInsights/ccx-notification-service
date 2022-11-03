@@ -27,7 +27,7 @@ The "end-to-end" data flow is described there (including Notification Writer ser
 1. Steps 7 and 8 are performed by `ccx-notification-writer` service.
 1. Steps 9 to 13 are performed by `ccx-notification-service` service with the help of Insights Content Service and Insights Content Template Renderer.
 
-## cool down mechanism
+## Cool down mechanism
 
 The cool down mechanism is used to filter the previously reported issues so
 that they are not continuously sent to the customers. It works by defining a
