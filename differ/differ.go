@@ -217,7 +217,7 @@ func showAuthors() {
 
 // showConfiguration function displays actual configuration.
 func showConfiguration(config conf.ConfigStruct) {
-	brokerConfig := conf.GetKafkaBrokerConfiguration(config)
+	brokerConfig := conf.GetKafkaBrokerConfiguration(&config)
 	log.Info().
 		Bool("Enabled", brokerConfig.Enabled).
 		Str("Address", brokerConfig.Address).
@@ -602,7 +602,7 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 			notifiedIssues += newNotifiedIssues
 		}
 
-		if !conf.GetKafkaBrokerConfiguration(config).Enabled {
+		if !conf.GetKafkaBrokerConfiguration(&config).Enabled {
 			continue
 		}
 		newNotifiedIssues, err := produceEntriesToKafka(cluster, ruleContent, deserialized.Reports, storage, report)
@@ -742,7 +742,7 @@ func processClusters(config conf.ConfigStruct, ruleContent types.RulesMap,
 func setupKafkaProducer(config conf.ConfigStruct) {
 	// broker enable/disable is very important information, let's inform
 	// admins about the state
-	if !conf.GetKafkaBrokerConfiguration(config).Enabled {
+	if !conf.GetKafkaBrokerConfiguration(&config).Enabled {
 		kafkaNotifier = &disabled.Producer{}
 		log.Info().Msg("Broker config for Notification Service is disabled")
 		return
@@ -1015,7 +1015,7 @@ func deleteOperationSpecified(cliFlags types.CliFlags) bool {
 }
 
 func assertNotificationDestination(config conf.ConfigStruct) {
-	if !conf.GetKafkaBrokerConfiguration(config).Enabled && !conf.GetServiceLogConfiguration(config).Enabled {
+	if !conf.GetKafkaBrokerConfiguration(&config).Enabled && !conf.GetServiceLogConfiguration(config).Enabled {
 		log.Error().Msg(destinationNotSet)
 		os.Exit(ExitStatusConfiguration)
 	}
@@ -1035,7 +1035,7 @@ func retrievePreviouslyReportedForEventTarget(storage *DBStorage, cooldown strin
 
 func retrievePreviouslyReportedReports(config conf.ConfigStruct, storage *DBStorage, clusters []types.ClusterEntry) {
 	cooldown := conf.GetNotificationsConfiguration(config).Cooldown
-	if conf.GetKafkaBrokerConfiguration(config).Enabled {
+	if conf.GetKafkaBrokerConfiguration(&config).Enabled {
 		retrievePreviouslyReportedForEventTarget(storage, cooldown, clusters, types.NotificationBackendTarget)
 	}
 	if conf.GetServiceLogConfiguration(config).Enabled {
@@ -1141,11 +1141,11 @@ func closeDiffer(storage *DBStorage) {
 }
 
 func setupFiltersAndThresholds(config conf.ConfigStruct) {
-	kafkaEventThresholds.Likelihood = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
-	kafkaEventThresholds.Impact = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
-	kafkaEventThresholds.Severity = conf.GetKafkaBrokerConfiguration(config).SeverityThreshold
-	kafkaEventThresholds.TotalRisk = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
-	kafkaEventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
+	kafkaEventThresholds.Likelihood = conf.GetKafkaBrokerConfiguration(&config).LikelihoodThreshold
+	kafkaEventThresholds.Impact = conf.GetKafkaBrokerConfiguration(&config).ImpactThreshold
+	kafkaEventThresholds.Severity = conf.GetKafkaBrokerConfiguration(&config).SeverityThreshold
+	kafkaEventThresholds.TotalRisk = conf.GetKafkaBrokerConfiguration(&config).TotalRiskThreshold
+	kafkaEventFilter = conf.GetKafkaBrokerConfiguration(&config).EventFilter
 
 	if kafkaEventFilter == "" {
 		err := fmt.Errorf("Configuration problem")

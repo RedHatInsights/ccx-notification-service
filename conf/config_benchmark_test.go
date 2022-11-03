@@ -95,3 +95,21 @@ func BenchmarkGetLoggingConfiguration(b *testing.B) {
 	}
 
 }
+
+// BenchmarkGetKafkaBrokerConfiguration measures the speed of
+// GetKafkaBrokerConfiguration function from the main module.
+func BenchmarkGetKafkaBrokerConfiguration(b *testing.B) {
+	configuration := mustLoadBenchmarkConfiguration(b)
+
+	for i := 0; i < b.N; i++ {
+		// call benchmarked function
+		m := conf.GetKafkaBrokerConfiguration(&configuration)
+
+		b.StopTimer()
+		if m.Address != "localhost:9092" {
+			b.Fatal("Wrong configuration: address = '" + m.Address + "'")
+		}
+		b.StartTimer()
+	}
+
+}

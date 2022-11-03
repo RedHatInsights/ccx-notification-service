@@ -115,7 +115,7 @@ func TestLoadBrokerConfiguration(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	brokerCfg := conf.GetKafkaBrokerConfiguration(config)
+	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 
 	assert.True(t, brokerCfg.Enabled)
 	assert.Equal(t, "localhost:29092", brokerCfg.Address)
@@ -348,7 +348,7 @@ func TestLoadClowderConfiguration(t *testing.T) {
 	cfg, err := conf.LoadConfiguration(envVar, "../tests/config1")
 	assert.NoError(t, err, "error loading configuration")
 
-	brokerCfg := conf.GetKafkaBrokerConfiguration(cfg)
+	brokerCfg := conf.GetKafkaBrokerConfiguration(&cfg)
 	assert.Equal(t, fmt.Sprintf("%s:%d", hostname, port), brokerCfg.Address)
 }
 
@@ -406,7 +406,7 @@ func TestLoadConfigurationNoKafkaBroker(t *testing.T) {
 	assert.NoError(t, err, "Failed loading configuration file")
 
 	// retrieve broker configuration that was just loaded
-	brokerCfg := conf.GetKafkaBrokerConfiguration(config)
+	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 
 	// check broker configuration
 	assert.Equal(t, "localhost:29092", brokerCfg.Address)
@@ -441,7 +441,7 @@ func TestLoadConfigurationKafkaBrokerEmptyConfig(t *testing.T) {
 	assert.NoError(t, err, "Failed loading configuration file")
 
 	// retrieve broker configuration that was just loaded
-	brokerCfg := conf.GetKafkaBrokerConfiguration(config)
+	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 
 	// check broker configuration
 	assert.Equal(t, "", brokerCfg.Address)
@@ -477,7 +477,7 @@ func TestLoadConfigurationKafkaBrokerNoPort(t *testing.T) {
 	assert.NoError(t, err, "Failed loading configuration file")
 
 	// retrieve broker configuration that was just loaded
-	brokerCfg := conf.GetKafkaBrokerConfiguration(config)
+	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 
 	// check broker configuration
 	// no port should be set
@@ -516,7 +516,7 @@ func TestLoadConfigurationKafkaBrokerPort(t *testing.T) {
 	assert.NoError(t, err, "Failed loading configuration file")
 
 	// retrieve broker configuration that was just loaded
-	brokerCfg := conf.GetKafkaBrokerConfiguration(config)
+	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 
 	// check broker configuration
 	assert.Equal(t, "test:1234", brokerCfg.Address)
@@ -558,7 +558,7 @@ func TestLoadConfigurationKafkaBrokerAuthConfigMissingSASL(t *testing.T) {
 	assert.NoError(t, err, "Failed loading configuration file")
 
 	// retrieve broker configuration that was just loaded
-	brokerCfg := conf.GetKafkaBrokerConfiguration(config)
+	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 
 	// check broker configuration
 	assert.Equal(t, "test:1234", brokerCfg.Address)
@@ -617,7 +617,7 @@ func TestLoadConfigurationKafkaBrokerAuthConfig(t *testing.T) {
 	assert.NoError(t, err, "Failed loading configuration file")
 
 	// retrieve broker configuration that was just loaded
-	brokerCfg := conf.GetKafkaBrokerConfiguration(config)
+	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 
 	// check broker configuration
 	assert.Equal(t, "test:1234", brokerCfg.Address)
@@ -664,7 +664,7 @@ func TestLoadConfigurationKafkaTopicUpdatedFromClowder(t *testing.T) {
 	config, err := conf.LoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "../tests/config2")
 	assert.NoError(t, err, "Failed loading configuration file")
 
-	brokerCfg := conf.GetKafkaBrokerConfiguration(config)
+	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 	assert.Equal(t, fmt.Sprintf("%s:%d", hostname, port), brokerCfg.Address)
 	assert.Equal(t, newTopicName, brokerCfg.Topic)
 
@@ -674,7 +674,7 @@ func TestLoadConfigurationKafkaTopicUpdatedFromClowder(t *testing.T) {
 	config, err = conf.LoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "../tests/config1")
 	assert.NoError(t, err, "Failed loading configuration file")
 
-	brokerCfg = conf.GetKafkaBrokerConfiguration(config)
+	brokerCfg = conf.GetKafkaBrokerConfiguration(&config)
 	assert.Equal(t, fmt.Sprintf("%s:%d", hostname, port), brokerCfg.Address)
 	assert.Equal(t, topicName, brokerCfg.Topic)
 }

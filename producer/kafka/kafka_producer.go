@@ -42,7 +42,7 @@ type Producer struct {
 
 // New constructs new implementation of Producer interface
 func New(config conf.ConfigStruct) (*Producer, error) {
-	kafkaConfig := conf.GetKafkaBrokerConfiguration(config)
+	kafkaConfig := conf.GetKafkaBrokerConfiguration(&config)
 
 	saramaConfig, err := saramaConfigFromBrokerConfig(kafkaConfig)
 	if err != nil {
