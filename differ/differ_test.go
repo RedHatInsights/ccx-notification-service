@@ -402,7 +402,7 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 	}
 
 	kafkaProducer := kafka.Producer{
-		Configuration: conf.GetKafkaBrokerConfiguration(testConfig),
+		Configuration: conf.GetKafkaBrokerConfiguration(&testConfig),
 		Producer:      nil,
 	}
 

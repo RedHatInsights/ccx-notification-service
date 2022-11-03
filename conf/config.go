@@ -298,7 +298,7 @@ func GetLoggingConfiguration(configuration *ConfigStruct) LoggingConfiguration {
 }
 
 // GetKafkaBrokerConfiguration returns kafka broker configuration
-func GetKafkaBrokerConfiguration(configuration ConfigStruct) KafkaConfiguration {
+func GetKafkaBrokerConfiguration(configuration *ConfigStruct) KafkaConfiguration {
 	return configuration.Kafka
 }
 
