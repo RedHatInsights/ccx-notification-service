@@ -24,6 +24,8 @@ objects:
         concurrencyPolicy: Forbid
         activeDeadlineSeconds: ${{JOB_DEADLINE__NOTIFICATION_BACKEND}}
         suspend: ${{SUSPEND_JOB__NOTIFICATION_BACKEND}}
+        successfulJobHistoryLimit: 60
+        failedJobsHistoryLimit: 60
         podSpec:
           image: ${IMAGE}:${IMAGE_TAG}
           resources:
@@ -106,6 +108,8 @@ objects:
         concurrencyPolicy: Forbid
         activeDeadlineSeconds: ${{JOB_DEADLINE__SERVICE_LOG}}
         suspend: ${{SUSPEND_JOB__SERVICE_LOG}}
+        successfulJobsHistoryLimit: 60
+        failedJobsHistoryLimit: 60
         podSpec:
           image: ${IMAGE}:${IMAGE_TAG}
           resources:
