@@ -62,10 +62,10 @@ func TestServiceLogProducerNew(t *testing.T) {
 		},
 	}
 
-	producer, err := New(conf.GetServiceLogConfiguration(config), gateway)
+	producer, err := New(conf.GetServiceLogConfiguration(&config), gateway)
 	helpers.FailOnError(t, err)
 
-	assert.Equal(t, producer.Configuration, conf.GetServiceLogConfiguration(config))
+	assert.Equal(t, producer.Configuration, conf.GetServiceLogConfiguration(&config))
 	assert.Equal(t, producer.AccessToken, "online_token")
 	assert.Equal(t, producer.TokenRefreshmentStartDelay, time.Second)
 	assert.Equal(t, producer.TokenRefreshmentDelay, time.Second)
