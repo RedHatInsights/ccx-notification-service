@@ -232,7 +232,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Event filter", brokerConfig.EventFilter).
 		Msg("Broker configuration")
 
-	serviceLogConfig := conf.GetServiceLogConfiguration(config)
+	serviceLogConfig := conf.GetServiceLogConfiguration(&config)
 	log.Info().
 		Bool("Enabled", serviceLogConfig.Enabled).
 		Str("ClientID", serviceLogConfig.ClientID).
@@ -558,7 +558,7 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 	emptyEntries := 0
 
 	var rules types.Rules
-	if conf.GetServiceLogConfiguration(config).Enabled {
+	if conf.GetServiceLogConfiguration(&config).Enabled {
 		rules = getAllContentFromMap(ruleContent)
 	}
 
@@ -595,7 +595,7 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 			continue
 		}
 
-		if conf.GetServiceLogConfiguration(config).Enabled {
+		if conf.GetServiceLogConfiguration(&config).Enabled {
 			notifiedAt := types.Timestamp(time.Now())
 			newNotifiedIssues, err := produceEntriesToServiceLog(&config, cluster, rules, ruleContent, deserialized.Reports)
 			updateNotificationRecordState(storage, cluster, report, newNotifiedIssues, notifiedAt, types.ServiceLogTarget, err)
@@ -764,7 +764,7 @@ func setupKafkaProducer(config conf.ConfigStruct) {
 func setupServiceLogProducer(config conf.ConfigStruct) {
 	// broker enable/disable is very important information, let's inform
 	// admins about the state
-	serviceLogConfig := conf.GetServiceLogConfiguration(config)
+	serviceLogConfig := conf.GetServiceLogConfiguration(&config)
 	if !serviceLogConfig.Enabled {
 		serviceLogNotifier = &disabled.Producer{}
 		log.Info().Msg("Service Log config for Notification Service is disabled")
@@ -1015,7 +1015,7 @@ func deleteOperationSpecified(cliFlags types.CliFlags) bool {
 }
 
 func assertNotificationDestination(config conf.ConfigStruct) {
-	if !conf.GetKafkaBrokerConfiguration(&config).Enabled && !conf.GetServiceLogConfiguration(config).Enabled {
+	if !conf.GetKafkaBrokerConfiguration(&config).Enabled && !conf.GetServiceLogConfiguration(&config).Enabled {
 		log.Error().Msg(destinationNotSet)
 		os.Exit(ExitStatusConfiguration)
 	}
@@ -1038,7 +1038,7 @@ func retrievePreviouslyReportedReports(config conf.ConfigStruct, storage *DBStor
 	if conf.GetKafkaBrokerConfiguration(&config).Enabled {
 		retrievePreviouslyReportedForEventTarget(storage, cooldown, clusters, types.NotificationBackendTarget)
 	}
-	if conf.GetServiceLogConfiguration(config).Enabled {
+	if conf.GetServiceLogConfiguration(&config).Enabled {
 		retrievePreviouslyReportedForEventTarget(storage, cooldown, clusters, types.ServiceLogTarget)
 	}
 }
@@ -1153,11 +1153,11 @@ func setupFiltersAndThresholds(config conf.ConfigStruct) {
 		os.Exit(ExitStatusEventFilterError)
 	}
 
-	serviceLogEventThresholds.Likelihood = conf.GetServiceLogConfiguration(config).LikelihoodThreshold
-	serviceLogEventThresholds.Impact = conf.GetServiceLogConfiguration(config).ImpactThreshold
-	serviceLogEventThresholds.Severity = conf.GetServiceLogConfiguration(config).SeverityThreshold
-	serviceLogEventThresholds.TotalRisk = conf.GetServiceLogConfiguration(config).TotalRiskThreshold
-	serviceLogEventFilter = conf.GetServiceLogConfiguration(config).EventFilter
+	serviceLogEventThresholds.Likelihood = conf.GetServiceLogConfiguration(&config).LikelihoodThreshold
+	serviceLogEventThresholds.Impact = conf.GetServiceLogConfiguration(&config).ImpactThreshold
+	serviceLogEventThresholds.Severity = conf.GetServiceLogConfiguration(&config).SeverityThreshold
+	serviceLogEventThresholds.TotalRisk = conf.GetServiceLogConfiguration(&config).TotalRiskThreshold
+	serviceLogEventFilter = conf.GetServiceLogConfiguration(&config).EventFilter
 
 	if serviceLogEventFilter == "" {
 		err := fmt.Errorf("Configuration problem")
