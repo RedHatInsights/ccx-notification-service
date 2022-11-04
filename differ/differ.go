@@ -255,7 +255,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Parameters", storageConfig.PGParams).
 		Msg("Storage configuration")
 
-	dependenciesConfig := conf.GetDependenciesConfiguration(config)
+	dependenciesConfig := conf.GetDependenciesConfiguration(&config)
 	log.Info().
 		Str("Content server", dependenciesConfig.ContentServiceServer).
 		Str("Content endpoint", dependenciesConfig.ContentServiceEndpoint).
@@ -382,7 +382,7 @@ func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEnt
 func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.ClusterEntry,
 	rules types.Rules, ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int, err error) {
 	renderedReports, err := renderReportsForCluster(
-		conf.GetDependenciesConfiguration(*configuration), cluster.ClusterName,
+		conf.GetDependenciesConfiguration(configuration), cluster.ClusterName,
 		reports, rules)
 	if err != nil {
 		log.Err(err).
@@ -1056,7 +1056,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg(separator)
 	log.Info().Msg("Getting rule content and impacts from content service")
 
-	ruleContent, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
+	ruleContent, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(&config))
 	if err != nil {
 		FetchContentErrors.Inc()
 		os.Exit(ExitStatusFetchContentError)
