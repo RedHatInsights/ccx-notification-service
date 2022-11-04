@@ -29,6 +29,17 @@ pg_port = 5432
 pg_db_name = "aggregator"
 pg_params = ""
 
+[metrics]
+job_name = "ccx_notification_service"
+# The metrics in Prometheus will be $namespace_$subsystem_$name
+namespace = "ccx_notification_service"
+subsystem = "to_notification_backend"
+gateway_url = "localhost:9091"
+gateway_auth_token = ""
+retries = 3
+# Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
+retry_after = "60s"
+
 [logging]
 debug = true
 log_level = ""

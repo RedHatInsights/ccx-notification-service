@@ -305,7 +305,7 @@ func TestLoadMetricsConfiguration(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	configuration := conf.GetMetricsConfiguration(config)
+	configuration := conf.GetMetricsConfiguration(&config)
 
 	assert.Equal(t, "ccx_notification_service_namespace", configuration.Namespace)
 	assert.Equal(t, ":9091", configuration.GatewayURL)

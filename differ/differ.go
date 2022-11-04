@@ -277,7 +277,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Cooldown", notificationConfig.Cooldown).
 		Msg("Notifications configuration")
 
-	metricsConfig := conf.GetMetricsConfiguration(config)
+	metricsConfig := conf.GetMetricsConfiguration(&config)
 
 	// Authentication token and metrics groups values are omitted on
 	// purpose
@@ -1052,7 +1052,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	}
 
 	assertNotificationDestination(config)
-	registerMetrics(conf.GetMetricsConfiguration(config))
+	registerMetrics(conf.GetMetricsConfiguration(&config))
 	log.Info().Msg(separator)
 	log.Info().Msg("Getting rule content and impacts from content service")
 
@@ -1111,7 +1111,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
 	closeDiffer(storage)
 	log.Info().Msg("Differ finished. Pushing metrics to the configured prometheus gateway.")
-	pushMetrics(conf.GetMetricsConfiguration(config))
+	pushMetrics(conf.GetMetricsConfiguration(&config))
 	log.Info().Msg(separator)
 }
 

@@ -318,7 +318,7 @@ func GetNotificationsConfiguration(configuration ConfigStruct) NotificationsConf
 }
 
 // GetMetricsConfiguration returns metrics configuration
-func GetMetricsConfiguration(configuration ConfigStruct) MetricsConfiguration {
+func GetMetricsConfiguration(configuration *ConfigStruct) MetricsConfiguration {
 	return configuration.Metrics
 }
 
