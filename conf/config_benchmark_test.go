@@ -57,6 +57,27 @@ func mustLoadBenchmarkConfiguration(b *testing.B) conf.ConfigStruct {
 	return configuration
 }
 
+// BenchmarkGetDependenciesConfiguration measures the speed of
+// GetDependenciesConfiguration function from the conf module.
+func BenchmarkGetDependenciesConfiguration(b *testing.B) {
+	configuration := mustLoadBenchmarkConfiguration(b)
+
+	for i := 0; i < b.N; i++ {
+		// call benchmarked function
+		m := conf.GetDependenciesConfiguration(&configuration)
+
+		b.StopTimer()
+		if m.ContentServiceServer != "localhost:8082" {
+			b.Fatal("Wrong configuration: content service server = '" + m.ContentServiceServer + "'")
+		}
+		if m.ContentServiceEndpoint != "/api/v1/content" {
+			b.Fatal("Wrong configuration: content service endpoint = '" + m.ContentServiceEndpoint + "'")
+		}
+		b.StartTimer()
+	}
+
+}
+
 // BenchmarkGetStorageConfiguration measures the speed of
 // GetStorageConfiguration function from the conf module.
 func BenchmarkGetStorageConfiguration(b *testing.B) {
