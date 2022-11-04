@@ -266,7 +266,7 @@ func TestLoadDependenciesConfiguration(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	depsCfg := conf.GetDependenciesConfiguration(config)
+	depsCfg := conf.GetDependenciesConfiguration(&config)
 
 	assert.Equal(t, ":8081", depsCfg.ContentServiceEndpoint)
 }

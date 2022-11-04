@@ -17,7 +17,10 @@ event_filter = "totalRisk > totalRiskThreshold"
 rule_details_uri = "https://console.redhat.com/openshift/insights/advisor/recommendations/{module}|{error_key}"
 
 [dependencies]
-content_endpoint = "localhost:8080"
+content_server = "localhost:8082" #provide in deployment env or as secret
+content_endpoint = "/api/v1/content" #provide in deployment env or as secret
+template_renderer_server = "localhost:8083" #provide in deployment env or as secret
+template_renderer_endpoint = "/v1/rendered_reports" #provide in deployment env or as secret
 
 [storage]
 db_driver = "sqlite3"

@@ -308,7 +308,7 @@ func GetServiceLogConfiguration(configuration *ConfigStruct) ServiceLogConfigura
 }
 
 // GetDependenciesConfiguration returns dependencies configuration
-func GetDependenciesConfiguration(configuration ConfigStruct) DependenciesConfiguration {
+func GetDependenciesConfiguration(configuration *ConfigStruct) DependenciesConfiguration {
 	return configuration.Dependencies
 }
 
