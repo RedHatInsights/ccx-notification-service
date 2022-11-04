@@ -134,3 +134,24 @@ func BenchmarkGetServiceLogConfiguration(b *testing.B) {
 	}
 
 }
+
+// BenchmarkGetMetricsConfiguration measures the speed of
+// GetMetricsConfiguration function from the conf module.
+func BenchmarkGetMetricsConfiguration(b *testing.B) {
+	configuration := mustLoadBenchmarkConfiguration(b)
+
+	for i := 0; i < b.N; i++ {
+		// call benchmarked function
+		m := conf.GetMetricsConfiguration(&configuration)
+
+		b.StopTimer()
+		if m.Namespace != "ccx_notification_service" {
+			b.Fatal("Wrong configuration: namespace = '" + m.Namespace + "'")
+		}
+		if m.Subsystem != "to_notification_backend" {
+			b.Fatal("Wrong configuration: subsystem = '" + m.Subsystem + "'")
+		}
+		b.StartTimer()
+	}
+
+}
