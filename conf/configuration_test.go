@@ -133,7 +133,7 @@ func TestLoadServiceLogConfiguration(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	serviceLogCfg := conf.GetServiceLogConfiguration(config)
+	serviceLogCfg := conf.GetServiceLogConfiguration(&config)
 
 	assert.False(t, serviceLogCfg.Enabled)
 	assert.Equal(t, 3, serviceLogCfg.TotalRiskThreshold)

@@ -97,7 +97,7 @@ func BenchmarkGetLoggingConfiguration(b *testing.B) {
 }
 
 // BenchmarkGetKafkaBrokerConfiguration measures the speed of
-// GetKafkaBrokerConfiguration function from the main module.
+// GetKafkaBrokerConfiguration function from the conf module.
 func BenchmarkGetKafkaBrokerConfiguration(b *testing.B) {
 	configuration := mustLoadBenchmarkConfiguration(b)
 
@@ -108,6 +108,27 @@ func BenchmarkGetKafkaBrokerConfiguration(b *testing.B) {
 		b.StopTimer()
 		if m.Address != "localhost:9092" {
 			b.Fatal("Wrong configuration: address = '" + m.Address + "'")
+		}
+		b.StartTimer()
+	}
+
+}
+
+// BenchmarkGetServiceLogConfiguration measures the speed of
+// GetServiceLogConfiguration function from the conf module.
+func BenchmarkGetServiceLogConfiguration(b *testing.B) {
+	configuration := mustLoadBenchmarkConfiguration(b)
+
+	for i := 0; i < b.N; i++ {
+		// call benchmarked function
+		m := conf.GetServiceLogConfiguration(&configuration)
+
+		b.StopTimer()
+		if m.ClientID != "a-service-id" {
+			b.Fatal("Wrong configuration: cliend ID = '" + m.ClientID + "'")
+		}
+		if m.Enabled {
+			b.Fatal("Wrong configuration: service log is enabled")
 		}
 		b.StartTimer()
 	}

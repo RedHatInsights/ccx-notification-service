@@ -303,7 +303,7 @@ func GetKafkaBrokerConfiguration(configuration *ConfigStruct) KafkaConfiguration
 }
 
 // GetServiceLogConfiguration returns ServiceLog configuration
-func GetServiceLogConfiguration(configuration ConfigStruct) ServiceLogConfiguration {
+func GetServiceLogConfiguration(configuration *ConfigStruct) ServiceLogConfiguration {
 	return configuration.ServiceLog
 }
 
