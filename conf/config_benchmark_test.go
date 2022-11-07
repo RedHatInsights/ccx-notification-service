@@ -57,6 +57,27 @@ func mustLoadBenchmarkConfiguration(b *testing.B) conf.ConfigStruct {
 	return configuration
 }
 
+// BenchmarkGetProcessingConfiguration measures the speed of
+// GetProcessingConfiguration function from the conf module.
+func BenchmarkGetProcessingConfiguration(b *testing.B) {
+	configuration := mustLoadBenchmarkConfiguration(b)
+
+	for i := 0; i < b.N; i++ {
+		// call benchmarked function
+		m := conf.GetProcessingConfiguration(&configuration)
+
+		b.StopTimer()
+		if !m.FilterAllowedClusters {
+			b.Fatal("Wrong configuration: filter_allowed_clusters is set to false")
+		}
+		if !m.FilterBlockedClusters {
+			b.Fatal("Wrong configuration: filter_blocked_clusters is set to false")
+		}
+		b.StartTimer()
+	}
+
+}
+
 // BenchmarkGetCleanerConfiguration measures the speed of
 // GetCleanerConfiguration function from the conf module.
 func BenchmarkGetCleanerConfiguration(b *testing.B) {
