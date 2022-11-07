@@ -186,7 +186,7 @@ func TestLoadProcessingConfiguration3AllowedClusters(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	processingCfg := conf.GetProcessingConfiguration(config)
+	processingCfg := conf.GetProcessingConfiguration(&config)
 
 	assert.True(t, processingCfg.FilterAllowedClusters)
 	assert.Len(t, processingCfg.AllowedClusters, 3)
@@ -205,7 +205,7 @@ func TestLoadProcessingConfigurationNoAllowedClusters(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	processingCfg := conf.GetProcessingConfiguration(config)
+	processingCfg := conf.GetProcessingConfiguration(&config)
 
 	assert.False(t, processingCfg.FilterAllowedClusters)
 	assert.Len(t, processingCfg.AllowedClusters, 0)
@@ -221,7 +221,7 @@ func TestLoadProcessingConfiguration3BlockedClusters(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	processingCfg := conf.GetProcessingConfiguration(config)
+	processingCfg := conf.GetProcessingConfiguration(&config)
 
 	assert.True(t, processingCfg.FilterBlockedClusters)
 	assert.Len(t, processingCfg.BlockedClusters, 3)
@@ -240,7 +240,7 @@ func TestLoadProcessingConfigurationNoBlockedClusters(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	processingCfg := conf.GetProcessingConfiguration(config)
+	processingCfg := conf.GetProcessingConfiguration(&config)
 
 	assert.False(t, processingCfg.FilterBlockedClusters)
 	assert.Len(t, processingCfg.BlockedClusters, 0)

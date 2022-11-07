@@ -289,7 +289,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Retry after", metricsConfig.RetryAfter.String()).
 		Msg("Metrics configuration")
 
-	processingConfig := conf.GetProcessingConfiguration(config)
+	processingConfig := conf.GetProcessingConfiguration(&config)
 	log.Info().
 		Bool("Filter allowed clusters", processingConfig.FilterAllowedClusters).
 		Strs("List of allowed clusters", processingConfig.AllowedClusters).
@@ -1080,7 +1080,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	}
 
 	// filter clusters according to allow list and block list
-	clusters, statistic := filterClusterList(clusters, conf.GetProcessingConfiguration(config))
+	clusters, statistic := filterClusterList(clusters, conf.GetProcessingConfiguration(&config))
 	log.Info().
 		Int("On input", statistic.Input).
 		Int("Allowed", statistic.Allowed).

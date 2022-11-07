@@ -328,7 +328,7 @@ func GetCleanerConfiguration(configuration *ConfigStruct) CleanerConfiguration {
 }
 
 // GetProcessingConfiguration returns processing configuration
-func GetProcessingConfiguration(configuration ConfigStruct) ProcessingConfiguration {
+func GetProcessingConfiguration(configuration *ConfigStruct) ProcessingConfiguration {
 	return configuration.Processing
 }
 
