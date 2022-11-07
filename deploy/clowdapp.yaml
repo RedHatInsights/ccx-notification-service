@@ -145,7 +145,7 @@ objects:
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__SEVERITY_THRESHOLD
             value: "0"
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__TOTAL_RISK_THRESHOLD
-            value: "3"
+            value: "0"
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__EVENT_FILTER
             value: "totalRisk >= totalRiskThreshold"
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__RULE_DETAILS_URI
