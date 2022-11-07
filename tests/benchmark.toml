@@ -1,3 +1,7 @@
+[logging]
+debug = true
+log_level = ""
+
 [kafka_broker]
 address = "localhost:9092"
 topic = "test_notification_topic"
@@ -16,6 +20,16 @@ total_risk_threshold = 3
 event_filter = "totalRisk > totalRiskThreshold"
 rule_details_uri = "https://console.redhat.com/openshift/insights/advisor/recommendations/{module}|{error_key}"
 
+[storage]
+db_driver = "sqlite3"
+sqlite_datasource = ":memory:"
+pg_username = "user"
+pg_password = "password"
+pg_host = "localhost"
+pg_port = 5432
+pg_db_name = "aggregator"
+pg_params = ""
+
 [dependencies]
 content_server = "localhost:8082" #provide in deployment env or as secret
 content_endpoint = "/api/v1/content" #provide in deployment env or as secret
@@ -29,16 +43,6 @@ rule_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}/in
 # valid units are SQL epoch time units: months days hours minutes seconds"
 cooldown = "24 hours"
 
-[storage]
-db_driver = "sqlite3"
-sqlite_datasource = ":memory:"
-pg_username = "user"
-pg_password = "password"
-pg_host = "localhost"
-pg_port = 5432
-pg_db_name = "aggregator"
-pg_params = ""
-
 [metrics]
 job_name = "ccx_notification_service"
 # The metrics in Prometheus will be $namespace_$subsystem_$name
@@ -50,9 +54,9 @@ retries = 3
 # Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
 retry_after = "60s"
 
-[logging]
-debug = true
-log_level = ""
+[cleaner]
+# valid units are SQL epoch time units: months days hours minutes seconds"
+max_age = "90 days"
 
 [cloudwatch]
 

@@ -57,6 +57,24 @@ func mustLoadBenchmarkConfiguration(b *testing.B) conf.ConfigStruct {
 	return configuration
 }
 
+// BenchmarkGetCleanerConfiguration measures the speed of
+// GetCleanerConfiguration function from the conf module.
+func BenchmarkGetCleanerConfiguration(b *testing.B) {
+	configuration := mustLoadBenchmarkConfiguration(b)
+
+	for i := 0; i < b.N; i++ {
+		// call benchmarked function
+		m := conf.GetCleanerConfiguration(&configuration)
+
+		b.StopTimer()
+		if m.MaxAge != "90 days" {
+			b.Fatal("Wrong configuration: max_age = '" + m.MaxAge + "'")
+		}
+		b.StartTimer()
+	}
+
+}
+
 // BenchmarkGetNotificationsConfiguration measures the speed of
 // GetNotificationsConfiguration function from the conf module.
 func BenchmarkGetNotificationsConfiguration(b *testing.B) {

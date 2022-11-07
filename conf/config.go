@@ -323,7 +323,7 @@ func GetMetricsConfiguration(configuration *ConfigStruct) MetricsConfiguration {
 }
 
 // GetCleanerConfiguration returns cleaner configuration
-func GetCleanerConfiguration(configuration ConfigStruct) CleanerConfiguration {
+func GetCleanerConfiguration(configuration *ConfigStruct) CleanerConfiguration {
 	return configuration.Cleaner
 }
 
