@@ -57,6 +57,33 @@ func mustLoadBenchmarkConfiguration(b *testing.B) conf.ConfigStruct {
 	return configuration
 }
 
+// BenchmarkGetNotificationsConfiguration measures the speed of
+// GetNotificationsConfiguration function from the conf module.
+func BenchmarkGetNotificationsConfiguration(b *testing.B) {
+	configuration := mustLoadBenchmarkConfiguration(b)
+
+	for i := 0; i < b.N; i++ {
+		// call benchmarked function
+		m := conf.GetNotificationsConfiguration(&configuration)
+
+		b.StopTimer()
+		if m.InsightsAdvisorURL != "https://console.redhat.com/openshift/insights/advisor/clusters/{cluster_id}" {
+			b.Fatal("Wrong configuration: insights_advisor_url = '" + m.InsightsAdvisorURL + "'")
+		}
+		if m.ClusterDetailsURI != "https://console.redhat.com/openshift/details/{cluster_id}#insights" {
+			b.Fatal("Wrong configuration: cluster_details_uri = '" + m.ClusterDetailsURI + "'")
+		}
+		if m.RuleDetailsURI != "https://console.redhat.com/openshift/details/{cluster_id}/insights/{module}/{error_key}" {
+			b.Fatal("Wrong configuration: rule_details_uri = '" + m.RuleDetailsURI + "'")
+		}
+		if m.Cooldown != "24 hours" {
+			b.Fatal("Wrong configuration: cooldown = '" + m.Cooldown + "'")
+		}
+		b.StartTimer()
+	}
+
+}
+
 // BenchmarkGetDependenciesConfiguration measures the speed of
 // GetDependenciesConfiguration function from the conf module.
 func BenchmarkGetDependenciesConfiguration(b *testing.B) {
