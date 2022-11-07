@@ -320,7 +320,7 @@ func TestLoadCleanerConfiguration(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	configuration := conf.GetCleanerConfiguration(config)
+	configuration := conf.GetCleanerConfiguration(&config)
 
 	assert.Equal(t, "90 days", configuration.MaxAge)
 }
