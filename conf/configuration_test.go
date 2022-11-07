@@ -279,7 +279,7 @@ func TestLoadNotificationsConfiguration(t *testing.T) {
 	config, err := conf.LoadConfiguration(envVar, "")
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
-	configuration := conf.GetNotificationsConfiguration(config)
+	configuration := conf.GetNotificationsConfiguration(&config)
 
 	assert.Equal(t, "url_to_specific_rule", configuration.RuleDetailsURI)
 	assert.Equal(t, "url_to_advisor", configuration.InsightsAdvisorURL)
