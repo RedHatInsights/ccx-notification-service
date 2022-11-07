@@ -313,7 +313,7 @@ func GetDependenciesConfiguration(configuration *ConfigStruct) DependenciesConfi
 }
 
 // GetNotificationsConfiguration returns configuration related with notification content
-func GetNotificationsConfiguration(configuration ConfigStruct) NotificationsConfiguration {
+func GetNotificationsConfiguration(configuration *ConfigStruct) NotificationsConfiguration {
 	return configuration.Notifications
 }
 

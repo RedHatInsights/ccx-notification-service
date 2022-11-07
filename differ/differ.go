@@ -269,7 +269,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Bool("Pretty colored debug logging", loggingConfig.Debug).
 		Msg("Logging configuration")
 
-	notificationConfig := conf.GetNotificationsConfiguration(config)
+	notificationConfig := conf.GetNotificationsConfiguration(&config)
 	log.Info().
 		Str("Insights Advisor URL", notificationConfig.InsightsAdvisorURL).
 		Str("Cluster details URI", notificationConfig.ClusterDetailsURI).
@@ -1034,7 +1034,7 @@ func retrievePreviouslyReportedForEventTarget(storage *DBStorage, cooldown strin
 }
 
 func retrievePreviouslyReportedReports(config conf.ConfigStruct, storage *DBStorage, clusters []types.ClusterEntry) {
-	cooldown := conf.GetNotificationsConfiguration(config).Cooldown
+	cooldown := conf.GetNotificationsConfiguration(&config).Cooldown
 	if conf.GetKafkaBrokerConfiguration(&config).Enabled {
 		retrievePreviouslyReportedForEventTarget(storage, cooldown, clusters, types.NotificationBackendTarget)
 	}
@@ -1065,7 +1065,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg(separator)
 	log.Info().Msg("Read cluster list")
 
-	notifConfig := conf.GetNotificationsConfiguration(config)
+	notifConfig := conf.GetNotificationsConfiguration(&config)
 
 	setupNotificationURLs(notifConfig)
 	setupFiltersAndThresholds(config)
