@@ -22,6 +22,13 @@ content_endpoint = "/api/v1/content" #provide in deployment env or as secret
 template_renderer_server = "localhost:8083" #provide in deployment env or as secret
 template_renderer_endpoint = "/v1/rendered_reports" #provide in deployment env or as secret
 
+[notifications]
+insights_advisor_url = "https://console.redhat.com/openshift/insights/advisor/clusters/{cluster_id}"
+cluster_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}#insights"
+rule_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}/insights/{module}/{error_key}"
+# valid units are SQL epoch time units: months days hours minutes seconds"
+cooldown = "24 hours"
+
 [storage]
 db_driver = "sqlite3"
 sqlite_datasource = ":memory:"
