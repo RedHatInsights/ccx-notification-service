@@ -50,6 +50,11 @@ type ClusterName string
 // ClusterReport represents cluster report
 type ClusterReport string
 
+// RenderedReportKey represents rule name and error key separated
+// by '|' character. It is used for identification of rendered report
+// in a map (for given cluster).
+type RenderedReportKey string
+
 // DBDriver type for db driver enum
 type DBDriver int
 
@@ -273,8 +278,8 @@ type RenderedReport struct {
 
 // TemplateRendererOutput is an output structure from content template renderer
 type TemplateRendererOutput struct {
-	Clusters []ClusterName                    `json:"clusters"`
-	Reports  map[ClusterName][]RenderedReport `json:"reports"`
+	Clusters []ClusterName                                        `json:"clusters"`
+	Reports  map[ClusterName]map[RenderedReportKey]RenderedReport `json:"reports"`
 }
 
 // ReportData is part of the request to content template renderer containing report data

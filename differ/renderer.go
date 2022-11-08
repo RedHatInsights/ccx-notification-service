@@ -41,7 +41,7 @@ func renderReportsForCluster(
 	config conf.DependenciesConfiguration,
 	clusterName types.ClusterName,
 	reports []types.ReportItem,
-	ruleContent types.Rules) ([]types.RenderedReport, error) {
+	ruleContent types.Rules) (map[types.RenderedReportKey]types.RenderedReport, error) {
 
 	log.Debug().Str("cluster", string(clusterName)).Msg("RenderReportsForCluster")
 
@@ -103,7 +103,7 @@ func createTemplateRendererRequest(
 		log.Error().Err(err).Msg("Got error while creating json with content and report data")
 		return nil, err
 	}
-
+	log.Info().Msgf("Sending request to %s", rendererURL)
 	req, err := http.NewRequest(http.MethodPost, rendererURL, bytes.NewBuffer(requestJSON))
 	req.Header.Set("Content-Type", "application/json")
 	if err != nil {

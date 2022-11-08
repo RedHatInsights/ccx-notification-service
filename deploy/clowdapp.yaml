@@ -167,7 +167,7 @@ objects:
           - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__TEMPLATE_RENDERER_SERVER
             value: ${TEMPLATE_RENDERER_SERVER}
           - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__TEMPLATE_RENDERER_ENDPOINT
-            value: "v1/rendered_reports"
+            value: "v2/rendered_reports"
           - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__INSIGHTS_ADVISOR_URL
             value: "https://${PLATFORM_UI_HOSTNAME}/openshift/insights/advisor/clusters/{cluster_id}"
           - name: CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__CLUSTER_DETAILS_URI

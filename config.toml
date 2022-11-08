@@ -50,7 +50,7 @@ log_sql_queries = true
 content_server = "localhost:8082" #provide in deployment env or as secret
 content_endpoint = "/api/v1/content" #provide in deployment env or as secret
 template_renderer_server = "localhost:8083" #provide in deployment env or as secret
-template_renderer_endpoint = "/v1/rendered_reports" #provide in deployment env or as secret
+template_renderer_endpoint = "/v2/rendered_reports" #provide in deployment env or as secret
 
 [notifications]
 insights_advisor_url = "https://console.redhat.com/openshift/insights/advisor/clusters/{cluster_id}"
