@@ -364,7 +364,7 @@ func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, ev
 }
 
 func findRenderedReport(reports map[types.RenderedReportKey]types.RenderedReport, ruleName types.RuleName, errorKey types.ErrorKey) (*types.RenderedReport, error) {
-	key := types.RenderedReportKey(fmt.Sprintf("%s|%s", string(ruleName), string(errorKey)))
+	key := types.NewRenderedReportKey(ruleName, errorKey)
 	report, found := reports[key]
 	if !found {
 		return &report, fmt.Errorf(ReportNotFoundError, ruleName, errorKey)
@@ -372,7 +372,7 @@ func findRenderedReport(reports map[types.RenderedReportKey]types.RenderedReport
 	return &report, nil
 }
 
-func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEntry) types.ServiceLogEntry {
+func createServiceLogEntry(report *types.RenderedReport, cluster types.ClusterEntry) types.ServiceLogEntry {
 	logEntry := types.ServiceLogEntry{
 		ClusterUUID: cluster.ClusterName,
 		Description: report.Reason,
@@ -456,7 +456,7 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 
 			renderedReport, err := findRenderedReport(renderedReports, ruleName, errorKey)
 
-			addDetailedInfoURLToRenderedReport(&renderedReport, &configuration.ServiceLog.RuleDetailsURI)
+			addDetailedInfoURLToRenderedReport(renderedReport, &configuration.ServiceLog.RuleDetailsURI)
 
 			if err != nil {
 				log.Err(err).Msgf("Output from content template renderer does not contain "+

@@ -55,6 +55,11 @@ type ClusterReport string
 // in a map (for given cluster).
 type RenderedReportKey string
 
+// NewRenderedReportKey return rendered report key based on given rule name and error key
+func NewRenderedReportKey(ruleName RuleName, errorKey ErrorKey) RenderedReportKey {
+	return RenderedReportKey(fmt.Sprintf("%s|%s", string(ruleName), string(errorKey)))
+}
+
 // DBDriver type for db driver enum
 type DBDriver int
 
