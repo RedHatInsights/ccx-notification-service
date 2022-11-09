@@ -738,3 +738,23 @@ func TestGetKafkaBrokerConfigurationIsImmutable(t *testing.T) {
 	// and compare original configuration with possibly mutated one
 	assert.Equal(t, config, origConfig, "GetKafkaBrokerConfiguration must not be mutable")
 }
+
+// TestGetMetricsConfigurationIsImmutable checks if function
+// GetMetricsConfiguration is not mutable
+func TestGetMetricsConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetMetricsConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetMetricsConfiguration must not be mutable")
+}
