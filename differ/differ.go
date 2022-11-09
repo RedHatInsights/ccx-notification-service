@@ -749,7 +749,7 @@ func setupKafkaProducer(config conf.ConfigStruct) {
 	}
 	log.Info().Msg("Broker config for Notification Service is enabled")
 
-	kafkaProducer, err := kafka.New(config)
+	kafkaProducer, err := kafka.New(&config)
 	if err != nil {
 		ProducerSetupErrors.Inc()
 		log.Error().
