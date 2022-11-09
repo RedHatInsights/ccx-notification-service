@@ -363,13 +363,13 @@ func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, ev
 	return evaluator.Evaluate(eventFilter, values)
 }
 
-func findRenderedReport(reports map[types.RenderedReportKey]types.RenderedReport, ruleName types.RuleName, errorKey types.ErrorKey) (types.RenderedReport, error) {
+func findRenderedReport(reports map[types.RenderedReportKey]types.RenderedReport, ruleName types.RuleName, errorKey types.ErrorKey) (*types.RenderedReport, error) {
 	key := types.RenderedReportKey(fmt.Sprintf("%s|%s", string(ruleName), string(errorKey)))
 	report, found := reports[key]
 	if !found {
-		return types.RenderedReport{}, fmt.Errorf(ReportNotFoundError, ruleName, errorKey)
+		return &report, fmt.Errorf(ReportNotFoundError, ruleName, errorKey)
 	}
-	return report, nil
+	return &report, nil
 }
 
 func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEntry) types.ServiceLogEntry {
