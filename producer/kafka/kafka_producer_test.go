@@ -50,7 +50,7 @@ func init() {
 // This test assumes there is no local kafka instance currently running
 func TestNewProducerBadBroker(t *testing.T) {
 	const expectedErr = "kafka: client has run out of available brokers to talk to (Is your cluster reachable?)"
-	_, err := New(conf.ConfigStruct{
+	_, err := New(&conf.ConfigStruct{
 		Kafka: conf.KafkaConfiguration{
 			Address: "",
 			Topic:   "whatever",
@@ -59,7 +59,7 @@ func TestNewProducerBadBroker(t *testing.T) {
 		}})
 	assert.EqualError(t, err, expectedErr)
 
-	_, err = New(conf.ConfigStruct{
+	_, err = New(&conf.ConfigStruct{
 		Kafka: brokerCfg,
 	})
 	assert.EqualError(t, err, expectedErr)
@@ -96,7 +96,7 @@ func TestProducerNew(t *testing.T) {
 	}
 	mockBroker.SetHandlerByMap(handlerMap)
 
-	prod, err := New(conf.ConfigStruct{
+	prod, err := New(&conf.ConfigStruct{
 		Kafka: conf.KafkaConfiguration{
 			Address: mockBroker.Addr(),
 			Topic:   brokerCfg.Topic,
