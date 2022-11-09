@@ -838,3 +838,23 @@ func TestGetCleanerConfigurationIsImmutable(t *testing.T) {
 	// and compare original configuration with possibly mutated one
 	assert.Equal(t, config, origConfig, "GetCleanerConfiguration must not be mutable")
 }
+
+// TestGetProcessingConfigurationIsImmutable checks if function
+// GetProcessingConfiguration is not mutable
+func TestGetProcessingConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetProcessingConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetProcessingConfiguration must not be mutable")
+}
