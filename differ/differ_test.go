@@ -1470,13 +1470,13 @@ func TestProcessClustersWeeklyDigest(t *testing.T) {
 func TestProduceEntriesToServiceLog(t *testing.T) {
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		if r.URL.Path != "/rendered_reports" {
-			t.Errorf("Expected to request '/render_reports', got: %s", r.URL.Path)
+			t.Errorf("Expected to request '/rendered_reports', got: %s", r.URL.Path)
 		}
 		if r.Header.Get("Content-Type") != "application/json" {
 			t.Errorf("Expected Content-Type: application/json header, got: %s", r.Header.Get("Accept"))
 		}
 		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(`{"clusters":["84f7eedc-0dd8-49cd-9d4d-f6646df3a5bc"],"reports":{"84f7eedc-0dd8-49cd-9d4d-f6646df3a5bc":[{"rule_id":"node_installer_degraded","error_key":"ek1","resolution":"rule 1 resolution","reason":"This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long.","description":"This reason is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long."},{"rule_id":"rule2","error_key":"ek2","resolution":"rule 2 resolution","reason":"rule 2 reason","description":"rule 2 error key description"}, {"rule_id":"rule3","error_key":"ek3","resolution":"rule 3 resolution","reason":"rule 3 reason","description":"rule 3 error key description"}]}}`))
+		_, err := w.Write([]byte(`{"clusters":["84f7eedc-0dd8-49cd-9d4d-f6646df3a5bc"],"reports":{"84f7eedc-0dd8-49cd-9d4d-f6646df3a5bc":{"node_installer_degraded|ek1": {"rule_id":"node_installer_degraded","error_key":"ek1","resolution":"rule 1 resolution","reason":"This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long. This reason is more than 255 characters long.","description":"This reason is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long. This summary is more than 255 characters long."},"rule2|ek2":{"rule_id":"rule2","error_key":"ek2","resolution":"rule 2 resolution","reason":"rule 2 reason","description":"rule 2 error key description"},"rule3|ek3":{"rule_id":"rule3","error_key":"ek3","resolution":"rule 3 resolution","reason":"rule 3 reason","description":"rule 3 error key description"}}}}`))
 		if err != nil {
 			log.Fatal().Msg(err.Error())
 		}
