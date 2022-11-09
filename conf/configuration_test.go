@@ -678,3 +678,183 @@ func TestLoadConfigurationKafkaTopicUpdatedFromClowder(t *testing.T) {
 	assert.Equal(t, fmt.Sprintf("%s:%d", hostname, port), brokerCfg.Address)
 	assert.Equal(t, topicName, brokerCfg.Topic)
 }
+
+// TestGetStorageConfigurationIsImmutable checks if function
+// GetStorageConfiguration is not mutable
+func TestGetStorageConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetStorageConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetStorageConfiguration must not be mutable")
+}
+
+// TestGetLoggingConfigurationIsImmutable checks if function
+// GetLoggingConfiguration is not mutable
+func TestGetLoggingConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetLoggingConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetLoggingConfiguration must not be mutable")
+}
+
+// TestGetKafkaBrokerConfigurationIsImmutable checks if function
+// GetKafkaBrokerConfiguration is not mutable
+func TestGetKafkaBrokerConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetKafkaBrokerConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetKafkaBrokerConfiguration must not be mutable")
+}
+
+// TestGetMetricsConfigurationIsImmutable checks if function
+// GetMetricsConfiguration is not mutable
+func TestGetMetricsConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetMetricsConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetMetricsConfiguration must not be mutable")
+}
+
+// TestGetServiceLogConfigurationIsImmutable checks if function
+// GetServiceLogConfiguration is not mutable
+func TestGetServiceLogConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetServiceLogConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetServiceLogConfiguration must not be mutable")
+}
+
+// TestGetDependenciesConfigurationIsImmutable checks if function
+// GetDependenciesConfiguration is not mutable
+func TestGetDependenciesConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetDependenciesConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetDependenciesConfiguration must not be mutable")
+}
+
+// TestGetNotificationsConfigurationIsImmutable checks if function
+// GetNotificationsConfiguration is not mutable
+func TestGetNotificationsConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetNotificationsConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetNotificationsConfiguration must not be mutable")
+}
+
+// TestGetCleanerConfigurationIsImmutable checks if function
+// GetCleanerConfiguration is not mutable
+func TestGetCleanerConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetCleanerConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetCleanerConfiguration must not be mutable")
+}
+
+// TestGetProcessingConfigurationIsImmutable checks if function
+// GetProcessingConfiguration is not mutable
+func TestGetProcessingConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetProcessingConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetProcessingConfiguration must not be mutable")
+}
