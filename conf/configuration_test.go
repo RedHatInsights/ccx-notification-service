@@ -758,3 +758,23 @@ func TestGetMetricsConfigurationIsImmutable(t *testing.T) {
 	// and compare original configuration with possibly mutated one
 	assert.Equal(t, config, origConfig, "GetMetricsConfiguration must not be mutable")
 }
+
+// TestGetServiceLogConfigurationIsImmutable checks if function
+// GetServiceLogConfiguration is not mutable
+func TestGetServiceLogConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetServiceLogConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetServiceLogConfiguration must not be mutable")
+}
