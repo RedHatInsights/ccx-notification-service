@@ -121,6 +121,10 @@ func TestLoadBrokerConfiguration(t *testing.T) {
 	assert.Equal(t, "localhost:29092", brokerCfg.Address)
 	assert.Equal(t, "ccx_test_notifications", brokerCfg.Topic)
 	assert.Equal(t, expectedTimeout, brokerCfg.Timeout)
+	assert.False(t, brokerCfg.TagFilterEnabled)
+	assert.Len(t, brokerCfg.Tags, 2)
+	assert.Equal(t, "tag1", brokerCfg.Tags[0])
+	assert.Equal(t, "tag2", brokerCfg.Tags[1])
 }
 
 // TestLoadServiceLogConfiguration tests loading the ServiceLog configuration
@@ -143,6 +147,9 @@ func TestLoadServiceLogConfiguration(t *testing.T) {
 	assert.Equal(t, "localhost:8000/api/service_logs/v1/cluster_logs/", serviceLogCfg.URL)
 	assert.Equal(t, expectedTimeout, serviceLogCfg.Timeout)
 	assert.Equal(t, "https://console.redhat.com/openshift/insights/advisor/recommendations/{module}|{error_key}", serviceLogCfg.RuleDetailsURI)
+	assert.Len(t, serviceLogCfg.Tags, 2)
+	assert.Equal(t, "tag3", serviceLogCfg.Tags[0])
+	assert.Equal(t, "tag4", serviceLogCfg.Tags[1])
 }
 
 // TestLoadServiceLogConfigurationBadURL tests loading the ServiceLog

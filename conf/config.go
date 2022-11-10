@@ -155,6 +155,8 @@ type KafkaConfiguration struct {
 	SeverityThreshold   int           `mapstructure:"severity_threshold" toml:"severity_threshold"`
 	TotalRiskThreshold  int           `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
 	EventFilter         string        `mapstructure:"event_filter" toml:"event_filter"`
+	TagFilterEnabled    bool          `mapstructure:"tag_filter_enabled" toml:"tag_filter_enabled"`
+	Tags                []string      `mapstructure:"tags" toml:"tags"`
 }
 
 // ServiceLogConfiguration represents configuration of ServiceLog REST API
@@ -171,6 +173,8 @@ type ServiceLogConfiguration struct {
 	TotalRiskThreshold  int           `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
 	EventFilter         string        `mapstructure:"event_filter" toml:"event_filter"`
 	RuleDetailsURI      string        `mapstructure:"rule_details_uri" toml:"rule_details_uri"`
+	TagFilterEnabled    bool          `mapstructure:"tag_filter_enabled" toml:"tag_filter_enabled"`
+	Tags                []string      `mapstructure:"tags" toml:"tags"`
 }
 
 // NotificationsConfiguration represents the configuration specific to the content of notifications
