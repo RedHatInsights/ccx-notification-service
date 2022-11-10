@@ -1602,7 +1602,7 @@ func TestConvertLogLevel(t *testing.T) {
 
 	for _, td := range testData {
 		// perform conversion
-		output := main.ConvertLogLevel(td.Input)
+		output := ConvertLogLevel(td.Input)
 		// check if converted value is eqaual to expected one
 		assert.Equal(t, output, td.Output)
 	}
