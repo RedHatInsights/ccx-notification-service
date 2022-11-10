@@ -34,6 +34,7 @@ import (
 // to see why this trick is needed.
 var (
 	GetAllContentFromMap = getAllContentFromMap
+	ConvertLogLevel      = convertLogLevel
 )
 
 func PushMetrics(metricsConf conf.MetricsConfiguration) {
