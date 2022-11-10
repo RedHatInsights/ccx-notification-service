@@ -17,6 +17,8 @@ impact_threshold = 0
 severity_threshold = 0
 total_risk_threshold = 3
 event_filter = "totalRisk >= totalRiskThreshold"
+tag_filter_enabled = false
+tags = []
 
 [service_log]
 client_id = "a-service-id"
@@ -31,6 +33,8 @@ severity_threshold = 0
 total_risk_threshold = 0
 event_filter = "totalRisk >= totalRiskThreshold"
 rule_details_uri = "https://console.redhat.com/openshift/insights/advisor/recommendations/{module}|{error_key}"
+tag_filter_enabled = false
+tags = ["osd_customer"]
 
 [storage]
 db_driver = "postgres"
