@@ -69,6 +69,8 @@ import (
 
 	"github.com/rs/zerolog/log"
 	"github.com/spf13/viper"
+
+	"github.com/RedHatInsights/ccx-notification-service/types"
 )
 
 // Common constants used for logging and error reporting
@@ -157,6 +159,7 @@ type KafkaConfiguration struct {
 	EventFilter         string        `mapstructure:"event_filter" toml:"event_filter"`
 	TagFilterEnabled    bool          `mapstructure:"tag_filter_enabled" toml:"tag_filter_enabled"`
 	Tags                []string      `mapstructure:"tags" toml:"tags"`
+	TagsSet             types.TagsSet
 }
 
 // ServiceLogConfiguration represents configuration of ServiceLog REST API
@@ -175,6 +178,7 @@ type ServiceLogConfiguration struct {
 	RuleDetailsURI      string        `mapstructure:"rule_details_uri" toml:"rule_details_uri"`
 	TagFilterEnabled    bool          `mapstructure:"tag_filter_enabled" toml:"tag_filter_enabled"`
 	Tags                []string      `mapstructure:"tags" toml:"tags"`
+	TagsSet             types.TagsSet
 }
 
 // NotificationsConfiguration represents the configuration specific to the content of notifications
@@ -278,8 +282,21 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 		return configuration, err
 	}
 
+	// convert list/slice into regular set
+	configuration.Kafka.TagsSet = makeSetOfTags(configuration.Kafka.Tags)
+	configuration.ServiceLog.TagsSet = makeSetOfTags(configuration.ServiceLog.Tags)
+
 	// everything's should be ok
 	return configuration, nil
+}
+
+// makeSetOfTags helper function makes set of tags from given list of tags
+func makeSetOfTags(tags []string) types.TagsSet {
+	tagsMap := make(types.TagsSet, len(tags))
+	for _, tagName := range tags {
+		tagsMap[tagName] = struct{}{}
+	}
+	return tagsMap
 }
 
 func createURL(server, endpoint string) (string, error) {

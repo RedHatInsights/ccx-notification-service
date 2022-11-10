@@ -122,6 +122,9 @@ type Rules []types.RuleContent
 // RulesMap contains a map of RuleContent objects accesible indexed by rule names
 type RulesMap map[string]types.RuleContent
 
+// TagsSet contains a set of tags
+type TagsSet map[string]struct{}
+
 // MissingMandatoryFile is an error raised while parsing, when a mandatory file is missing
 type MissingMandatoryFile struct {
 	FileName string
