@@ -216,8 +216,8 @@ func showAuthors() {
 }
 
 // showConfiguration function displays actual configuration.
-func showConfiguration(config conf.ConfigStruct) {
-	brokerConfig := conf.GetKafkaBrokerConfiguration(&config)
+func showConfiguration(config *conf.ConfigStruct) {
+	brokerConfig := conf.GetKafkaBrokerConfiguration(config)
 	log.Info().
 		Bool("Enabled", brokerConfig.Enabled).
 		Str("Address", brokerConfig.Address).
@@ -232,7 +232,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Event filter", brokerConfig.EventFilter).
 		Msg("Broker configuration")
 
-	serviceLogConfig := conf.GetServiceLogConfiguration(&config)
+	serviceLogConfig := conf.GetServiceLogConfiguration(config)
 	log.Info().
 		Bool("Enabled", serviceLogConfig.Enabled).
 		Str("ClientID", serviceLogConfig.ClientID).
@@ -244,7 +244,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("OCM URL", serviceLogConfig.URL).
 		Msg("ServiceLog configuration")
 
-	storageConfig := conf.GetStorageConfiguration(&config)
+	storageConfig := conf.GetStorageConfiguration(config)
 	log.Info().
 		Str("Driver", storageConfig.Driver).
 		Str("DB Name", storageConfig.PGDBName).
@@ -255,7 +255,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Parameters", storageConfig.PGParams).
 		Msg("Storage configuration")
 
-	dependenciesConfig := conf.GetDependenciesConfiguration(&config)
+	dependenciesConfig := conf.GetDependenciesConfiguration(config)
 	log.Info().
 		Str("Content server", dependenciesConfig.ContentServiceServer).
 		Str("Content endpoint", dependenciesConfig.ContentServiceEndpoint).
@@ -263,13 +263,13 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Template renderer endpoint", dependenciesConfig.TemplateRendererEndpoint).
 		Msg("Dependencies configuration")
 
-	loggingConfig := conf.GetLoggingConfiguration(&config)
+	loggingConfig := conf.GetLoggingConfiguration(config)
 	log.Info().
 		Str("Level", loggingConfig.LogLevel).
 		Bool("Pretty colored debug logging", loggingConfig.Debug).
 		Msg("Logging configuration")
 
-	notificationConfig := conf.GetNotificationsConfiguration(&config)
+	notificationConfig := conf.GetNotificationsConfiguration(config)
 	log.Info().
 		Str("Insights Advisor URL", notificationConfig.InsightsAdvisorURL).
 		Str("Cluster details URI", notificationConfig.ClusterDetailsURI).
@@ -277,7 +277,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Cooldown", notificationConfig.Cooldown).
 		Msg("Notifications configuration")
 
-	metricsConfig := conf.GetMetricsConfiguration(&config)
+	metricsConfig := conf.GetMetricsConfiguration(config)
 
 	// Authentication token and metrics groups values are omitted on
 	// purpose
@@ -289,7 +289,7 @@ func showConfiguration(config conf.ConfigStruct) {
 		Str("Retry after", metricsConfig.RetryAfter.String()).
 		Msg("Metrics configuration")
 
-	processingConfig := conf.GetProcessingConfiguration(&config)
+	processingConfig := conf.GetProcessingConfiguration(config)
 	log.Info().
 		Bool("Filter allowed clusters", processingConfig.FilterAllowedClusters).
 		Strs("List of allowed clusters", processingConfig.AllowedClusters).
@@ -551,14 +551,14 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 	return 0, nil
 }
 
-func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
+func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
 	notifiedIssues := 0
 	clustersCount := len(clusters)
 	skippedEntries := 0
 	emptyEntries := 0
 
 	var rules types.Rules
-	if conf.GetServiceLogConfiguration(&config).Enabled {
+	if conf.GetServiceLogConfiguration(config).Enabled {
 		rules = getAllContentFromMap(ruleContent)
 	}
 
@@ -595,14 +595,14 @@ func processReportsByCluster(config conf.ConfigStruct, ruleContent types.RulesMa
 			continue
 		}
 
-		if conf.GetServiceLogConfiguration(&config).Enabled {
+		if conf.GetServiceLogConfiguration(config).Enabled {
 			notifiedAt := types.Timestamp(time.Now())
-			newNotifiedIssues, err := produceEntriesToServiceLog(&config, cluster, rules, ruleContent, deserialized.Reports)
+			newNotifiedIssues, err := produceEntriesToServiceLog(config, cluster, rules, ruleContent, deserialized.Reports)
 			updateNotificationRecordState(storage, cluster, report, newNotifiedIssues, notifiedAt, types.ServiceLogTarget, err)
 			notifiedIssues += newNotifiedIssues
 		}
 
-		if !conf.GetKafkaBrokerConfiguration(&config).Enabled {
+		if !conf.GetKafkaBrokerConfiguration(config).Enabled {
 			continue
 		}
 		newNotifiedIssues, err := produceEntriesToKafka(cluster, ruleContent, deserialized.Reports, storage, report)
@@ -729,7 +729,7 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storag
 }
 
 // processClusters function creates desired notification messages for all the clusters obtained from the database
-func processClusters(config conf.ConfigStruct, ruleContent types.RulesMap,
+func processClusters(config *conf.ConfigStruct, ruleContent types.RulesMap,
 	storage Storage, clusters []types.ClusterEntry) {
 	if notificationType == types.InstantNotif {
 		processReportsByCluster(config, ruleContent, storage, clusters)
@@ -739,17 +739,17 @@ func processClusters(config conf.ConfigStruct, ruleContent types.RulesMap,
 }
 
 // setupKafkaProducer function creates a Kafka producer using the provided configuration
-func setupKafkaProducer(config conf.ConfigStruct) {
+func setupKafkaProducer(config *conf.ConfigStruct) {
 	// broker enable/disable is very important information, let's inform
 	// admins about the state
-	if !conf.GetKafkaBrokerConfiguration(&config).Enabled {
+	if !conf.GetKafkaBrokerConfiguration(config).Enabled {
 		kafkaNotifier = &disabled.Producer{}
 		log.Info().Msg("Broker config for Notification Service is disabled")
 		return
 	}
 	log.Info().Msg("Broker config for Notification Service is enabled")
 
-	kafkaProducer, err := kafka.New(&config)
+	kafkaProducer, err := kafka.New(config)
 	if err != nil {
 		ProducerSetupErrors.Inc()
 		log.Error().
@@ -761,10 +761,10 @@ func setupKafkaProducer(config conf.ConfigStruct) {
 	log.Info().Msg("Kafka producer ready")
 }
 
-func setupServiceLogProducer(config conf.ConfigStruct) {
+func setupServiceLogProducer(config *conf.ConfigStruct) {
 	// broker enable/disable is very important information, let's inform
 	// admins about the state
-	serviceLogConfig := conf.GetServiceLogConfiguration(&config)
+	serviceLogConfig := conf.GetServiceLogConfiguration(config)
 	if !serviceLogConfig.Enabled {
 		serviceLogNotifier = &disabled.Producer{}
 		log.Info().Msg("Service Log config for Notification Service is disabled")
@@ -1014,8 +1014,8 @@ func deleteOperationSpecified(cliFlags types.CliFlags) bool {
 		cliFlags.PerformOldReportsCleanup
 }
 
-func assertNotificationDestination(config conf.ConfigStruct) {
-	if !conf.GetKafkaBrokerConfiguration(&config).Enabled && !conf.GetServiceLogConfiguration(&config).Enabled {
+func assertNotificationDestination(config *conf.ConfigStruct) {
+	if !conf.GetKafkaBrokerConfiguration(config).Enabled && !conf.GetServiceLogConfiguration(config).Enabled {
 		log.Error().Msg(destinationNotSet)
 		os.Exit(ExitStatusConfiguration)
 	}
@@ -1033,17 +1033,17 @@ func retrievePreviouslyReportedForEventTarget(storage *DBStorage, cooldown strin
 	log.Info().Int("target", int(target)).Int("retrieved", len(previouslyReported[target])).Msg("Done reading previously reported issues still in cooldown")
 }
 
-func retrievePreviouslyReportedReports(config conf.ConfigStruct, storage *DBStorage, clusters []types.ClusterEntry) {
-	cooldown := conf.GetNotificationsConfiguration(&config).Cooldown
-	if conf.GetKafkaBrokerConfiguration(&config).Enabled {
+func retrievePreviouslyReportedReports(config *conf.ConfigStruct, storage *DBStorage, clusters []types.ClusterEntry) {
+	cooldown := conf.GetNotificationsConfiguration(config).Cooldown
+	if conf.GetKafkaBrokerConfiguration(config).Enabled {
 		retrievePreviouslyReportedForEventTarget(storage, cooldown, clusters, types.NotificationBackendTarget)
 	}
-	if conf.GetServiceLogConfiguration(&config).Enabled {
+	if conf.GetServiceLogConfiguration(config).Enabled {
 		retrievePreviouslyReportedForEventTarget(storage, cooldown, clusters, types.ServiceLogTarget)
 	}
 }
 
-func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
+func startDiffer(config *conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
 
@@ -1052,11 +1052,11 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	}
 
 	assertNotificationDestination(config)
-	registerMetrics(conf.GetMetricsConfiguration(&config))
+	registerMetrics(conf.GetMetricsConfiguration(config))
 	log.Info().Msg(separator)
 	log.Info().Msg("Getting rule content and impacts from content service")
 
-	ruleContent, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(&config))
+	ruleContent, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
 	if err != nil {
 		FetchContentErrors.Inc()
 		os.Exit(ExitStatusFetchContentError)
@@ -1065,7 +1065,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg(separator)
 	log.Info().Msg("Read cluster list")
 
-	notifConfig := conf.GetNotificationsConfiguration(&config)
+	notifConfig := conf.GetNotificationsConfiguration(config)
 
 	setupNotificationURLs(notifConfig)
 	setupFiltersAndThresholds(config)
@@ -1080,7 +1080,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	}
 
 	// filter clusters according to allow list and block list
-	clusters, statistic := filterClusterList(clusters, conf.GetProcessingConfiguration(&config))
+	clusters, statistic := filterClusterList(clusters, conf.GetProcessingConfiguration(config))
 	log.Info().
 		Int("On input", statistic.Input).
 		Int("Allowed", statistic.Allowed).
@@ -1111,7 +1111,7 @@ func startDiffer(config conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
 	closeDiffer(storage)
 	log.Info().Msg("Differ finished. Pushing metrics to the configured prometheus gateway.")
-	pushMetrics(conf.GetMetricsConfiguration(&config))
+	pushMetrics(conf.GetMetricsConfiguration(config))
 	log.Info().Msg(separator)
 }
 
@@ -1140,12 +1140,12 @@ func closeDiffer(storage *DBStorage) {
 	log.Info().Msg(separator)
 }
 
-func setupFiltersAndThresholds(config conf.ConfigStruct) {
-	kafkaEventThresholds.Likelihood = conf.GetKafkaBrokerConfiguration(&config).LikelihoodThreshold
-	kafkaEventThresholds.Impact = conf.GetKafkaBrokerConfiguration(&config).ImpactThreshold
-	kafkaEventThresholds.Severity = conf.GetKafkaBrokerConfiguration(&config).SeverityThreshold
-	kafkaEventThresholds.TotalRisk = conf.GetKafkaBrokerConfiguration(&config).TotalRiskThreshold
-	kafkaEventFilter = conf.GetKafkaBrokerConfiguration(&config).EventFilter
+func setupFiltersAndThresholds(config *conf.ConfigStruct) {
+	kafkaEventThresholds.Likelihood = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
+	kafkaEventThresholds.Impact = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
+	kafkaEventThresholds.Severity = conf.GetKafkaBrokerConfiguration(config).SeverityThreshold
+	kafkaEventThresholds.TotalRisk = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
+	kafkaEventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
 
 	if kafkaEventFilter == "" {
 		err := fmt.Errorf("Configuration problem")
@@ -1153,11 +1153,11 @@ func setupFiltersAndThresholds(config conf.ConfigStruct) {
 		os.Exit(ExitStatusEventFilterError)
 	}
 
-	serviceLogEventThresholds.Likelihood = conf.GetServiceLogConfiguration(&config).LikelihoodThreshold
-	serviceLogEventThresholds.Impact = conf.GetServiceLogConfiguration(&config).ImpactThreshold
-	serviceLogEventThresholds.Severity = conf.GetServiceLogConfiguration(&config).SeverityThreshold
-	serviceLogEventThresholds.TotalRisk = conf.GetServiceLogConfiguration(&config).TotalRiskThreshold
-	serviceLogEventFilter = conf.GetServiceLogConfiguration(&config).EventFilter
+	serviceLogEventThresholds.Likelihood = conf.GetServiceLogConfiguration(config).LikelihoodThreshold
+	serviceLogEventThresholds.Impact = conf.GetServiceLogConfiguration(config).ImpactThreshold
+	serviceLogEventThresholds.Severity = conf.GetServiceLogConfiguration(config).SeverityThreshold
+	serviceLogEventThresholds.TotalRisk = conf.GetServiceLogConfiguration(config).TotalRiskThreshold
+	serviceLogEventFilter = conf.GetServiceLogConfiguration(config).EventFilter
 
 	if serviceLogEventFilter == "" {
 		err := fmt.Errorf("Configuration problem")
@@ -1214,7 +1214,7 @@ func Run() {
 	// configuration is loaded, so it would be possible to display it if
 	// asked by user
 	if cliFlags.ShowConfiguration {
-		showConfiguration(config)
+		showConfiguration(&config)
 		os.Exit(ExitStatusOK)
 	}
 
@@ -1263,5 +1263,5 @@ func Run() {
 		// if previous operation is correct, just continue
 	}
 
-	startDiffer(config, storage, cliFlags.Verbose)
+	startDiffer(&config, storage, cliFlags.Verbose)
 }
