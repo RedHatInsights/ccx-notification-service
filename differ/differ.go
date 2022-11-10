@@ -230,6 +230,8 @@ func showConfiguration(config *conf.ConfigStruct) {
 		Int("Severity threshold", brokerConfig.SeverityThreshold).
 		Int("Total risk threshold", brokerConfig.TotalRiskThreshold).
 		Str("Event filter", brokerConfig.EventFilter).
+		Bool("Filter by tags", brokerConfig.TagFilterEnabled).
+		Strs("List of tags", brokerConfig.Tags).
 		Msg("Broker configuration")
 
 	serviceLogConfig := conf.GetServiceLogConfiguration(config)
@@ -242,6 +244,8 @@ func showConfiguration(config *conf.ConfigStruct) {
 		Int("Total risk threshold", serviceLogConfig.TotalRiskThreshold).
 		Str("Event filter", serviceLogConfig.EventFilter).
 		Str("OCM URL", serviceLogConfig.URL).
+		Bool("Filter by tags", serviceLogConfig.TagFilterEnabled).
+		Strs("List of tags", serviceLogConfig.Tags).
 		Msg("ServiceLog configuration")
 
 	storageConfig := conf.GetStorageConfiguration(config)
