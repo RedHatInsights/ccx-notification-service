@@ -122,9 +122,17 @@ func TestLoadBrokerConfiguration(t *testing.T) {
 	assert.Equal(t, "ccx_test_notifications", brokerCfg.Topic)
 	assert.Equal(t, expectedTimeout, brokerCfg.Timeout)
 	assert.False(t, brokerCfg.TagFilterEnabled)
+
 	assert.Len(t, brokerCfg.Tags, 2)
 	assert.Equal(t, "tag1", brokerCfg.Tags[0])
 	assert.Equal(t, "tag2", brokerCfg.Tags[1])
+
+	assert.Len(t, brokerCfg.TagsSet, 2)
+
+	_, foundTag1 := brokerCfg.TagsSet["tag1"]
+	assert.True(t, foundTag1)
+	_, foundTag2 := brokerCfg.TagsSet["tag2"]
+	assert.True(t, foundTag2)
 }
 
 // TestLoadServiceLogConfiguration tests loading the ServiceLog configuration
@@ -147,9 +155,18 @@ func TestLoadServiceLogConfiguration(t *testing.T) {
 	assert.Equal(t, "localhost:8000/api/service_logs/v1/cluster_logs/", serviceLogCfg.URL)
 	assert.Equal(t, expectedTimeout, serviceLogCfg.Timeout)
 	assert.Equal(t, "https://console.redhat.com/openshift/insights/advisor/recommendations/{module}|{error_key}", serviceLogCfg.RuleDetailsURI)
+
+	assert.False(t, serviceLogCfg.TagFilterEnabled)
 	assert.Len(t, serviceLogCfg.Tags, 2)
 	assert.Equal(t, "tag3", serviceLogCfg.Tags[0])
 	assert.Equal(t, "tag4", serviceLogCfg.Tags[1])
+
+	assert.Len(t, serviceLogCfg.TagsSet, 2)
+
+	_, foundTag3 := serviceLogCfg.TagsSet["tag3"]
+	assert.True(t, foundTag3)
+	_, foundTag4 := serviceLogCfg.TagsSet["tag4"]
+	assert.True(t, foundTag4)
 }
 
 // TestLoadServiceLogConfigurationBadURL tests loading the ServiceLog
