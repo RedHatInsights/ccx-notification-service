@@ -105,11 +105,13 @@ const (
 	contextToEscapedStringError = "Notification message will not be generated as context couldn't be converted to escaped string."
 	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
 	eventFilterNotSetMessage    = "Event filter not set"
+	tagsNotSetMessage           = "Tags for tag filter not set"
 	evaluationErrorMessage      = "Evaluation error"
 	serviceLogSendErrorMessage  = "Sending entry to service log failed for this report"
 	renderReportsFailedMessage  = "Rendering reports failed for this cluster"
 	ReportNotFoundError         = "report for rule ID %v and error key %v has not been found"
 	destinationNotSet           = "No known event destination configured. Aborting."
+	configurationProblem        = "Configuration problem"
 )
 
 // Constants for notification message top level fields
@@ -201,8 +203,16 @@ var (
 		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
 		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
 	}
+	// variables containing valus used for filtering by expression with
+	// resolution risk etc.
 	kafkaEventFilter      string = DefaultEventFilter
 	serviceLogEventFilter string = DefaultEventFilter
+
+	// variables containing values used for filtering by tags
+	kafkaFilterByTagsEnabled      bool = false
+	serviceLogFilterByTagsEnabled bool = false
+	kafkaTagsSet                  types.TagsSet
+	serviceLogTagsSet             types.TagsSet
 )
 
 // showVersion function displays version information.
@@ -383,6 +393,14 @@ func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEnt
 	return logEntry
 }
 
+// evaluateTagFilter checks if processed rule contains all required tags, for
+// example tag "osd_customer".
+//
+// TODO: implementation is missing
+func evaluateTagFilter(filterEnabled bool, tagsSet types.TagsSet) bool {
+	return true
+}
+
 func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.ClusterEntry,
 	rules types.Rules, ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int, err error) {
 	renderedReports, err := renderReportsForCluster(
@@ -415,7 +433,11 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 			continue
 		}
 
-		if result > 0 {
+		// check if rule contains expected tag(s) if filtering by tags is enabled
+		ruleTagCondition := evaluateTagFilter(serviceLogFilterByTagsEnabled, serviceLogTagsSet)
+
+		// send message to target only if message pass both filters
+		if result > 0 && ruleTagCondition {
 			log.Warn().
 				Str(typeAttribute, r.Type).
 				Str(ruleAttribute, string(ruleName)).
@@ -500,7 +522,11 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 			continue
 		}
 
-		if result > 0 {
+		// check if rule contains expected tag(s) if filtering by tags is enabled
+		ruleTagCondition := evaluateTagFilter(kafkaFilterByTagsEnabled, kafkaTagsSet)
+
+		// send message to target only if message pass both filters
+		if result > 0 && ruleTagCondition {
 			log.Warn().
 				Str(typeAttribute, r.Type).
 				Str(ruleAttribute, string(ruleName)).
@@ -1144,28 +1170,58 @@ func closeDiffer(storage *DBStorage) {
 	log.Info().Msg(separator)
 }
 
+// setupFiltersAndThresholds function setup both techniques that can be used to
+// filter messages sent to targets (Notification backend and ServiceLog at this moment):
+//     1. filter based on likelihood, impact, severity, and total risk
+//     2. filter based on rule type that's identified by tags
 func setupFiltersAndThresholds(config *conf.ConfigStruct) {
-	kafkaEventThresholds.Likelihood = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
-	kafkaEventThresholds.Impact = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
-	kafkaEventThresholds.Severity = conf.GetKafkaBrokerConfiguration(config).SeverityThreshold
-	kafkaEventThresholds.TotalRisk = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
-	kafkaEventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
+	kafkaBrokerConfiguration := conf.GetKafkaBrokerConfiguration(config)
+
+	kafkaEventThresholds.Likelihood = kafkaBrokerConfiguration.LikelihoodThreshold
+	kafkaEventThresholds.Impact = kafkaBrokerConfiguration.ImpactThreshold
+	kafkaEventThresholds.Severity = kafkaBrokerConfiguration.SeverityThreshold
+	kafkaEventThresholds.TotalRisk = kafkaBrokerConfiguration.TotalRiskThreshold
+	kafkaEventFilter = kafkaBrokerConfiguration.EventFilter
 
 	if kafkaEventFilter == "" {
-		err := fmt.Errorf("Configuration problem")
+		err := fmt.Errorf(configurationProblem)
 		log.Err(err).Msg(eventFilterNotSetMessage)
 		os.Exit(ExitStatusEventFilterError)
 	}
 
-	serviceLogEventThresholds.Likelihood = conf.GetServiceLogConfiguration(config).LikelihoodThreshold
-	serviceLogEventThresholds.Impact = conf.GetServiceLogConfiguration(config).ImpactThreshold
-	serviceLogEventThresholds.Severity = conf.GetServiceLogConfiguration(config).SeverityThreshold
-	serviceLogEventThresholds.TotalRisk = conf.GetServiceLogConfiguration(config).TotalRiskThreshold
-	serviceLogEventFilter = conf.GetServiceLogConfiguration(config).EventFilter
+	// filtering by tags
+	kafkaFilterByTagsEnabled = kafkaBrokerConfiguration.TagFilterEnabled
+	kafkaTagsSet = kafkaBrokerConfiguration.TagsSet
+
+	// check if tags set is provided via configuration if filtering is enabled
+	if kafkaFilterByTagsEnabled && kafkaTagsSet == nil {
+		err := fmt.Errorf(configurationProblem)
+		log.Err(err).Msg(tagsNotSetMessage)
+		os.Exit(ExitStatusEventFilterError)
+	}
+
+	serviceLogConfiguration := conf.GetServiceLogConfiguration(config)
+
+	serviceLogEventThresholds.Likelihood = serviceLogConfiguration.LikelihoodThreshold
+	serviceLogEventThresholds.Impact = serviceLogConfiguration.ImpactThreshold
+	serviceLogEventThresholds.Severity = serviceLogConfiguration.SeverityThreshold
+	serviceLogEventThresholds.TotalRisk = serviceLogConfiguration.TotalRiskThreshold
+	serviceLogEventFilter = serviceLogConfiguration.EventFilter
 
 	if serviceLogEventFilter == "" {
-		err := fmt.Errorf("Configuration problem")
+		err := fmt.Errorf(configurationProblem)
 		log.Err(err).Msg(eventFilterNotSetMessage)
+		os.Exit(ExitStatusEventFilterError)
+	}
+
+	// filtering by tags
+	serviceLogFilterByTagsEnabled = serviceLogConfiguration.TagFilterEnabled
+	serviceLogTagsSet = serviceLogConfiguration.TagsSet
+
+	// check if tags set is provided via configuration if filtering is enabled
+	if serviceLogFilterByTagsEnabled && serviceLogTagsSet == nil {
+		err := fmt.Errorf(configurationProblem)
+		log.Err(err).Msg(tagsNotSetMessage)
 		os.Exit(ExitStatusEventFilterError)
 	}
 }
