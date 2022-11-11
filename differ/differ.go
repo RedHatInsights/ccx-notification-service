@@ -1159,11 +1159,13 @@ func closeDiffer(storage *DBStorage) {
 //     1. filter based on likelihood, impact, severity, and total risk
 //     2. filter based on rule type that's identified by tags
 func setupFiltersAndThresholds(config *conf.ConfigStruct) {
-	kafkaEventThresholds.Likelihood = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
-	kafkaEventThresholds.Impact = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
-	kafkaEventThresholds.Severity = conf.GetKafkaBrokerConfiguration(config).SeverityThreshold
-	kafkaEventThresholds.TotalRisk = conf.GetKafkaBrokerConfiguration(config).TotalRiskThreshold
-	kafkaEventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
+	kafkaBrokerConfiguration := conf.GetKafkaBrokerConfiguration(config)
+
+	kafkaEventThresholds.Likelihood = kafkaBrokerConfiguration.LikelihoodThreshold
+	kafkaEventThresholds.Impact = kafkaBrokerConfiguration.ImpactThreshold
+	kafkaEventThresholds.Severity = kafkaBrokerConfiguration.SeverityThreshold
+	kafkaEventThresholds.TotalRisk = kafkaBrokerConfiguration.TotalRiskThreshold
+	kafkaEventFilter = kafkaBrokerConfiguration.EventFilter
 
 	if kafkaEventFilter == "" {
 		err := fmt.Errorf(configurationProblem)
@@ -1171,8 +1173,8 @@ func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 		os.Exit(ExitStatusEventFilterError)
 	}
 
-	kafkaFilterByTagsEnabled = conf.GetKafkaBrokerConfiguration(config).TagFilterEnabled
-	kafkaTagsSet = conf.GetKafkaBrokerConfiguration(config).TagsSet
+	kafkaFilterByTagsEnabled = kafkaBrokerConfiguration.TagFilterEnabled
+	kafkaTagsSet = kafkaBrokerConfiguration.TagsSet
 
 	if kafkaTagsSet == nil {
 		err := fmt.Errorf(configurationProblem)
