@@ -80,7 +80,7 @@ tags = []
 - `address` contains address of Kafka broker
 - `topic` contains Kafka topic to be used
 - `security_protocol` is used by client to connect to Kafka broker by using selected protocol
-- `cert_path`, `sasl_mechanism`, `sasl_username` and `sasl_password` is used to connect to Kafka (these options are not needed for local deployment, for example)
+- `cert_path`, `sasl_mechanism`, `sasl_username` and `sasl_password` are used to connect to Kafka (these options are not needed for local deployment, for example)
 - `timeout` is a time used as a timeout when publishing messages to Kafka broker
 - `likelihood_threshold`,`impact_threshold`, `severity_threshold` and `total_risk_threshold` are values which can be used in `event_filter` for filtering messages sent to Service Log
 - `event_filter` is a condition string used to determine which messages will be sent to Service Log
