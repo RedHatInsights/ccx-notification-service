@@ -84,7 +84,7 @@ tags = ["osd_customer"]
 - `event_filter` is a condition string used to determine which messages will be sent to Service Log
 - `rule_details_uri` URI to a page with detailed information about rule. Please note that it is not a true URI, but a template to be interpolated with real module name and error key
 - `tag_filter_enabled` is set to `true` if filtering by rule tag should be performed
-- `tags` contains list of tags used by filter (if enabled). Empty list is supported.
+- `tags` contains a list of tags used by filter (if enabled). Empty list is supported.
 
 Please note that for correct functionality of Service Log integration, `dependencies` configuration should be also present.
 
