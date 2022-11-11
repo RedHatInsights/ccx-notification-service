@@ -1182,11 +1182,13 @@ func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 		os.Exit(ExitStatusEventFilterError)
 	}
 
-	serviceLogEventThresholds.Likelihood = conf.GetServiceLogConfiguration(config).LikelihoodThreshold
-	serviceLogEventThresholds.Impact = conf.GetServiceLogConfiguration(config).ImpactThreshold
-	serviceLogEventThresholds.Severity = conf.GetServiceLogConfiguration(config).SeverityThreshold
-	serviceLogEventThresholds.TotalRisk = conf.GetServiceLogConfiguration(config).TotalRiskThreshold
-	serviceLogEventFilter = conf.GetServiceLogConfiguration(config).EventFilter
+	serviceLogConfiguration := conf.GetServiceLogConfiguration(config)
+
+	serviceLogEventThresholds.Likelihood = serviceLogConfiguration.LikelihoodThreshold
+	serviceLogEventThresholds.Impact = serviceLogConfiguration.ImpactThreshold
+	serviceLogEventThresholds.Severity = serviceLogConfiguration.SeverityThreshold
+	serviceLogEventThresholds.TotalRisk = serviceLogConfiguration.TotalRiskThreshold
+	serviceLogEventFilter = serviceLogConfiguration.EventFilter
 
 	if serviceLogEventFilter == "" {
 		err := fmt.Errorf(configurationProblem)
@@ -1194,8 +1196,8 @@ func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 		os.Exit(ExitStatusEventFilterError)
 	}
 
-	serviceLogFilterByTagsEnabled = conf.GetServiceLogConfiguration(config).TagFilterEnabled
-	serviceLogTagsSet = conf.GetServiceLogConfiguration(config).TagsSet
+	serviceLogFilterByTagsEnabled = serviceLogConfiguration.TagFilterEnabled
+	serviceLogTagsSet = serviceLogConfiguration.TagsSet
 
 	if serviceLogTagsSet == nil {
 		err := fmt.Errorf(configurationProblem)
