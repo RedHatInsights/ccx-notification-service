@@ -111,6 +111,7 @@ const (
 	renderReportsFailedMessage  = "Rendering reports failed for this cluster"
 	ReportNotFoundError         = "report for rule ID %v and error key %v has not been found"
 	destinationNotSet           = "No known event destination configured. Aborting."
+	configurationProblem        = "Configuration problem"
 )
 
 // Constants for notification message top level fields
@@ -1165,7 +1166,7 @@ func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 	kafkaEventFilter = conf.GetKafkaBrokerConfiguration(config).EventFilter
 
 	if kafkaEventFilter == "" {
-		err := fmt.Errorf("Configuration problem")
+		err := fmt.Errorf(configurationProblem)
 		log.Err(err).Msg(eventFilterNotSetMessage)
 		os.Exit(ExitStatusEventFilterError)
 	}
@@ -1174,7 +1175,7 @@ func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 	kafkaTagsSet = conf.GetKafkaBrokerConfiguration(config).TagsSet
 
 	if kafkaTagsSet == nil {
-		err := fmt.Errorf("Configuration problem")
+		err := fmt.Errorf(configurationProblem)
 		log.Err(err).Msg(tagsNotSetMessage)
 		os.Exit(ExitStatusEventFilterError)
 	}
@@ -1186,7 +1187,7 @@ func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 	serviceLogEventFilter = conf.GetServiceLogConfiguration(config).EventFilter
 
 	if serviceLogEventFilter == "" {
-		err := fmt.Errorf("Configuration problem")
+		err := fmt.Errorf(configurationProblem)
 		log.Err(err).Msg(eventFilterNotSetMessage)
 		os.Exit(ExitStatusEventFilterError)
 	}
@@ -1195,7 +1196,7 @@ func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 	serviceLogTagsSet = conf.GetServiceLogConfiguration(config).TagsSet
 
 	if serviceLogTagsSet == nil {
-		err := fmt.Errorf("Configuration problem")
+		err := fmt.Errorf(configurationProblem)
 		log.Err(err).Msg(tagsNotSetMessage)
 		os.Exit(ExitStatusEventFilterError)
 	}
