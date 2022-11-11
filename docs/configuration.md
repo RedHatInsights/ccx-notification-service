@@ -53,6 +53,40 @@ via `AGG_CONFIG` environment variable:
 export ACG_CONFIG="clowder_config.json"
 ```
 
+## Kafka Broker configuration
+
+Kafka Broker configuration that is used to communicate with Notification backend is in section `[kafka_broker]` in configuration file
+
+```
+enabled = true
+address = "kafka:29092" #provide in deployment env or as secret
+security_protocol = "PLAINTEXT"
+cert_path = "not-set"
+sasl_mechanism = "PLAIN"
+sasl_username = "not-used"
+sasl_password = "not-used"
+topic = "platform.notifications.ingress" #provide in deployment env or as secret
+timeout = "60s"
+likelihood_threshold = 0
+impact_threshold = 0
+severity_threshold = 0
+total_risk_threshold = 3
+event_filter = "totalRisk >= totalRiskThreshold"
+tag_filter_enabled = false
+tags = []
+```
+
+- `enabled` determines whether the notifications service sends messages to Notification backend via Kafka
+- `address` contains address of Kafka broker
+- `topic` contains Kafka topic to be used
+- `security_protocol` is used by client to connect to Kafka broker by using selected protocol
+- `cert_path`, `sasl_mechanism`, `sasl_username` and `sasl_password` are used to connect to Kafka (these options are not needed for local deployment, for example)
+- `timeout` is a time used as a timeout when publishing messages to Kafka broker
+- `likelihood_threshold`,`impact_threshold`, `severity_threshold` and `total_risk_threshold` are values which can be used in `event_filter` for filtering messages sent to Service Log
+- `event_filter` is a condition string used to determine which messages will be sent to Service Log
+- `tag_filter_enabled` is set to `true` if filtering by rule tag should be performed
+- `tags` contains a list of tags used by filter (if enabled). Empty list is supported.
+
 ## Service Log configuration
 
 Service Log configuration is in section `[service-log]` in configuration file
