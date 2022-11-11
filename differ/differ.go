@@ -105,6 +105,7 @@ const (
 	contextToEscapedStringError = "Notification message will not be generated as context couldn't be converted to escaped string."
 	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
 	eventFilterNotSetMessage    = "Event filter not set"
+	tagsNotSetMessage           = "Tags for tag filter not set"
 	evaluationErrorMessage      = "Evaluation error"
 	serviceLogSendErrorMessage  = "Sending entry to service log failed for this report"
 	renderReportsFailedMessage  = "Rendering reports failed for this cluster"
@@ -201,8 +202,16 @@ var (
 		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
 		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
 	}
+	// variables containing valus used for filtering by expression with
+	// resolution risk etc.
 	kafkaEventFilter      string = DefaultEventFilter
 	serviceLogEventFilter string = DefaultEventFilter
+
+	// variables containing values used for filtering by tags
+	kafkaFilterByTagsEnabled      bool = false
+	serviceLogFilterByTagsEnabled bool = false
+	kafkaTagsSet                  types.TagsSet
+	serviceLogTagsSet             types.TagsSet
 )
 
 // showVersion function displays version information.
@@ -1144,6 +1153,10 @@ func closeDiffer(storage *DBStorage) {
 	log.Info().Msg(separator)
 }
 
+// setupFiltersAndThresholds function setup both techniques that can be used to
+// filter messages sent to targets (Notification backend and ServiceLog at this moment):
+//     1. filter based on likelihood, impact, severity, and total risk
+//     2. filter based on rule type that's identified by tags
 func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 	kafkaEventThresholds.Likelihood = conf.GetKafkaBrokerConfiguration(config).LikelihoodThreshold
 	kafkaEventThresholds.Impact = conf.GetKafkaBrokerConfiguration(config).ImpactThreshold
@@ -1157,6 +1170,15 @@ func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 		os.Exit(ExitStatusEventFilterError)
 	}
 
+	kafkaFilterByTagsEnabled = conf.GetKafkaBrokerConfiguration(config).TagFilterEnabled
+	kafkaTagsSet = conf.GetKafkaBrokerConfiguration(config).TagsSet
+
+	if kafkaTagsSet == nil {
+		err := fmt.Errorf("Configuration problem")
+		log.Err(err).Msg(tagsNotSetMessage)
+		os.Exit(ExitStatusEventFilterError)
+	}
+
 	serviceLogEventThresholds.Likelihood = conf.GetServiceLogConfiguration(config).LikelihoodThreshold
 	serviceLogEventThresholds.Impact = conf.GetServiceLogConfiguration(config).ImpactThreshold
 	serviceLogEventThresholds.Severity = conf.GetServiceLogConfiguration(config).SeverityThreshold
@@ -1166,6 +1188,15 @@ func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 	if serviceLogEventFilter == "" {
 		err := fmt.Errorf("Configuration problem")
 		log.Err(err).Msg(eventFilterNotSetMessage)
+		os.Exit(ExitStatusEventFilterError)
+	}
+
+	serviceLogFilterByTagsEnabled = conf.GetServiceLogConfiguration(config).TagFilterEnabled
+	serviceLogTagsSet = conf.GetServiceLogConfiguration(config).TagsSet
+
+	if serviceLogTagsSet == nil {
+		err := fmt.Errorf("Configuration problem")
+		log.Err(err).Msg(tagsNotSetMessage)
 		os.Exit(ExitStatusEventFilterError)
 	}
 }
