@@ -397,7 +397,7 @@ func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEnt
 // example tag "osd_customer".
 //
 // TODO: implementation is missing
-func evaluateTagFilter(filterEnabled bool, tagsSet types.TagsSet) {
+func evaluateTagFilter(filterEnabled bool, tagsSet types.TagsSet) bool {
 	return true
 }
 
@@ -434,7 +434,7 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 		}
 
 		// check if rule contains expected tag(s) if filtering by tags is enabled
-		ruleTagCondition = evaluateTagFilter(serviceLogFilterByTagsEnabled, serviceLogTagsSet)
+		ruleTagCondition := evaluateTagFilter(serviceLogFilterByTagsEnabled, serviceLogTagsSet)
 
 		// send message to target only if message pass both filters
 		if result > 0 && ruleTagCondition {
@@ -523,7 +523,7 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 		}
 
 		// check if rule contains expected tag(s) if filtering by tags is enabled
-		ruleTagCondition = evaluateTagFilter(kafkaFilterByTagsEnabled, kafkaTagsSet)
+		ruleTagCondition := evaluateTagFilter(kafkaFilterByTagsEnabled, kafkaTagsSet)
 
 		// send message to target only if message pass both filters
 		if result > 0 && ruleTagCondition {
