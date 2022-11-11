@@ -1189,10 +1189,12 @@ func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 		os.Exit(ExitStatusEventFilterError)
 	}
 
+	// filtering by tags
 	kafkaFilterByTagsEnabled = kafkaBrokerConfiguration.TagFilterEnabled
 	kafkaTagsSet = kafkaBrokerConfiguration.TagsSet
 
-	if kafkaTagsSet == nil {
+	// check if tags set is provided via configuration if filtering is enabled
+	if kafkaFilterByTagsEnabled && kafkaTagsSet == nil {
 		err := fmt.Errorf(configurationProblem)
 		log.Err(err).Msg(tagsNotSetMessage)
 		os.Exit(ExitStatusEventFilterError)
@@ -1212,10 +1214,12 @@ func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 		os.Exit(ExitStatusEventFilterError)
 	}
 
+	// filtering by tags
 	serviceLogFilterByTagsEnabled = serviceLogConfiguration.TagFilterEnabled
 	serviceLogTagsSet = serviceLogConfiguration.TagsSet
 
-	if serviceLogTagsSet == nil {
+	// check if tags set is provided via configuration if filtering is enabled
+	if serviceLogFilterByTagsEnabled && serviceLogTagsSet == nil {
 		err := fmt.Errorf(configurationProblem)
 		log.Err(err).Msg(tagsNotSetMessage)
 		os.Exit(ExitStatusEventFilterError)
