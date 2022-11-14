@@ -22,20 +22,25 @@ import (
 )
 
 func BenchmarkFindRenderedReport(b *testing.B) {
-	reports := []types.RenderedReport{
-		types.RenderedReport{
+	key1 := types.RenderedReportKey("rule_1|RULE_1")
+	key2 := types.RenderedReportKey("rule_2|RULE_2")
+	key3 := types.RenderedReportKey("rule_3|RULE_3")
+	key4 := types.RenderedReportKey("rule_4|RULE_4")
+
+	reports := map[types.RenderedReportKey]types.RenderedReport{
+		key1: types.RenderedReport{
 			RuleID:   "rule_1",
 			ErrorKey: "RULE_1",
 		},
-		types.RenderedReport{
+		key2: types.RenderedReport{
 			RuleID:   "rule_2",
 			ErrorKey: "RULE_2",
 		},
-		types.RenderedReport{
+		key3: types.RenderedReport{
 			RuleID:   "rule_3",
 			ErrorKey: "RULE_3",
 		},
-		types.RenderedReport{
+		key4: types.RenderedReport{
 			RuleID:   "rule_4",
 			ErrorKey: "RULE_4",
 		},
