@@ -21,6 +21,7 @@ import (
 	"testing"
 )
 
+// BenchmarkFindRenderedReport measures the speed of findRenderedReport function
 func BenchmarkFindRenderedReport(b *testing.B) {
 	key1 := types.RenderedReportKey("rule_1|RULE_1")
 	key2 := types.RenderedReportKey("rule_2|RULE_2")
