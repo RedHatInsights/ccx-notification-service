@@ -47,7 +47,5 @@ func BenchmarkFindRenderedReport(b *testing.B) {
 		if err != nil {
 			b.Fatal("Given key could not be found in benchmark reports")
 		}
-		b.StopTimer()
-		b.StartTimer()
 	}
 }
