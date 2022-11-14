@@ -71,7 +71,7 @@ Usage: make <OPTIONS> ... <TARGETS>
 Available targets are:
 
 clean                Run go clean
-build                Keep this rule for compatibility
+build                Build binary containing service executable
 fmt                  Run go fmt -w for all sources
 lint                 Run golint
 vet                  Run go vet. Report likely mistakes in source code
@@ -89,6 +89,7 @@ test                 Run the unit tests
 build-test           Build native binary with unit tests and benchmarks
 profiler             Run the unit tests with profiler enabled
 benchmark            Run benchmarks
+benchmark.csv        Export benchmark results into CSV
 cover                Generate HTML pages with code coverage
 coverage             Display code coverage on terminal
 bdd_tests            Run BDD tests (needs real dependencies)
