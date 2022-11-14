@@ -116,7 +116,7 @@ func TestRenderReportsForCluster(t *testing.T) {
 		},
 	}
 
-	rendereredReports, err := renderReportsForCluster(config, "e1a379e4-9ac5-4353-8f82-ad066a734f18", reports, rules)
+	rendereredReports, err := renderReportsForCluster(&config, "e1a379e4-9ac5-4353-8f82-ad066a734f18", reports, rules)
 	v, _ := json.Marshal(rendereredReports)
 	log.Info().Msg(string(v))
 	assert.NoError(t, err)
