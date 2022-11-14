@@ -43,7 +43,10 @@ func BenchmarkFindRenderedReport(b *testing.B) {
 	ruleName := types.RuleName("rule_4")
 	errorKey := types.ErrorKey("RULE_4")
 	for i := 0; i < b.N; i++ {
-		findRenderedReport(reports, ruleName, errorKey)
+		_, err := findRenderedReport(reports, ruleName, errorKey)
+		if err != nil {
+			b.Fatal("Given key could not be found in benchmark reports")
+		}
 		b.StopTimer()
 		b.StartTimer()
 	}
