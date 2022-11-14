@@ -38,7 +38,7 @@ import (
 )
 
 func renderReportsForCluster(
-	config conf.DependenciesConfiguration,
+	config *conf.DependenciesConfiguration,
 	clusterName types.ClusterName,
 	reports []types.ReportItem,
 	ruleContent types.Rules) ([]types.RenderedReport, error) {
