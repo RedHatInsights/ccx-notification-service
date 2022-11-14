@@ -71,7 +71,7 @@ Usage: make <OPTIONS> ... <TARGETS>
 Available targets are:
 
 clean                Run go clean
-build                Keep this rule for compatibility
+build                Build binary containing service executable
 fmt                  Run go fmt -w for all sources
 lint                 Run golint
 vet                  Run go vet. Report likely mistakes in source code
