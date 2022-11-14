@@ -94,6 +94,7 @@ coverage             Display code coverage on terminal
 bdd_tests            Run BDD tests (needs real dependencies)
 bdd_tests_mock       Run BDD tests with mocked dependencies
 before_commit        Checks done before commit
+function_list        List all functions in generated binary file
 help                 Show this help screen
 ```
 
