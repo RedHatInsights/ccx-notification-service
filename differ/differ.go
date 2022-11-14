@@ -403,8 +403,9 @@ func evaluateTagFilter(filterEnabled bool, tagsSet types.TagsSet) bool {
 
 func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.ClusterEntry,
 	rules types.Rules, ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int, err error) {
+	dependenciesConfiguration := conf.GetDependenciesConfiguration(configuration)
 	renderedReports, err := renderReportsForCluster(
-		conf.GetDependenciesConfiguration(configuration), cluster.ClusterName,
+		&dependenciesConfiguration, cluster.ClusterName,
 		reports, rules)
 	if err != nil {
 		log.Err(err).
