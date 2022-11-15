@@ -296,3 +296,12 @@ type ServiceLogEntry struct {
 	ServiceName string      `json:"service_name"`
 	Summary     string      `json:"summary"`
 }
+
+// MakeSetOfTags helper function makes set of tags from given list of tags
+func MakeSetOfTags(tags []string) TagsSet {
+	tagsMap := make(TagsSet, len(tags))
+	for _, tagName := range tags {
+		tagsMap[tagName] = struct{}{}
+	}
+	return tagsMap
+}

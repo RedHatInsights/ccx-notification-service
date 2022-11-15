@@ -283,20 +283,11 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 	}
 
 	// convert list/slice into regular set
-	configuration.Kafka.TagsSet = makeSetOfTags(configuration.Kafka.Tags)
-	configuration.ServiceLog.TagsSet = makeSetOfTags(configuration.ServiceLog.Tags)
+	configuration.Kafka.TagsSet = types.MakeSetOfTags(configuration.Kafka.Tags)
+	configuration.ServiceLog.TagsSet = types.MakeSetOfTags(configuration.ServiceLog.Tags)
 
 	// everything's should be ok
 	return configuration, nil
-}
-
-// makeSetOfTags helper function makes set of tags from given list of tags
-func makeSetOfTags(tags []string) types.TagsSet {
-	tagsMap := make(types.TagsSet, len(tags))
-	for _, tagName := range tags {
-		tagsMap[tagName] = struct{}{}
-	}
-	return tagsMap
 }
 
 func createURL(server, endpoint string) (string, error) {

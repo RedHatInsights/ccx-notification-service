@@ -333,7 +333,7 @@ func ruleIDToRuleName(ruleID types.RuleID) types.RuleName {
 
 func findRuleByNameAndErrorKey(
 	ruleContent types.RulesMap, ruleName types.RuleName, errorKey types.ErrorKey) (
-	likelihood int, impact int, totalRisk int, description string) {
+	likelihood int, impact int, totalRisk int, description string, tags types.TagsSet) {
 	rc := ruleContent[string(ruleName)]
 	ek := rc.ErrorKeys
 	val := ek[string(errorKey)]
@@ -341,6 +341,7 @@ func findRuleByNameAndErrorKey(
 	description = val.Metadata.Description
 	impact = val.Metadata.Impact.Impact
 	totalRisk = calculateTotalRisk(likelihood, impact)
+	tags = types.MakeSetOfTags(val.Metadata.Tags)
 	return
 }
 
@@ -395,9 +396,17 @@ func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEnt
 
 // evaluateTagFilter checks if processed rule contains all required tags, for
 // example tag "osd_customer".
-//
-// TODO: implementation is missing
-func evaluateTagFilter(filterEnabled bool, tagsSet types.TagsSet) bool {
+func evaluateTagFilter(filterEnabled bool, tagsSet types.TagsSet, reportItemTags types.TagsSet) bool {
+	if !filterEnabled {
+		return true
+	}
+
+	for neededTag := range tagsSet {
+		if _, ok := reportItemTags[neededTag]; !ok {
+			return false
+		}
+	}
+
 	return true
 }
 
@@ -418,7 +427,7 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 		ruleName := moduleToRuleName(module)
 		errorKey := r.ErrorKey
 
-		likelihood, impact, totalRisk, _ := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
+		likelihood, impact, totalRisk, _, tags := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
 		eventValue := EventValue{
 			Likelihood: likelihood,
 			Impact:     impact,
@@ -435,7 +444,7 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 		}
 
 		// check if rule contains expected tag(s) if filtering by tags is enabled
-		ruleTagCondition := evaluateTagFilter(serviceLogFilterByTagsEnabled, serviceLogTagsSet)
+		ruleTagCondition := evaluateTagFilter(serviceLogFilterByTagsEnabled, serviceLogTagsSet, tags)
 
 		// send message to target only if message pass both filters
 		if result > 0 && ruleTagCondition {
@@ -507,7 +516,7 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 		module := r.Module
 		ruleName := moduleToRuleName(module)
 		errorKey := r.ErrorKey
-		likelihood, impact, totalRisk, description := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
+		likelihood, impact, totalRisk, description, tags := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
 		eventValue := EventValue{
 			Likelihood: likelihood,
 			Impact:     impact,
@@ -524,7 +533,7 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 		}
 
 		// check if rule contains expected tag(s) if filtering by tags is enabled
-		ruleTagCondition := evaluateTagFilter(kafkaFilterByTagsEnabled, kafkaTagsSet)
+		ruleTagCondition := evaluateTagFilter(kafkaFilterByTagsEnabled, kafkaTagsSet, tags)
 
 		// send message to target only if message pass both filters
 		if result > 0 && ruleTagCondition {
@@ -713,7 +722,7 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storag
 			moduleName := r.Module
 			ruleName := moduleToRuleName(moduleName)
 			errorKey := r.ErrorKey
-			likelihood, impact, totalRisk, _ := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
+			likelihood, impact, totalRisk, _, _ := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
 
 			log.Info().
 				Int("#", i).
