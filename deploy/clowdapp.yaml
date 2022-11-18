@@ -197,6 +197,10 @@ objects:
             value: ${METRICS_PUSH_RETRIES}
           - name: CCX_NOTIFICATION_SERVICE__METRICS__RETRY_AFTER
             value: ${METRICS_PUSH_RETRIES_COOLDOWN}
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__TAG_FILTER_ENABLED
+            value: 'true'
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__TAGS
+            value: 'osd_customer'
           command:
             - /bin/sh
             - -c
