@@ -47,3 +47,28 @@ In order to run these tests, the following steps need to be made:
 
 List of all test scenarios prepared for this service is available at
 <https://github.com/RedHatInsights/insights-behavioral-spec#ccx-notification-service>
+
+## End-to-end test
+
+If you want to test from an e2e perspective:
+
+1. Use `molodec` to generate and upload an archive for a given cluster.
+1. Use `molodec` again, but define a different set of rules to hit with the
+    generated archive, using the `-r` flag (please, check the `molodec` help
+    output for further info).
+1. Check if the notification is properly received
+
+### ServiceLog case
+
+If you are trying to test the e2e notification in Service Log,
+you should pay attention in the second step described above. The new rules
+to be hit by the archive should contain an error key that is tagged with one
+of the configured tags for the notification.
+
+Please note that those tags are configured [here](https://github.com/RedHatInsights/ccx-notification-service/blob/352bc0b1b26febb2f79b0e82bff4a8ad9dac1ce9/config.toml#L37)
+
+Right now, it only notified about managed (`osd_customer`) tagged rules,
+so you need to pick a rule that contains that tag.
+
+One way to check it is to run `molodec list` and look for a rule marked as
+"managed" in the command output.
