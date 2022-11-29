@@ -65,6 +65,8 @@ you should pay attention in the second step described above. The new rules
 to be hit by the archive should contain an error key that is tagged with one
 of the configured tags for the notification.
 
+Please note that those tags are configured [here](https://github.com/RedHatInsights/ccx-notification-service/blob/352bc0b1b26febb2f79b0e82bff4a8ad9dac1ce9/config.toml#L37)
+
 Right now, it only notified about managed (`osd_customer`) tagged rules,
 so you need to pick a rule that contains that tag.
 
