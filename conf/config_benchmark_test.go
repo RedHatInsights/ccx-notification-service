@@ -115,9 +115,6 @@ func BenchmarkGetNotificationsConfiguration(b *testing.B) {
 		if m.RuleDetailsURI != "https://console.redhat.com/openshift/details/{cluster_id}/insights/{module}/{error_key}" {
 			b.Fatal("Wrong configuration: rule_details_uri = '" + m.RuleDetailsURI + "'")
 		}
-		if m.Cooldown != "24 hours" {
-			b.Fatal("Wrong configuration: cooldown = '" + m.Cooldown + "'")
-		}
 		b.StartTimer()
 	}
 
@@ -196,6 +193,9 @@ func BenchmarkGetKafkaBrokerConfiguration(b *testing.B) {
 		if m.Address != "localhost:9092" {
 			b.Fatal("Wrong configuration: address = '" + m.Address + "'")
 		}
+		if m.Cooldown != "24 hours" {
+			b.Fatal("Wrong configuration: cooldown = '" + m.Cooldown + "'")
+		}
 		b.StartTimer()
 	}
 
@@ -216,6 +216,9 @@ func BenchmarkGetServiceLogConfiguration(b *testing.B) {
 		}
 		if m.Enabled {
 			b.Fatal("Wrong configuration: service log is enabled")
+		}
+		if m.Cooldown != "0" {
+			b.Fatal("Wrong configuration: cooldown = '" + m.Cooldown + "'")
 		}
 		b.StartTimer()
 	}

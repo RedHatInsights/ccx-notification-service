@@ -19,6 +19,9 @@ total_risk_threshold = 3
 event_filter = "totalRisk >= totalRiskThreshold"
 tag_filter_enabled = false
 tags = []
+# valid units are SQL epoch time units: months days hours minutes seconds"
+# set to empty string "" or 0 to disable
+cooldown = "24 hours"
 
 [service_log]
 client_id = "a-service-id"
@@ -35,6 +38,9 @@ event_filter = "totalRisk >= totalRiskThreshold"
 rule_details_uri = "https://console.redhat.com/openshift/insights/advisor/recommendations/{module}|{error_key}"
 tag_filter_enabled = false
 tags = ["osd_customer"]
+# valid units are SQL epoch time units: months days hours minutes seconds"
+# set to empty string "" or 0 to disable
+cooldown = "0"
 
 [storage]
 db_driver = "postgres"
@@ -56,8 +62,6 @@ template_renderer_endpoint = "/v1/rendered_reports" #provide in deployment env o
 insights_advisor_url = "https://console.redhat.com/openshift/insights/advisor/clusters/{cluster_id}"
 cluster_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}#insights"
 rule_details_uri = "https://console.redhat.com/openshift/details/{cluster_id}/insights/{module}/{error_key}"
-# valid units are SQL epoch time units: months days hours minutes seconds"
-cooldown = "24 hours"
 
 [metrics]
 job_name = "ccx_notification_service"
