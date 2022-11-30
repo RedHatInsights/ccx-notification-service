@@ -156,6 +156,7 @@ type KafkaConfiguration struct {
 	ImpactThreshold     int           `mapstructure:"impact_threshold" toml:"impact_threshold"`
 	SeverityThreshold   int           `mapstructure:"severity_threshold" toml:"severity_threshold"`
 	TotalRiskThreshold  int           `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
+	Cooldown            string        `mapstructure:"cooldown" toml:"cooldown"`
 	EventFilter         string        `mapstructure:"event_filter" toml:"event_filter"`
 	TagFilterEnabled    bool          `mapstructure:"tag_filter_enabled" toml:"tag_filter_enabled"`
 	Tags                []string      `mapstructure:"tags" toml:"tags"`
@@ -174,6 +175,7 @@ type ServiceLogConfiguration struct {
 	ImpactThreshold     int           `mapstructure:"impact_threshold" toml:"impact_threshold"`
 	SeverityThreshold   int           `mapstructure:"severity_threshold" toml:"severity_threshold"`
 	TotalRiskThreshold  int           `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
+	Cooldown            string        `mapstructure:"cooldown" toml:"cooldown"`
 	EventFilter         string        `mapstructure:"event_filter" toml:"event_filter"`
 	RuleDetailsURI      string        `mapstructure:"rule_details_uri" toml:"rule_details_uri"`
 	TagFilterEnabled    bool          `mapstructure:"tag_filter_enabled" toml:"tag_filter_enabled"`
@@ -186,7 +188,6 @@ type NotificationsConfiguration struct {
 	InsightsAdvisorURL string `mapstructure:"insights_advisor_url" toml:"insights_advisor_url"`
 	ClusterDetailsURI  string `mapstructure:"cluster_details_uri" toml:"cluster_details_uri"`
 	RuleDetailsURI     string `mapstructure:"rule_details_uri"    toml:"rule_details_uri"`
-	Cooldown           string `mapstructure:"cooldown" toml:"cooldown"`
 }
 
 // MetricsConfiguration holds metrics related configuration

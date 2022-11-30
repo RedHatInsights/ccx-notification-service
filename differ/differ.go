@@ -239,6 +239,7 @@ func showConfiguration(config *conf.ConfigStruct) {
 		Int("Impact threshold", brokerConfig.ImpactThreshold).
 		Int("Severity threshold", brokerConfig.SeverityThreshold).
 		Int("Total risk threshold", brokerConfig.TotalRiskThreshold).
+		Str("Cooldown", brokerConfig.Cooldown).
 		Str("Event filter", brokerConfig.EventFilter).
 		Bool("Filter by tags", brokerConfig.TagFilterEnabled).
 		Strs("List of tags", brokerConfig.Tags).
@@ -252,6 +253,7 @@ func showConfiguration(config *conf.ConfigStruct) {
 		Int("Impact threshold", brokerConfig.ImpactThreshold).
 		Int("Severity threshold", brokerConfig.SeverityThreshold).
 		Int("Total risk threshold", serviceLogConfig.TotalRiskThreshold).
+		Str("Cooldown", serviceLogConfig.Cooldown).
 		Str("Event filter", serviceLogConfig.EventFilter).
 		Str("OCM URL", serviceLogConfig.URL).
 		Bool("Filter by tags", serviceLogConfig.TagFilterEnabled).
@@ -288,7 +290,6 @@ func showConfiguration(config *conf.ConfigStruct) {
 		Str("Insights Advisor URL", notificationConfig.InsightsAdvisorURL).
 		Str("Cluster details URI", notificationConfig.ClusterDetailsURI).
 		Str("Rule details URI", notificationConfig.RuleDetailsURI).
-		Str("Cooldown", notificationConfig.Cooldown).
 		Msg("Notifications configuration")
 
 	metricsConfig := conf.GetMetricsConfiguration(config)
@@ -1074,12 +1075,13 @@ func retrievePreviouslyReportedForEventTarget(storage *DBStorage, cooldown strin
 }
 
 func retrievePreviouslyReportedReports(config *conf.ConfigStruct, storage *DBStorage, clusters []types.ClusterEntry) {
-	cooldown := conf.GetNotificationsConfiguration(config).Cooldown
 	if conf.GetKafkaBrokerConfiguration(config).Enabled {
-		retrievePreviouslyReportedForEventTarget(storage, cooldown, clusters, types.NotificationBackendTarget)
+		retrievePreviouslyReportedForEventTarget(storage,
+			conf.GetKafkaBrokerConfiguration(config).Cooldown, clusters, types.NotificationBackendTarget)
 	}
 	if conf.GetServiceLogConfiguration(config).Enabled {
-		retrievePreviouslyReportedForEventTarget(storage, cooldown, clusters, types.ServiceLogTarget)
+		retrievePreviouslyReportedForEventTarget(storage,
+			conf.GetServiceLogConfiguration(config).Cooldown, clusters, types.ServiceLogTarget)
 	}
 }
 
