@@ -39,7 +39,7 @@ rule_details_uri = "https://console.redhat.com/openshift/insights/advisor/recomm
 tag_filter_enabled = false
 tags = ["osd_customer"]
 # valid units are SQL epoch time units: months days hours minutes seconds"
-# set to empty string "" or 0 to disable
+# set to empty string "" or "0" to disable
 cooldown = "0"
 
 [storage]

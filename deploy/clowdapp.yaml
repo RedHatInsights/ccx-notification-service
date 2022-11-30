@@ -56,7 +56,7 @@ objects:
             value: "0"
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__EVENT_FILTER
             value: "totalRisk >= totalRiskThreshold"
-          - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER_COOLDOWN
+          - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__COOLDOWN
             value: ${NOTIFICATION_RESEND_COOLDOWN_NOTIFICATION_BACKEND}
           - name: CCX_NOTIFICATION_SERVICE__STORAGE__DB_DRIVER
             value: postgres
@@ -272,7 +272,7 @@ parameters:
 - name: NOTIFICATION_RESEND_COOLDOWN_NOTIFICATION_BACKEND
   value: 24h
 - name: NOTIFICATION_RESEND_COOLDOWN_SERVICE_LOG
-  value: 0
+  value: '0'
 - name: METRICS_NAMESPACE
   value: ccx_notification_service
 - name: METRICS_PUSH_RETRIES

@@ -51,9 +51,12 @@ See steps 9 to 12 of the [data flow section](#data-flow)
 
 ### Configuring the cool down mechanism
 
-The cooldown mechanism can be configured by specifying the `cooldown` field under the `notifications` configuration in the [config.toml](../config.toml) file or by setting the `CCX_NOTIFICATION_SERVICE__NOTIFICATIONS__COOLDOWN` environment variable.
+The cooldown mechanism can be configured by specifying the `cooldown` field under each integrated service's configuration.
+Currently, the `cooldown` field can be configured under the `kafka_broker` and `service_log` configurations in the [config.toml](../config.toml) file or by setting the `CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__COOLDOWN` and `CCX_NOTIFICATION_SERVICE__SERVICE_LOG__COOLDOWN` environment variables respectively.
 
 The value set is used directly within an SQL query, so the expected format is an integer followed by a valid SQL epoch time units (year[s] month[s] day[s] hour[s] minute[s] second[s])
+
+In case new services are supported in the future, the corresponding code would need to be added for it to support the cooldown mechanism.
 
 ## Sequence diagram
 
