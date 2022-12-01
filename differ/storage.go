@@ -529,8 +529,12 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(
 	if len(clusterEntries) == 0 {
 		return types.NotifiedRecordsPerCluster{}, nil
 	}
-	var orgIDs = make([]string, len(clusterEntries))
-	var clusterIDs = make([]string, len(clusterEntries))
+	if strings.TrimSpace(timeOffset) == "" || strings.Split(timeOffset, " ")[0] == "0" {
+		return types.NotifiedRecordsPerCluster{}, nil
+	}
+
+	orgIDs := make([]string, len(clusterEntries))
+	clusterIDs := make([]string, len(clusterEntries))
 
 	for idx, entry := range clusterEntries {
 		orgIDs[idx] = strconv.FormatUint(uint64(entry.OrgID), 10)
@@ -541,16 +545,10 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(
 	whereClause := fmt.Sprintf(` WHERE event_type_id = %v AND state = 1 AND org_id IN (%v) AND cluster IN (%v)`,
 		eventTarget, inClauseFromStringSlice(orgIDs), inClauseFromStringSlice(clusterIDs))
 	orderByClause := `ORDER BY cluster, notified_at DESC) t`
-	var err error
-	var rows *sql.Rows
+	filterByTimeClause := "WHERE notified_at > NOW() - $1::INTERVAL"
 
-	if strings.TrimSpace(timeOffset) == "" || strings.Split(timeOffset, " ")[0] == "0" {
-		query := strings.Join([]string{selectQuery, whereClause, orderByClause, ";"}, " ")
-		rows, err = storage.connection.Query(query)
-	} else {
-		query := strings.Join([]string{selectQuery, whereClause, orderByClause, "WHERE notified_at > NOW() - $1::INTERVAL;"}, " ")
-		rows, err = storage.connection.Query(query, timeOffset)
-	}
+	query := strings.Join([]string{selectQuery, whereClause, orderByClause, filterByTimeClause, ";"}, " ")
+	rows, err := storage.connection.Query(query, timeOffset)
 
 	if err != nil {
 		return nil, err
