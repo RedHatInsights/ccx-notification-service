@@ -67,13 +67,13 @@ func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 	sut := differ.NewFromConnection(db, types.DBDriverPostgres)
 
 	expectedQuery := fmt.Sprintf(`
-	SELECT org_id, cluster, report, notified_at 
-	FROM ( 
-		SELECT DISTINCT ON (cluster) * 
+	SELECT org_id, cluster, report, notified_at
+	FROM (
+		SELECT DISTINCT ON (cluster) *
 		FROM reported
 		WHERE event_type_id = %v AND state = 1 AND org_id IN (%v) AND cluster IN (%v)
-		ORDER BY cluster, notified_at DESC) t 
-	WHERE notified_at > NOW() - $1::INTERVAL;
+		ORDER BY cluster, notified_at DESC) t
+	WHERE notified_at > NOW() - $1::INTERVAL ;
 	`, types.NotificationBackendTarget, orgs, clusters)
 
 	rows := sqlmock.NewRows(
@@ -92,9 +92,9 @@ func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 
 	// If timeOffset is 0 or empty string, the WHERE clause is not included
 	expectedQuery = fmt.Sprintf(`
-	SELECT org_id, cluster, report, notified_at 
-	FROM ( 
-		SELECT DISTINCT ON (cluster) * 
+	SELECT org_id, cluster, report, notified_at
+	FROM (
+		SELECT DISTINCT ON (cluster) *
 		FROM reported
 		WHERE event_type_id = %v AND state = 1 AND org_id IN (%v) AND cluster IN (%v)
 		ORDER BY cluster, notified_at DESC) t ;
