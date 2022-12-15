@@ -35,6 +35,12 @@ The event types are the most atomic piece of information handled by the
 notification service, and it is recommended to keep their number for a given
 application to the lowest (for ease of use of the application mostly).
 
+The JSON schema for the expected event is currently defined in the
+[RedHatInsights/insights-schemas-java repository](https://github.com/RedHatInsights/insights-schemas-java/blob/master/insights-notification-schemas-java/src/main/resources/schemas/Action.json). 
+Depending on the version specified in the notification event, the template engine
+could in theory provide different functionalities. The current default version
+is "2.0.0", which does not bring new changes in the message's fields, but instead
+marks the change of data serialization format from `Avro` (vx.x.x) to `json-schema-validator`.
 
 
 ## ServiceLog
