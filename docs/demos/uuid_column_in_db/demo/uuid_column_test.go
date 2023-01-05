@@ -167,7 +167,7 @@ func insertIntoReportedV1(b *testing.B, connection *sql.DB, i int, report *strin
 	errorLog := ""                     // usually empty
 
 	// perform insert
-	_, err := connection.Exec(insertIntoReportedV1Statement, orgID,
+	_, err := connection.Exec(InsertIntoReportedV1Statement, orgID,
 		accountNumber, clusterName, notificationTypeID, stateID,
 		report, updatedAt, notifiedAt, errorLog)
 
