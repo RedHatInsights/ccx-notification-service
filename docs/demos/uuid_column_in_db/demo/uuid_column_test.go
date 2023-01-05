@@ -67,6 +67,58 @@ const (
 	`
 )
 
+// DBStorage is an implementation of Storage interface that use selected SQL like database
+// like SQLite, PostgreSQL, MariaDB, RDS etc. That implementation is based on the standard
+// sql package.
+type DBStorage struct {
+	connection *sql.DB
+}
+
+// ConnectionInfo structure stores all values needed to connect to PSQL
+type ConnectionInfo struct {
+	username string
+	password string
+	host     string
+	port     int
+	dBName   string
+	params   string
+}
+
+// readEnvVariable function tries to read content of specified environment
+// variable with check if the variable exists
+func readEnvVariable(b *testing.B, variableName string) string {
+	value := os.Getenv(variableName)
+
+	// check if environment variable has been set
+	if value == "" {
+		b.Fatal(variableName, "environment variable not provided")
+	}
+	return value
+}
+
+// readConnectionInfoFromEnvVars function tries to read and parse environment
+// variables used to connect to PSQL with all required error checks
+func readConnectionInfoFromEnvVars(b *testing.B) ConnectionInfo {
+	var connectionInfo ConnectionInfo
+
+	// read string values
+	connectionInfo.username = readEnvVariable(b, "DB_USER_NAME")
+	connectionInfo.password = readEnvVariable(b, "DB_PASSWORD")
+	connectionInfo.host = readEnvVariable(b, "DB_HOST")
+	connectionInfo.dBName = readEnvVariable(b, "DB_NAME")
+	connectionInfo.params = readEnvVariable(b, "DB_PARAMS")
+
+	// parse port number
+	port := readEnvVariable(b, "DB_PORT")
+	portValue, err := strconv.Atoi(port)
+	if err != nil {
+		b.Fatal(err)
+	}
+	connectionInfo.port = portValue
+
+	return connectionInfo
+}
+
 func BenchmarkInsertUUIDAsVarchar(b *testing.B) {
 }
 
