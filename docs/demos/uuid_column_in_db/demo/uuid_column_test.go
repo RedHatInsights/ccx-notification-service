@@ -177,7 +177,40 @@ func insertIntoReportedV1(b *testing.B, connection *sql.DB, i int, report *strin
 	}
 }
 
+func performInsertBenchmark(b *testing.B, createTableStatement, dropTableStatement string, report *string) {
+	// connect to database
+	b.StopTimer()
+	connectionInfo := readConnectionInfoFromEnvVars(b)
+	// log.Print(connectionInfo)
+	connection := connectToDatabase(b, &connectionInfo)
+	// log.Print(connection)
+
+	// create table used by benchmark
+	_, err := connection.Exec(createTableStatement)
+	if err != nil {
+		b.Error("Create table error", err)
+		return
+	}
+
+	// perform benchmark
+	b.StartTimer()
+	for i := 0; i < b.N; i++ {
+		insertIntoReportedV1(b, connection, i, report)
+	}
+	b.StopTimer()
+
+	// drop table used by benchmark
+	_, err = connection.Exec(dropTableStatement)
+	if err != nil {
+		b.Error("Drop table error", err)
+		return
+	}
+	b.StartTimer()
+}
+
 func BenchmarkInsertUUIDAsVarchar(b *testing.B) {
+	report := ""
+	performInsertBenchmark(b, CreateTableReportedBenchmarkVarcharClusterID, DropTableReportedBenchmarkVarcharClusterID, &report)
 }
 
 func BenchmarkInsertUUIDAsBytea(b *testing.B) {
