@@ -67,13 +67,6 @@ const (
 	`
 )
 
-// DBStorage is an implementation of Storage interface that use selected SQL like database
-// like SQLite, PostgreSQL, MariaDB, RDS etc. That implementation is based on the standard
-// sql package.
-type DBStorage struct {
-	connection *sql.DB
-}
-
 // ConnectionInfo structure stores all values needed to connect to PSQL
 type ConnectionInfo struct {
 	username string
