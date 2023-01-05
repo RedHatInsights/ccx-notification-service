@@ -119,6 +119,64 @@ func readConnectionInfoFromEnvVars(b *testing.B) ConnectionInfo {
 	return connectionInfo
 }
 
+// connectToDatabase perform connection to PSQL with all required error checks
+func connectToDatabase(b *testing.B, connectionInfo *ConnectionInfo) *sql.DB {
+	// connection string
+	dataSource := fmt.Sprintf(
+		"postgresql://%v:%v@%v:%v/%v?%v",
+		connectionInfo.username,
+		connectionInfo.password,
+		connectionInfo.host,
+		connectionInfo.port,
+		connectionInfo.dBName,
+		connectionInfo.params,
+	)
+
+	// perform connection
+	connection, err := sql.Open("postgres", dataSource)
+	if err != nil {
+		b.Error("Can not connect to data storage", err)
+		return nil
+	}
+
+	// connection seems to be established
+	return connection
+}
+
+// insertIntoReportedV1Statement function inserts one new record into reported
+// table v1. In case of any error detected, benchmarks fail immediatelly.
+func insertIntoReportedV1(b *testing.B, connection *sql.DB, i int, report *string) {
+	// following columns needs to be updated with data:
+	// 1 | org_id            | integer                     | not null  |
+	// 2 | account_number    | integer                     | not null  |
+	// 3 | cluster           | character(36)               | not null  |
+	// 4 | notification_type | integer                     | not null  |
+	// 5 | state             | integer                     | not null  |
+	// 6 | report            | character varying           | not null  |
+	// 7 | updated_at        | timestamp without time zone | not null  |
+	// 8 | notified_at       | timestamp without time zone | not null  |
+	// 9 | error_log         | character varying           |           |
+
+	orgID := i % 1000                  // limited number of org IDs
+	accountNumber := orgID + 1         // can be different than org ID
+	clusterName := uuid.New().String() // unique
+	notificationTypeID := 1            // instant report
+	stateID := 1 + i%4                 // just four states can be used
+	updatedAt := time.Now()            // don't have to be unique
+	notifiedAt := time.Now()           // don't have to be unique
+	errorLog := ""                     // usually empty
+
+	// perform insert
+	_, err := connection.Exec(insertIntoReportedV1Statement, orgID,
+		accountNumber, clusterName, notificationTypeID, stateID,
+		report, updatedAt, notifiedAt, errorLog)
+
+	// check for any error, possible to exit immediatelly
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
 func BenchmarkInsertUUIDAsVarchar(b *testing.B) {
 }
 
