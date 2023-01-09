@@ -58,6 +58,11 @@ const (
 		 USING btree (notified_at DESC);
         `
 
+	// Select cluster names from reported table
+	SelectClusterNamesFromReportedV1Statement = `
+            SELECT cluster FROM reported_benchmark_1
+	`
+
 	// Insert one record into reported table
 	InsertIntoReportedV1Statement = `
             INSERT INTO reported_benchmark_1
@@ -90,6 +95,11 @@ const (
 	DropTableReportedBenchmarkByteArrayClusterID = `
 	        DROP TABLE IF EXISTS reported_benchmark_2;
         `
+	// Select cluster names from reported table
+	SelectClusterNamesFromReportedV2Statement = `
+            SELECT cluster FROM reported_benchmark_2
+	`
+
 	// Insert one record into reported table
 	InsertIntoReportedV2Statement = `
             INSERT INTO reported_benchmark_2
@@ -122,6 +132,11 @@ const (
 	DropTableReportedBenchmarkUUIDClusterID = `
 	        DROP TABLE IF EXISTS reported_benchmark_3;
         `
+	// Select cluster names from reported table
+	SelectClusterNamesFromReportedV3Statement = `
+            SELECT cluster FROM reported_benchmark_3
+	`
+
 	// Insert one record into reported table
 	InsertIntoReportedV3Statement = `
             INSERT INTO reported_benchmark_3
