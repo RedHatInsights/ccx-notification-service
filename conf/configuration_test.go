@@ -1,5 +1,5 @@
 /*
-Copyright © 2021, 2022 Red Hat, Inc.
+Copyright © 2021, 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -361,7 +361,7 @@ func TestLoadClowderConfiguration(t *testing.T) {
 	clowder.LoadedConfig = &clowder.AppConfig{
 		Kafka: &clowder.KafkaConfig{
 			Brokers: []clowder.BrokerConfig{
-				clowder.BrokerConfig{
+				{
 					Hostname: hostname,
 					Port:     &port,
 				},
@@ -446,7 +446,7 @@ func TestLoadConfigurationKafkaBrokerEmptyConfig(t *testing.T) {
 
 	// just one empty broker configuration
 	var brokersConfig []clowder.BrokerConfig = []clowder.BrokerConfig{
-		clowder.BrokerConfig{},
+		{},
 	}
 
 	// explicit database and broker configuration
@@ -480,7 +480,7 @@ func TestLoadConfigurationKafkaBrokerNoPort(t *testing.T) {
 
 	// just one non-empty broker configuration
 	var brokersConfig []clowder.BrokerConfig = []clowder.BrokerConfig{
-		clowder.BrokerConfig{
+		{
 			Hostname: "test",
 			Port:     nil}, // port is not set
 	}
@@ -519,7 +519,7 @@ func TestLoadConfigurationKafkaBrokerPort(t *testing.T) {
 
 	// just one non-empty broker configuration
 	var brokersConfig []clowder.BrokerConfig = []clowder.BrokerConfig{
-		clowder.BrokerConfig{
+		{
 			Hostname: "test",
 			Port:     &port}, // port is set
 	}
@@ -558,7 +558,7 @@ func TestLoadConfigurationKafkaBrokerAuthConfigMissingSASL(t *testing.T) {
 	var authType clowder.BrokerConfigAuthtype = ""
 
 	var brokersConfig []clowder.BrokerConfig = []clowder.BrokerConfig{
-		clowder.BrokerConfig{
+		{
 			Hostname: "test",
 			Port:     &port,
 			Authtype: &authType,
@@ -611,7 +611,7 @@ func TestLoadConfigurationKafkaBrokerAuthConfig(t *testing.T) {
 	var securityProtocol = "security_protocol"
 
 	var brokersConfig []clowder.BrokerConfig = []clowder.BrokerConfig{
-		clowder.BrokerConfig{
+		{
 			Hostname: "test",
 			Port:     &port,
 			Authtype: &authType,
