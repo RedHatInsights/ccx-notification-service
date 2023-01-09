@@ -84,6 +84,13 @@ const (
 	DropTableReportedBenchmarkByteArrayClusterID = `
 	        DROP TABLE IF EXISTS reported_benchmark_2;
         `
+	// Insert one record into reported table
+	InsertIntoReportedV2Statement = `
+            INSERT INTO reported_benchmark_2
+            (org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log)
+            VALUES
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	`
 	CreateTableReportedBenchmarkUUIDClusterID = `
 		CREATE TABLE IF NOT EXISTS reported_benchmark_3 (
 		    org_id            integer not null,
@@ -103,6 +110,13 @@ const (
 	DropTableReportedBenchmarkUUIDClusterID = `
 	        DROP TABLE IF EXISTS reported_benchmark_3;
         `
+	// Insert one record into reported table
+	InsertIntoReportedV3Statement = `
+            INSERT INTO reported_benchmark_3
+            (org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log)
+            VALUES
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	`
 )
 
 // Tests configuration
