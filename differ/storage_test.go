@@ -1,5 +1,5 @@
 /*
-Copyright © 2022 Red Hat, Inc.
+Copyright © 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package differ_test
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"regexp"
 	"testing"
@@ -226,6 +227,31 @@ func TestWriteReadErrorOnError(t *testing.T) {
 
 	// prepare connection to mocked database
 	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := storage.WriteReadError(1, "foo", time.Now(), errors.New("my error"))
+	if err == nil {
+		t.Errorf("error was expected while writing error report: %s", err)
+	}
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestWriteReadErrorWrongDriver function checks the method
+// Storage.WriteReadError.
+func TestWriteReadErrorWrongDriver(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected database operations
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, wrongDatabaseDriver)
 
 	// call the tested method
 	err := storage.WriteReadError(1, "foo", time.Now(), errors.New("my error"))
