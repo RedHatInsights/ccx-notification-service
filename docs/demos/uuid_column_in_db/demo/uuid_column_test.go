@@ -313,31 +313,50 @@ func performInsertBenchmark(b *testing.B,
 	}
 }
 
-func BenchmarkInsertUUIDAsVarchar(b *testing.B) {
+func BenchmarkInsertClusterAsVarchar(b *testing.B) {
 	report := ""
-	performInsertBenchmark(b, CreateTableReportedBenchmarkVarcharClusterID, DropTableReportedBenchmarkVarcharClusterID, &report)
+	performInsertBenchmark(b,
+		CreateTableReportedBenchmarkVarcharClusterID,
+		DropTableReportedBenchmarkVarcharClusterID,
+		InsertIntoReportedV1Statement,
+		insertIntoReportedV1,
+		&report, DropTables)
 }
 
-func BenchmarkInsertUUIDAsBytea(b *testing.B) {
+func BenchmarkInsertClusterAsBytea(b *testing.B) {
+	report := ""
+	performInsertBenchmark(b,
+		CreateTableReportedBenchmarkByteArrayClusterID,
+		DropTableReportedBenchmarkByteArrayClusterID,
+		InsertIntoReportedV2Statement,
+		insertIntoReportedV2,
+		&report, DropTables)
 }
 
-func BenchmarkInsertUUIDAsUUID(b *testing.B) {
+func BenchmarkInsertClusterAsUUID(b *testing.B) {
+	report := ""
+	performInsertBenchmark(b,
+		CreateTableReportedBenchmarkUUIDClusterID,
+		DropTableReportedBenchmarkUUIDClusterID,
+		InsertIntoReportedV3Statement,
+		insertIntoReportedV3,
+		&report, DropTables)
 }
 
-func BenchmarkDeleteUUIDAsVarchar(b *testing.B) {
+func BenchmarkDeleteClusterAsVarchar(b *testing.B) {
 }
 
-func BenchmarkDeleteUUIDAsBytea(b *testing.B) {
+func BenchmarkDeleteClusterAsBytea(b *testing.B) {
 }
 
-func BenchmarkDeleteUUIDAsUUID(b *testing.B) {
+func BenchmarkDeleteClusterAsUUID(b *testing.B) {
 }
 
-func BenchmarkSelectUUIDAsVarchar(b *testing.B) {
+func BenchmarkSelectClusterAsVarchar(b *testing.B) {
 }
 
-func BenchmarkSelectUUIDAsBytea(b *testing.B) {
+func BenchmarkSelectClusterAsBytea(b *testing.B) {
 }
 
-func BenchmarkSelectUUIDAsUUID(b *testing.B) {
+func BenchmarkSelectClusterAsUUID(b *testing.B) {
 }
