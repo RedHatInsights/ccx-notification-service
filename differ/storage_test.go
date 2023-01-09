@@ -1,5 +1,5 @@
 /*
-Copyright © 2022 Red Hat, Inc.
+Copyright © 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -21,6 +21,7 @@ package differ_test
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"regexp"
 	"testing"
@@ -32,6 +33,48 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/differ"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 )
+
+// wrongDatabaseDriver is any integer value different from DBDriverSQLite3 and
+// DBDriverPostgres
+const wrongDatabaseDriver = 10
+
+// mustCreateMockConnection function tries to create a new mock connection and
+// checks if the operation was finished without problems.
+func mustCreateMockConnection(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
+	// try to initialize new mock connection
+	connection, mock, err := sqlmock.New()
+
+	// check the status
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+
+	return connection, mock
+}
+
+// checkConnectionClose function perform mocked DB closing operation and checks
+// if the connection is properly closed from unit tests.
+func checkConnectionClose(t *testing.T, connection *sql.DB) {
+	// connection to mocked DB needs to be closed properly
+	err := connection.Close()
+
+	// check the error status
+	if err != nil {
+		t.Fatalf("error during closing connection: %v", err)
+	}
+}
+
+// checkAllExpectations function checks if all database-related operations have
+// been really met.
+func checkAllExpectations(t *testing.T, mock sqlmock.Sqlmock) {
+	// check if all expectations were met
+	err := mock.ExpectationsWereMet()
+
+	// check the error status
+	if err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
 
 func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 	var (
@@ -137,4 +180,88 @@ func TestInClauseFromSlice(t *testing.T) {
 
 	stringSlice = []string{"first item", "second item"}
 	assert.Equal(t, "'first item','second item'", differ.InClauseFromStringSlice(stringSlice))
+}
+
+// TestWriteReadError function checks the method
+// Storage.WriteReadError.
+func TestWriteReadError(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected query performed by tested function
+	expectedStatement := "INSERT INTO read_errors\\(org_id, cluster, updated_at, created_at, error_text\\) VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5\\);"
+
+	mock.ExpectExec(expectedStatement).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := storage.WriteReadError(1, "foo", time.Now(), errors.New("my error"))
+	if err != nil {
+		t.Errorf("error was not expected while writing report for cluster: %s", err)
+	}
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestWriteReadErrorOnError function checks the method
+// Storage.WriteReadError.
+func TestWriteReadErrorOnError(t *testing.T) {
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected query performed by tested function
+	expectedStatement := "INSERT INTO read_errors\\(org_id, cluster, updated_at, created_at, error_text\\) VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5\\);"
+
+	mock.ExpectExec(expectedStatement).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := storage.WriteReadError(1, "foo", time.Now(), errors.New("my error"))
+	if err == nil {
+		t.Errorf("error was expected while writing error report: %s", err)
+	}
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestWriteReadErrorWrongDriver function checks the method
+// Storage.WriteReadError.
+func TestWriteReadErrorWrongDriver(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected database operations
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, wrongDatabaseDriver)
+
+	// call the tested method
+	err := storage.WriteReadError(1, "foo", time.Now(), errors.New("my error"))
+	if err == nil {
+		t.Errorf("error was expected while writing error report: %s", err)
+	}
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
 }

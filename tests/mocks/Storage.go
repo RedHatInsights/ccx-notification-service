@@ -3,6 +3,8 @@
 package mocks
 
 import (
+	"time"
+
 	types "github.com/RedHatInsights/ccx-notification-service/types"
 	mock "github.com/stretchr/testify/mock"
 )
@@ -340,6 +342,15 @@ func (_m *Storage) WriteNotificationRecordImpl(orgID types.OrgID, accountNumber 
 	}
 
 	return r0
+}
+
+func (_m *Storage) WriteReadError(
+	orgID types.OrgID,
+	clusterName types.ClusterName,
+	lastCheckedTime time.Time,
+	e error,
+) error {
+	return nil
 }
 
 type mockConstructorTestingTNewStorage interface {
