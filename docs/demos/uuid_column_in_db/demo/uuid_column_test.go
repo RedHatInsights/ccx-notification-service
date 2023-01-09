@@ -42,7 +42,7 @@ const (
 		    updated_at        timestamp not null,
 		    notified_at       timestamp not null,
 		    error_log         varchar,
-		                
+
 		    PRIMARY KEY (org_id, cluster, notified_at)
 		);
 		`
@@ -65,6 +65,44 @@ const (
             VALUES
             ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
+	CreateTableReportedBenchmarkByteArrayClusterID = `
+		CREATE TABLE IF NOT EXISTS reported_benchmark_2 (
+		    org_id            integer not null,
+		    account_number    integer not null,
+		    cluster           bytea not null,
+		    notification_type integer not null,
+		    state             integer not null,
+		    report            varchar not null,
+		    updated_at        timestamp not null,
+		    notified_at       timestamp not null,
+		    error_log         varchar,
+
+		    PRIMARY KEY (org_id, cluster, notified_at)
+		);
+		`
+
+	DropTableReportedBenchmarkByteArrayClusterID = `
+	        DROP TABLE IF EXISTS reported_benchmark_2;
+        `
+	CreateTableReportedBenchmarkUUIDClusterID = `
+		CREATE TABLE IF NOT EXISTS reported_benchmark_3 (
+		    org_id            integer not null,
+		    account_number    integer not null,
+		    cluster           uuid not null,
+		    notification_type integer not null,
+		    state             integer not null,
+		    report            varchar not null,
+		    updated_at        timestamp not null,
+		    notified_at       timestamp not null,
+		    error_log         varchar,
+
+		    PRIMARY KEY (org_id, cluster, notified_at)
+		);
+		`
+
+	DropTableReportedBenchmarkUUIDClusterID = `
+	        DROP TABLE IF EXISTS reported_benchmark_3;
+        `
 )
 
 // ConnectionInfo structure stores all values needed to connect to PSQL
