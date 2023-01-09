@@ -42,7 +42,7 @@ const (
 		    updated_at        timestamp not null,
 		    notified_at       timestamp not null,
 		    error_log         varchar,
-		                
+
 		    PRIMARY KEY (org_id, cluster, notified_at)
 		);
 		`
@@ -65,6 +65,64 @@ const (
             VALUES
             ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
+	CreateTableReportedBenchmarkByteArrayClusterID = `
+		CREATE TABLE IF NOT EXISTS reported_benchmark_2 (
+		    org_id            integer not null,
+		    account_number    integer not null,
+		    cluster           bytea not null,
+		    notification_type integer not null,
+		    state             integer not null,
+		    report            varchar not null,
+		    updated_at        timestamp not null,
+		    notified_at       timestamp not null,
+		    error_log         varchar,
+
+		    PRIMARY KEY (org_id, cluster, notified_at)
+		);
+		`
+
+	DropTableReportedBenchmarkByteArrayClusterID = `
+	        DROP TABLE IF EXISTS reported_benchmark_2;
+        `
+	// Insert one record into reported table
+	InsertIntoReportedV2Statement = `
+            INSERT INTO reported_benchmark_2
+            (org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log)
+            VALUES
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	`
+	CreateTableReportedBenchmarkUUIDClusterID = `
+		CREATE TABLE IF NOT EXISTS reported_benchmark_3 (
+		    org_id            integer not null,
+		    account_number    integer not null,
+		    cluster           uuid not null,
+		    notification_type integer not null,
+		    state             integer not null,
+		    report            varchar not null,
+		    updated_at        timestamp not null,
+		    notified_at       timestamp not null,
+		    error_log         varchar,
+
+		    PRIMARY KEY (org_id, cluster, notified_at)
+		);
+		`
+
+	DropTableReportedBenchmarkUUIDClusterID = `
+	        DROP TABLE IF EXISTS reported_benchmark_3;
+        `
+	// Insert one record into reported table
+	InsertIntoReportedV3Statement = `
+            INSERT INTO reported_benchmark_3
+            (org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log)
+            VALUES
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	`
+)
+
+// Tests configuration
+const (
+	// Should tables used by benchmarks be dropped at the end?
+	DropTables = false
 )
 
 // ConnectionInfo structure stores all values needed to connect to PSQL
@@ -76,6 +134,10 @@ type ConnectionInfo struct {
 	dBName   string
 	params   string
 }
+
+// InsertFunction represents callback functions called from benchmarks in order
+// to insert new record into selected table
+type InsertFunction func(b *testing.B, connection *sql.DB, insertStatement *string, i int, report *string)
 
 // readEnvVariable function tries to read content of specified environment
 // variable with check if the variable exists
@@ -136,13 +198,35 @@ func connectToDatabase(b *testing.B, connectionInfo *ConnectionInfo) *sql.DB {
 	return connection
 }
 
-// insertIntoReportedV1Statement function inserts one new record into reported
-// table v1. In case of any error detected, benchmarks fail immediatelly.
-func insertIntoReportedV1(b *testing.B, connection *sql.DB, i int, report *string) {
+// mustExecuteStatement function executes given SQL statement with check if the
+// operation was finished without problems
+func mustExecuteStatement(b *testing.B, connection *sql.DB, statement string) {
+	// execute given SQL statement
+	_, err := connection.Exec(statement)
+	if err != nil {
+		b.Fatal("SQL statement '"+statement+"' error", err)
+	}
+}
+
+// insertIntoReportedV1 function inserts one new record into reported table v1
+// or v3 where cluster is represented as character(36) or as UUID. In case of
+// any error detected, benchmarks fail immediatelly.
+func insertIntoReportedV1(b *testing.B, connection *sql.DB, insertStatement *string, i int, report *string) {
 	// following columns needs to be updated with data:
 	// 1 | org_id            | integer                     | not null  |
 	// 2 | account_number    | integer                     | not null  |
 	// 3 | cluster           | character(36)               | not null  |
+	// 4 | notification_type | integer                     | not null  |
+	// 5 | state             | integer                     | not null  |
+	// 6 | report            | character varying           | not null  |
+	// 7 | updated_at        | timestamp without time zone | not null  |
+	// 8 | notified_at       | timestamp without time zone | not null  |
+	// 9 | error_log         | character varying           |           |
+
+	// or
+	// 1 | org_id            | integer                     | not null  |
+	// 2 | account_number    | integer                     | not null  |
+	// 3 | cluster           | UUID                        | not null  |
 	// 4 | notification_type | integer                     | not null  |
 	// 5 | state             | integer                     | not null  |
 	// 6 | report            | character varying           | not null  |
@@ -160,7 +244,7 @@ func insertIntoReportedV1(b *testing.B, connection *sql.DB, i int, report *strin
 	errorLog := ""                     // usually empty
 
 	// perform insert
-	_, err := connection.Exec(InsertIntoReportedV1Statement, orgID,
+	_, err := connection.Exec(*insertStatement, orgID,
 		accountNumber, clusterName, notificationTypeID, stateID,
 		report, updatedAt, notifiedAt, errorLog)
 
@@ -170,62 +254,123 @@ func insertIntoReportedV1(b *testing.B, connection *sql.DB, i int, report *strin
 	}
 }
 
-func performInsertBenchmark(b *testing.B, createTableStatement, dropTableStatement string, report *string) {
+// insertIntoReportedV2 function inserts one new record into reported
+// table v2 where cluster is represented as byte array. In case of any error
+// detected, benchmarks fail immediatelly.
+func insertIntoReportedV2(b *testing.B, connection *sql.DB, insertStatement *string, i int, report *string) {
+	// following columns needs to be updated with data:
+	// 1 | org_id            | integer                     | not null  |
+	// 2 | account_number    | integer                     | not null  |
+	// 3 | cluster           | bytea                       | not null  |
+	// 4 | notification_type | integer                     | not null  |
+	// 5 | state             | integer                     | not null  |
+	// 6 | report            | character varying           | not null  |
+	// 7 | updated_at        | timestamp without time zone | not null  |
+	// 8 | notified_at       | timestamp without time zone | not null  |
+	// 9 | error_log         | character varying           |           |
+
+	orgID := i % 1000          // limited number of org IDs
+	accountNumber := orgID + 1 // can be different than org ID
+	clusterName := uuid.New()  // unique
+
+	// convert cluster name into bytes slice to be stored in database
+	bytes, err := clusterName.MarshalBinary()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	notificationTypeID := 1  // instant report
+	stateID := 1 + i%4       // just four states can be used
+	updatedAt := time.Now()  // don't have to be unique
+	notifiedAt := time.Now() // don't have to be unique
+	errorLog := ""           // usually empty
+
+	// perform insert
+	_, err = connection.Exec(*insertStatement, orgID,
+		accountNumber, bytes, notificationTypeID, stateID,
+		report, updatedAt, notifiedAt, errorLog)
+
+	// check for any error, possible to exit immediatelly
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
+// function to insert record into table v3 is the same as function to insert
+// record into table v1
+var insertIntoReportedV3 = insertIntoReportedV1
+
+func performInsertBenchmark(b *testing.B,
+	createTableStatement, dropTableStatement, insertStatement string,
+	insertFunction InsertFunction,
+	report *string,
+	dropTables bool) {
+
 	// connect to database
 	b.StopTimer()
 	connectionInfo := readConnectionInfoFromEnvVars(b)
-	// log.Print(connectionInfo)
 	connection := connectToDatabase(b, &connectionInfo)
-	// log.Print(connection)
 
 	// create table used by benchmark
-	_, err := connection.Exec(createTableStatement)
-	if err != nil {
-		b.Error("Create table error", err)
-		return
-	}
+	mustExecuteStatement(b, connection, createTableStatement)
 
 	// perform benchmark
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		insertIntoReportedV1(b, connection, i, report)
+		insertFunction(b, connection, &insertStatement, i, report)
 	}
 	b.StopTimer()
 
 	// drop table used by benchmark
-	_, err = connection.Exec(dropTableStatement)
-	if err != nil {
-		b.Error("Drop table error", err)
-		return
+	if dropTables {
+		mustExecuteStatement(b, connection, dropTableStatement)
 	}
-	b.StartTimer()
 }
 
-func BenchmarkInsertUUIDAsVarchar(b *testing.B) {
+func BenchmarkInsertClusterAsVarchar(b *testing.B) {
 	report := ""
-	performInsertBenchmark(b, CreateTableReportedBenchmarkVarcharClusterID, DropTableReportedBenchmarkVarcharClusterID, &report)
+	performInsertBenchmark(b,
+		CreateTableReportedBenchmarkVarcharClusterID,
+		DropTableReportedBenchmarkVarcharClusterID,
+		InsertIntoReportedV1Statement,
+		insertIntoReportedV1,
+		&report, DropTables)
 }
 
-func BenchmarkInsertUUIDAsBytea(b *testing.B) {
+func BenchmarkInsertClusterAsBytea(b *testing.B) {
+	report := ""
+	performInsertBenchmark(b,
+		CreateTableReportedBenchmarkByteArrayClusterID,
+		DropTableReportedBenchmarkByteArrayClusterID,
+		InsertIntoReportedV2Statement,
+		insertIntoReportedV2,
+		&report, DropTables)
 }
 
-func BenchmarkInsertUUIDAsUUID(b *testing.B) {
+func BenchmarkInsertClusterAsUUID(b *testing.B) {
+	report := ""
+	performInsertBenchmark(b,
+		CreateTableReportedBenchmarkUUIDClusterID,
+		DropTableReportedBenchmarkUUIDClusterID,
+		InsertIntoReportedV3Statement,
+		insertIntoReportedV3,
+		&report, DropTables)
 }
 
-func BenchmarkDeleteUUIDAsVarchar(b *testing.B) {
+func BenchmarkDeleteClusterAsVarchar(b *testing.B) {
 }
 
-func BenchmarkDeleteUUIDAsBytea(b *testing.B) {
+func BenchmarkDeleteClusterAsBytea(b *testing.B) {
 }
 
-func BenchmarkDeleteUUIDAsUUID(b *testing.B) {
+func BenchmarkDeleteClusterAsUUID(b *testing.B) {
 }
 
-func BenchmarkSelectUUIDAsVarchar(b *testing.B) {
+func BenchmarkSelectClusterAsVarchar(b *testing.B) {
 }
 
-func BenchmarkSelectUUIDAsBytea(b *testing.B) {
+func BenchmarkSelectClusterAsBytea(b *testing.B) {
 }
 
-func BenchmarkSelectUUIDAsUUID(b *testing.B) {
+func BenchmarkSelectClusterAsUUID(b *testing.B) {
 }
