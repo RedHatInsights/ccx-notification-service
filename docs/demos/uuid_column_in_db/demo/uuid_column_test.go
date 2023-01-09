@@ -121,6 +121,10 @@ type ConnectionInfo struct {
 	params   string
 }
 
+// InsertFunction represents callback functions called from benchmarks in order
+// to insert new record into selected table
+type InsertFunction func(b *testing.B, connection *sql.DB, insertStatement *string, i int, report *string)
+
 // readEnvVariable function tries to read content of specified environment
 // variable with check if the variable exists
 func readEnvVariable(b *testing.B, variableName string) string {
@@ -180,13 +184,35 @@ func connectToDatabase(b *testing.B, connectionInfo *ConnectionInfo) *sql.DB {
 	return connection
 }
 
-// insertIntoReportedV1Statement function inserts one new record into reported
-// table v1. In case of any error detected, benchmarks fail immediatelly.
-func insertIntoReportedV1(b *testing.B, connection *sql.DB, i int, report *string) {
+// mustExecuteStatement function executes given SQL statement with check if the
+// operation was finished without problems
+func mustExecuteStatement(b *testing.B, connection *sql.DB, statement string) {
+	// execute given SQL statement
+	_, err := connection.Exec(statement)
+	if err != nil {
+		b.Fatal("SQL statement '"+statement+"' error", err)
+	}
+}
+
+// insertIntoReportedV1 function inserts one new record into reported table v1
+// or v3 where cluster is represented as character(36) or as UUID. In case of
+// any error detected, benchmarks fail immediatelly.
+func insertIntoReportedV1(b *testing.B, connection *sql.DB, insertStatement *string, i int, report *string) {
 	// following columns needs to be updated with data:
 	// 1 | org_id            | integer                     | not null  |
 	// 2 | account_number    | integer                     | not null  |
 	// 3 | cluster           | character(36)               | not null  |
+	// 4 | notification_type | integer                     | not null  |
+	// 5 | state             | integer                     | not null  |
+	// 6 | report            | character varying           | not null  |
+	// 7 | updated_at        | timestamp without time zone | not null  |
+	// 8 | notified_at       | timestamp without time zone | not null  |
+	// 9 | error_log         | character varying           |           |
+
+	// or
+	// 1 | org_id            | integer                     | not null  |
+	// 2 | account_number    | integer                     | not null  |
+	// 3 | cluster           | UUID                        | not null  |
 	// 4 | notification_type | integer                     | not null  |
 	// 5 | state             | integer                     | not null  |
 	// 6 | report            | character varying           | not null  |
@@ -204,7 +230,7 @@ func insertIntoReportedV1(b *testing.B, connection *sql.DB, i int, report *strin
 	errorLog := ""                     // usually empty
 
 	// perform insert
-	_, err := connection.Exec(InsertIntoReportedV1Statement, orgID,
+	_, err := connection.Exec(*insertStatement, orgID,
 		accountNumber, clusterName, notificationTypeID, stateID,
 		report, updatedAt, notifiedAt, errorLog)
 
