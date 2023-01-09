@@ -240,6 +240,48 @@ func insertIntoReportedV1(b *testing.B, connection *sql.DB, insertStatement *str
 	}
 }
 
+// insertIntoReportedV2 function inserts one new record into reported
+// table v2 where cluster is represented as byte array. In case of any error
+// detected, benchmarks fail immediatelly.
+func insertIntoReportedV2(b *testing.B, connection *sql.DB, insertStatement *string, i int, report *string) {
+	// following columns needs to be updated with data:
+	// 1 | org_id            | integer                     | not null  |
+	// 2 | account_number    | integer                     | not null  |
+	// 3 | cluster           | bytea                       | not null  |
+	// 4 | notification_type | integer                     | not null  |
+	// 5 | state             | integer                     | not null  |
+	// 6 | report            | character varying           | not null  |
+	// 7 | updated_at        | timestamp without time zone | not null  |
+	// 8 | notified_at       | timestamp without time zone | not null  |
+	// 9 | error_log         | character varying           |           |
+
+	orgID := i % 1000          // limited number of org IDs
+	accountNumber := orgID + 1 // can be different than org ID
+	clusterName := uuid.New()  // unique
+
+	// convert cluster name into bytes slice to be stored in database
+	bytes, err := clusterName.MarshalBinary()
+	if err != nil {
+		b.Fatal(err)
+	}
+
+	notificationTypeID := 1  // instant report
+	stateID := 1 + i%4       // just four states can be used
+	updatedAt := time.Now()  // don't have to be unique
+	notifiedAt := time.Now() // don't have to be unique
+	errorLog := ""           // usually empty
+
+	// perform insert
+	_, err = connection.Exec(*insertStatement, orgID,
+		accountNumber, bytes, notificationTypeID, stateID,
+		report, updatedAt, notifiedAt, errorLog)
+
+	// check for any error, possible to exit immediatelly
+	if err != nil {
+		b.Fatal(err)
+	}
+}
+
 func performInsertBenchmark(b *testing.B, createTableStatement, dropTableStatement string, report *string) {
 	// connect to database
 	b.StopTimer()
