@@ -384,6 +384,41 @@ func performInsertBenchmark(b *testing.B,
 	}
 }
 
+func performDeleteBenchmark(b *testing.B,
+	createTableStatement, dropTableStatement, insertStatement, deleteStatement, selectStatement string,
+	insertFunction InsertFunction,
+	report *string,
+	dropTables bool) {
+
+	// connect to database
+	b.StopTimer()
+	connectionInfo := readConnectionInfoFromEnvVars(b)
+	connection := connectToDatabase(b, &connectionInfo)
+
+	// create table used by benchmark
+	mustExecuteStatement(b, connection, createTableStatement)
+
+	// fill-in some data
+	for i := 0; i < b.N; i++ {
+		insertFunction(b, connection, &insertStatement, i, report)
+	}
+
+	// retrieve cluster names
+	clusterNames := readClusterNames(b, connection, selectStatement)
+
+	// perform benchmark - delete selected rows from table one by one
+	b.StartTimer()
+	for _, clusterName := range clusterNames {
+		deleteReportByClusterName(b, connection, deleteStatement, clusterName)
+	}
+	b.StopTimer()
+
+	// drop table used by benchmark
+	if dropTables {
+		mustExecuteStatement(b, connection, dropTableStatement)
+	}
+}
+
 func BenchmarkInsertClusterAsVarchar(b *testing.B) {
 	report := ""
 	performInsertBenchmark(b,
@@ -415,12 +450,39 @@ func BenchmarkInsertClusterAsUUID(b *testing.B) {
 }
 
 func BenchmarkDeleteClusterAsVarchar(b *testing.B) {
+	report := ""
+	performDeleteBenchmark(b,
+		CreateTableReportedBenchmarkVarcharClusterID,
+		DropTableReportedBenchmarkVarcharClusterID,
+		InsertIntoReportedV1Statement,
+		DeleteFromReportedV1Statement,
+		SelectClusterNamesFromReportedV1Statement,
+		insertIntoReportedV1,
+		&report, DropTables)
 }
 
 func BenchmarkDeleteClusterAsBytea(b *testing.B) {
+	report := ""
+	performDeleteBenchmark(b,
+		CreateTableReportedBenchmarkByteArrayClusterID,
+		DropTableReportedBenchmarkByteArrayClusterID,
+		InsertIntoReportedV2Statement,
+		DeleteFromReportedV2Statement,
+		SelectClusterNamesFromReportedV2Statement,
+		insertIntoReportedV2,
+		&report, DropTables)
 }
 
 func BenchmarkDeleteClusterAsUUID(b *testing.B) {
+	report := ""
+	performDeleteBenchmark(b,
+		CreateTableReportedBenchmarkUUIDClusterID,
+		DropTableReportedBenchmarkUUIDClusterID,
+		InsertIntoReportedV3Statement,
+		DeleteFromReportedV3Statement,
+		SelectClusterNamesFromReportedV3Statement,
+		insertIntoReportedV3,
+		&report, DropTables)
 }
 
 func BenchmarkSelectClusterAsVarchar(b *testing.B) {
