@@ -313,6 +313,46 @@ func insertIntoReportedV2(b *testing.B, connection *sql.DB, insertStatement *str
 	}
 }
 
+func readClusterNames(b *testing.B, connection *sql.DB, selectStatement string) []string {
+	var clusterNames = make([]string, 0)
+
+	rows, err := connection.Query(selectStatement)
+	if err != nil {
+		b.Fatal("Select cluster names error", err)
+		return clusterNames
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			b.Fatal("Closing query error", err)
+		}
+	}()
+
+	// read all records
+	for rows.Next() {
+		var clusterName string
+
+		err := rows.Scan(&clusterName)
+		if err != nil {
+			if closeErr := rows.Close(); closeErr != nil {
+				b.Fatal("Unable to close DB row handle")
+			}
+			return clusterNames
+		}
+		clusterNames = append(clusterNames, clusterName)
+	}
+
+	return clusterNames
+}
+
+func deleteReportByClusterName(b *testing.B, connection *sql.DB, deleteStatement string, clusterName string) {
+	_, err := connection.Exec(deleteStatement, clusterName)
+	if err != nil {
+		b.Fatal("SQL delete statement '"+deleteStatement+"' error", err)
+	}
+}
+
 // function to insert record into table v3 is the same as function to insert
 // record into table v1
 var insertIntoReportedV3 = insertIntoReportedV1
