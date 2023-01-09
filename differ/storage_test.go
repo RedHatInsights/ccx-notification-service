@@ -33,6 +33,48 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/types"
 )
 
+// wrongDatabaseDriver is any integer value different from DBDriverSQLite3 and
+// DBDriverPostgres
+const wrongDatabaseDriver = 10
+
+// mustCreateMockConnection function tries to create a new mock connection and
+// checks if the operation was finished without problems.
+func mustCreateMockConnection(t *testing.T) (*sql.DB, sqlmock.Sqlmock) {
+	// try to initialize new mock connection
+	connection, mock, err := sqlmock.New()
+
+	// check the status
+	if err != nil {
+		t.Fatalf("an error '%s' was not expected when opening a stub database connection", err)
+	}
+
+	return connection, mock
+}
+
+// checkConnectionClose function perform mocked DB closing operation and checks
+// if the connection is properly closed from unit tests.
+func checkConnectionClose(t *testing.T, connection *sql.DB) {
+	// connection to mocked DB needs to be closed properly
+	err := connection.Close()
+
+	// check the error status
+	if err != nil {
+		t.Fatalf("error during closing connection: %v", err)
+	}
+}
+
+// checkAllExpectations function checks if all database-related operations have
+// been really met.
+func checkAllExpectations(t *testing.T, mock sqlmock.Sqlmock) {
+	// check if all expectations were met
+	err := mock.ExpectationsWereMet()
+
+	// check the error status
+	if err != nil {
+		t.Errorf("there were unfulfilled expectations: %s", err)
+	}
+}
+
 func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 	var (
 		now            = time.Now()
