@@ -1,5 +1,5 @@
 /*
-Copyright © 2021, 2022 Red Hat, Inc.
+Copyright © 2021, 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -397,7 +397,7 @@ func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEnt
 
 // evaluateTagFilter checks if processed rule contains all required tags, for
 // example tag "osd_customer".
-func evaluateTagFilter(filterEnabled bool, tagsSet types.TagsSet, reportItemTags types.TagsSet) bool {
+func evaluateTagFilter(filterEnabled bool, tagsSet, reportItemTags types.TagsSet) bool {
 	if !filterEnabled {
 		return true
 	}
