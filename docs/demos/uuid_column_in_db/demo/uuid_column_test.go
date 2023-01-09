@@ -105,6 +105,12 @@ const (
         `
 )
 
+// Tests configuration
+const (
+	// Should tables used by benchmarks be dropped at the end?
+	DropTables = false
+)
+
 // ConnectionInfo structure stores all values needed to connect to PSQL
 type ConnectionInfo struct {
 	username string
