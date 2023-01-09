@@ -180,3 +180,31 @@ func TestInClauseFromSlice(t *testing.T) {
 	stringSlice = []string{"first item", "second item"}
 	assert.Equal(t, "'first item','second item'", differ.InClauseFromStringSlice(stringSlice))
 }
+
+// TestWriteReadError function checks the method
+// Storage.WriteReadError.
+func TestWriteReadError(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected query performed by tested function
+	expectedStatement := "INSERT INTO read_errors\\(org_id, cluster, updated_at, created_at, error_text\\) VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5\\);"
+
+	mock.ExpectExec(expectedStatement).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := storage.WriteReadError(1, "foo", time.Now(), errors.New("my error"))
+	if err != nil {
+		t.Errorf("error was not expected while writing report for cluster: %s", err)
+	}
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
