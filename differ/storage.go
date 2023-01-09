@@ -1,5 +1,5 @@
 /*
-Copyright © 2021, 2022 Red Hat, Inc.
+Copyright © 2021, 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -89,6 +89,11 @@ type Storage interface {
 		notifiedAt types.Timestamp,
 		errorLog string,
 		eventType types.EventTarget) error
+	WriteReadError(
+		orgID types.OrgID,
+		clusterName types.ClusterName,
+		lastCheckedTime time.Time,
+		e error) error
 	DeleteRowFromNewReports(
 		orgID types.OrgID,
 		clusterName types.ClusterName,
@@ -178,6 +183,11 @@ const (
 		 WHERE updated_at < NOW() - $1::INTERVAL
 		 ORDER BY updated_at
 `
+
+	InsertReadErrorsStatement = `
+		INSERT INTO read_errors(org_id, cluster, updated_at, created_at, error_text)
+		VALUES ($1, $2, $3, $4, $5);
+	`
 )
 
 // inClauseFromStringSlice is a helper function to construct `in` clause for SQL
@@ -519,6 +529,34 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 		clusterEntry.AccountNumber, clusterEntry.ClusterName,
 		notificationTypeID, stateID, report, clusterEntry.UpdatedAt,
 		notifiedAt, errorLog, eventTarget)
+}
+
+// WriteReadError writes information about read error into table read_error.
+func (storage DBStorage) WriteReadError(
+	orgID types.OrgID,
+	clusterName types.ClusterName,
+	lastCheckedTime time.Time,
+	e error,
+) error {
+	if storage.dbDriverType != types.DBDriverSQLite3 && storage.dbDriverType != types.DBDriverPostgres {
+		return fmt.Errorf("writing error with DB %v is not supported", storage.dbDriverType)
+	}
+
+	createdAt := time.Now()
+	errorText := e.Error()
+
+	_, err := storage.connection.Exec(InsertReadErrorsStatement, orgID, clusterName, lastCheckedTime, createdAt, errorText)
+	if err != nil {
+		log.Err(err).
+			Int("org", int(orgID)).
+			Str("cluster", string(clusterName)).
+			Str("last checked", lastCheckedTime.String()).
+			Str("created at", createdAt.String()).
+			Str("error text", errorText).
+			Msg("Unable to write record into read_error table")
+		return err
+	}
+	return nil
 }
 
 // ReadLastNotifiedRecordForClusterList method returns the last notification
