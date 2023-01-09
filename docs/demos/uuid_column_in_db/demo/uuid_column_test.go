@@ -282,35 +282,35 @@ func insertIntoReportedV2(b *testing.B, connection *sql.DB, insertStatement *str
 	}
 }
 
-func performInsertBenchmark(b *testing.B, createTableStatement, dropTableStatement string, report *string) {
+// function to insert record into table v3 is the same as function to insert
+// record into table v1
+var insertIntoReportedV3 = insertIntoReportedV1
+
+func performInsertBenchmark(b *testing.B,
+	createTableStatement, dropTableStatement, insertStatement string,
+	insertFunction InsertFunction,
+	report *string,
+	dropTables bool) {
+
 	// connect to database
 	b.StopTimer()
 	connectionInfo := readConnectionInfoFromEnvVars(b)
-	// log.Print(connectionInfo)
 	connection := connectToDatabase(b, &connectionInfo)
-	// log.Print(connection)
 
 	// create table used by benchmark
-	_, err := connection.Exec(createTableStatement)
-	if err != nil {
-		b.Error("Create table error", err)
-		return
-	}
+	mustExecuteStatement(b, connection, createTableStatement)
 
 	// perform benchmark
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
-		insertIntoReportedV1(b, connection, i, report)
+		insertFunction(b, connection, &insertStatement, i, report)
 	}
 	b.StopTimer()
 
 	// drop table used by benchmark
-	_, err = connection.Exec(dropTableStatement)
-	if err != nil {
-		b.Error("Drop table error", err)
-		return
+	if dropTables {
+		mustExecuteStatement(b, connection, dropTableStatement)
 	}
-	b.StartTimer()
 }
 
 func BenchmarkInsertUUIDAsVarchar(b *testing.B) {
