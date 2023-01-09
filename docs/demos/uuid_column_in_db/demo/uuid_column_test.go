@@ -58,6 +58,11 @@ const (
 		 USING btree (notified_at DESC);
         `
 
+	// Select cluster names from reported table
+	SelectClusterNamesFromReportedV1Statement = `
+            SELECT cluster FROM reported_benchmark_1
+	`
+
 	// Insert one record into reported table
 	InsertIntoReportedV1Statement = `
             INSERT INTO reported_benchmark_1
@@ -65,6 +70,12 @@ const (
             VALUES
             ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
+
+	// Delete one record from reported table
+	DeleteFromReportedV1Statement = `
+            DELETE FROM reported_benchmark_1 WHERE cluster=$1
+	`
+
 	CreateTableReportedBenchmarkByteArrayClusterID = `
 		CREATE TABLE IF NOT EXISTS reported_benchmark_2 (
 		    org_id            integer not null,
@@ -84,6 +95,11 @@ const (
 	DropTableReportedBenchmarkByteArrayClusterID = `
 	        DROP TABLE IF EXISTS reported_benchmark_2;
         `
+	// Select cluster names from reported table
+	SelectClusterNamesFromReportedV2Statement = `
+            SELECT cluster FROM reported_benchmark_2
+	`
+
 	// Insert one record into reported table
 	InsertIntoReportedV2Statement = `
             INSERT INTO reported_benchmark_2
@@ -91,6 +107,12 @@ const (
             VALUES
             ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
+
+	// Delete one record from reported table
+	DeleteFromReportedV2Statement = `
+            DELETE FROM reported_benchmark_2 WHERE cluster=$1
+	`
+
 	CreateTableReportedBenchmarkUUIDClusterID = `
 		CREATE TABLE IF NOT EXISTS reported_benchmark_3 (
 		    org_id            integer not null,
@@ -110,12 +132,22 @@ const (
 	DropTableReportedBenchmarkUUIDClusterID = `
 	        DROP TABLE IF EXISTS reported_benchmark_3;
         `
+	// Select cluster names from reported table
+	SelectClusterNamesFromReportedV3Statement = `
+            SELECT cluster FROM reported_benchmark_3
+	`
+
 	// Insert one record into reported table
 	InsertIntoReportedV3Statement = `
             INSERT INTO reported_benchmark_3
             (org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log)
             VALUES
             ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	`
+
+	// Delete one record from reported table
+	DeleteFromReportedV3Statement = `
+            DELETE FROM reported_benchmark_3 WHERE cluster=$1
 	`
 )
 
@@ -296,6 +328,46 @@ func insertIntoReportedV2(b *testing.B, connection *sql.DB, insertStatement *str
 	}
 }
 
+func readClusterNames(b *testing.B, connection *sql.DB, selectStatement string) []string {
+	var clusterNames = make([]string, 0)
+
+	rows, err := connection.Query(selectStatement)
+	if err != nil {
+		b.Fatal("Select cluster names error", err)
+		return clusterNames
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			b.Fatal("Closing query error", err)
+		}
+	}()
+
+	// read all records
+	for rows.Next() {
+		var clusterName string
+
+		err := rows.Scan(&clusterName)
+		if err != nil {
+			if closeErr := rows.Close(); closeErr != nil {
+				b.Fatal("Unable to close DB row handle")
+			}
+			return clusterNames
+		}
+		clusterNames = append(clusterNames, clusterName)
+	}
+
+	return clusterNames
+}
+
+func deleteReportByClusterName(b *testing.B, connection *sql.DB, deleteStatement string, clusterName string) {
+	_, err := connection.Exec(deleteStatement, clusterName)
+	if err != nil {
+		b.Fatal("SQL delete statement '"+deleteStatement+"' error", err)
+	}
+}
+
 // function to insert record into table v3 is the same as function to insert
 // record into table v1
 var insertIntoReportedV3 = insertIntoReportedV1
@@ -318,6 +390,41 @@ func performInsertBenchmark(b *testing.B,
 	b.StartTimer()
 	for i := 0; i < b.N; i++ {
 		insertFunction(b, connection, &insertStatement, i, report)
+	}
+	b.StopTimer()
+
+	// drop table used by benchmark
+	if dropTables {
+		mustExecuteStatement(b, connection, dropTableStatement)
+	}
+}
+
+func performDeleteBenchmark(b *testing.B,
+	createTableStatement, dropTableStatement, insertStatement, deleteStatement, selectStatement string,
+	insertFunction InsertFunction,
+	report *string,
+	dropTables bool) {
+
+	// connect to database
+	b.StopTimer()
+	connectionInfo := readConnectionInfoFromEnvVars(b)
+	connection := connectToDatabase(b, &connectionInfo)
+
+	// create table used by benchmark
+	mustExecuteStatement(b, connection, createTableStatement)
+
+	// fill-in some data
+	for i := 0; i < b.N; i++ {
+		insertFunction(b, connection, &insertStatement, i, report)
+	}
+
+	// retrieve cluster names
+	clusterNames := readClusterNames(b, connection, selectStatement)
+
+	// perform benchmark - delete selected rows from table one by one
+	b.StartTimer()
+	for _, clusterName := range clusterNames {
+		deleteReportByClusterName(b, connection, deleteStatement, clusterName)
 	}
 	b.StopTimer()
 
@@ -358,12 +465,39 @@ func BenchmarkInsertClusterAsUUID(b *testing.B) {
 }
 
 func BenchmarkDeleteClusterAsVarchar(b *testing.B) {
+	report := ""
+	performDeleteBenchmark(b,
+		CreateTableReportedBenchmarkVarcharClusterID,
+		DropTableReportedBenchmarkVarcharClusterID,
+		InsertIntoReportedV1Statement,
+		DeleteFromReportedV1Statement,
+		SelectClusterNamesFromReportedV1Statement,
+		insertIntoReportedV1,
+		&report, DropTables)
 }
 
 func BenchmarkDeleteClusterAsBytea(b *testing.B) {
+	report := ""
+	performDeleteBenchmark(b,
+		CreateTableReportedBenchmarkByteArrayClusterID,
+		DropTableReportedBenchmarkByteArrayClusterID,
+		InsertIntoReportedV2Statement,
+		DeleteFromReportedV2Statement,
+		SelectClusterNamesFromReportedV2Statement,
+		insertIntoReportedV2,
+		&report, DropTables)
 }
 
 func BenchmarkDeleteClusterAsUUID(b *testing.B) {
+	report := ""
+	performDeleteBenchmark(b,
+		CreateTableReportedBenchmarkUUIDClusterID,
+		DropTableReportedBenchmarkUUIDClusterID,
+		InsertIntoReportedV3Statement,
+		DeleteFromReportedV3Statement,
+		SelectClusterNamesFromReportedV3Statement,
+		insertIntoReportedV3,
+		&report, DropTables)
 }
 
 func BenchmarkSelectClusterAsVarchar(b *testing.B) {
