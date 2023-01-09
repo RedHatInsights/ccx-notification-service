@@ -65,6 +65,12 @@ const (
             VALUES
             ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
+
+	// Delete one record from reported table
+	DeleteFromReportedV1Statement = `
+            DELETE FROM reported_benchmark_1 WHERE cluster=$1
+	`
+
 	CreateTableReportedBenchmarkByteArrayClusterID = `
 		CREATE TABLE IF NOT EXISTS reported_benchmark_2 (
 		    org_id            integer not null,
@@ -91,6 +97,12 @@ const (
             VALUES
             ($1, $2, $3, $4, $5, $6, $7, $8, $9)
 	`
+
+	// Delete one record from reported table
+	DeleteFromReportedV2Statement = `
+            DELETE FROM reported_benchmark_2 WHERE cluster=$1
+	`
+
 	CreateTableReportedBenchmarkUUIDClusterID = `
 		CREATE TABLE IF NOT EXISTS reported_benchmark_3 (
 		    org_id            integer not null,
@@ -116,6 +128,11 @@ const (
             (org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log)
             VALUES
             ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	`
+
+	// Delete one record from reported table
+	DeleteFromReportedV3Statement = `
+            DELETE FROM reported_benchmark_3 WHERE cluster=$1
 	`
 )
 
