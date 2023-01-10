@@ -168,6 +168,7 @@ type ServiceLogConfiguration struct {
 	Enabled             bool          `mapstructure:"enabled" toml:"enabled"`
 	ClientID            string        `mapstructure:"client_id" toml:"client_id"`
 	ClientSecret        string        `mapstructure:"client_secret" toml:"client_secret"`
+	CreatedBy           string        `mapstructure:"created_by" toml:"created_by"`
 	TokenURL            string        `mapstructure:"token_url" toml:"token_url"`
 	URL                 string        `mapstructure:"url" toml:"url"`
 	Timeout             time.Duration `mapstructure:"timeout" toml:"timeout"`
