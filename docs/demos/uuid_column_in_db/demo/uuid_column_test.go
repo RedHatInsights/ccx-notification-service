@@ -87,6 +87,13 @@ const (
             SELECT cluster FROM reported_benchmark_1
 	`
 
+	// Select report from reported table identified by cluster name
+	SelectReportFromReportedV1Statement = `
+            SELECT org_id, account_number, notification_type, state, report, updated_at, notified_at, error_log
+	      FROM reported_benchmark_1
+	     WHERE cluster=$1
+	`
+
 	// Insert one record into reported table
 	InsertIntoReportedV1Statement = `
             INSERT INTO reported_benchmark_1
@@ -134,6 +141,13 @@ const (
 	// Select cluster names from reported table
 	SelectClusterNamesFromReportedV2Statement = `
             SELECT cluster FROM reported_benchmark_2
+	`
+
+	// Select report from reported table identified by cluster name
+	SelectReportFromReportedV2Statement = `
+            SELECT org_id, account_number, notification_type, state, report, updated_at, notified_at, error_log
+	      FROM reported_benchmark_2
+	     WHERE cluster=$1
 	`
 
 	// Insert one record into reported table
@@ -185,6 +199,13 @@ const (
             SELECT cluster FROM reported_benchmark_3
 	`
 
+	// Select report from reported table identified by cluster name
+	SelectReportFromReportedV3Statement = `
+            SELECT org_id, account_number, notification_type, state, report, updated_at, notified_at, error_log
+	      FROM reported_benchmark_3
+	     WHERE cluster=$1
+	`
+
 	// Insert one record into reported table
 	InsertIntoReportedV3Statement = `
             INSERT INTO reported_benchmark_3
@@ -234,6 +255,13 @@ const (
             SELECT cluster FROM reported_benchmark_4
 	`
 
+	// Select report from reported table identified by cluster name
+	SelectReportFromReportedV4Statement = `
+            SELECT org_id, account_number, notification_type, state, report, updated_at, notified_at, error_log
+	      FROM reported_benchmark_4
+	     WHERE cluster=$1
+	`
+
 	// Insert one record into reported table
 	InsertIntoReportedV4Statement = `
             INSERT INTO reported_benchmark_4
@@ -270,6 +298,10 @@ type ConnectionInfo struct {
 // InsertFunction represents callback functions called from benchmarks in order
 // to insert new record into selected table
 type InsertFunction func(b *testing.B, connection *sql.DB, insertStatement *string, i int, report *string)
+
+// SelectFunction represents callback functions called from benchmarks in order
+// to read report or reports identified by cluster name
+type SelectFunction func(b *testing.B, connection *sql.DB, selectStatement *string, clusterName string) int
 
 // readEnvVariable function tries to read content of specified environment
 // variable with check if the variable exists
@@ -447,6 +479,61 @@ func insertIntoReportedV3(b *testing.B, connection *sql.DB, insertStatement *str
 	}
 }
 
+// selectFromReportedTableV1 function perform SELECT statement to retrieve
+// reports from reported table when report or reports are identified by cluster
+// name. Number of reports are returned from this function as the only return
+// value.
+func selectFromReportedTableV1(b *testing.B, connection *sql.DB, selectStatement *string, clusterName string) int {
+	// execute SQL query statement
+	rows, err := connection.Query(*selectStatement, clusterName)
+	if err != nil {
+		b.Fatal("Select from reported table error", err)
+		return 0
+	}
+
+	// result set needs to be closed at the end
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			b.Fatal("Closing query error", err)
+		}
+	}()
+
+	// report counter
+	reports := 0
+
+	// read all records
+	for rows.Next() {
+		reports++
+		var orgID int
+		var accountNumber int
+		var notificationType int
+		var state int
+		var report string
+		var updatedAt time.Time
+		var notifiedAt time.Time
+		var errorLog string
+
+		// read one report from result set
+		err := rows.Scan(&orgID, &accountNumber, &notificationType, &state, &report, &updatedAt, &notifiedAt, &errorLog)
+
+		// check for any scan errors
+		if err != nil {
+			if closeErr := rows.Close(); closeErr != nil {
+				b.Fatal("Unable to close DB row handle")
+			}
+			return reports
+		}
+	}
+	// return number of reports read and parsed
+	return reports
+}
+
+// All functions used to select reports from reported table are actually the same
+var selectFromReportedTableV2 = selectFromReportedTableV1
+var selectFromReportedTableV3 = selectFromReportedTableV1
+var selectFromReportedTableV4 = selectFromReportedTableV1
+
 // readClusterNames is helper function to read al cluster names stored in
 // reported table
 func readClusterNames(b *testing.B, connection *sql.DB, selectClusterNamesStatement string) []string {
@@ -568,6 +655,52 @@ func performDeleteBenchmark(b *testing.B,
 	// drop table used by benchmark
 	if dropTables {
 		mustExecuteStatement(b, connection, dropTableStatement)
+	}
+}
+
+// performSelectBenchmark function contains implementation of SELECTion
+// benchmarks for all possible table variants.
+func performSelectBenchmark(b *testing.B,
+	createTableStatement, dropTableStatement, insertStatement, selectReportStatement, selectClusterNamesStatement string,
+	insertFunction InsertFunction,
+	selectFunction SelectFunction,
+	report *string,
+	dropTables bool) {
+
+	// connect to database
+	b.StopTimer()
+	connectionInfo := readConnectionInfoFromEnvVars(b)
+	connection := connectToDatabase(b, &connectionInfo)
+
+	// create table used by benchmark
+	mustExecuteStatement(b, connection, createTableStatement)
+
+	// fill-in some data
+	for i := 0; i < b.N; i++ {
+		insertFunction(b, connection, &insertStatement, i, report)
+	}
+
+	// retrieve cluster names
+	clusterNames := readClusterNames(b, connection, selectClusterNamesStatement)
+
+	reports := 0
+
+	// perform benchmark - select report or reports identified by cluster name
+	b.StartTimer()
+	for _, clusterName := range clusterNames {
+		reports += selectFunction(b, connection, &selectReportStatement, clusterName)
+	}
+	b.StopTimer()
+
+	// drop table used by benchmark
+	if dropTables {
+		mustExecuteStatement(b, connection, dropTableStatement)
+	}
+
+	// check total number of reports
+	// we assume that cluster names (UUIDs) are really unique
+	if reports != b.N {
+		b.Fatal("Total number of reports differs from table size", reports, b.N)
 	}
 }
 
@@ -707,14 +840,78 @@ func BenchmarkDeleteClusterAsUUID(b *testing.B) {
 		&report, DropTables)
 }
 
+// BenchmarkSelectClusterAsChar function contains implementation of benchmark
+// that performs SELECTion from report table where cluster name is represented
+// as CHAR(36).
 func BenchmarkSelectClusterAsChar(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performSelectBenchmark(b,
+		CreateTableReportedBenchmarkCharClusterID,
+		DropTableReportedBenchmarkCharClusterID,
+		InsertIntoReportedV1Statement,
+		SelectReportFromReportedV1Statement,
+		SelectClusterNamesFromReportedV1Statement,
+		insertIntoReportedV1,
+		selectFromReportedTableV1,
+		&report, DropTables)
 }
 
+// BenchmarkSelectClusterAsVarchar function contains implementation of benchmark
+// that performs SELECTion from report table where cluster name is represented
+// as VARCHAR(36).
 func BenchmarkSelectClusterAsVarchar(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performSelectBenchmark(b,
+		CreateTableReportedBenchmarkVarcharClusterID,
+		DropTableReportedBenchmarkVarcharClusterID,
+		InsertIntoReportedV2Statement,
+		SelectReportFromReportedV2Statement,
+		SelectClusterNamesFromReportedV2Statement,
+		insertIntoReportedV2,
+		selectFromReportedTableV2,
+		&report, DropTables)
 }
 
+// BenchmarkSelectClusterAsBytea function contains implementation of benchmark
+// that performs SELECTion from report table where cluster name is represented
+// as BYTEA.
 func BenchmarkSelectClusterAsBytea(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performSelectBenchmark(b,
+		CreateTableReportedBenchmarkByteArrayClusterID,
+		DropTableReportedBenchmarkByteArrayClusterID,
+		InsertIntoReportedV3Statement,
+		SelectReportFromReportedV3Statement,
+		SelectClusterNamesFromReportedV3Statement,
+		insertIntoReportedV3,
+		selectFromReportedTableV3,
+		&report, DropTables)
 }
 
+// BenchmarkSelectClusterAsUUID function contains implementation of benchmark
+// that performs SELECTion from report table where cluster name is represented
+// as UUID.
 func BenchmarkSelectClusterAsUUID(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performSelectBenchmark(b,
+		CreateTableReportedBenchmarkUUIDClusterID,
+		DropTableReportedBenchmarkUUIDClusterID,
+		InsertIntoReportedV4Statement,
+		SelectReportFromReportedV4Statement,
+		SelectClusterNamesFromReportedV4Statement,
+		insertIntoReportedV4,
+		selectFromReportedTableV4,
+		&report, DropTables)
 }
