@@ -283,6 +283,9 @@ const (
 
 	// Report to be used in benchmarks
 	Report = ""
+
+	// Time to breath between tests specified in minutes
+	TimeToBreath = 2
 )
 
 // ConnectionInfo structure stores all values needed to connect to PSQL
@@ -602,6 +605,7 @@ func performInsertBenchmark(b *testing.B,
 
 	// connect to database
 	b.StopTimer()
+	time.Sleep(TimeToBreath * time.Minute)
 	connectionInfo := readConnectionInfoFromEnvVars(b)
 	connection := connectToDatabase(b, &connectionInfo)
 
@@ -631,10 +635,12 @@ func performDeleteBenchmark(b *testing.B,
 
 	// connect to database
 	b.StopTimer()
+	time.Sleep(TimeToBreath * time.Minute)
 	connectionInfo := readConnectionInfoFromEnvVars(b)
 	connection := connectToDatabase(b, &connectionInfo)
 
 	// create table used by benchmark
+	mustExecuteStatement(b, connection, dropTableStatement)
 	mustExecuteStatement(b, connection, createTableStatement)
 
 	// fill-in some data
@@ -669,6 +675,7 @@ func performSelectBenchmark(b *testing.B,
 
 	// connect to database
 	b.StopTimer()
+	time.Sleep(TimeToBreath * time.Minute)
 	connectionInfo := readConnectionInfoFromEnvVars(b)
 	connection := connectToDatabase(b, &connectionInfo)
 
