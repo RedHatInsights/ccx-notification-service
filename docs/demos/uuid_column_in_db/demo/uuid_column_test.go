@@ -299,6 +299,10 @@ type ConnectionInfo struct {
 // to insert new record into selected table
 type InsertFunction func(b *testing.B, connection *sql.DB, insertStatement *string, i int, report *string)
 
+// SelectFunction represents callback functions called from benchmarks in order
+// to read report or reports identified by cluster name
+type SelectFunction func(b *testing.B, connection *sql.DB, selectStatement *string, clusterName string) int
+
 // readEnvVariable function tries to read content of specified environment
 // variable with check if the variable exists
 func readEnvVariable(b *testing.B, variableName string) string {
@@ -474,6 +478,61 @@ func insertIntoReportedV3(b *testing.B, connection *sql.DB, insertStatement *str
 		b.Fatal(err)
 	}
 }
+
+// selectFromReportedTableV1 function perform SELECT statement to retrieve
+// reports from reported table when report or reports are identified by cluster
+// name. Number of reports are returned from this function as the only return
+// value.
+func selectFromReportedTableV1(b *testing.B, connection *sql.DB, selectStatement *string, clusterName string) int {
+	// execute SQL query statement
+	rows, err := connection.Query(*selectStatement, clusterName)
+	if err != nil {
+		b.Fatal("Select from reported table error", err)
+		return 0
+	}
+
+	// result set needs to be closed at the end
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			b.Fatal("Closing query error", err)
+		}
+	}()
+
+	// report counter
+	reports := 0
+
+	// read all records
+	for rows.Next() {
+		reports++
+		var orgID int
+		var accountNumber int
+		var notificationType int
+		var state int
+		var report string
+		var updatedAt time.Time
+		var notifiedAt time.Time
+		var errorLog string
+
+		// read one report from result set
+		err := rows.Scan(&orgID, &accountNumber, &notificationType, &state, &report, &updatedAt, &notifiedAt, &errorLog)
+
+		// check for any scan errors
+		if err != nil {
+			if closeErr := rows.Close(); closeErr != nil {
+				b.Fatal("Unable to close DB row handle")
+			}
+			return reports
+		}
+	}
+	// return number of reports read and parsed
+	return reports
+}
+
+// All functions used to select reports from reported table are actually the same
+var selectFromReportedTableV2 = selectFromReportedTableV1
+var selectFromReportedTableV3 = selectFromReportedTableV1
+var selectFromReportedTableV4 = selectFromReportedTableV1
 
 // readClusterNames is helper function to read al cluster names stored in
 // reported table
