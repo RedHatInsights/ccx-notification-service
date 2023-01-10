@@ -23,19 +23,19 @@ import (
 
 func BenchmarkFindRenderedReport(b *testing.B) {
 	reports := []types.RenderedReport{
-		types.RenderedReport{
+		{
 			RuleID:   "rule_1",
 			ErrorKey: "RULE_1",
 		},
-		types.RenderedReport{
+		{
 			RuleID:   "rule_2",
 			ErrorKey: "RULE_2",
 		},
-		types.RenderedReport{
+		{
 			RuleID:   "rule_3",
 			ErrorKey: "RULE_3",
 		},
-		types.RenderedReport{
+		{
 			RuleID:   "rule_4",
 			ErrorKey: "RULE_4",
 		},
