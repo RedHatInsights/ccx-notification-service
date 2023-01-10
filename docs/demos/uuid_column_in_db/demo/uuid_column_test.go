@@ -52,7 +52,7 @@ import (
 
 // SQL statements to create and drop tables used in benchmarks
 const (
-	CreateTableReportedBenchmarkVarcharClusterID = `
+	CreateTableReportedBenchmarkCharClusterID = `
 		CREATE TABLE IF NOT EXISTS reported_benchmark_1 (
 		    org_id            integer not null,
 		    account_number    integer not null,
@@ -68,7 +68,7 @@ const (
 		);
 		`
 
-	DropTableReportedBenchmarkVarcharClusterID = `
+	DropTableReportedBenchmarkCharClusterID = `
 	        DROP TABLE IF EXISTS reported_benchmark_1;
         `
 	// Index for the reported table used in benchmarks for
@@ -525,8 +525,8 @@ func performDeleteBenchmark(b *testing.B,
 func BenchmarkInsertClusterAsChar(b *testing.B) {
 	report := ""
 	performInsertBenchmark(b,
-		CreateTableReportedBenchmarkVarcharClusterID,
-		DropTableReportedBenchmarkVarcharClusterID,
+		CreateTableReportedBenchmarkCharClusterID,
+		DropTableReportedBenchmarkCharClusterID,
 		InsertIntoReportedV1Statement,
 		insertIntoReportedV1,
 		&report, DropTables)
