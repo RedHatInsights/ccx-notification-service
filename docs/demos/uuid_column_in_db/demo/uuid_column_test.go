@@ -165,6 +165,12 @@ const (
 	DropTableReportedBenchmarkByteArrayClusterID = `
 	        DROP TABLE IF EXISTS reported_benchmark_3;
         `
+	CreateIndexReportedNotifiedAtDescV3 = `
+                CREATE INDEX IF NOT EXISTS notified_at_desc_idx
+		    ON reported_benchmark_3
+		 USING btree (notified_at DESC);
+        `
+
 	// Select cluster names from reported table
 	SelectClusterNamesFromReportedV3Statement = `
             SELECT cluster FROM reported_benchmark_3
@@ -202,6 +208,12 @@ const (
 	DropTableReportedBenchmarkUUIDClusterID = `
 	        DROP TABLE IF EXISTS reported_benchmark_4;
         `
+	CreateIndexReportedNotifiedAtDescV4 = `
+                CREATE INDEX IF NOT EXISTS notified_at_desc_idx
+		    ON reported_benchmark_4
+		 USING btree (notified_at DESC);
+        `
+
 	// Select cluster names from reported table
 	SelectClusterNamesFromReportedV4Statement = `
             SELECT cluster FROM reported_benchmark_4
@@ -224,7 +236,10 @@ const (
 // Tests configuration
 const (
 	// Should tables used by benchmarks be dropped at the end?
-	DropTables = false
+	DropTables = true
+
+	// Report to be used in benchmarks
+	Report = ""
 )
 
 // ConnectionInfo structure stores all values needed to connect to PSQL
@@ -523,7 +538,7 @@ func performDeleteBenchmark(b *testing.B,
 }
 
 func BenchmarkInsertClusterAsChar(b *testing.B) {
-	report := ""
+	report := Report
 	performInsertBenchmark(b,
 		CreateTableReportedBenchmarkCharClusterID,
 		DropTableReportedBenchmarkCharClusterID,
@@ -533,7 +548,7 @@ func BenchmarkInsertClusterAsChar(b *testing.B) {
 }
 
 func BenchmarkInsertClusterAsVarchar(b *testing.B) {
-	report := ""
+	report := Report
 	performInsertBenchmark(b,
 		CreateTableReportedBenchmarkVarcharClusterID,
 		DropTableReportedBenchmarkVarcharClusterID,
@@ -543,7 +558,7 @@ func BenchmarkInsertClusterAsVarchar(b *testing.B) {
 }
 
 func BenchmarkInsertClusterAsBytea(b *testing.B) {
-	report := ""
+	report := Report
 	performInsertBenchmark(b,
 		CreateTableReportedBenchmarkByteArrayClusterID,
 		DropTableReportedBenchmarkByteArrayClusterID,
@@ -553,7 +568,7 @@ func BenchmarkInsertClusterAsBytea(b *testing.B) {
 }
 
 func BenchmarkInsertClusterAsUUID(b *testing.B) {
-	report := ""
+	report := Report
 	performInsertBenchmark(b,
 		CreateTableReportedBenchmarkUUIDClusterID,
 		DropTableReportedBenchmarkUUIDClusterID,
@@ -563,7 +578,7 @@ func BenchmarkInsertClusterAsUUID(b *testing.B) {
 }
 
 func BenchmarkDeleteClusterAsChar(b *testing.B) {
-	report := ""
+	report := Report
 	performDeleteBenchmark(b,
 		CreateTableReportedBenchmarkCharClusterID,
 		DropTableReportedBenchmarkCharClusterID,
@@ -575,7 +590,7 @@ func BenchmarkDeleteClusterAsChar(b *testing.B) {
 }
 
 func BenchmarkDeleteClusterAsVarchar(b *testing.B) {
-	report := ""
+	report := Report
 	performDeleteBenchmark(b,
 		CreateTableReportedBenchmarkVarcharClusterID,
 		DropTableReportedBenchmarkVarcharClusterID,
@@ -587,7 +602,7 @@ func BenchmarkDeleteClusterAsVarchar(b *testing.B) {
 }
 
 func BenchmarkDeleteClusterAsBytea(b *testing.B) {
-	report := ""
+	report := Report
 	performDeleteBenchmark(b,
 		CreateTableReportedBenchmarkByteArrayClusterID,
 		DropTableReportedBenchmarkByteArrayClusterID,
@@ -599,7 +614,7 @@ func BenchmarkDeleteClusterAsBytea(b *testing.B) {
 }
 
 func BenchmarkDeleteClusterAsUUID(b *testing.B) {
-	report := ""
+	report := Report
 	performDeleteBenchmark(b,
 		CreateTableReportedBenchmarkUUIDClusterID,
 		DropTableReportedBenchmarkUUIDClusterID,
