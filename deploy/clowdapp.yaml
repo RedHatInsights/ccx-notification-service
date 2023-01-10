@@ -129,6 +129,8 @@ objects:
               secretKeyRef:
                 name: ccx-notification-service-auth
                 key: ocmclient_id
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__CREATED_BY
+            value: 'insights-advisor'
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__CLIENT_SECRET
             valueFrom:
               secretKeyRef:

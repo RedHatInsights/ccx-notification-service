@@ -249,6 +249,7 @@ func showConfiguration(config *conf.ConfigStruct) {
 	log.Info().
 		Bool("Enabled", serviceLogConfig.Enabled).
 		Str("ClientID", serviceLogConfig.ClientID).
+		Str("Created by", serviceLogConfig.CreatedBy).
 		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
 		Int("Impact threshold", brokerConfig.ImpactThreshold).
 		Int("Severity threshold", brokerConfig.SeverityThreshold).
