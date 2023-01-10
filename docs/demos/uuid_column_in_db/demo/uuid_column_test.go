@@ -658,6 +658,52 @@ func performDeleteBenchmark(b *testing.B,
 	}
 }
 
+// performSelectBenchmark function contains implementation of SELECTion
+// benchmarks for all possible table variants.
+func performSelectBenchmark(b *testing.B,
+	createTableStatement, dropTableStatement, insertStatement, selectReportStatement, selectClusterNamesStatement string,
+	insertFunction InsertFunction,
+	selectFunction SelectFunction,
+	report *string,
+	dropTables bool) {
+
+	// connect to database
+	b.StopTimer()
+	connectionInfo := readConnectionInfoFromEnvVars(b)
+	connection := connectToDatabase(b, &connectionInfo)
+
+	// create table used by benchmark
+	mustExecuteStatement(b, connection, createTableStatement)
+
+	// fill-in some data
+	for i := 0; i < b.N; i++ {
+		insertFunction(b, connection, &insertStatement, i, report)
+	}
+
+	// retrieve cluster names
+	clusterNames := readClusterNames(b, connection, selectClusterNamesStatement)
+
+	reports := 0
+
+	// perform benchmark - select report or reports identified by cluster name
+	b.StartTimer()
+	for _, clusterName := range clusterNames {
+		reports += selectFunction(b, connection, &selectReportStatement, clusterName)
+	}
+	b.StopTimer()
+
+	// drop table used by benchmark
+	if dropTables {
+		mustExecuteStatement(b, connection, dropTableStatement)
+	}
+
+	// check total number of reports
+	// we assume that cluster names (UUIDs) are really unique
+	if reports != b.N {
+		b.Fatal("Total number of reports differs from table size", reports, b.N)
+	}
+}
+
 // BenchmarkInsertClusterAsChar function contains implementation of benchmark
 // that performs INSERTion into report table where cluster name is represented
 // as CHAR(36).
