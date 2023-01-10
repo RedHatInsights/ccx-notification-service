@@ -87,6 +87,13 @@ const (
             SELECT cluster FROM reported_benchmark_1
 	`
 
+	// Select report from reported table identified by cluster name
+	SelectReportFromReportedV1Statement = `
+            SELECT org_id, account_number, notification_type, state, report, updated_at, notified_at, error_log
+	      FROM reported_benchmark_1
+	     WHERE cluster=$1
+	`
+
 	// Insert one record into reported table
 	InsertIntoReportedV1Statement = `
             INSERT INTO reported_benchmark_1
@@ -134,6 +141,13 @@ const (
 	// Select cluster names from reported table
 	SelectClusterNamesFromReportedV2Statement = `
             SELECT cluster FROM reported_benchmark_2
+	`
+
+	// Select report from reported table identified by cluster name
+	SelectReportFromReportedV2Statement = `
+            SELECT org_id, account_number, notification_type, state, report, updated_at, notified_at, error_log
+	      FROM reported_benchmark_2
+	     WHERE cluster=$1
 	`
 
 	// Insert one record into reported table
@@ -185,6 +199,13 @@ const (
             SELECT cluster FROM reported_benchmark_3
 	`
 
+	// Select report from reported table identified by cluster name
+	SelectReportFromReportedV3Statement = `
+            SELECT org_id, account_number, notification_type, state, report, updated_at, notified_at, error_log
+	      FROM reported_benchmark_3
+	     WHERE cluster=$1
+	`
+
 	// Insert one record into reported table
 	InsertIntoReportedV3Statement = `
             INSERT INTO reported_benchmark_3
@@ -232,6 +253,13 @@ const (
 	// Select cluster names from reported table
 	SelectClusterNamesFromReportedV4Statement = `
             SELECT cluster FROM reported_benchmark_4
+	`
+
+	// Select report from reported table identified by cluster name
+	SelectReportFromReportedV4Statement = `
+            SELECT org_id, account_number, notification_type, state, report, updated_at, notified_at, error_log
+	      FROM reported_benchmark_4
+	     WHERE cluster=$1
 	`
 
 	// Insert one record into reported table
