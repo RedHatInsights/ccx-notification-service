@@ -14,6 +14,27 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+//
+// Benchmarks to check what's the best PostgreSQL data type to store cluster
+// name. From user perspective cluster names are represented as UUIDs strings
+// that have the following display format:
+//
+// 123e4567-e89b-12d3-a456-426614174000
+//
+// There are four basic data types that can be used to store such names in PostgreSQL:
+//     1) CHAR(36)
+//     2) VARCHAR
+//     3) BYTEA
+//     4) UUID
+//
+// This benchmark checks which data type is best from performance perspective.
+//
+// For each data type, three benchmarks are run:
+//     1) INSERTion into REPORTED table
+//     2) DELETion from REPORTED table when reports are identified by cluster name
+//     3) SELECTion from REPORTED table when reports are identified by cluster name
+//
+
 package main
 
 import (
