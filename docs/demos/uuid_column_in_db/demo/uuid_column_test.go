@@ -840,14 +840,78 @@ func BenchmarkDeleteClusterAsUUID(b *testing.B) {
 		&report, DropTables)
 }
 
+// BenchmarkSelectClusterAsChar function contains implementation of benchmark
+// that performs SELECTion from report table where cluster name is represented
+// as CHAR(36).
 func BenchmarkSelectClusterAsChar(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performSelectBenchmark(b,
+		CreateTableReportedBenchmarkCharClusterID,
+		DropTableReportedBenchmarkCharClusterID,
+		InsertIntoReportedV1Statement,
+		SelectReportFromReportedV1Statement,
+		SelectClusterNamesFromReportedV1Statement,
+		insertIntoReportedV1,
+		selectFromReportedTableV1,
+		&report, DropTables)
 }
 
+// BenchmarkSelectClusterAsVarchar function contains implementation of benchmark
+// that performs SELECTion from report table where cluster name is represented
+// as VARCHAR(36).
 func BenchmarkSelectClusterAsVarchar(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performSelectBenchmark(b,
+		CreateTableReportedBenchmarkVarcharClusterID,
+		DropTableReportedBenchmarkVarcharClusterID,
+		InsertIntoReportedV2Statement,
+		SelectReportFromReportedV2Statement,
+		SelectClusterNamesFromReportedV2Statement,
+		insertIntoReportedV2,
+		selectFromReportedTableV2,
+		&report, DropTables)
 }
 
+// BenchmarkSelectClusterAsBytea function contains implementation of benchmark
+// that performs SELECTion from report table where cluster name is represented
+// as BYTEA.
 func BenchmarkSelectClusterAsBytea(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performSelectBenchmark(b,
+		CreateTableReportedBenchmarkByteArrayClusterID,
+		DropTableReportedBenchmarkByteArrayClusterID,
+		InsertIntoReportedV3Statement,
+		SelectReportFromReportedV3Statement,
+		SelectClusterNamesFromReportedV3Statement,
+		insertIntoReportedV3,
+		selectFromReportedTableV3,
+		&report, DropTables)
 }
 
+// BenchmarkSelectClusterAsUUID function contains implementation of benchmark
+// that performs SELECTion from report table where cluster name is represented
+// as UUID.
 func BenchmarkSelectClusterAsUUID(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performSelectBenchmark(b,
+		CreateTableReportedBenchmarkUUIDClusterID,
+		DropTableReportedBenchmarkUUIDClusterID,
+		InsertIntoReportedV4Statement,
+		SelectReportFromReportedV4Statement,
+		SelectClusterNamesFromReportedV4Statement,
+		insertIntoReportedV4,
+		selectFromReportedTableV4,
+		&report, DropTables)
 }
