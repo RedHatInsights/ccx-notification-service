@@ -97,6 +97,55 @@ const (
             DELETE FROM reported_benchmark_1 WHERE cluster=$1
 	`
 
+	// CreateTableReportedBenchmarkVarcharClusterID is SQL statement used
+	// to create reported table where cluster name is represented as
+	// varchar(36)
+	CreateTableReportedBenchmarkVarcharClusterID = `
+		CREATE TABLE IF NOT EXISTS reported_benchmark_2 (
+		    org_id            integer not null,
+		    account_number    integer not null,
+		    cluster           varchar(36) not null,
+		    notification_type integer not null,
+		    state             integer not null,
+		    report            varchar not null,
+		    updated_at        timestamp not null,
+		    notified_at       timestamp not null,
+		    error_log         varchar,
+
+		    PRIMARY KEY (org_id, cluster, notified_at)
+		);
+		`
+
+	// SQL statement used to drop (delete) second table used by benchmarks
+	DropTableReportedBenchmarkVarcharClusterID = `
+	        DROP TABLE IF EXISTS reported_benchmark_2;
+        `
+	// Index for the reported table used in benchmarks for
+	// notified_at column
+	CreateIndexReportedNotifiedAtDescV2 = `
+                CREATE INDEX IF NOT EXISTS notified_at_desc_idx
+		    ON reported_benchmark_2
+		 USING btree (notified_at DESC);
+        `
+
+	// Select cluster names from reported table
+	SelectClusterNamesFromReportedV2Statement = `
+            SELECT cluster FROM reported_benchmark_2
+	`
+
+	// Insert one record into reported table
+	InsertIntoReportedV2Statement = `
+            INSERT INTO reported_benchmark_2
+            (org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log)
+            VALUES
+            ($1, $2, $3, $4, $5, $6, $7, $8, $9)
+	`
+
+	// Delete one record from reported table
+	DeleteFromReportedV2Statement = `
+            DELETE FROM reported_benchmark_2 WHERE cluster=$1
+	`
+
 	CreateTableReportedBenchmarkByteArrayClusterID = `
 		CREATE TABLE IF NOT EXISTS reported_benchmark_3 (
 		    org_id            integer not null,
@@ -277,6 +326,20 @@ func insertIntoReportedV1(b *testing.B, connection *sql.DB, insertStatement *str
 	// 9 | error_log         | character varying           |           |
 
 	// or
+
+	// following columns needs to be updated with data:
+	// 1 | org_id            | integer                     | not null  |
+	// 2 | account_number    | integer                     | not null  |
+	// 3 | cluster           | varchar(36)                 | not null  |
+	// 4 | notification_type | integer                     | not null  |
+	// 5 | state             | integer                     | not null  |
+	// 6 | report            | character varying           | not null  |
+	// 7 | updated_at        | timestamp without time zone | not null  |
+	// 8 | notified_at       | timestamp without time zone | not null  |
+	// 9 | error_log         | character varying           |           |
+
+	// or
+
 	// 1 | org_id            | integer                     | not null  |
 	// 2 | account_number    | integer                     | not null  |
 	// 3 | cluster           | UUID                        | not null  |
@@ -389,7 +452,11 @@ func deleteReportByClusterName(b *testing.B, connection *sql.DB, deleteStatement
 	}
 }
 
-// function to insert record into table V4 is the same as function to insert
+// function to insert record into table v2 is the same as function to insert
+// record into table v1
+var insertIntoReportedV2 = insertIntoReportedV1
+
+// function to insert record into table v4 is the same as function to insert
 // record into table v1
 var insertIntoReportedV4 = insertIntoReportedV1
 
@@ -465,6 +532,16 @@ func BenchmarkInsertClusterAsChar(b *testing.B) {
 		&report, DropTables)
 }
 
+func BenchmarkInsertClusterAsVarchar(b *testing.B) {
+	report := ""
+	performInsertBenchmark(b,
+		CreateTableReportedBenchmarkVarcharClusterID,
+		DropTableReportedBenchmarkVarcharClusterID,
+		InsertIntoReportedV2Statement,
+		insertIntoReportedV2,
+		&report, DropTables)
+}
+
 func BenchmarkInsertClusterAsBytea(b *testing.B) {
 	report := ""
 	performInsertBenchmark(b,
@@ -485,7 +562,7 @@ func BenchmarkInsertClusterAsUUID(b *testing.B) {
 		&report, DropTables)
 }
 
-func BenchmarkDeleteClusterAsVarchar(b *testing.B) {
+func BenchmarkDeleteClusterAsChar(b *testing.B) {
 	report := ""
 	performDeleteBenchmark(b,
 		CreateTableReportedBenchmarkCharClusterID,
@@ -494,6 +571,18 @@ func BenchmarkDeleteClusterAsVarchar(b *testing.B) {
 		DeleteFromReportedV1Statement,
 		SelectClusterNamesFromReportedV1Statement,
 		insertIntoReportedV1,
+		&report, DropTables)
+}
+
+func BenchmarkDeleteClusterAsVarchar(b *testing.B) {
+	report := ""
+	performDeleteBenchmark(b,
+		CreateTableReportedBenchmarkVarcharClusterID,
+		DropTableReportedBenchmarkVarcharClusterID,
+		InsertIntoReportedV2Statement,
+		DeleteFromReportedV2Statement,
+		SelectClusterNamesFromReportedV2Statement,
+		insertIntoReportedV2,
 		&report, DropTables)
 }
 
@@ -519,6 +608,9 @@ func BenchmarkDeleteClusterAsUUID(b *testing.B) {
 		SelectClusterNamesFromReportedV4Statement,
 		insertIntoReportedV4,
 		&report, DropTables)
+}
+
+func BenchmarkSelectClusterAsChar(b *testing.B) {
 }
 
 func BenchmarkSelectClusterAsVarchar(b *testing.B) {
