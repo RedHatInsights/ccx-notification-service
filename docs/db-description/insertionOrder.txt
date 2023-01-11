@@ -1,9 +1,7 @@
 new_reports
+event_targets
 notification_types
 states
-event_targets
-reported_benchmark_1
 read_errors
 reported
-reported_benchmark_2
 migration_info

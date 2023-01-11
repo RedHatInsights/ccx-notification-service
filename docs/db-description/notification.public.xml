@@ -7,7 +7,6 @@
       <table name="event_targets" numRows="2" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="event_type_id" foreignKey="reported_event_type_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="reported"/>
-            <child column="event_type_id" foreignKey="fk_event_type" implied="false" onDeleteCascade="false" schema="public" table="reported_benchmark_2"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="name" nullable="false" remarks="" size="2147483647" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="metainfo" nullable="false" remarks="" size="2147483647" type="varchar" typeCode="12"/>
@@ -65,8 +64,6 @@
       <table name="notification_types" numRows="2" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="notification_type" foreignKey="fk_notification_type" implied="false" onDeleteCascade="false" schema="public" table="reported"/>
-            <child column="notification_type" foreignKey="fk_notification_type" implied="false" onDeleteCascade="false" schema="public" table="reported_benchmark_1"/>
-            <child column="notification_type" foreignKey="fk_notification_type" implied="false" onDeleteCascade="false" schema="public" table="reported_benchmark_2"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="value" nullable="false" remarks="" size="2147483647" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="frequency" nullable="false" remarks="" size="2147483647" type="varchar" typeCode="12"/>
@@ -79,7 +76,7 @@
             <column ascending="true" name="id"/>
          </index>
       </table>
-      <table name="read_errors" numRows="0" remarks="" schema="public" type="TABLE">
+      <table name="read_errors" numRows="3" remarks="" schema="public" type="TABLE">
          <column autoUpdated="true" defaultValue="nextval('read_errors_error_id_seq'::regclass)" digits="0" id="0" name="error_id" nullable="false" remarks="" size="10" type="serial" typeCode="4"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="org_id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <parent column="org_id" foreignKey="read_errors_org_id_fkey" implied="false" onDeleteCascade="false" schema="public" table="new_reports"/>
@@ -135,60 +132,9 @@
             <column ascending="true" name="updated_at"/>
          </index>
       </table>
-      <table name="reported_benchmark_1" numRows="1000" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="org_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="account_number" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="cluster" nullable="false" remarks="" size="36" type="bpchar" typeCode="1"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="notification_type" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="fk_notification_type" implied="false" onDeleteCascade="false" schema="public" table="notification_types"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="state" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="fk_state" implied="false" onDeleteCascade="false" schema="public" table="states"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="report" nullable="false" remarks="" size="2147483647" type="varchar" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="updated_at" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="notified_at" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="error_log" nullable="true" remarks="" size="2147483647" type="varchar" typeCode="12"/>
-         <primaryKey column="org_id" sequenceNumberInPK="1"/>
-         <primaryKey column="cluster" sequenceNumberInPK="2"/>
-         <primaryKey column="notified_at" sequenceNumberInPK="3"/>
-         <index name="reported_benchmark_1_pkey" unique="true">
-            <column ascending="true" name="org_id"/>
-            <column ascending="true" name="cluster"/>
-            <column ascending="true" name="notified_at"/>
-         </index>
-      </table>
-      <table name="reported_benchmark_2" numRows="703" remarks="" schema="public" type="TABLE">
-         <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="org_id" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="account_number" nullable="false" remarks="" size="10" type="int4" typeCode="4"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="cluster" nullable="false" remarks="" size="36" type="bpchar" typeCode="1"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="3" name="notification_type" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="fk_notification_type" implied="false" onDeleteCascade="false" schema="public" table="notification_types"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="4" name="state" nullable="false" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="fk_state" implied="false" onDeleteCascade="false" schema="public" table="states"/>
-         </column>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="5" name="report" nullable="false" remarks="" size="2147483647" type="varchar" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="6" name="updated_at" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="6" id="7" name="notified_at" nullable="false" remarks="" size="29" type="timestamp" typeCode="93"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="8" name="error_log" nullable="true" remarks="" size="2147483647" type="varchar" typeCode="12"/>
-         <column autoUpdated="false" defaultValue="null" digits="0" id="9" name="event_type_id" nullable="true" remarks="" size="10" type="int4" typeCode="4">
-            <parent column="id" foreignKey="fk_event_type" implied="false" onDeleteCascade="false" schema="public" table="event_targets"/>
-         </column>
-         <primaryKey column="org_id" sequenceNumberInPK="1"/>
-         <primaryKey column="cluster" sequenceNumberInPK="2"/>
-         <primaryKey column="notified_at" sequenceNumberInPK="3"/>
-         <index name="reported_benchmark_2_pkey" unique="true">
-            <column ascending="true" name="org_id"/>
-            <column ascending="true" name="cluster"/>
-            <column ascending="true" name="notified_at"/>
-         </index>
-      </table>
       <table name="states" numRows="4" remarks="" schema="public" type="TABLE">
          <column autoUpdated="false" defaultValue="null" digits="0" id="0" name="id" nullable="false" remarks="" size="10" type="int4" typeCode="4">
             <child column="state" foreignKey="fk_state" implied="false" onDeleteCascade="false" schema="public" table="reported"/>
-            <child column="state" foreignKey="fk_state" implied="false" onDeleteCascade="false" schema="public" table="reported_benchmark_1"/>
-            <child column="state" foreignKey="fk_state" implied="false" onDeleteCascade="false" schema="public" table="reported_benchmark_2"/>
          </column>
          <column autoUpdated="false" defaultValue="null" digits="0" id="1" name="value" nullable="false" remarks="" size="2147483647" type="varchar" typeCode="12"/>
          <column autoUpdated="false" defaultValue="null" digits="0" id="2" name="comment" nullable="true" remarks="" size="2147483647" type="varchar" typeCode="12"/>
