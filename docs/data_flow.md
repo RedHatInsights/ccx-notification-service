@@ -54,7 +54,9 @@ See steps 9 to 12 of the [data flow section](#data-flow)
 The cooldown mechanism can be configured by specifying the `cooldown` field under each integrated service's configuration.
 Currently, the `cooldown` field can be configured under the `kafka_broker` and `service_log` configurations in the [config.toml](../config.toml) file or by setting the `CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__COOLDOWN` and `CCX_NOTIFICATION_SERVICE__SERVICE_LOG__COOLDOWN` environment variables respectively.
 
-The value set is used directly within an SQL query, so the expected format is an integer followed by a valid SQL epoch time units (year[s] month[s] day[s] hour[s] minute[s] second[s])
+The value set is used directly within an SQL query, so the expected format is an integer followed by a valid SQL epoch time units (year[s] month[s] week[s] day[s] hour[s] minute[s] second[s])
+
+As of today, since we only keep 8 days of data in our database, the maximum cooldown that can be applied is 8 days.
 
 In case new services are supported in the future, the corresponding code would need to be added for it to support the cooldown mechanism.
 

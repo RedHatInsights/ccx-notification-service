@@ -15,13 +15,13 @@ timeout = "60s"
 likelihood_threshold = 0
 impact_threshold = 0
 severity_threshold = 0
-total_risk_threshold = 3
+total_risk_threshold = 2
 event_filter = "totalRisk >= totalRiskThreshold"
 tag_filter_enabled = false
 tags = []
 # valid units are SQL epoch time units: months days hours minutes seconds"
 # set to empty string "" or 0 to disable
-cooldown = "24 hours"
+cooldown = "1 week"
 
 [service_log]
 client_id = "a-service-id"
@@ -37,11 +37,11 @@ severity_threshold = 0
 total_risk_threshold = 0
 event_filter = "totalRisk >= totalRiskThreshold"
 rule_details_uri = "https://console.redhat.com/openshift/insights/advisor/recommendations/{module}|{error_key}"
-tag_filter_enabled = false
+tag_filter_enabled = true
 tags = ["osd_customer"]
 # valid units are SQL epoch time units: months days hours minutes seconds"
 # set to empty string "" or "0" to disable
-cooldown = "0"
+cooldown = "1 week"
 
 [storage]
 db_driver = "postgres"
