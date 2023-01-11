@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>new_reports</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <h1>new_reports</h1><p><span id="recordNumber">1</span> rows</p><br />
                 </section>
                 <!-- Main content -->
                 <section class="content">
@@ -111,6 +111,10 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="read_errors.[org_id, cluster, updated_at] references new_reports.[org_id, cluster, updated_at] via read_errors_org_id_fkey"><a href='read_errors.html'>read_errors</a><span class='relatedKey'>.org_id</span></td>
+                                                <td class="constraint detail">read_errors_org_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -145,6 +149,10 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="read_errors.[org_id, cluster, updated_at] references new_reports.[org_id, cluster, updated_at] via read_errors_org_id_fkey"><a href='read_errors.html'>read_errors</a><span class='relatedKey'>.cluster</span></td>
+                                                <td class="constraint detail">read_errors_org_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -179,6 +187,10 @@
                                     <td>null</td>
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
+                                            <tr>
+                                                <td title="read_errors.[org_id, cluster, updated_at] references new_reports.[org_id, cluster, updated_at] via read_errors_org_id_fkey"><a href='read_errors.html'>read_errors</a><span class='relatedKey'>.updated_at</span></td>
+                                                <td class="constraint detail">read_errors_org_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                            </tr>
                                         </table>
                                     </td>
                                     <td>
@@ -268,10 +280,32 @@
                             </table>
                         </div><!-- /.box-body -->
                     </div>
-                    <div class="alert alert-warning alert-dismissible">
-                        <button type="button" class="close" data-dismiss="alert" aria-hidden="true">×</button>
-                        <h4><i class="icon fa fa-warning"></i>Diagram producer might be missing</h4>
-                        <p>No diagrams were produced please see application output for any errors</p>
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-code-fork"></i>
+                            <h3 id="Relationships" class="box-title">Relationships</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div>
+                        <div class="box-body">
+                            <div class="nav-tabs-custom"><!-- Tabs within a box -->
+                                <h5>Close relationships within degrees of separation</h5>
+                                <ul class="nav nav-tabs pull-left ui-sortable-handle">
+                                    <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
+                                </ul>
+                                <div class="tab-content no-padding">
+                                    <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
+<area shape="rect" id="node1" href="read_errors.html" target="_top" title="read_errors" alt="" coords="429,8,617,213">
+<area shape="rect" id="node2" href="new_reports.html" target="_top" title="new_reports" alt="" coords="5,5,385,251">
+</map>
+                                        <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/new_reports.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
+                                    </div>
+                                </div>
+                            </div>
+                        </div><!-- /.box-body -->
                     </div>
                 </section>
                 <script>

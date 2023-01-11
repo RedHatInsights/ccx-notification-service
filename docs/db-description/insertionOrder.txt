@@ -1,4 +1,7 @@
+new_reports
+event_targets
 notification_types
 states
+read_errors
 reported
-new_reports
+migration_info

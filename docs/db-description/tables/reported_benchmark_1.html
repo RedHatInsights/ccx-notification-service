@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>reported - notification Database</title>
+        <title>reported_benchmark_1 - notification Database</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>reported</h1><p><span id="recordNumber">5613</span> rows</p><br />
+                    <h1>reported_benchmark_1</h1><p><span id="recordNumber">1000</span> rows</p><br />
                 </section>
                 <!-- Main content -->
                 <section class="content">
@@ -167,7 +167,7 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="reported.notification_type references notification_types.id via fk_notification_type"><a href='notification_types.html'>notification_types</a><span class='relatedKey'>.id</span></td>
+                                                <td title="reported_benchmark_1.notification_type references notification_types.id via fk_notification_type"><a href='notification_types.html'>notification_types</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">fk_notification_type<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -188,7 +188,7 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="reported.state references states.id via fk_state"><a href='states.html'>states</a><span class='relatedKey'>.id</span></td>
+                                                <td title="reported_benchmark_1.state references states.id via fk_state"><a href='states.html'>states</a><span class='relatedKey'>.id</span></td>
                                                 <td class="constraint detail">fk_state<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
@@ -213,7 +213,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="updated_at">updated_at</span></td>
+                                    <td><span id="updated_at">updated_at</span></td>
                                     <td>timestamp</td>
                                     <td>29,6</td>
                                     <td title=''></td>
@@ -263,27 +263,6 @@
                                     </td>
                                     <td></td>
                                 </tr>
-                                <tr>
-                                    <td class='foreignKey' title='Foreign Key'><i class='icon ion-key iconkey' style='padding-left: 5px;'></i><span id="event_type_id">event_type_id</span></td>
-                                    <td>int4</td>
-                                    <td>10</td>
-                                    <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                            <tr>
-                                                <td title="reported.event_type_id references event_targets.id via reported_event_type_id_fkey"><a href='event_targets.html'>event_targets</a><span class='relatedKey'>.id</span></td>
-                                                <td class="constraint detail">reported_event_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
                                 </tbody>
                             </table>
                         </div>
@@ -309,22 +288,10 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> reported_pkey</td>
+                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> reported_benchmark_1_pkey</td>
                                     <td>Primary key</td>
                                     <td><span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span>/<span title='Ascending'>Asc</span></td>
                                     <td>org_id + cluster + notified_at</td>
-                                </tr>
-                                <tr>
-                                    <td title='Indexed'>notified_at_desc_idx</td>
-                                    <td>Performance</td>
-                                    <td><span title='Descending'>Desc</span></td>
-                                    <td>notified_at</td>
-                                </tr>
-                                <tr>
-                                    <td title='Indexed'>updated_at_desc_idx</td>
-                                    <td>Performance</td>
-                                    <td><span title='Ascending'>Asc</span></td>
-                                    <td>updated_at</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -344,16 +311,26 @@
                                 <h5>Close relationships within degrees of separation</h5>
                                 <ul class="nav nav-tabs pull-left ui-sortable-handle">
                                     <li class="active"><a href="#oneDegreeImg-chart" data-toggle="tab" aria-expanded="true">One</a></li>
+                                    <li class=""><a href="#twodegreesDegreeImg-chart" data-toggle="tab" aria-expanded="true">Two degrees</a></li>
                                 </ul>
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="reported.html" target="_top" title="reported" alt="" coords="292,13,676,376">
-<area shape="rect" id="node2" href="event_targets.html" target="_top" title="event_targets" alt="" coords="23,280,231,432">
-<area shape="rect" id="node3" href="notification_types.html" target="_top" title="notification_types" alt="" coords="5,5,248,123">
-<area shape="rect" id="node4" href="states.html" target="_top" title="states" alt="" coords="55,140,199,257">
+<area shape="rect" id="node1" href="reported_benchmark_1.html" target="_top" title="reported_benchmark_1" alt="" coords="292,5,731,339">
+<area shape="rect" id="node2" href="notification_types.html" target="_top" title="notification_types" alt="" coords="5,43,248,160">
+<area shape="rect" id="node3" href="states.html" target="_top" title="states" alt="" coords="55,177,199,295">
 </map>
-                                        <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/reported.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
+                                        <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/reported_benchmark_1.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
+                                    </div>
+                                    <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
+                                        <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
+<area shape="rect" id="node1" href="reported.html" target="_top" title="reported" alt="" coords="426,5,597,93">
+<area shape="rect" id="node2" href="notification_types.html" target="_top" title="notification_types" alt="" coords="5,149,248,267">
+<area shape="rect" id="node3" href="states.html" target="_top" title="states" alt="" coords="55,284,199,401">
+<area shape="rect" id="node4" href="reported_benchmark_1.html" target="_top" title="reported_benchmark_1" alt="" coords="292,111,731,444">
+<area shape="rect" id="node5" href="reported_benchmark_2.html" target="_top" title="reported_benchmark_2" alt="" coords="369,461,654,549">
+</map>
+                                        <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/reported_benchmark_1.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                 </div>
                             </div>
