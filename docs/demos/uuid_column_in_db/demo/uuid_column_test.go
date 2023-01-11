@@ -661,7 +661,7 @@ func performInsertBenchmark(b *testing.B,
 // performDeleteBenchmark function contains implementation of DELETion
 // benchmarks for all possible table variants.
 func performDeleteBenchmark(b *testing.B,
-	createTableStatement, dropTableStatement, insertStatement, deleteStatement, selectClusterNamesStatement string,
+	createTableStatement, createIndexStatement, dropTableStatement, insertStatement, deleteStatement, selectClusterNamesStatement string,
 	insertFunction InsertFunction,
 	report *string,
 	dropTables bool) {
@@ -675,6 +675,11 @@ func performDeleteBenchmark(b *testing.B,
 	// create table used by benchmark
 	mustExecuteStatement(b, connection, dropTableStatement)
 	mustExecuteStatement(b, connection, createTableStatement)
+
+	// create index if required
+	if createIndexStatement != "" {
+		mustExecuteStatement(b, connection, createIndexStatement)
+	}
 
 	// fill-in some data
 	for i := 0; i < b.N; i++ {
@@ -700,7 +705,7 @@ func performDeleteBenchmark(b *testing.B,
 // performSelectBenchmark function contains implementation of SELECTion
 // benchmarks for all possible table variants.
 func performSelectBenchmark(b *testing.B,
-	createTableStatement, dropTableStatement, insertStatement, selectReportStatement, selectClusterNamesStatement string,
+	createTableStatement, createIndexStatement, dropTableStatement, insertStatement, selectReportStatement, selectClusterNamesStatement string,
 	insertFunction InsertFunction,
 	selectFunction SelectFunction,
 	report *string,
@@ -714,6 +719,11 @@ func performSelectBenchmark(b *testing.B,
 
 	// create table used by benchmark
 	mustExecuteStatement(b, connection, createTableStatement)
+
+	// create index if required
+	if createIndexStatement != "" {
+		mustExecuteStatement(b, connection, createIndexStatement)
+	}
 
 	// fill-in some data
 	for i := 0; i < b.N; i++ {
