@@ -376,12 +376,13 @@ func findRenderedReport(reports []types.RenderedReport, ruleName types.RuleName,
 	return types.RenderedReport{}, fmt.Errorf(ReportNotFoundError, ruleName, errorKey)
 }
 
-func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEntry) types.ServiceLogEntry {
+func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEntry, createdBy string) types.ServiceLogEntry {
 	logEntry := types.ServiceLogEntry{
 		ClusterUUID: cluster.ClusterName,
 		Description: report.Reason,
 		ServiceName: serviceName,
 		Summary:     report.Description,
+		CreatedBy:   createdBy,
 	}
 
 	// It is necessary to truncate the fields because of Service Log limitations
@@ -414,6 +415,11 @@ func evaluateTagFilter(filterEnabled bool, tagsSet, reportItemTags types.TagsSet
 
 func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.ClusterEntry,
 	rules types.Rules, ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int, err error) {
+
+	// we need to pass the correct "created_by" attribute to ServiceLog REST API
+	serviceLogConfiguration := conf.GetServiceLogConfiguration(configuration)
+	createdBy := serviceLogConfiguration.CreatedBy
+
 	dependenciesConfiguration := conf.GetDependenciesConfiguration(configuration)
 	renderedReports, err := renderReportsForCluster(
 		&dependenciesConfiguration, cluster.ClusterName,
@@ -477,7 +483,7 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 				continue
 			}
 
-			logEntry := createServiceLogEntry(renderedReport, cluster)
+			logEntry := createServiceLogEntry(renderedReport, cluster, createdBy)
 
 			msgBytes, err := json.Marshal(logEntry)
 			if err != nil {
