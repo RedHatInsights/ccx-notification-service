@@ -47,7 +47,7 @@ objects:
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__ENABLED
             value: 'false'
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__TOTAL_RISK_THRESHOLD
-            value: "3"
+            value: "2"
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__LIKELIHOOD_THRESHOLD
             value: "0"
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__IMPACT_THRESHOLD
