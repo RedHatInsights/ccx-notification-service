@@ -74,12 +74,21 @@ const (
 	DropTableReportedBenchmarkCharClusterID = `
 	        DROP TABLE IF EXISTS reported_benchmark_1;
         `
+
 	// Index for the reported table used in benchmarks for
 	// notified_at column
 	CreateIndexReportedNotifiedAtDescV1 = `
                 CREATE INDEX IF NOT EXISTS notified_at_desc_idx
 		    ON reported_benchmark_1
 		 USING btree (notified_at DESC);
+        `
+
+	// Index for the reported table used in benchmarks for
+	// cluster column
+	CreateIndexReportedClusterV1 = `
+                CREATE INDEX IF NOT EXISTS reported_benchmark_1_cluster_idx
+		    ON reported_benchmark_1
+		 USING btree (cluster);
         `
 
 	// Select cluster names from reported table
@@ -138,6 +147,14 @@ const (
 		 USING btree (notified_at DESC);
         `
 
+	// Index for the reported table used in benchmarks for
+	// cluster column
+	CreateIndexReportedClusterV2 = `
+                CREATE INDEX IF NOT EXISTS reported_benchmark_2_cluster_idx
+		    ON reported_benchmark_2
+		 USING btree (cluster);
+        `
+
 	// Select cluster names from reported table
 	SelectClusterNamesFromReportedV2Statement = `
             SELECT cluster FROM reported_benchmark_2
@@ -194,6 +211,14 @@ const (
 		 USING btree (notified_at DESC);
         `
 
+	// Index for the reported table used in benchmarks for
+	// cluster column
+	CreateIndexReportedClusterV3 = `
+                CREATE INDEX IF NOT EXISTS reported_benchmark_3_cluster_idx
+		    ON reported_benchmark_3
+		 USING btree (cluster);
+        `
+
 	// Select cluster names from reported table
 	SelectClusterNamesFromReportedV3Statement = `
             SELECT cluster FROM reported_benchmark_3
@@ -248,6 +273,14 @@ const (
                 CREATE INDEX IF NOT EXISTS notified_at_desc_idx
 		    ON reported_benchmark_4
 		 USING btree (notified_at DESC);
+        `
+
+	// Index for the reported table used in benchmarks for
+	// cluster column
+	CreateIndexReportedClusterV4 = `
+                CREATE INDEX IF NOT EXISTS reported_benchmark_4_cluster_idx
+		    ON reported_benchmark_4
+		 USING btree (cluster);
         `
 
 	// Select cluster names from reported table
@@ -628,7 +661,7 @@ func performInsertBenchmark(b *testing.B,
 // performDeleteBenchmark function contains implementation of DELETion
 // benchmarks for all possible table variants.
 func performDeleteBenchmark(b *testing.B,
-	createTableStatement, dropTableStatement, insertStatement, deleteStatement, selectClusterNamesStatement string,
+	createTableStatement, createIndexStatement, dropTableStatement, insertStatement, deleteStatement, selectClusterNamesStatement string,
 	insertFunction InsertFunction,
 	report *string,
 	dropTables bool) {
@@ -642,6 +675,11 @@ func performDeleteBenchmark(b *testing.B,
 	// create table used by benchmark
 	mustExecuteStatement(b, connection, dropTableStatement)
 	mustExecuteStatement(b, connection, createTableStatement)
+
+	// create index if required
+	if createIndexStatement != "" {
+		mustExecuteStatement(b, connection, createIndexStatement)
+	}
 
 	// fill-in some data
 	for i := 0; i < b.N; i++ {
@@ -667,7 +705,7 @@ func performDeleteBenchmark(b *testing.B,
 // performSelectBenchmark function contains implementation of SELECTion
 // benchmarks for all possible table variants.
 func performSelectBenchmark(b *testing.B,
-	createTableStatement, dropTableStatement, insertStatement, selectReportStatement, selectClusterNamesStatement string,
+	createTableStatement, createIndexStatement, dropTableStatement, insertStatement, selectReportStatement, selectClusterNamesStatement string,
 	insertFunction InsertFunction,
 	selectFunction SelectFunction,
 	report *string,
@@ -681,6 +719,11 @@ func performSelectBenchmark(b *testing.B,
 
 	// create table used by benchmark
 	mustExecuteStatement(b, connection, createTableStatement)
+
+	// create index if required
+	if createIndexStatement != "" {
+		mustExecuteStatement(b, connection, createIndexStatement)
+	}
 
 	// fill-in some data
 	for i := 0; i < b.N; i++ {
@@ -785,6 +828,7 @@ func BenchmarkDeleteClusterAsChar(b *testing.B) {
 	// run the actual benchmark
 	performDeleteBenchmark(b,
 		CreateTableReportedBenchmarkCharClusterID,
+		"",
 		DropTableReportedBenchmarkCharClusterID,
 		InsertIntoReportedV1Statement,
 		DeleteFromReportedV1Statement,
@@ -803,6 +847,7 @@ func BenchmarkDeleteClusterAsVarchar(b *testing.B) {
 	// run the actual benchmark
 	performDeleteBenchmark(b,
 		CreateTableReportedBenchmarkVarcharClusterID,
+		"",
 		DropTableReportedBenchmarkVarcharClusterID,
 		InsertIntoReportedV2Statement,
 		DeleteFromReportedV2Statement,
@@ -821,6 +866,7 @@ func BenchmarkDeleteClusterAsBytea(b *testing.B) {
 	// run the actual benchmark
 	performDeleteBenchmark(b,
 		CreateTableReportedBenchmarkByteArrayClusterID,
+		"",
 		DropTableReportedBenchmarkByteArrayClusterID,
 		InsertIntoReportedV3Statement,
 		DeleteFromReportedV3Statement,
@@ -839,6 +885,7 @@ func BenchmarkDeleteClusterAsUUID(b *testing.B) {
 	// run the actual benchmark
 	performDeleteBenchmark(b,
 		CreateTableReportedBenchmarkUUIDClusterID,
+		"",
 		DropTableReportedBenchmarkUUIDClusterID,
 		InsertIntoReportedV4Statement,
 		DeleteFromReportedV4Statement,
@@ -857,6 +904,7 @@ func BenchmarkSelectClusterAsChar(b *testing.B) {
 	// run the actual benchmark
 	performSelectBenchmark(b,
 		CreateTableReportedBenchmarkCharClusterID,
+		"",
 		DropTableReportedBenchmarkCharClusterID,
 		InsertIntoReportedV1Statement,
 		SelectReportFromReportedV1Statement,
@@ -876,6 +924,7 @@ func BenchmarkSelectClusterAsVarchar(b *testing.B) {
 	// run the actual benchmark
 	performSelectBenchmark(b,
 		CreateTableReportedBenchmarkVarcharClusterID,
+		"",
 		DropTableReportedBenchmarkVarcharClusterID,
 		InsertIntoReportedV2Statement,
 		SelectReportFromReportedV2Statement,
@@ -895,6 +944,7 @@ func BenchmarkSelectClusterAsBytea(b *testing.B) {
 	// run the actual benchmark
 	performSelectBenchmark(b,
 		CreateTableReportedBenchmarkByteArrayClusterID,
+		"",
 		DropTableReportedBenchmarkByteArrayClusterID,
 		InsertIntoReportedV3Statement,
 		SelectReportFromReportedV3Statement,
@@ -914,6 +964,163 @@ func BenchmarkSelectClusterAsUUID(b *testing.B) {
 	// run the actual benchmark
 	performSelectBenchmark(b,
 		CreateTableReportedBenchmarkUUIDClusterID,
+		"",
+		DropTableReportedBenchmarkUUIDClusterID,
+		InsertIntoReportedV4Statement,
+		SelectReportFromReportedV4Statement,
+		SelectClusterNamesFromReportedV4Statement,
+		insertIntoReportedV4,
+		selectFromReportedTableV4,
+		&report, DropTables)
+}
+
+// BenchmarkDeleteClusterAsCharIndexed function contains implementation of benchmark
+// that performs DELETion from report table where cluster name is represented
+// as CHAR(36). Cluster column is used as index.
+func BenchmarkDeleteClusterAsCharIndexed(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performDeleteBenchmark(b,
+		CreateTableReportedBenchmarkCharClusterID,
+		CreateIndexReportedClusterV1,
+		DropTableReportedBenchmarkCharClusterID,
+		InsertIntoReportedV1Statement,
+		DeleteFromReportedV1Statement,
+		SelectClusterNamesFromReportedV1Statement,
+		insertIntoReportedV1,
+		&report, DropTables)
+}
+
+// BenchmarkDeleteClusterAsVarcharIndexed function contains implementation of benchmark
+// that performs DELETion from report table where cluster name is represented
+// as VARCHAR(36). Cluster column is used as index.
+func BenchmarkDeleteClusterAsVarcharIndexed(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performDeleteBenchmark(b,
+		CreateTableReportedBenchmarkVarcharClusterID,
+		CreateIndexReportedClusterV2,
+		DropTableReportedBenchmarkVarcharClusterID,
+		InsertIntoReportedV2Statement,
+		DeleteFromReportedV2Statement,
+		SelectClusterNamesFromReportedV2Statement,
+		insertIntoReportedV2,
+		&report, DropTables)
+}
+
+// BenchmarkDeleteClusterAsByteaIndexed function contains implementation of benchmark
+// that performs DELETion from report table where cluster name is represented
+// as BYTEA. Cluster column is used as index.
+func BenchmarkDeleteClusterAsByteaIndexed(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performDeleteBenchmark(b,
+		CreateTableReportedBenchmarkByteArrayClusterID,
+		CreateIndexReportedClusterV3,
+		DropTableReportedBenchmarkByteArrayClusterID,
+		InsertIntoReportedV3Statement,
+		DeleteFromReportedV3Statement,
+		SelectClusterNamesFromReportedV3Statement,
+		insertIntoReportedV3,
+		&report, DropTables)
+}
+
+// BenchmarkDeleteClusterAsUUIDIndexed function contains implementation of benchmark
+// that performs DELETion from report table where cluster name is represented
+// as UUID. Cluster column is used as index.
+func BenchmarkDeleteClusterAsUUIDIndexed(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performDeleteBenchmark(b,
+		CreateTableReportedBenchmarkUUIDClusterID,
+		CreateIndexReportedClusterV4,
+		DropTableReportedBenchmarkUUIDClusterID,
+		InsertIntoReportedV4Statement,
+		DeleteFromReportedV4Statement,
+		SelectClusterNamesFromReportedV4Statement,
+		insertIntoReportedV4,
+		&report, DropTables)
+}
+
+// BenchmarkSelectClusterAsCharIndexed function contains implementation of benchmark
+// that performs SELECTion from report table where cluster name is represented
+// as CHAR(36). Cluster column is used as index.
+func BenchmarkSelectClusterAsCharIndexed(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performSelectBenchmark(b,
+		CreateTableReportedBenchmarkCharClusterID,
+		CreateIndexReportedClusterV1,
+		DropTableReportedBenchmarkCharClusterID,
+		InsertIntoReportedV1Statement,
+		SelectReportFromReportedV1Statement,
+		SelectClusterNamesFromReportedV1Statement,
+		insertIntoReportedV1,
+		selectFromReportedTableV1,
+		&report, DropTables)
+}
+
+// BenchmarkSelectClusterAsVarcharIndexed function contains implementation of benchmark
+// that performs SELECTion from report table where cluster name is represented
+// as VARCHAR(36). Cluster column is used as index.
+func BenchmarkSelectClusterAsVarcharIndexed(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performSelectBenchmark(b,
+		CreateTableReportedBenchmarkVarcharClusterID,
+		CreateIndexReportedClusterV2,
+		DropTableReportedBenchmarkVarcharClusterID,
+		InsertIntoReportedV2Statement,
+		SelectReportFromReportedV2Statement,
+		SelectClusterNamesFromReportedV2Statement,
+		insertIntoReportedV2,
+		selectFromReportedTableV2,
+		&report, DropTables)
+}
+
+// BenchmarkSelectClusterAsByteaIndexed function contains implementation of benchmark
+// that performs SELECTion from report table where cluster name is represented
+// as BYTEA. Cluster column is used as index.
+func BenchmarkSelectClusterAsByteaIndexed(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performSelectBenchmark(b,
+		CreateTableReportedBenchmarkByteArrayClusterID,
+		CreateIndexReportedClusterV3,
+		DropTableReportedBenchmarkByteArrayClusterID,
+		InsertIntoReportedV3Statement,
+		SelectReportFromReportedV3Statement,
+		SelectClusterNamesFromReportedV3Statement,
+		insertIntoReportedV3,
+		selectFromReportedTableV3,
+		&report, DropTables)
+}
+
+// BenchmarkSelectClusterAsUUIDIndexed function contains implementation of benchmark
+// that performs SELECTion from report table where cluster name is represented
+// as UUID. Cluster column is used as index.
+func BenchmarkSelectClusterAsUUIDIndexed(b *testing.B) {
+	// report to be stored in a table
+	report := Report
+
+	// run the actual benchmark
+	performSelectBenchmark(b,
+		CreateTableReportedBenchmarkUUIDClusterID,
+		CreateIndexReportedClusterV4,
 		DropTableReportedBenchmarkUUIDClusterID,
 		InsertIntoReportedV4Statement,
 		SelectReportFromReportedV4Statement,
