@@ -3,7 +3,7 @@
     <head>
         <meta charset="utf-8">
         <meta http-equiv="X-UA-Compatible" content="IE=edge">
-        <title>notification_types - notification Database</title>
+        <title>event_targets - notification Database</title>
         <!-- Tell the browser to be responsive to screen width -->
         <meta content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no" name="viewport">
         <link rel="icon" type="image/png" sizes="16x16" href="../favicon.png">
@@ -73,7 +73,7 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>notification_types</h1><p><span id="recordNumber">2</span> rows</p><br />
+                    <h1>event_targets</h1><p><span id="recordNumber">2</span> rows</p><br />
                 </section>
                 <!-- Main content -->
                 <section class="content">
@@ -112,16 +112,12 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="reported.notification_type references notification_types.id via fk_notification_type"><a href='reported.html'>reported</a><span class='relatedKey'>.notification_type</span></td>
-                                                <td class="constraint detail">fk_notification_type<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="reported.event_type_id references event_targets.id via reported_event_type_id_fkey"><a href='reported.html'>reported</a><span class='relatedKey'>.event_type_id</span></td>
+                                                <td class="constraint detail">reported_event_type_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                             <tr>
-                                                <td title="reported_benchmark_1.notification_type references notification_types.id via fk_notification_type"><a href='reported_benchmark_1.html'>reported_benchmark_1</a><span class='relatedKey'>.notification_type</span></td>
-                                                <td class="constraint detail">fk_notification_type<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
-                                            </tr>
-                                            <tr>
-                                                <td title="reported_benchmark_2.notification_type references notification_types.id via fk_notification_type"><a href='reported_benchmark_2.html'>reported_benchmark_2</a><span class='relatedKey'>.notification_type</span></td>
-                                                <td class="constraint detail">fk_notification_type<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="reported_benchmark_2.event_type_id references event_targets.id via fk_event_type"><a href='reported_benchmark_2.html'>reported_benchmark_2</a><span class='relatedKey'>.event_type_id</span></td>
+                                                <td class="constraint detail">fk_event_type<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -132,7 +128,7 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="value">value</span></td>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="name">name</span></td>
                                     <td>varchar</td>
                                     <td>2147483647</td>
                                     <td title=''></td>
@@ -149,27 +145,10 @@
                                     <td></td>
                                 </tr>
                                 <tr>
-                                    <td><span id="frequency">frequency</span></td>
+                                    <td class='indexedColumn' title='Indexed'><i class='fa fa-sitemap fa-rotate-120' style='padding-right: 5px;'></i><span id="metainfo">metainfo</span></td>
                                     <td>varchar</td>
                                     <td>2147483647</td>
                                     <td title=''></td>
-                                    <td title=''></td>
-                                    <td>null</td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td>
-                                        <table border='0' cellspacing='0' cellpadding='0'>
-                                        </table>
-                                    </td>
-                                    <td></td>
-                                </tr>
-                                <tr>
-                                    <td><span id="comment">comment</span></td>
-                                    <td>varchar</td>
-                                    <td>2147483647</td>
-                                    <td title='nullable'>√</td>
                                     <td title=''></td>
                                     <td>null</td>
                                     <td>
@@ -207,16 +186,22 @@
                                 </thead>
                                 <tbody>
                                 <tr>
-                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> notification_types_pkey</td>
+                                    <td class='primaryKey' title='Primary Key'><i class='icon ion-key iconkey'></i> event_targets_pkey</td>
                                     <td>Primary key</td>
                                     <td><span title='Ascending'>Asc</span></td>
                                     <td>id</td>
                                 </tr>
                                 <tr>
-                                    <td title='Indexed'>notification_types_id_idx</td>
-                                    <td>Performance</td>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> event_targets_metainfo_key</td>
+                                    <td>Must be unique</td>
                                     <td><span title='Ascending'>Asc</span></td>
-                                    <td>id</td>
+                                    <td>metainfo</td>
+                                </tr>
+                                <tr>
+                                    <td class='uniqueKey' title='Unique Key'><i class='icon ion-key iconkey'></i> event_targets_name_key</td>
+                                    <td>Must be unique</td>
+                                    <td><span title='Ascending'>Asc</span></td>
+                                    <td>name</td>
                                 </tr>
                                 </tbody>
                             </table>
@@ -241,23 +226,21 @@
                                 <div class="tab-content no-padding">
                                     <div class="chart tab-pane active" id="oneDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="oneDegreeRelationshipsDiagram" name="oneDegreeRelationshipsDiagram">
-<area shape="rect" id="node1" href="reported.html" target="_top" title="reported" alt="" coords="485,5,686,299">
-<area shape="rect" id="node2" href="notification_types.html" target="_top" title="notification_types" alt="" coords="5,372,399,559">
-<area shape="rect" id="node3" href="reported_benchmark_1.html" target="_top" title="reported_benchmark_1" alt="" coords="443,316,728,551">
-<area shape="rect" id="node4" href="reported_benchmark_2.html" target="_top" title="reported_benchmark_2" alt="" coords="443,568,728,832">
+<area shape="rect" id="node1" href="reported.html" target="_top" title="reported" alt="" coords="447,5,649,299">
+<area shape="rect" id="node2" href="event_targets.html" target="_top" title="event_targets" alt="" coords="5,320,361,477">
+<area shape="rect" id="node3" href="reported_benchmark_2.html" target="_top" title="reported_benchmark_2" alt="" coords="405,316,691,580">
 </map>
-                                        <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/notification_types.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
+                                        <a name='diagram'><img id="oneDegreeImg" src="../diagrams/tables/event_targets.1degree.png" usemap="#oneDegreeRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                     <div class="chart tab-pane " id="twodegreesDegreeImg-chart" style="position: relative; overflow-x:auto;">
                                         <map id="twoDegreesRelationshipsDiagram" name="twoDegreesRelationshipsDiagram">
-<area shape="rect" id="node1" href="reported.html" target="_top" title="reported" alt="" coords="485,257,686,551">
-<area shape="rect" id="node2" href="event_targets.html" target="_top" title="event_targets" alt="" coords="98,585,306,673">
-<area shape="rect" id="node3" href="notification_types.html" target="_top" title="notification_types" alt="" coords="5,229,399,416">
-<area shape="rect" id="node4" href="states.html" target="_top" title="states" alt="" coords="130,433,274,521">
-<area shape="rect" id="node5" href="reported_benchmark_1.html" target="_top" title="reported_benchmark_1" alt="" coords="443,5,728,240">
-<area shape="rect" id="node6" href="reported_benchmark_2.html" target="_top" title="reported_benchmark_2" alt="" coords="443,568,728,832">
+<area shape="rect" id="node1" href="reported.html" target="_top" title="reported" alt="" coords="447,5,649,299">
+<area shape="rect" id="node2" href="event_targets.html" target="_top" title="event_targets" alt="" coords="5,437,361,595">
+<area shape="rect" id="node3" href="notification_types.html" target="_top" title="notification_types" alt="" coords="62,91,305,179">
+<area shape="rect" id="node4" href="states.html" target="_top" title="states" alt="" coords="111,241,255,329">
+<area shape="rect" id="node5" href="reported_benchmark_2.html" target="_top" title="reported_benchmark_2" alt="" coords="405,316,691,580">
 </map>
-                                        <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/notification_types.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
+                                        <a name='diagram'><img id="twodegreesDegreeImg" src="../diagrams/tables/event_targets.2degrees.png" usemap="#twoDegreesRelationshipsDiagram" class="diagram" border="0" align="left"></a>
                                     </div>
                                 </div>
                             </div>
