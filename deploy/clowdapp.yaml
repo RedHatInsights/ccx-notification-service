@@ -272,9 +272,9 @@ parameters:
 - name: PLATFORM_UI_HOSTNAME
 - name: CONTENT_SERVICE_PORT
 - name: NOTIFICATION_RESEND_COOLDOWN_NOTIFICATION_BACKEND
-  value: 24h
+  value: '1 week'
 - name: NOTIFICATION_RESEND_COOLDOWN_SERVICE_LOG
-  value: '0'
+  value: '1 week'
 - name: METRICS_NAMESPACE
   value: ccx_notification_service
 - name: METRICS_PUSH_RETRIES
