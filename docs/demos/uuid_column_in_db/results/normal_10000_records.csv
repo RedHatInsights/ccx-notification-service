@@ -1,0 +1,12 @@
+BenchmarkInsertClusterAsChar-8,10000,2006754
+BenchmarkInsertClusterAsVarchar-8,10000,2051222
+BenchmarkInsertClusterAsBytea-8,10000,2019572
+BenchmarkInsertClusterAsUUID-8,10000,2042202
+BenchmarkDeleteClusterAsChar-8,10000,2539460
+BenchmarkDeleteClusterAsVarchar-8,10000,2474926
+BenchmarkDeleteClusterAsBytea-8,10000,2552969
+BenchmarkDeleteClusterAsUUID-8,10000,2402486
+BenchmarkSelectClusterAsChar-8,10000,1269443
+BenchmarkSelectClusterAsVarchar-8,10000,1323098
+BenchmarkSelectClusterAsBytea-8,10000,1332636
+BenchmarkSelectClusterAsUUID-8,10000,1080828

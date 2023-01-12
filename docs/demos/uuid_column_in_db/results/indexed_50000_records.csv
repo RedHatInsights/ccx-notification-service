@@ -1,0 +1,8 @@
+BenchmarkDeleteClusterAsCharIndexed-8,50000,3943668
+BenchmarkDeleteClusterAsVarcharIndexed-8,50000,3920540
+BenchmarkDeleteClusterAsByteaIndexed-8,50000,3853470
+BenchmarkDeleteClusterAsUUIDIndexed-8,50000,3908516
+BenchmarkSelectClusterAsCharIndexed-8,50000,145972
+BenchmarkSelectClusterAsVarcharIndexed-8,50000,152372
+BenchmarkSelectClusterAsByteaIndexed-8,50000,147668
+BenchmarkSelectClusterAsUUIDIndexed-8,50000,145055
