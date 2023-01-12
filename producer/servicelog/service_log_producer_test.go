@@ -1,5 +1,5 @@
 /*
-Copyright © 2021, 2022 Red Hat, Inc.
+Copyright © 2021, 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -28,6 +28,7 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"testing"
@@ -77,8 +78,25 @@ func TestServiceLogProducerSendMessage(t *testing.T) {
 		if r.Header.Get("Authorization") != "Bearer online_token" {
 			t.Errorf("Expected 'Authorization: Bearer token' header, got: '%s'", r.Header.Get("Authorization"))
 		}
+
+		// read request body with message sent by our code
+		body, err := io.ReadAll(r.Body)
+		helpers.FailOnError(t, err)
+
+		// try to unmarshal the message
+		var message types.ServiceLogEntry
+		err = json.Unmarshal(body, &message)
+		helpers.FailOnError(t, err)
+
+		// check message content
+		assert.Equal(t, message.ClusterUUID, types.ClusterName("e1a379e4-9ac5-4353-8f82-ad066a734f18"))
+		assert.Equal(t, message.ServiceName, "test-service-name")
+		assert.Equal(t, message.Description, "test-description")
+		assert.Equal(t, message.Summary, "test-summary")
+		assert.Equal(t, message.CreatedBy, "test-service")
+
 		w.WriteHeader(http.StatusCreated)
-		_, err := w.Write([]byte(`{"id":"2DnciRjDYKGD0gU0pipXq9lFHGD","kind":"ClusterLog","href":"/api/service_logs/v1/cluster_logs/2DnciRjDYKGD0gU0pipXq9lFHGD","timestamp":"2022-08-24T10:53:35.375948253Z","severity":"Info","service_name":"test","cluster_uuid":"e1a379e4-9ac5-4353-8f82-ad066a734f18","summary":"test","description":"test","event_stream_id":"2DnciRaUyJQDY9mggxeiidkSWp0","created_by":"test@test.com","created_at":"2022-08-24T10:53:35.375972704Z","email":"test@test.com"}`))
+		_, err = w.Write([]byte(`{"id":"2DnciRjDYKGD0gU0pipXq9lFHGD","kind":"ClusterLog","href":"/api/service_logs/v1/cluster_logs/2DnciRjDYKGD0gU0pipXq9lFHGD","timestamp":"2022-08-24T10:53:35.375948253Z","severity":"Info","service_name":"test","cluster_uuid":"e1a379e4-9ac5-4353-8f82-ad066a734f18","summary":"test","description":"test","event_stream_id":"2DnciRaUyJQDY9mggxeiidkSWp0","created_by":"test-service","created_at":"2022-08-24T10:53:35.375972704Z","email":"test@test.com"}`))
 		if err != nil {
 			log.Fatal().Msg(err.Error())
 		}
@@ -98,9 +116,10 @@ func TestServiceLogProducerSendMessage(t *testing.T) {
 
 	entry := types.ServiceLogEntry{
 		ClusterUUID: "e1a379e4-9ac5-4353-8f82-ad066a734f18",
-		Description: "test",
-		ServiceName: "test",
-		Summary:     "test",
+		Description: "test-description",
+		ServiceName: "test-service-name",
+		Summary:     "test-summary",
+		CreatedBy:   "test-service",
 	}
 	msgBytes, err := json.Marshal(entry)
 	helpers.FailOnError(t, err)
@@ -168,6 +187,7 @@ func TestServiceLogProducerTooLongSummary(t *testing.T) {
 		ClusterUUID: "e1a379e4-9ac5-4353-8f82-ad066a734f18",
 		Description: "test",
 		ServiceName: "test",
+		CreatedBy:   "test-service",
 		Summary:     "This summary is more than 255 characters long.                                                                                                                                                                                                                   ",
 	}
 	msgBytes, err := json.Marshal(entry)
@@ -202,6 +222,7 @@ func TestServiceLogProducerInvalidURL(t *testing.T) {
 		ClusterUUID: "e1a379e4-9ac5-4353-8f82-ad066a734f18",
 		Description: "test",
 		ServiceName: "test",
+		CreatedBy:   "test-service",
 		Summary:     "test",
 	}
 	msgBytes, err := json.Marshal(entry)
@@ -218,7 +239,7 @@ func TestServiceLogProducerOldToken(t *testing.T) {
 			return
 		}
 		w.WriteHeader(http.StatusCreated)
-		_, err := w.Write([]byte(`{"id":"2DnciRjDYKGD0gU0pipXq9lFHGD","kind":"ClusterLog","href":"/api/service_logs/v1/cluster_logs/2DnciRjDYKGD0gU0pipXq9lFHGD","timestamp":"2022-08-24T10:53:35.375948253Z","severity":"Info","service_name":"test","cluster_uuid":"e1a379e4-9ac5-4353-8f82-ad066a734f18","summary":"test","description":"test","event_stream_id":"2DnciRaUyJQDY9mggxeiidkSWp0","created_by":"test@test.com","created_at":"2022-08-24T10:53:35.375972704Z","email":"test@test.com"}`))
+		_, err := w.Write([]byte(`{"id":"2DnciRjDYKGD0gU0pipXq9lFHGD","kind":"ClusterLog","href":"/api/service_logs/v1/cluster_logs/2DnciRjDYKGD0gU0pipXq9lFHGD","timestamp":"2022-08-24T10:53:35.375948253Z","severity":"Info","service_name":"test","cluster_uuid":"e1a379e4-9ac5-4353-8f82-ad066a734f18","summary":"test","description":"test","event_stream_id":"2DnciRaUyJQDY9mggxeiidkSWp0","created_by":"test-service","created_at":"2022-08-24T10:53:35.375972704Z","email":"test@test.com"}`))
 		if err != nil {
 			log.Fatal().Msg(err.Error())
 		}
@@ -242,6 +263,7 @@ func TestServiceLogProducerOldToken(t *testing.T) {
 		ClusterUUID: "e1a379e4-9ac5-4353-8f82-ad066a734f18",
 		Description: "test",
 		ServiceName: "test",
+		CreatedBy:   "test-service",
 		Summary:     "test",
 	}
 	msgBytes, err := json.Marshal(entry)
