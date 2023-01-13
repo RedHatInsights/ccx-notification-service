@@ -353,6 +353,14 @@ func (_m *Storage) WriteReadError(
 	return nil
 }
 
+func (_m *Storage) ReadErrorExists(
+	orgID types.OrgID,
+	clusterName types.ClusterName,
+	lastCheckedTime time.Time,
+) (bool, error) {
+	return false, nil
+}
+
 type mockConstructorTestingTNewStorage interface {
 	mock.TestingT
 	Cleanup(func())

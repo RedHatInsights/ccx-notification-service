@@ -34,6 +34,7 @@ package differ
 
 import (
 	"database/sql"
+	"errors"
 	"fmt"
 	"math"
 	"strconv"
@@ -89,6 +90,11 @@ type Storage interface {
 		notifiedAt types.Timestamp,
 		errorLog string,
 		eventType types.EventTarget) error
+	ReadErrorExists(
+		orgID types.OrgID,
+		clusterName types.ClusterName,
+		lastCheckedTime time.Time,
+	) (bool, error)
 	WriteReadError(
 		orgID types.OrgID,
 		clusterName types.ClusterName,
@@ -182,6 +188,10 @@ const (
 		  FROM reported
 		 WHERE updated_at < NOW() - $1::INTERVAL
 		 ORDER BY updated_at
+`
+
+	QueryRecordExistsInReadErrors = `
+		SELECT exists(SELECT 1 FROM read_errors WHERE org_id=$1 and cluster=$2 and updated_at=$3);
 `
 
 	InsertReadErrorsStatement = `
@@ -531,7 +541,44 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 		notifiedAt, errorLog, eventTarget)
 }
 
-// WriteReadError writes information about read error into table read_error.
+// ReadErrorExists method checks if read_errors table contains given
+// combination org_id+cluster_name+updated_at
+func (storage DBStorage) ReadErrorExists(
+	orgID types.OrgID,
+	clusterName types.ClusterName,
+	lastCheckedTime time.Time,
+) (bool, error) {
+	// perform query
+	rows, err := storage.connection.Query(QueryRecordExistsInReadErrors, orgID, clusterName, lastCheckedTime)
+
+	// check for any error during query
+	if err != nil {
+		return false, err
+	}
+
+	// be sure to close result set properly
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			log.Error().Err(err).Msg(unableToCloseDBRowsHandle)
+		}
+	}()
+
+	// only one record should returned
+	if rows.Next() {
+		var exists bool
+		err := rows.Scan(&exists)
+		if err != nil {
+			return false, err
+		}
+		return exists, nil
+	}
+
+	return false, errors.New("Unable to read from table read_errors")
+}
+
+// WriteReadError method writes information about read error into table
+// read_errors.
 func (storage DBStorage) WriteReadError(
 	orgID types.OrgID,
 	clusterName types.ClusterName,
