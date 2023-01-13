@@ -641,14 +641,16 @@ func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesM
 			reportedAlready, readErr := storage.ReadErrorExists(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt))
 			checkReadError(readErr)
 
-			// if not reported, process the error
-			if !reportedAlready {
-				ReadReportForClusterErrors.Inc()
-				skippedEntries++
-				log.Err(err).Msg(operationFailedMessage)
-				writeErr := storage.WriteReadError(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt), err)
-				checkWriteError(writeErr)
+			// if the error is reported already, skip to next one
+			if reportedAlready {
+				continue
 			}
+			// if not reported, process the error
+			ReadReportForClusterErrors.Inc()
+			skippedEntries++
+			log.Err(err).Msg(operationFailedMessage)
+			writeErr := storage.WriteReadError(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt), err)
+			checkWriteError(writeErr)
 			continue
 		}
 
