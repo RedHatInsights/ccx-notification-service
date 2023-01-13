@@ -250,6 +250,39 @@ func TestReadErrorExistNegativeResult(t *testing.T) {
 	checkAllExpectations(t, mock)
 }
 
+// TestReadErrorExistNothingFound checks if Storage.ReadErrorExists returns
+// expected results (nothing has been found in table).
+func TestReadErrorExistNothingFound(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"exists"})
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT exists\\(SELECT 1 FROM read_errors WHERE org_id=\\$1 and cluster=\\$2 and updated_at=\\$3\\);"
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	exists, err := storage.ReadErrorExists(1, "123", time.Now())
+	if err == nil {
+		t.Error("error was expected while querying read_errors table", err)
+	}
+
+	assert.False(t, exists, "False return value is expected")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
 // TestWriteReadError function checks the method
 // Storage.WriteReadError.
 func TestWriteReadError(t *testing.T) {
