@@ -599,6 +599,22 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 	return 0, nil
 }
 
+// checkReadError function checks whether reading from read_errors table was
+// successful
+func checkReadError(err error) {
+	if err != nil {
+		log.Err(err).Msg("read_errors read access error")
+	}
+}
+
+// checkWriteError function checks whether writing into read_errors table was
+// successful
+func checkWriteError(err error) {
+	if err != nil {
+		log.Err(err).Msg("read_errors write access error")
+	}
+}
+
 func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
 	notifiedIssues := 0
 	clustersCount := len(clusters)
@@ -622,10 +638,8 @@ func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesM
 		report, err := storage.ReadReportForClusterAtTime(cluster.OrgID, cluster.ClusterName, cluster.UpdatedAt)
 		if err != nil {
 			// is the problem reported already?
-			reportedAlready, accessErr := storage.ReadErrorExists(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt))
-			if accessErr != nil {
-				log.Err(accessErr).Msg("read_errors read access error")
-			}
+			reportedAlready, readErr := storage.ReadErrorExists(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt))
+			checkReadError(readErr)
 
 			// if not reported, process the error
 			if !reportedAlready {
@@ -633,9 +647,7 @@ func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesM
 				skippedEntries++
 				log.Err(err).Msg(operationFailedMessage)
 				writeErr := storage.WriteReadError(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt), err)
-				if writeErr != nil {
-					log.Err(writeErr).Msg("read_errors write access error")
-				}
+				checkWriteError(writeErr)
 			}
 			continue
 		}
