@@ -283,6 +283,70 @@ func TestReadErrorExistNothingFound(t *testing.T) {
 	checkAllExpectations(t, mock)
 }
 
+// TestReadErrorExistOnScanError checks if Storage.ReadErrorExists returns
+// expected results on scan error
+func TestReadErrorOnScanError(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"exists"})
+	rows.AddRow("this is not a boolean value")
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT exists\\(SELECT 1 FROM read_errors WHERE org_id=\\$1 and cluster=\\$2 and updated_at=\\$3\\);"
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	_, err := storage.ReadErrorExists(1, "123", time.Now())
+	if err == nil {
+		t.Error("an error is expected while scanning read_errors table", err)
+	}
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadErrorExistOnError checks if Storage.ReadErrorExists returns
+// expected results on query error
+func TestReadErrorOnError(t *testing.T) {
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT exists\\(SELECT 1 FROM read_errors WHERE org_id=\\$1 and cluster=\\$2 and updated_at=\\$3\\);"
+
+	// let's raise an error!
+	mock.ExpectQuery(expectedQuery).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	_, err := storage.ReadErrorExists(1, "123", time.Now())
+	if err == nil {
+		t.Error("an error is expected while querying read_errors table", err)
+	}
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
 // TestWriteReadError function checks the method
 // Storage.WriteReadError.
 func TestWriteReadError(t *testing.T) {
