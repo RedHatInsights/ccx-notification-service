@@ -191,7 +191,7 @@ const (
 `
 
 	QueryRecordExistsInReadErrors = `
-		SELECT exists(SELECT 1 FROM read_errors WHERE org_id=$1 and cluster=$1 and updated_at=$3);
+		SELECT exists(SELECT 1 FROM read_errors WHERE org_id=$1 and cluster=$2 and updated_at=$3);
 `
 
 	InsertReadErrorsStatement = `
