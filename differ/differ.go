@@ -624,7 +624,7 @@ func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesM
 			// is the problem reported already?
 			reportedAlready, accessErr := storage.ReadErrorExists(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt))
 			if accessErr != nil {
-				log.Err(err).Msg("read_errors access error")
+				log.Err(accessErr).Msg("read_errors read access error")
 			}
 
 			// if not reported, process the error
@@ -632,7 +632,10 @@ func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesM
 				ReadReportForClusterErrors.Inc()
 				skippedEntries++
 				log.Err(err).Msg(operationFailedMessage)
-				storage.WriteReadError(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt), err)
+				writeErr := storage.WriteReadError(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt), err)
+				if writeErr != nil {
+					log.Err(writeErr).Msg("read_errors write access error")
+				}
 			}
 			continue
 		}
