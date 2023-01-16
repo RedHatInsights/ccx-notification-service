@@ -120,7 +120,8 @@ func TestServiceLogProducerSendMessage(t *testing.T) {
 		Description: "test-description",
 		ServiceName: "test-service-name",
 		Summary:     "test-summary",
-		CreatedBy:   "test-service",
+		CreatedBy:   "test-service-created-by",
+		Username:    "test-service-username",
 	}
 	msgBytes, err := json.Marshal(entry)
 	helpers.FailOnError(t, err)
