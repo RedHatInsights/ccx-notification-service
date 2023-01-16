@@ -11,6 +11,7 @@ cooldown = "24 hours"
 client_id = "a-service-id"
 client_secret = "a-secret"
 created_by = "insights-advisor"
+username ="insights-advisor"
 token_url = ""
 enabled = false
 url = "https://api.openshift.com/api/service_logs/v1/cluster_logs/"

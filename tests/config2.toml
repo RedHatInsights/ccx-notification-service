@@ -16,6 +16,7 @@ enabled = false
 client_id = "test-id"
 client_secret = "test-secret"
 created_by = "insights-advisor"
+username ="insights-advisor"
 token_url = "token url"
 url = "localhost:8000/api/service_logs/v1/cluster_logs/"
 timeout = "15s"
