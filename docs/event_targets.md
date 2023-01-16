@@ -59,6 +59,7 @@ severity. This is an example how log entry could look like:
 {
     "severity": "Info",
     "service_name": "Insights",
+    "username": "Insigsht",
     "cluster_uuid": "d484b150-3106-4d6a-96b4-e03c327a2f66",
     "summary": "Subscription created",
     "description": "Following issues have been found…",
