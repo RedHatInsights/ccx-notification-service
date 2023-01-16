@@ -1,5 +1,5 @@
 /*
-Copyright © 2021, 2022 Red Hat, Inc.
+Copyright © 2021, 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -169,6 +169,7 @@ type ServiceLogConfiguration struct {
 	ClientID            string        `mapstructure:"client_id" toml:"client_id"`
 	ClientSecret        string        `mapstructure:"client_secret" toml:"client_secret"`
 	CreatedBy           string        `mapstructure:"created_by" toml:"created_by"`
+	Username            string        `mapstructure:"username" toml:"username"`
 	TokenURL            string        `mapstructure:"token_url" toml:"token_url"`
 	URL                 string        `mapstructure:"url" toml:"url"`
 	Timeout             time.Duration `mapstructure:"timeout" toml:"timeout"`

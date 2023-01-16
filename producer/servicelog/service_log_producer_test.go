@@ -93,10 +93,11 @@ func TestServiceLogProducerSendMessage(t *testing.T) {
 		assert.Equal(t, message.ServiceName, "test-service-name")
 		assert.Equal(t, message.Description, "test-description")
 		assert.Equal(t, message.Summary, "test-summary")
-		assert.Equal(t, message.CreatedBy, "test-service")
+		assert.Equal(t, message.CreatedBy, "test-service-created-by")
+		assert.Equal(t, message.Username, "test-service-username")
 
 		w.WriteHeader(http.StatusCreated)
-		_, err = w.Write([]byte(`{"id":"2DnciRjDYKGD0gU0pipXq9lFHGD","kind":"ClusterLog","href":"/api/service_logs/v1/cluster_logs/2DnciRjDYKGD0gU0pipXq9lFHGD","timestamp":"2022-08-24T10:53:35.375948253Z","severity":"Info","service_name":"test","cluster_uuid":"e1a379e4-9ac5-4353-8f82-ad066a734f18","summary":"test","description":"test","event_stream_id":"2DnciRaUyJQDY9mggxeiidkSWp0","created_by":"test-service","created_at":"2022-08-24T10:53:35.375972704Z","email":"test@test.com"}`))
+		_, err = w.Write([]byte(`{"id":"2DnciRjDYKGD0gU0pipXq9lFHGD","kind":"ClusterLog","href":"/api/service_logs/v1/cluster_logs/2DnciRjDYKGD0gU0pipXq9lFHGD","timestamp":"2022-08-24T10:53:35.375948253Z","severity":"Info","service_name":"test","cluster_uuid":"e1a379e4-9ac5-4353-8f82-ad066a734f18","summary":"test","description":"test","event_stream_id":"2DnciRaUyJQDY9mggxeiidkSWp0","created_by":"test-service-created-by","username":"test-service-username","created_at":"2022-08-24T10:53:35.375972704Z","email":"test@test.com"}`))
 		if err != nil {
 			log.Fatal().Msg(err.Error())
 		}
@@ -119,7 +120,8 @@ func TestServiceLogProducerSendMessage(t *testing.T) {
 		Description: "test-description",
 		ServiceName: "test-service-name",
 		Summary:     "test-summary",
-		CreatedBy:   "test-service",
+		CreatedBy:   "test-service-created-by",
+		Username:    "test-service-username",
 	}
 	msgBytes, err := json.Marshal(entry)
 	helpers.FailOnError(t, err)

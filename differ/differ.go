@@ -250,6 +250,7 @@ func showConfiguration(config *conf.ConfigStruct) {
 		Bool("Enabled", serviceLogConfig.Enabled).
 		Str("ClientID", serviceLogConfig.ClientID).
 		Str("Created by", serviceLogConfig.CreatedBy).
+		Str("Username", serviceLogConfig.Username).
 		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
 		Int("Impact threshold", brokerConfig.ImpactThreshold).
 		Int("Severity threshold", brokerConfig.SeverityThreshold).
@@ -376,13 +377,14 @@ func findRenderedReport(reports []types.RenderedReport, ruleName types.RuleName,
 	return types.RenderedReport{}, fmt.Errorf(ReportNotFoundError, ruleName, errorKey)
 }
 
-func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEntry, createdBy string) types.ServiceLogEntry {
+func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEntry, createdBy string, username string) types.ServiceLogEntry {
 	logEntry := types.ServiceLogEntry{
 		ClusterUUID: cluster.ClusterName,
 		Description: report.Reason,
 		ServiceName: serviceName,
 		Summary:     report.Description,
 		CreatedBy:   createdBy,
+		Username:    username,
 	}
 
 	// It is necessary to truncate the fields because of Service Log limitations
@@ -416,9 +418,11 @@ func evaluateTagFilter(filterEnabled bool, tagsSet, reportItemTags types.TagsSet
 func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.ClusterEntry,
 	rules types.Rules, ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int, err error) {
 
-	// we need to pass the correct "created_by" attribute to ServiceLog REST API
+	// we need to pass the correct "created_by" and "username" attributes
+	// to ServiceLog REST API
 	serviceLogConfiguration := conf.GetServiceLogConfiguration(configuration)
 	createdBy := serviceLogConfiguration.CreatedBy
+	username := serviceLogConfiguration.Username
 
 	dependenciesConfiguration := conf.GetDependenciesConfiguration(configuration)
 	renderedReports, err := renderReportsForCluster(
@@ -483,7 +487,7 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 				continue
 			}
 
-			logEntry := createServiceLogEntry(renderedReport, cluster, createdBy)
+			logEntry := createServiceLogEntry(renderedReport, cluster, createdBy, username)
 
 			msgBytes, err := json.Marshal(logEntry)
 			if err != nil {

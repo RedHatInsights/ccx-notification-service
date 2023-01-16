@@ -296,6 +296,7 @@ type ServiceLogEntry struct {
 	ServiceName string      `json:"service_name"`
 	Summary     string      `json:"summary"`
 	CreatedBy   string      `json:"created_by"`
+	Username    string      `json:"username"`
 }
 
 // MakeSetOfTags helper function makes set of tags from given list of tags

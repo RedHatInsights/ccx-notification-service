@@ -19,6 +19,7 @@ tags = []
 client_id = "a-service-id"
 client_secret = "a-secret"
 created_by = "insights-advisor"
+username ="insights-advisor"
 token_url = ""
 enabled = false
 url = "localhost:8000/api/service_logs/v1/cluster_logs/"
