@@ -1,5 +1,5 @@
 /*
-Copyright © 2021, 2022 Red Hat, Inc.
+Copyright © 2021, 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -1554,47 +1554,47 @@ func TestConvertLogLevel(t *testing.T) {
 	}
 
 	testData := []TestData{
-		TestData{
+		{
 			Input:  "",
 			Output: zerolog.DebugLevel,
 		},
-		TestData{
+		{
 			Input:  "debug",
 			Output: zerolog.DebugLevel,
 		},
-		TestData{
+		{
 			Input:  " debug",
 			Output: zerolog.DebugLevel,
 		},
-		TestData{
+		{
 			Input:  " debug ",
 			Output: zerolog.DebugLevel,
 		},
-		TestData{
+		{
 			Input:  "info",
 			Output: zerolog.InfoLevel,
 		},
-		TestData{
+		{
 			Input:  "warn",
 			Output: zerolog.WarnLevel,
 		},
-		TestData{
+		{
 			Input:  "warning",
 			Output: zerolog.WarnLevel,
 		},
-		TestData{
+		{
 			Input:  "error",
 			Output: zerolog.ErrorLevel,
 		},
-		TestData{
+		{
 			Input:  "fatal",
 			Output: zerolog.FatalLevel,
 		},
-		TestData{
+		{
 			Input:  " fatal",
 			Output: zerolog.FatalLevel,
 		},
-		TestData{
+		{
 			Input:  "fatal ",
 			Output: zerolog.FatalLevel,
 		},
