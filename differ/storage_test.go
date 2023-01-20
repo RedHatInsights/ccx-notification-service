@@ -466,3 +466,44 @@ func TestReadStatesEmptyRecordSet(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestReadStatesNonEmptyRecordSet checks if method Storage.ReadStates returns
+// non empty record set.
+func TestReadStatesNonEmptyRecordSet(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"id", "value", "comment"})
+
+	// these three rows should be returned
+	rows.AddRow(0, 1000, "ID=0")
+	rows.AddRow(1, 2000, "ID=1")
+	rows.AddRow(2, 3000, "ID=2")
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT id, value, comment FROM states ORDER BY id"
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	states, err := storage.ReadStates()
+
+	// tested method should NOT return an error
+	if err != nil {
+		t.Error("error was not expected while querying states table", err)
+	}
+
+	// exactly three states should be returned
+	assert.Len(t, states, 3, "Exactly 3 states should be returned")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
