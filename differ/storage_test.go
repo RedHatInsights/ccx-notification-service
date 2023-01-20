@@ -507,3 +507,44 @@ func TestReadStatesNonEmptyRecordSet(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestReadStatesOnScanError checks if method Storage.ReadStates returns
+// expected results on scan error.
+func TestReadStatesOnScanError(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"id", "value", "comment"})
+
+	// these three rows should be returned
+	rows.AddRow("this is not integer!", 1000, "ID=0")
+	rows.AddRow(1, 2000, "ID=1")
+	rows.AddRow(2, 3000, "ID=2")
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT id, value, comment FROM states ORDER BY id"
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	states, err := storage.ReadStates()
+
+	// tested method SHOULD return an error
+	if err == nil {
+		t.Error("an error is expected while scanning states table", err)
+	}
+
+	// no states should be returned
+	assert.Empty(t, states, "Set of states should be empty")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
