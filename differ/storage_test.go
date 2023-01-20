@@ -430,3 +430,39 @@ func TestWriteReadErrorWrongDriver(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestReadStatesEmptyRecordSet checks if method Storage.ReadStates returns
+// empty record set.
+func TestReadStatesEmptyRecordSet(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"id", "value", "comment"})
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT id, value, comment FROM states ORDER BY id"
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	states, err := storage.ReadStates()
+
+	// tested method should NOT return an error
+	if err != nil {
+		t.Error("error was not expected while querying states table", err)
+	}
+
+	// no states should be returned
+	assert.Empty(t, states, "Set of states should be empty")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
