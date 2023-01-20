@@ -204,9 +204,7 @@ func TestReadErrorExistPositiveResult(t *testing.T) {
 
 	// call the tested method
 	exists, err := storage.ReadErrorExists(1, "123", time.Now())
-	if err != nil {
-		t.Error("error was not expected while querying read_errors table", err)
-	}
+	assert.NoError(t, err, "error was not expected while querying read_errors table")
 
 	assert.True(t, exists, "True return value is expected")
 
@@ -238,9 +236,7 @@ func TestReadErrorExistNegativeResult(t *testing.T) {
 
 	// call the tested method
 	exists, err := storage.ReadErrorExists(1, "123", time.Now())
-	if err != nil {
-		t.Error("error was not expected while querying read_errors table", err)
-	}
+	assert.NoError(t, err, "error was not expected while querying read_errors table")
 
 	assert.False(t, exists, "False return value is expected")
 
@@ -365,9 +361,7 @@ func TestWriteReadError(t *testing.T) {
 
 	// call the tested method
 	err := storage.WriteReadError(1, "foo", time.Now(), errors.New("my error"))
-	if err != nil {
-		t.Errorf("error was not expected while writing report for cluster: %s", err)
-	}
+	assert.NoError(t, err, "error was not expected while writing report for cluster")
 
 	// connection to mocked DB needs to be closed properly
 	checkConnectionClose(t, connection)
@@ -454,9 +448,7 @@ func TestReadStatesEmptyRecordSet(t *testing.T) {
 	states, err := storage.ReadStates()
 
 	// tested method should NOT return an error
-	if err != nil {
-		t.Error("error was not expected while querying states table", err)
-	}
+	assert.NoError(t, err, "error was not expected while querying states table")
 
 	// no states should be returned
 	assert.Empty(t, states, "Set of states should be empty")
@@ -495,9 +487,7 @@ func TestReadStatesNonEmptyRecordSet(t *testing.T) {
 	states, err := storage.ReadStates()
 
 	// tested method should NOT return an error
-	if err != nil {
-		t.Error("error was not expected while querying states table", err)
-	}
+	assert.NoError(t, err, "error was not expected while querying states table")
 
 	// exactly three states should be returned
 	assert.Len(t, states, 3, "Exactly 3 states should be returned")
