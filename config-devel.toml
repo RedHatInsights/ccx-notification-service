@@ -18,7 +18,7 @@ tags = []
 [service_log]
 client_id = "a-service-id"
 client_secret = "a-secret"
-created_by = "insights-advisor"
+created_by = "service-account-ccx-notification-service"
 username ="insights-advisor"
 token_url = ""
 enabled = false
