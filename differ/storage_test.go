@@ -267,9 +267,9 @@ func TestReadErrorExistNothingFound(t *testing.T) {
 
 	// call the tested method
 	exists, err := storage.ReadErrorExists(1, "123", time.Now())
-	if err == nil {
-		t.Error("error was expected while querying read_errors table", err)
-	}
+
+	// error is expected to be returned from called method
+	assert.Error(t, err, "error was expected while querying read_errors table")
 
 	assert.False(t, exists, "False return value is expected")
 
@@ -301,9 +301,9 @@ func TestReadErrorOnScanError(t *testing.T) {
 
 	// call the tested method
 	_, err := storage.ReadErrorExists(1, "123", time.Now())
-	if err == nil {
-		t.Error("an error is expected while scanning read_errors table", err)
-	}
+
+	// error is expected to be returned from called method
+	assert.Error(t, err, "an error is expected while scanning read_errors table")
 
 	// connection to mocked DB needs to be closed properly
 	checkConnectionClose(t, connection)
@@ -333,9 +333,9 @@ func TestReadErrorOnError(t *testing.T) {
 
 	// call the tested method
 	_, err := storage.ReadErrorExists(1, "123", time.Now())
-	if err == nil {
-		t.Error("an error is expected while querying read_errors table", err)
-	}
+
+	// error is expected to be returned from called method
+	assert.Error(t, err, "an error is expected while querying read_errors table")
 
 	// connection to mocked DB needs to be closed properly
 	checkConnectionClose(t, connection)
@@ -390,9 +390,9 @@ func TestWriteReadErrorOnError(t *testing.T) {
 
 	// call the tested method
 	err := storage.WriteReadError(1, "foo", time.Now(), errors.New("my error"))
-	if err == nil {
-		t.Errorf("error was expected while writing error report: %s", err)
-	}
+
+	// error is expected to be returned from called method
+	assert.Error(t, err, "error was expected while writing error report")
 
 	// connection to mocked DB needs to be closed properly
 	checkConnectionClose(t, connection)
@@ -415,9 +415,9 @@ func TestWriteReadErrorWrongDriver(t *testing.T) {
 
 	// call the tested method
 	err := storage.WriteReadError(1, "foo", time.Now(), errors.New("my error"))
-	if err == nil {
-		t.Errorf("error was expected while writing error report: %s", err)
-	}
+
+	// error is expected to be returned from called method
+	assert.Error(t, err, "error was expected while writing error report")
 
 	// connection to mocked DB needs to be closed properly
 	checkConnectionClose(t, connection)
@@ -532,9 +532,7 @@ func TestReadStatesOnScanError(t *testing.T) {
 	states, err := storage.ReadStates()
 
 	// tested method SHOULD return an error
-	if err == nil {
-		t.Error("an error is expected while scanning states table", err)
-	}
+	assert.Error(t, err, "an error is expected while scanning states table")
 
 	// no states should be returned
 	assert.Empty(t, states, "Set of states should be empty")
@@ -569,9 +567,7 @@ func TestReadStatesOnError(t *testing.T) {
 	states, err := storage.ReadStates()
 
 	// tested method SHOULD return an error
-	if err == nil {
-		t.Error("an error is expected while queryinf states table", err)
-	}
+	assert.Error(t, err, "an error is expected while quering states table")
 
 	// no states should be returned
 	assert.Empty(t, states, "Set of states should be empty")
