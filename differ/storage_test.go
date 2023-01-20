@@ -501,6 +501,12 @@ func TestReadStatesNonEmptyRecordSet(t *testing.T) {
 	// exactly three states should be returned
 	assert.Len(t, states, 3, "Exactly 3 states should be returned")
 
+	// check returned result set values
+	for i := 0; i < 3; i++ {
+		assert.Equal(t, states[i].ID, types.StateID(i))
+		assert.Equal(t, states[i].Value, strconv.Itoa((i+1)*1000))
+	}
+
 	// connection to mocked DB needs to be closed properly
 	checkConnectionClose(t, connection)
 
@@ -537,6 +543,43 @@ func TestReadStatesOnScanError(t *testing.T) {
 	// tested method SHOULD return an error
 	if err == nil {
 		t.Error("an error is expected while scanning states table", err)
+	}
+
+	// no states should be returned
+	assert.Empty(t, states, "Set of states should be empty")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadStatesOnError checks if method Storage.ReadStates returns
+// expected results on query error.
+func TestReadStatesOnError(t *testing.T) {
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT id, value, comment FROM states ORDER BY id"
+
+	// let's raise an error!
+	mock.ExpectQuery(expectedQuery).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	states, err := storage.ReadStates()
+
+	// tested method SHOULD return an error
+	if err == nil {
+		t.Error("an error is expected while queryinf states table", err)
 	}
 
 	// no states should be returned
