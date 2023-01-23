@@ -754,3 +754,42 @@ func TestReadClusterListOnScanError(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestReadClusterListOnError checks if method Storage.ReadClusterList returns
+// expected results on query error.
+func TestReadClusterListOnError(t *testing.T) {
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected query performed by tested function
+	expectedQuery := `
+		SELECT DISTINCT ON \(cluster\)
+		org_id, account_number, cluster, kafka_offset, updated_at
+		FROM new_reports
+		ORDER BY cluster, updated_at DESC`
+
+	// let's raise an error!
+	mock.ExpectQuery(expectedQuery).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	states, err := storage.ReadClusterList()
+
+	// tested method SHOULD return an error
+	assert.Error(t, err, "an error is expected while quering new_reports table")
+
+	// no clusters should be returned
+	assert.Empty(t, states, "List of clusters should be empty")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
