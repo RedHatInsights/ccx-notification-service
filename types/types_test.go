@@ -33,20 +33,20 @@ func TestMakeSetOfTags(t *testing.T) {
 		{
 			input: []string{"tag1"},
 			expected: map[string]struct{}{
-				"tag1": struct{}{},
+				"tag1": {},
 			},
 		},
 		{
 			input: []string{"tag1", "tag2"},
 			expected: map[string]struct{}{
-				"tag1": struct{}{},
-				"tag2": struct{}{},
+				"tag1": {},
+				"tag2": {},
 			},
 		},
 		{
 			input: []string{"tag1", "tag1"},
 			expected: map[string]struct{}{
-				"tag1": struct{}{},
+				"tag1": {},
 			},
 		},
 	}
