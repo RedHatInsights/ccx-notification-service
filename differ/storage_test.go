@@ -705,3 +705,52 @@ func TestReadClusterListNonEmptyRecordSet(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestReadClusterListOnScanError checks if method Storage.ReadClusterList returns
+// expected results on scan error.
+func TestReadClusterListOnScanError(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{
+		"org_id",
+		"account_number",
+		"cluster",
+		"kafka_offset",
+		"updated_at"})
+
+	// these three rows should be returned
+	rows.AddRow("this is not integer!", 1000, "cluster1", 10000, time.Now())
+	rows.AddRow(1, 2000, "cluster2", 10001, time.Now())
+	rows.AddRow(2, 3000, "cluster3", 10002, time.Now())
+
+	// expected query performed by tested function
+	expectedQuery := `
+		SELECT DISTINCT ON \(cluster\)
+		org_id, account_number, cluster, kafka_offset, updated_at
+		FROM new_reports
+		ORDER BY cluster, updated_at DESC`
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	clusterList, err := storage.ReadClusterList()
+
+	// tested method should NOT return an error
+	assert.Error(t, err, "an error is expected while querying new_reports table")
+
+	// no clusters tates should be returned
+	assert.Empty(t, clusterList, "List of clusters should be empty")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
