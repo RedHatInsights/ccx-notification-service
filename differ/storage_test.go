@@ -605,3 +605,46 @@ func TestReadStatesOnError(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestReadClusterListEmptyRecordSet checks if method Storage.ReadClusterList
+// returns empty record set.
+func TestReadClusterListEmptyRecordSet(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{
+		"org_id",
+		"account_number",
+		"cluster",
+		"kafka_offset",
+		"updated_at"})
+
+	// expected query performed by tested function
+	expectedQuery := `
+		SELECT DISTINCT ON \(cluster\)
+		org_id, account_number, cluster, kafka_offset, updated_at
+		FROM new_reports
+		ORDER BY cluster, updated_at DESC`
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	clusterList, err := storage.ReadClusterList()
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying new_reports table")
+
+	// no clusters tates should be returned
+	assert.Empty(t, clusterList, "List of clusters should be empty")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
