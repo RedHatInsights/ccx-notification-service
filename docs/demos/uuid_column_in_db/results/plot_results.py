@@ -36,7 +36,7 @@ def plot_results(filename, title, show_graph):
         # and transform benchmark name into readable form
         data = [
             (
-                row[0][:-2][len("Benchmark"):].replace("ClusterAs", " "),
+                row[0][:-2][len("Benchmark") :].replace("ClusterAs", " "),
                 int(row[2]),
             )
             for row in csv_reader
