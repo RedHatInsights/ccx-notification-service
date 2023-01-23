@@ -19,7 +19,7 @@ import napkin
 def weekly_reports(c):
     """Definition of sequence diagram for weekly reports generation."""
     # first, define all nodes that are able to communicate
-    timer = c.object('Timer')
+    timer = c.object("Timer")
     service = c.object('"ccx-notification-service"')
     db = c.object('"Notification\\ndatabase"')
     notifications = c.object('"Kafka topic\\nplatform.notifications.ingress"')
@@ -45,10 +45,14 @@ def weekly_reports(c):
             c.ret("list of results for cluster UUID")
         with c.loop("iterate over all results"):
             with service.filter("new rules", "total_risk_threshold"):
-                c.note("currently any new rule will be reported,\\nbut filtering can be changed in future")
+                c.note(
+                    "currently any new rule will be reported,\\nbut filtering can be changed in future"
+                )
                 c.ret("filtered\\nrules")
             with c.group("At least one rule was found"):
-                with service.prepare_notification_message("filtered rules", "weekly report template"):
+                with service.prepare_notification_message(
+                    "filtered rules", "weekly report template"
+                ):
                     c.ret("notification\\nmessage")
                 with notifications.notify("notification message"):
                     c.ret("accepted")

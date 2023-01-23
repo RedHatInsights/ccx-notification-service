@@ -19,7 +19,7 @@ import napkin
 def instant_reports(c):
     """Definition of sequence diagram for instant reports generation."""
     # first, define all nodes that are able to communicate
-    timer = c.object('Timer')
+    timer = c.object("Timer")
     service = c.object('"ccx-notification-service"')
     db = c.object('"Notification\\ndatabase"')
     notifications = c.object('"Kafka topic\\nplatform.notifications.ingress"')

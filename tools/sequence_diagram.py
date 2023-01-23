@@ -19,7 +19,7 @@ import napkin
 def sequence_diagram(c):
     """Definition of sequence diagram."""
     # first, define all nodes that are able to communicate
-    cluster = c.object('Cluster')
+    cluster = c.object("Cluster")
     ingress = c.object('"Ingress\\nservice"')
     storage_broker = c.object('"Insights-storage-broker\\nservice"')
     s3 = c.object('"S3 bucket"')
