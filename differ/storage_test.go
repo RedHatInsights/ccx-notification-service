@@ -77,6 +77,33 @@ func checkAllExpectations(t *testing.T, mock sqlmock.Sqlmock) {
 	}
 }
 
+// TestReadLastNotifiedRecordForClusterListEmptyClusterEntries test checks how
+// empty sequence of cluster entries is handled by metohd
+// ReadLastNotifiedRecordForClusterList
+func TestReadLastNotifiedRecordForClusterListEmptyClusterEntries(t *testing.T) {
+	// empty sequence of cluster entries
+	clusterEntries := []types.ClusterEntry{}
+
+	// second parameter passed to tested method
+	timeOffset := "1 day"
+
+	// prepare database mock
+	db, _ := newMock(t)
+	defer func() { _ = db.Close() }()
+
+	// establish connection to mocked database
+	sut := differ.NewFromConnection(db, types.DBDriverPostgres)
+
+	// call tested method
+	records, err := sut.ReadLastNotifiedRecordForClusterList(
+		clusterEntries, timeOffset, types.NotificationBackendTarget)
+
+	// test returned values
+	assert.NoError(t, err, "error running ReadLastNotifiedRecordForClusterList")
+	assert.Len(t, records, 0, "empty output is expected")
+
+}
+
 func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
 	var (
 		now            = time.Now()
