@@ -656,7 +656,6 @@ func TestReadClusterListNonEmptyRecordSet(t *testing.T) {
 	connection, mock := mustCreateMockConnection(t)
 
 	// prepare mocked result for SQL query
-	// prepare mocked result for SQL query
 	rows := sqlmock.NewRows([]string{
 		"org_id",
 		"account_number",
@@ -742,7 +741,7 @@ func TestReadClusterListOnScanError(t *testing.T) {
 	// call the tested method
 	clusterList, err := storage.ReadClusterList()
 
-	// tested method should NOT return an error
+	// tested method SHOULD return an error
 	assert.Error(t, err, "an error is expected while querying new_reports table")
 
 	// no clusters tates should be returned
@@ -786,6 +785,163 @@ func TestReadClusterListOnError(t *testing.T) {
 
 	// no clusters should be returned
 	assert.Empty(t, states, "List of clusters should be empty")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadReportForCluster checks if method
+// Storage.ReadReportForCluster returns correct output.
+func TestReadReportForCluster(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{
+		"report",
+		"updated_at"})
+
+	// timestamp
+	expectedTimestamp := time.Now()
+
+	// report to be returned
+	expectedReport := "this is mocked report"
+
+	// only one result must be returned
+	rows.AddRow(expectedReport, expectedTimestamp)
+
+	// expected query performed by tested function
+	expectedQuery := `
+		SELECT report, updated_at
+		  FROM new_reports
+		 WHERE org_id = \$1 AND cluster = \$2
+		 ORDER BY updated_at DESC
+		 LIMIT 1
+                `
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// parameters for tested method
+	orgID := types.OrgID(42)
+	clusterName := types.ClusterName("foo")
+
+	// call the tested method
+	returnedReport, returnedTimestamp, err := storage.ReadReportForCluster(orgID, clusterName)
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying new_reports table for given cluster")
+
+	// check returned report and timestamp
+	assert.Equal(t, returnedReport, types.ClusterReport(expectedReport))
+	assert.Equal(t, returnedTimestamp, types.Timestamp(expectedTimestamp))
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadReportForClusterOnScanError checks if method
+// Storage.ReadReportForCluster returns expected results on
+// scan error.
+func TestReadReportForClusterOnScanError(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{
+		"report",
+		"updated_at"})
+
+	// report to be returned
+	expectedReport := "this is mocked report"
+
+	// only one result must be returned
+	rows.AddRow(expectedReport, "this is not a timestamp value")
+
+	// expected query performed by tested function
+	expectedQuery := `
+		SELECT report, updated_at
+		  FROM new_reports
+		 WHERE org_id = \$1 AND cluster = \$2
+		 ORDER BY updated_at DESC
+		 LIMIT 1
+                `
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// parameters for tested method
+	orgID := types.OrgID(42)
+	clusterName := types.ClusterName("foo")
+
+	// call the tested method
+	returnedReport, returnedTimestamp, err := storage.ReadReportForCluster(orgID, clusterName)
+
+	// tested method SHOULD return an error
+	assert.Error(t, err, "error SHOULD be thrown while querying new_reports table for given cluster")
+
+	// check returned report and timestamp
+	assert.Equal(t, returnedReport, types.ClusterReport(expectedReport))
+	assert.True(t, time.Time(returnedTimestamp).IsZero())
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadReportForClusterOnError checks if method
+// Storage.ReadReportForCluster returns expected results on
+// query error.
+func TestReadReportForClusterOnError(t *testing.T) {
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected query performed by tested function
+	expectedQuery := `
+		SELECT report, updated_at
+		  FROM new_reports
+		 WHERE org_id = \$1 AND cluster = \$2
+		 ORDER BY updated_at DESC
+		 LIMIT 1
+                `
+
+	// let's raise an error!
+	mock.ExpectQuery(expectedQuery).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// parameters for tested method
+	orgID := types.OrgID(42)
+	clusterName := types.ClusterName("foo")
+
+	// call the tested method
+	returnedReport, returnedTimestamp, err := storage.ReadReportForCluster(orgID, clusterName)
+
+	// tested method SHOULD return an error
+	assert.Error(t, err, "error SHOULD be thrown while querying new_reports table for given cluster")
+
+	// check returned report and timestamp
+	assert.Empty(t, returnedReport)
+	assert.True(t, time.Time(returnedTimestamp).IsZero())
 
 	// connection to mocked DB needs to be closed properly
 	checkConnectionClose(t, connection)
