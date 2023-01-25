@@ -198,6 +198,19 @@ const (
 		INSERT INTO read_errors(org_id, cluster, updated_at, created_at, error_text)
 		VALUES ($1, $2, $3, $4, $5);
 	`
+
+	ReadReportForClusterQuery = `
+		SELECT report, updated_at
+		  FROM new_reports
+		 WHERE org_id = $1 AND cluster = $2
+		 ORDER BY updated_at DESC
+		 LIMIT 1
+       `
+	ReadReportForClusterAtOffsetQuery = `
+		"SELECT report
+		   FROM new_reports
+		  WHERE org_id = $1 AND cluster = $2 AND kafka_offset = $3;
+       `
 )
 
 // inClauseFromStringSlice is a helper function to construct `in` clause for SQL
@@ -437,9 +450,9 @@ func (storage DBStorage) ReadReportForClusterAtOffset(
 ) (types.ClusterReport, error) {
 	var report types.ClusterReport
 
+	query := ReadReportForClusterAtOffsetQuery
 	err := storage.connection.QueryRow(
-		"SELECT report FROM new_reports WHERE org_id = $1 AND cluster = $2 AND kafka_offset = $3;",
-		orgID, clusterName, kafkaOffset,
+		query, orgID, clusterName, kafkaOffset,
 	).Scan(&report)
 
 	if err != nil {
@@ -458,13 +471,7 @@ func (storage DBStorage) ReadReportForCluster(
 	var report types.ClusterReport
 
 	// query to retrieve just the latest report for given cluster
-	query := `
-		SELECT report, updated_at
-		  FROM new_reports
-		 WHERE org_id = $1 AND cluster = $2
-		 ORDER BY updated_at DESC
-		 LIMIT 1
-                `
+	query := ReadReportForClusterQuery
 	err := storage.connection.QueryRow(query, orgID, clusterName).Scan(&report, &updatedAt)
 
 	if err != nil {
