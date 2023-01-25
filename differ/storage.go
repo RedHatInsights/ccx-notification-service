@@ -206,10 +206,17 @@ const (
 		 ORDER BY updated_at DESC
 		 LIMIT 1
        `
+
 	ReadReportForClusterAtOffsetQuery = `
 		"SELECT report
 		   FROM new_reports
 		  WHERE org_id = $1 AND cluster = $2 AND kafka_offset = $3;
+       `
+
+	ReadReportForClusterAtTimeQuery = `
+		"SELECT report
+		   FROM new_reports
+		  WHERE org_id = $1 AND cluster = $2 AND updated_at = $3;
        `
 )
 
@@ -426,9 +433,9 @@ func (storage DBStorage) ReadReportForClusterAtTime(
 	// explicit conversion is needed there - SQL library issue
 	timestamp := time.Time(updatedAt)
 
+	query := ReadReportForClusterAtTimeQuery
 	err := storage.connection.QueryRow(
-		"SELECT report FROM new_reports WHERE org_id = $1 AND cluster = $2 AND updated_at = $3;",
-		orgID, clusterName, timestamp,
+		query, orgID, clusterName, timestamp,
 	).Scan(&report)
 
 	if err != nil {
