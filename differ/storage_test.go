@@ -949,3 +949,149 @@ func TestReadReportForClusterOnError(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestReadReportForClusterAtOffset checks if method
+// Storage.ReadReportForClusterAtOffset returns correct output.
+func TestReadReportForClusterAtOffset(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{
+		"report"})
+
+	// report to be returned
+	expectedReport := "this is mocked report"
+
+	// only one result must be returned
+	rows.AddRow(expectedReport)
+
+	// expected query performed by tested function
+	expectedQuery := `
+		SELECT report
+		  FROM new_reports
+		 WHERE org_id = \$1 AND cluster = \$2 AND kafka_offset = \$3;
+                `
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// parameters for tested method
+	orgID := types.OrgID(42)
+	clusterName := types.ClusterName("foo")
+	kafkaOffset := types.KafkaOffset(0)
+
+	// call the tested method
+	returnedReport, err := storage.ReadReportForClusterAtOffset(orgID, clusterName, kafkaOffset)
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying new_reports table for given cluster and offset")
+
+	// check returned report
+	assert.Equal(t, returnedReport, types.ClusterReport(expectedReport))
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadReportForClusterAtOffsetOnScanError checks if method
+// Storage.ReadReportForClusterAtOffset returns expected results on
+// scan error.
+func TestReadReportForClusterAtOffsetOnScanError(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{
+		"report"})
+
+	// report to be returned
+	expectedReport := 42 // not a string
+
+	// only one result must be returned
+	rows.AddRow(expectedReport)
+
+	// expected query performed by tested function
+	expectedQuery := `
+		SELECT report
+		  FROM new_reports
+		 WHERE org_id = \$1 AND cluster = \$2 AND kafka_offset = \$3;
+                `
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// parameters for tested method
+	orgID := types.OrgID(42)
+	clusterName := types.ClusterName("foo")
+	kafkaOffset := types.KafkaOffset(0)
+
+	// call the tested method
+	returnedReport, err := storage.ReadReportForClusterAtOffset(orgID, clusterName, kafkaOffset)
+
+	// tested method SHOULD return an error
+	assert.Error(t, err, "error SHOULD be thrown while querying new_reports table for given cluster and offset")
+
+	// check returned report
+	assert.Empty(t, returnedReport)
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadReportForClusterAtOffsetOnError checks if method
+// Storage.ReadReportForClusterAtOffset returns expected results on
+// query error.
+func TestReadReportForClusterAtOffsetOnError(t *testing.T) {
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected query performed by tested function
+	expectedQuery := `
+		SELECT report
+		  FROM new_reports
+		 WHERE org_id = \$1 AND cluster = \$2 AND kafka_offset = \$3;
+                `
+
+	// let's raise an error!
+	mock.ExpectQuery(expectedQuery).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// parameters for tested method
+	orgID := types.OrgID(42)
+	clusterName := types.ClusterName("foo")
+	kafkaOffset := types.KafkaOffset(0)
+
+	// call the tested method
+	returnedReport, err := storage.ReadReportForClusterAtOffset(orgID, clusterName, kafkaOffset)
+
+	// tested method SHOULD return an error
+	assert.Error(t, err, "error SHOULD be thrown while querying new_reports table for given cluster and offset")
+
+	// check returned report
+	assert.Empty(t, returnedReport)
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
