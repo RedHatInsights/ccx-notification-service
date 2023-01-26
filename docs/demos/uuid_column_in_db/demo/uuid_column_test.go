@@ -413,7 +413,7 @@ func mustExecuteStatement(b *testing.B, connection *sql.DB, statement string) {
 
 // insertIntoReportedV1 function inserts one new record into reported table v1,
 // v2, or v4 where cluster is represented as character(36) or as UUID. In case
-// of any error detected, benchmarks fail immediatelly.
+// of any error detected, benchmarks fail immediately.
 func insertIntoReportedV1(b *testing.B, connection *sql.DB, insertStatement *string, i int, report *string) {
 	// following columns needs to be updated with data:
 	// 1 | org_id            | integer                     | not null  |
@@ -466,7 +466,7 @@ func insertIntoReportedV1(b *testing.B, connection *sql.DB, insertStatement *str
 		accountNumber, clusterName, notificationTypeID, stateID,
 		report, updatedAt, notifiedAt, errorLog)
 
-	// check for any error, possible to exit immediatelly
+	// check for any error, possible to exit immediately
 	if err != nil {
 		b.Fatal(err)
 	}
@@ -474,7 +474,7 @@ func insertIntoReportedV1(b *testing.B, connection *sql.DB, insertStatement *str
 
 // insertIntoReportedV3 function inserts one new record into reported
 // table v3 where cluster is represented as byte array. In case of any error
-// detected, benchmarks fail immediatelly.
+// detected, benchmarks fail immediately.
 func insertIntoReportedV3(b *testing.B, connection *sql.DB, insertStatement *string, i int, report *string) {
 	// following columns needs to be updated with data:
 	// 1 | org_id            | integer                     | not null  |
@@ -509,7 +509,7 @@ func insertIntoReportedV3(b *testing.B, connection *sql.DB, insertStatement *str
 		accountNumber, bytes, notificationTypeID, stateID,
 		report, updatedAt, notifiedAt, errorLog)
 
-	// check for any error, possible to exit immediatelly
+	// check for any error, possible to exit immediately
 	if err != nil {
 		b.Fatal(err)
 	}
