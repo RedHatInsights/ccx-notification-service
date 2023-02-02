@@ -377,7 +377,7 @@ func findRenderedReport(reports []types.RenderedReport, ruleName types.RuleName,
 	return types.RenderedReport{}, fmt.Errorf(ReportNotFoundError, ruleName, errorKey)
 }
 
-func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEntry, createdBy string, username string) types.ServiceLogEntry {
+func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEntry, createdBy, username string) types.ServiceLogEntry {
 	logEntry := types.ServiceLogEntry{
 		ClusterUUID: cluster.ClusterName,
 		Description: report.Reason,
