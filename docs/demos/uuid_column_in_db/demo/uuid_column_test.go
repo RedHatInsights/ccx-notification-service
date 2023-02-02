@@ -612,7 +612,7 @@ func readClusterNames(b *testing.B, connection *sql.DB, selectClusterNamesStatem
 
 // deleteReportByClusterName function deletes report or reports identified by
 // cluster name.
-func deleteReportByClusterName(b *testing.B, connection *sql.DB, deleteStatement string, clusterName string) {
+func deleteReportByClusterName(b *testing.B, connection *sql.DB, deleteStatement, clusterName string) {
 	// execute SQL delete statement
 	_, err := connection.Exec(deleteStatement, clusterName)
 	if err != nil {
