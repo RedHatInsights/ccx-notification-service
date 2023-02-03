@@ -73,7 +73,20 @@
             <div class="content-wrapper">
                 <!-- Content Header (Page header) -->
                 <section class="content-header">
-                    <h1>read_errors</h1><p><span id="recordNumber">3</span> rows</p><br />
+                    <h1>read_errors</h1><p><span id="recordNumber">0</span> rows</p><br />
+                    <div class="box box-primary">
+                        <div class="box-header with-border">
+                            <i class="fa fa-file-text-o"></i>
+                            <h3 id="Description" class="box-title">Description</h3>
+                            <div class="box-tools pull-right">
+                                <button type="button" class="btn btn-box-tool" data-widget="collapse"><i class="fa fa-minus"></i></button>
+                                <button type="button" class="btn btn-box-tool" data-widget="remove"><i class="fa fa-times"></i></button>
+                            </div>
+                        </div><!-- /.box-header -->
+                        <div class="box-body clearfix">
+                            <p>errors that are detected during new reports collection</p>
+                        </div><!-- /.box-body -->
+                    </div>
                 </section>
                 <!-- Main content -->
                 <section class="content">
@@ -133,8 +146,8 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="read_errors.[org_id, cluster, updated_at] references new_reports.[org_id, cluster, updated_at] via read_errors_org_id_fkey"><a href='new_reports.html'>new_reports</a><span class='relatedKey'>.org_id</span></td>
-                                                <td class="constraint detail">read_errors_org_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="read_errors.[org_id, cluster, updated_at] references new_reports.[org_id, cluster, updated_at] via read_errors_org_id_cluster_updated_at_fkey"><a href='new_reports.html'>new_reports</a><span class='relatedKey'>.org_id</span></td>
+                                                <td class="constraint detail">read_errors_org_id_cluster_updated_at_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -154,8 +167,8 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="read_errors.[org_id, cluster, updated_at] references new_reports.[org_id, cluster, updated_at] via read_errors_org_id_fkey"><a href='new_reports.html'>new_reports</a><span class='relatedKey'>.cluster</span></td>
-                                                <td class="constraint detail">read_errors_org_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="read_errors.[org_id, cluster, updated_at] references new_reports.[org_id, cluster, updated_at] via read_errors_org_id_cluster_updated_at_fkey"><a href='new_reports.html'>new_reports</a><span class='relatedKey'>.cluster</span></td>
+                                                <td class="constraint detail">read_errors_org_id_cluster_updated_at_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
@@ -175,8 +188,8 @@
                                     <td>
                                         <table border='0' cellspacing='0' cellpadding='0'>
                                             <tr>
-                                                <td title="read_errors.[org_id, cluster, updated_at] references new_reports.[org_id, cluster, updated_at] via read_errors_org_id_fkey"><a href='new_reports.html'>new_reports</a><span class='relatedKey'>.updated_at</span></td>
-                                                <td class="constraint detail">read_errors_org_id_fkey<span title='Restrict delete:&#10;Parent cannot be deleted if children exist'>R</span></td>
+                                                <td title="read_errors.[org_id, cluster, updated_at] references new_reports.[org_id, cluster, updated_at] via read_errors_org_id_cluster_updated_at_fkey"><a href='new_reports.html'>new_reports</a><span class='relatedKey'>.updated_at</span></td>
+                                                <td class="constraint detail">read_errors_org_id_cluster_updated_at_fkey<span title='Cascade on delete:&#10;Deletion of parent deletes child'>C</span></td>
                                             </tr>
                                         </table>
                                     </td>
