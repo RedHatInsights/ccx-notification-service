@@ -23,6 +23,7 @@ CCX Notification Service
     * [Schema description](#schema-description)
 * [Notification templates](#notification-templates)
 * [Testing](#testing)
+* [BDD tests](#bdd-tests-1)
 * [Package manifest](#package-manifest)
 
 <!-- vim-markdown-toc -->
@@ -178,6 +179,23 @@ Templates used by this notification service are available at:
 ## Testing
 
 Tests and its configuration is described [in this document](https://redhatinsights.github.io/ccx-notification-service/testing.html)
+
+
+
+## BDD tests
+
+Behaviour tests for this service are included in [Insights Behavioral
+Spec](https://github.com/RedHatInsights/insights-behavioral-spec) repository.
+In order to run these tests, the following steps need to be made:
+
+1. clone the [Insights Behavioral Spec](https://github.com/RedHatInsights/insights-behavioral-spec) repository
+1. go into the cloned subdirectory `insights-behavioral-spec`
+1. run the `notification_service_tests.sh` from this subdirectory
+
+List of all test scenarios prepared for this service is available at
+<https://github.com/RedHatInsights/insights-behavioral-spec#ccx-notification-service>
+
+
 
 ## Package manifest
 
