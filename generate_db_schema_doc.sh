@@ -24,6 +24,6 @@ DB_PASSWORD=postgres
 DB_NAME=notification
 
 # Generate the documentation
-OUTPUT_DIR=docs/db-description-3
+OUTPUT_DIR=docs/db-description
 
 java -jar schemaspy-6.1.0.jar -cp . -t pgsql -u ${DB_LOGIN} -p ${DB_PASSWORD} -host ${DB_ADDRESS} -s public -o ${OUTPUT_DIR} -db ${DB_NAME} -dp postgresql-42.2.20.jre7.jar
