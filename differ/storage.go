@@ -208,13 +208,13 @@ const (
        `
 
 	ReadReportForClusterAtOffsetQuery = `
-		"SELECT report
+		SELECT report
 		   FROM new_reports
 		  WHERE org_id = $1 AND cluster = $2 AND kafka_offset = $3;
        `
 
 	ReadReportForClusterAtTimeQuery = `
-		"SELECT report
+		SELECT report
 		   FROM new_reports
 		  WHERE org_id = $1 AND cluster = $2 AND updated_at = $3;
        `
