@@ -140,7 +140,7 @@ func TestProducerSendNotificationMessageNoEvents(t *testing.T) {
 		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
 		AccountID:   "000000",
 		Events:      nil,
-		Context:     "{}",
+		Context:     nil,
 	}
 
 	msgBytes, err := json.Marshal(msg)
@@ -163,7 +163,7 @@ func TestProducerSendNotificationMessageSingleEvent(t *testing.T) {
 	events := []types.Event{
 		{
 			Metadata: types.EventMetadata{},
-			Payload:  "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\"}",
+			Payload:  types.EventPayload{"rule_id": "a unique ID", "what happened": "something baaad happened", "error_code": "3"},
 		},
 	}
 
@@ -174,7 +174,7 @@ func TestProducerSendNotificationMessageSingleEvent(t *testing.T) {
 		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
 		AccountID:   "000001",
 		Events:      events,
-		Context:     "{}",
+		Context:     nil,
 	}
 
 	msgBytes, err := json.Marshal(msg)
@@ -197,11 +197,11 @@ func TestProducerSendNotificationMessageMultipleEvents(t *testing.T) {
 	events := []types.Event{
 		{
 			Metadata: types.EventMetadata{},
-			Payload:  "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\"}",
+			Payload:  types.EventPayload{"rule_id": "a unique ID", "what happened": "something baaad happened", "error_code": "3"},
 		},
 		{
 			Metadata: types.EventMetadata{},
-			Payload:  "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\", \"more_random_data\": \"why not...\"}",
+			Payload:  types.EventPayload{"rule_id": "a unique ID", "what happened": "something baaad happened", "error_code": "3", "more_random_data": "why not..."},
 		},
 	}
 
@@ -212,7 +212,7 @@ func TestProducerSendNotificationMessageMultipleEvents(t *testing.T) {
 		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
 		AccountID:   "000001",
 		Events:      events,
-		Context:     "{}",
+		Context:     nil,
 	}
 
 	msgBytes, err := json.Marshal(msg)
@@ -236,11 +236,11 @@ func TestProducerSend(t *testing.T) {
 	events := []types.Event{
 		{
 			Metadata: nil,
-			Payload: "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\"}",
+			Payload: types.EventPayload{"rule_id": "a unique ID", "what happened": "something baaad happened", "error_code":"3"},
 		},
 		{
 			Metadata: nil,
-			Payload: "{\"rule_id\": \"a unique ID\", \"what happened\": \"something baaad happened\", \"error_code\":\"3\"}",
+			Payload: types.EventPayload{"rule_id": "a unique ID", "what happened": "something baaad happened", "error_code":"3"},
 		},
 	}
 
