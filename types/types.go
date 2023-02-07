@@ -206,7 +206,7 @@ type EventPayload map[string]string
 // Event is a structure containing the payload and its metadata.
 type Event struct {
 	Metadata EventMetadata `json:"metadata"`
-	Payload  string        `json:"payload"`
+	Payload  EventPayload  `json:"payload"`
 }
 
 // Digest is a structure containing the counters for weekly digest
@@ -226,14 +226,14 @@ type NotificationContext map[string]interface{}
 // NotificationMessage represents content of messages
 // sent to the notification platform topic in Kafka.
 type NotificationMessage struct {
-	Bundle      string  `json:"bundle"`
-	Application string  `json:"application"`
-	EventType   string  `json:"event_type"`
-	Timestamp   string  `json:"timestamp"`
-	AccountID   string  `json:"account_id"`
-	OrgID       string  `json:"org_id"`
-	Events      []Event `json:"events"`
-	Context     string  `json:"context"`
+	Bundle      string              `json:"bundle"`
+	Application string              `json:"application"`
+	EventType   string              `json:"event_type"`
+	Timestamp   string              `json:"timestamp"`
+	AccountID   string              `json:"account_id"`
+	OrgID       string              `json:"org_id"`
+	Events      []Event             `json:"events"`
+	Context     NotificationContext `json:"context"`
 }
 
 // NotificationRecord structure represents one record stored in `reported` table.

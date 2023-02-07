@@ -92,43 +92,6 @@ func captureStdout(f func()) string {
 }
 
 // ---------------------------------------------------------------------------------------
-func TestToJSONEscapedStringValidJSON(t *testing.T) {
-	type testStruct struct {
-		Name         string
-		Items        []string
-		ID           int64
-		privateField string // An unexported field is not encoded, so our method would not include it in output.
-	}
-
-	tested := testStruct{
-		Name:         "Random Name",
-		Items:        []string{"Apple", "Dell", "Orange", "Piña"},
-		ID:           999,
-		privateField: "a random field that nobody can see cuz I don't wanna",
-	}
-
-	expectedEscapedJSONString := "{\"Name\":\"Random Name\",\"Items\":[\"Apple\",\"Dell\",\"Orange\",\"Piña\"],\"ID\":999}"
-
-	assert.Equal(t, expectedEscapedJSONString, toJSONEscapedString(tested))
-}
-
-func TestToJSONEscapedStringInvalidJSON(t *testing.T) {
-	type testStruct struct {
-		ID           int64
-		InvalidField chan int // A value that cannot be represented in JSON
-	}
-
-	tested := testStruct{
-		ID:           999,
-		InvalidField: make(chan int),
-	}
-
-	expectedEscapedJSONString := ""
-
-	assert.Equal(t, expectedEscapedJSONString, toJSONEscapedString(tested))
-}
-
-// ---------------------------------------------------------------------------------------
 func TestGenerateInstantReportNotificationMessage(t *testing.T) {
 	clusterURI := "the_cluster_uri_in_ocm_for_{cluster_id}"
 	accountID := "a_stringified_account_id"
@@ -140,7 +103,7 @@ func TestGenerateInstantReportNotificationMessage(t *testing.T) {
 	assert.NotEmpty(t, notificationMsg, "the generated notification message is empty")
 	assert.Empty(t, notificationMsg.Events, "the generated notification message should not have any events")
 	assert.Equal(t, types.InstantNotif.ToString(), notificationMsg.EventType, "the generated notification message should be for instant notifications")
-	assert.Equal(t, "{\"display_name\":\"the_displayed_cluster_ID\",\"host_url\":\"the_cluster_uri_in_ocm_for_the_displayed_cluster_ID\"}", notificationMsg.Context, "Notification context is different from expected.")
+	assert.Equal(t, types.NotificationContext{"display_name": "the_displayed_cluster_ID", "host_url": "the_cluster_uri_in_ocm_for_the_displayed_cluster_ID"}, notificationMsg.Context, "Notification context is different from expected.")
 	assert.Equal(t, notificationBundleName, notificationMsg.Bundle, "Generated notifications should indicate 'openshift' as bundle")
 	assert.Equal(t, notificationApplicationName, notificationMsg.Application, "Generated notifications should indicate 'openshift' as application name")
 	assert.Equal(t, accountID, notificationMsg.AccountID, "Generated notifications does not have expected account ID")
@@ -168,10 +131,8 @@ func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	assert.Equal(t, len(notificationMsg.Events), 1, "the notification message should have 1 event")
 	assert.Equal(t, notificationMsg.Events[0].Metadata, types.EventMetadata{}, "All notification messages should have empty metadata")
 
-	payload := Payload{}
-	err := json.Unmarshal([]byte(notificationMsg.Events[0].Payload), &payload)
-	assert.Nil(t, err, fmt.Sprintf("Unexpected behavior: Cannot unmarshall notification payload %q", notificationMsg.Events[0].Payload))
-	assert.Equal(t, payload.RuleURL, "a_given_uri/the_displayed_cluster_ID/a|module/an_error_key", fmt.Sprintf("The rule URL %s is not correct", payload.RuleURL))
+	payload := notificationMsg.Events[0].Payload
+	assert.Equal(t, payload[notificationPayloadRuleURL], "a_given_uri/the_displayed_cluster_ID/a|module/an_error_key", fmt.Sprintf("The rule URL %s is not correct", payload[notificationPayloadRuleURL]))
 
 	appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleDescription, totalRisk, publishDate)
 	assert.Equal(t, len(notificationMsg.Events), 2, "the notification message should have 2 events")
@@ -226,12 +187,12 @@ func TestGenerateWeeklyDigestNotificationMessage(t *testing.T) {
 	assert.Equal(t, notificationBundleName, notificationMsg.Bundle, "Generated notifications should indicate 'openshift' as bundle")
 	assert.Equal(t, notificationApplicationName, notificationMsg.Application, "Generated notifications should indicate 'openshift' as application name")
 	assert.Equal(t, accountID, notificationMsg.AccountID, "Generated notifications does not have expected account ID")
-	assert.Equal(t, "{\"advisor_url\":\"the_uri_to_advisor_tab_in_ocm\"}", notificationMsg.Context, "Notification context is different from expected.")
+	assert.Equal(t, types.NotificationContext{"advisor_url": "the_uri_to_advisor_tab_in_ocm"}, notificationMsg.Context, "Notification context is different from expected.")
 
 	assert.Equal(t, 1, len(notificationMsg.Events)) // Only one event, always, with the digest's content
 	expectedEvent := types.Event{
 		Metadata: types.EventMetadata{},
-		Payload:  "{\"total_clusters\":\"0\",\"total_critical\":\"0\",\"total_important\":\"0\",\"total_incidents\":\"0\",\"total_recommendations\":\"0\"}",
+		Payload:  types.EventPayload{"total_clusters": "0", "total_critical": "0", "total_important": "0", "total_incidents": "0", "total_recommendations": "0"},
 	}
 	assert.Equal(t, expectedEvent, notificationMsg.Events[0])
 }

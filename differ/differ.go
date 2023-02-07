@@ -874,13 +874,9 @@ func generateInstantNotificationMessage(
 	clusterURI *string, accountID, orgID, clusterID string) (
 	notification types.NotificationMessage) {
 	events := []types.Event{}
-	context := toJSONEscapedString(types.NotificationContext{
+	context := types.NotificationContext{
 		notificationContextDisplayName: clusterID,
 		notificationContextHostURL:     strings.Replace(*clusterURI, "{cluster_id}", clusterID, 1),
-	})
-	if context == "" {
-		log.Error().Msg(contextToEscapedStringError)
-		return
 	}
 
 	notification = types.NotificationMessage{
@@ -898,24 +894,16 @@ func generateInstantNotificationMessage(
 
 // generateWeeklyNotificationMessage function generates a notification message with one event based on the provided digest
 func generateWeeklyNotificationMessage(advisorURI *string, accountID string, digest types.Digest) (notification types.NotificationMessage) {
-	context := toJSONEscapedString(types.NotificationContext{
+	context := types.NotificationContext{
 		notificationContextAdvisorURL: *advisorURI,
-	})
-	if context == "" {
-		log.Error().Msg(contextToEscapedStringError)
-		return
 	}
 
-	payload := toJSONEscapedString(types.EventPayload{
+	payload := types.EventPayload{
 		notificationPayloadTotalClusters:        fmt.Sprint(digest.ClustersAffected),
 		notificationPayloadTotalRecommendations: fmt.Sprint(digest.Recommendations),
 		notificationPayloadTotalIncidents:       fmt.Sprint(digest.Incidents),
 		notificationPayloadTotalCritical:        fmt.Sprint(digest.CriticalNotifications),
 		notificationPayloadTotalImportant:       fmt.Sprint(digest.ImportantNotifications),
-	})
-	if payload == "" {
-		log.Error().Msg("Notification message will not be generated as payload couldn't be converted to escaped string.")
-		return
 	}
 
 	events := []types.Event{
@@ -954,16 +942,13 @@ func generateNotificationPayloadURL(
 // appendEventToNotificationMessage function adds a new event to the given notification message after constructing the payload string
 func appendEventToNotificationMessage(notificationPayloadURL string, notification *types.NotificationMessage, ruleDescription string, totalRisk int, publishDate string) {
 
-	payload := toJSONEscapedString(types.EventPayload{
+	payload := types.EventPayload{
 		notificationPayloadRuleDescription: ruleDescription,
 		notificationPayloadRuleURL:         notificationPayloadURL,
 		notificationPayloadTotalRisk:       fmt.Sprint(totalRisk),
 		notificationPayloadPublishDate:     publishDate,
-	})
-	if payload == "" {
-		log.Error().Msg(contextToEscapedStringError)
-		return
 	}
+
 	event := types.Event{
 		// The insights Notifications backend expects this field to be
 		// an empty object in the received JSON
@@ -973,16 +958,6 @@ func appendEventToNotificationMessage(notificationPayloadURL string, notificatio
 		Payload: payload,
 	}
 	notification.Events = append(notification.Events, event)
-}
-
-// toJSONEscapedString function turns any valid JSON to a string-escaped string
-func toJSONEscapedString(i interface{}) string {
-	b, err := json.Marshal(i)
-	if err != nil {
-		log.Err(err).Msg(invalidJSONContent)
-	}
-	s := string(b)
-	return s
 }
 
 // checkArgs function handles command line options passed to the process
