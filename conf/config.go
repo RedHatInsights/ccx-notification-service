@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// This source file contains definition of data type named ConfigStruct that
+// Package conf contains definition of data type named ConfigStruct that
 // represents configuration of Notification service. This source file
 // also contains function named LoadConfiguration that can be used to load
 // configuration from provided configuration file and/or from environment

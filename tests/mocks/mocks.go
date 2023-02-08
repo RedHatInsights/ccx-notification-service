@@ -14,6 +14,6 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Mocks package contains various mock objects used by unit test: Producer
+// Package mocks contains various mock objects used by unit test: Producer
 // mock, Storage mock, and OCMClient mock.
 package mocks
