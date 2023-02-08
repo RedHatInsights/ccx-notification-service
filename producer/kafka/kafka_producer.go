@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package kafka contains functions that can be used to produce (that is
-// send) messages to properly configured Kafka broker.
+// Package kafka contains an implementation of Producer interface that can be
+// used to produce (that is send) messages to properly configured Kafka broker.
 package kafka
 
 // Generated documentation is available at:

@@ -12,6 +12,9 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
+// Package ocmclient contains implementation of OCMClient interface. The main
+// purpose of this interface is to retrieve access tokens to be used to call
+// ServiceLog REST API.
 package ocmclient
 
 import (

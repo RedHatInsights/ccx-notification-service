@@ -14,9 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package conf
-
-// This source file contains definition of data type named ConfigStruct that
+// Package conf contains definition of data type named ConfigStruct that
 // represents configuration of Notification service. This source file
 // also contains function named LoadConfiguration that can be used to load
 // configuration from provided configuration file and/or from environment
@@ -25,6 +23,7 @@ package conf
 // GetKafkaBrokerConfiguration, GetNotificationsConfiguration and
 // GetMetricsConfiguration are to be used to return specific configuration
 // options.
+package conf
 
 // Generated documentation is available at:
 // https://pkg.go.dev/github.com/RedHatInsights/ccx-notification-service/conf

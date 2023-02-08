@@ -14,8 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-// Package servicelog contains functions that can be used to produce (that is
-// send) messages to Service Log.
+// Package servicelog contains an implementation of Producer interface that can
+// be used to produce (that is send) messages to Service Log.
 package servicelog
 
 // Generated documentation is available at:
