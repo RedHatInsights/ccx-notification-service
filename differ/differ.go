@@ -14,6 +14,8 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
+// Differ package contains core of CCX Notification Service. Differ itself is
+// implemented there, together with storage and comparator implementations.
 package differ
 
 // Generated documentation is available at:
