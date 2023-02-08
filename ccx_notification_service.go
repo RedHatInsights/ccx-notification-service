@@ -1,5 +1,5 @@
 /*
-Copyright © 2021, 2022 Red Hat, Inc.
+Copyright © 2021, 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -15,6 +15,29 @@ limitations under the License.
 */
 
 // Entry point to the notification service.
+//
+// The purpose of this service is to enable sending automatic email
+// notifications and ServiceLog events to users for all serious issues found in
+// their OpenShift clusters. The "instant" mode of this service runs as a
+// cronjob every fifteen minutes, and it sends a sequence of events to the
+// configured Kafka topic so that the notification backend can process them and
+// create email notifications based on the provided events.
+//
+// Additionally ServiceLog events are created, these can be displayed on
+// cluster pages. Currently the events are only created for the *important* and
+// *critical* issues found in the new_reports table of the configured
+// PostgreSQL database. Once the reports are processed, the DB is updated with
+// info about sent events by populating the reported table with the
+// corresponding information. For more info about initialising the database and
+// perform migrations, take a look at the
+// https://github.com/RedHatInsights/ccx-notification-writer.
+//
+// In the instant notification mode, one email will be received for each
+// cluster with important or critical issues.
+//
+// Additionally this service exposes several metrics about consumed and
+// processed messages. These metrics can be aggregated by Prometheus and
+// displayed by Grafana tools.
 package main
 
 // Entry point to the CCX Notification service
