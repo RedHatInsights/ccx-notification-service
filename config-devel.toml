@@ -72,3 +72,24 @@ filter_allowed_clusters = true
 allowed_clusters = ["34c3ecc5-624a-49a5-bab8-4fdc5e51a266", "a7467445-8d6a-43cc-b82c-7007664bdf69", "ee7d2bf4-8933-4a3a-8634-3328fe806e08"]
 filter_blocked_clusters = false
 blocked_clusters = ["bbbbbbbb-0000-0000-0000-000000000000", "bbbbbbbb-1111-1111-1111-111111111111", "bbbbbbbb-2222-2222-2222-222222222222"]
+
+[kafka_zerolog]
+broker = ""
+topic = ""
+cert_path = ""
+level = ""
+
+[logging]
+debug = true
+log_level = ""
+logging_to_cloud_watch_enabled = false
+
+[cloudwatch]
+aws_access_id = "a key id"
+aws_secret_key = "tshhhh it is a secret"
+aws_session_token = ""
+aws_region = "us-east-1"
+log_group = "platform-dev"
+stream_name = "insights-results-aggregator"
+debug = false
+create_stream_if_not_exists = true

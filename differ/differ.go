@@ -45,6 +45,7 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/producer"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/RedHatInsights/insights-operator-utils/evaluator"
+	"github.com/RedHatInsights/insights-operator-utils/logger"
 )
 
 // Configuration-related constants
@@ -114,6 +115,7 @@ const (
 	ReportNotFoundError         = "report for rule ID %v and error key %v has not been found"
 	destinationNotSet           = "No known event destination configured. Aborting."
 	configurationProblem        = "Configuration problem"
+	loadConfigurationMessage    = "Load configuration"
 )
 
 // Constants for notification message top level fields
@@ -1199,8 +1201,8 @@ func closeDiffer(storage *DBStorage) {
 
 // setupFiltersAndThresholds function setup both techniques that can be used to
 // filter messages sent to targets (Notification backend and ServiceLog at this moment):
-//     1. filter based on likelihood, impact, severity, and total risk
-//     2. filter based on rule type that's identified by tags
+//  1. filter based on likelihood, impact, severity, and total risk
+//  2. filter based on rule type that's identified by tags
 func setupFiltersAndThresholds(config *conf.ConfigStruct) {
 	kafkaBrokerConfiguration := conf.GetKafkaBrokerConfiguration(config)
 
@@ -1272,6 +1274,8 @@ func convertLogLevel(level string) zerolog.Level {
 }
 
 // Run function is entry point to the differ
+//
+//gocyclo:ignore
 func Run() {
 	var cliFlags types.CliFlags
 
@@ -1294,7 +1298,18 @@ func Run() {
 	// config has exactly the same structure as *.toml file
 	config, err := conf.LoadConfiguration(configFileEnvVariableName, defaultConfigFileName)
 	if err != nil {
-		log.Err(err).Msg("Load configuration")
+		log.Err(err).Msg(loadConfigurationMessage)
+		os.Exit(ExitStatusConfiguration)
+	}
+
+	err = logger.InitZerolog(
+		conf.GetLoggingConfiguration(&config),
+		conf.GetCloudWatchConfiguration(&config),
+		conf.GetSentryLoggingConfiguration(&config),
+		conf.GetKafkaZerologConfiguration(&config),
+	)
+	if err != nil {
+		log.Err(err).Msg(loadConfigurationMessage)
 		os.Exit(ExitStatusConfiguration)
 	}
 
@@ -1310,16 +1325,16 @@ func Run() {
 		cliFlags.MaxAge = config.Cleaner.MaxAge
 	}
 
-	if config.Logging.Debug {
+	if config.LoggingConf.Debug {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
 	// set log level
 	// TODO: refactor utils/logger appropriately
-	logLevel := convertLogLevel(config.Logging.LogLevel)
+	logLevel := convertLogLevel(config.LoggingConf.LogLevel)
 	zerolog.SetGlobalLevel(logLevel)
 	log.Info().
-		Str("configured", config.Logging.LogLevel).
+		Str("configured", config.LoggingConf.LogLevel).
 		Int("internal", int(logLevel)).
 		Msg("Log level")
 

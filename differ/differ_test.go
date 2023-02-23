@@ -39,6 +39,7 @@ import (
 	"github.com/stretchr/testify/mock"
 
 	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
+	"github.com/RedHatInsights/insights-operator-utils/logger"
 	"github.com/RedHatInsights/insights-results-aggregator-data/testdata"
 
 	utypes "github.com/RedHatInsights/insights-results-types"
@@ -223,7 +224,7 @@ func TestShowConfiguration(t *testing.T) {
 	metricsGateway := "localhost:12345"
 
 	config := conf.ConfigStruct{
-		Logging: conf.LoggingConfiguration{
+		LoggingConf: logger.LoggingConfiguration{
 			Debug:    true,
 			LogLevel: "info",
 		},

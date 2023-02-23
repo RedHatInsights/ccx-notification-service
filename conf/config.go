@@ -70,6 +70,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/RedHatInsights/ccx-notification-service/types"
+	"github.com/RedHatInsights/insights-operator-utils/logger"
 )
 
 // Common constants used for logging and error reporting
@@ -86,15 +87,18 @@ const (
 // ConfigStruct is a structure holding the whole notification service
 // configuration
 type ConfigStruct struct {
-	Logging       LoggingConfiguration       `mapstructure:"logging" toml:"logging"`
-	Storage       StorageConfiguration       `mapstructure:"storage" toml:"storage"`
-	Kafka         KafkaConfiguration         `mapstructure:"kafka_broker" toml:"kafka_broker"`
-	ServiceLog    ServiceLogConfiguration    `mapstructure:"service_log" toml:"service_log"`
-	Dependencies  DependenciesConfiguration  `mapstructure:"dependencies" toml:"dependencies"`
-	Notifications NotificationsConfiguration `mapstructure:"notifications" toml:"notifications"`
-	Metrics       MetricsConfiguration       `mapstructure:"metrics" toml:"metrics"`
-	Cleaner       CleanerConfiguration       `mapstructure:"cleaner" toml:"cleaner"`
-	Processing    ProcessingConfiguration    `mapstructure:"processing" toml:"processing"`
+	LoggingConf       logger.LoggingConfiguration       `mapstructure:"logging" toml:"logging"`
+	CloudWatchConf    logger.CloudWatchConfiguration    `mapstructure:"cloudwatch" toml:"cloudwatch"`
+	SentryLoggingConf logger.SentryLoggingConfiguration `mapstructure:"sentry" toml:"sentry"`
+	KafkaZerologConf  logger.KafkaZerologConfiguration  `mapstructure:"kafka_zerolog" toml:"kafka_zerolog"`
+	Storage           StorageConfiguration              `mapstructure:"storage" toml:"storage"`
+	Kafka             KafkaConfiguration                `mapstructure:"kafka_broker" toml:"kafka_broker"`
+	ServiceLog        ServiceLogConfiguration           `mapstructure:"service_log" toml:"service_log"`
+	Dependencies      DependenciesConfiguration         `mapstructure:"dependencies" toml:"dependencies"`
+	Notifications     NotificationsConfiguration        `mapstructure:"notifications" toml:"notifications"`
+	Metrics           MetricsConfiguration              `mapstructure:"metrics" toml:"metrics"`
+	Cleaner           CleanerConfiguration              `mapstructure:"cleaner" toml:"cleaner"`
+	Processing        ProcessingConfiguration           `mapstructure:"processing" toml:"processing"`
 }
 
 // LoggingConfiguration represents configuration for logging in general
@@ -307,8 +311,23 @@ func GetStorageConfiguration(configuration *ConfigStruct) StorageConfiguration {
 }
 
 // GetLoggingConfiguration returns logging configuration
-func GetLoggingConfiguration(configuration *ConfigStruct) LoggingConfiguration {
-	return configuration.Logging
+func GetLoggingConfiguration(configuration *ConfigStruct) logger.LoggingConfiguration {
+	return configuration.LoggingConf
+}
+
+// GetCloudWatchConfiguration returns cloudwatch configuration
+func GetCloudWatchConfiguration(configuration *ConfigStruct) logger.CloudWatchConfiguration {
+	return configuration.CloudWatchConf
+}
+
+// GetSentryLoggingConfiguration returns sentry logging configuration
+func GetSentryLoggingConfiguration(configuration *ConfigStruct) logger.SentryLoggingConfiguration {
+	return configuration.SentryLoggingConf
+}
+
+// GetKafkaZerologConfiguration returns the kafkazero log configuration
+func GetKafkaZerologConfiguration(configuration *ConfigStruct) logger.KafkaZerologConfiguration {
+	return configuration.KafkaZerologConf
 }
 
 // GetKafkaBrokerConfiguration returns kafka broker configuration

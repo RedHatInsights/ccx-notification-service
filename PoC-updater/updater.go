@@ -19,14 +19,16 @@ package main
 import (
 	"bytes"
 	"encoding/json"
+
 	//"fmt"
 	"os"
 	"time"
 
+	"updater/types"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"updater/types"
 )
 
 // Configuration-related constants
@@ -37,8 +39,9 @@ const (
 
 // Messages
 const (
-	operationFailedMessage = "Operation failed"
-	clusterName            = "cluster"
+	operationFailedMessage   = "Operation failed"
+	clusterName              = "cluster"
+	loadConfigurationMessage = "Load configuration"
 )
 
 // Exit codes
@@ -263,10 +266,10 @@ func main() {
 	// config has exactly the same structure as *.toml file
 	config, err := conf.LoadConfiguration(configFileEnvVariableName, defaultConfigFileName)
 	if err != nil {
-		log.Err(err).Msg("Load configuration")
+		log.Err(err).Msg(loadConfigurationMessage)
 	}
 
-	if config.Logging.Debug {
+	if config.LoggingConf.Debug {
 		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
 	}
 
