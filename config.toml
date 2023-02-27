@@ -1,6 +1,7 @@
 [logging]
 debug = true
 log_level = "info"
+logging_to_cloud_watch_enabled = false
 
 [kafka_broker]
 enabled = true
@@ -91,11 +92,6 @@ broker = ""
 topic = ""
 cert_path = ""
 level = ""
-
-[logging]
-debug = true
-log_level = ""
-logging_to_cloud_watch_enabled = false
 
 [cloudwatch]
 aws_access_id = "a key id"
