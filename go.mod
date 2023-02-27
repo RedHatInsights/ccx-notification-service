@@ -20,5 +20,5 @@ require (
 	github.com/rs/zerolog v1.21.0
 	github.com/spf13/viper v1.7.2-0.20210415161207-7fdb267c730d
 	github.com/stretchr/testify v1.8.0
-	golang.org/x/net v0.1.0 // indirect
+	golang.org/x/net v0.7.0 // indirect
 )
