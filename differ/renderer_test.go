@@ -130,6 +130,43 @@ func TestRenderReportsForCluster(t *testing.T) {
 	})
 }
 
+func TestRenderReportsForClusterInvalidJSON(t *testing.T) {
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		w.WriteHeader(http.StatusOK)
+		_, err := w.Write([]byte(`not a JSON`))
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
+	}))
+	defer server.Close()
+
+	config := conf.DependenciesConfiguration{
+		TemplateRendererServer:   server.URL,
+		TemplateRendererEndpoint: "",
+		TemplateRendererURL:      server.URL,
+	}
+
+	rendereredReports, err := renderReportsForCluster(&config, "e1a379e4-9ac5-4353-8f82-ad066a734f18", []types.ReportItem{}, []utypes.RuleContent{})
+	v, _ := json.Marshal(rendereredReports)
+	log.Info().Msg(string(v))
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid character")
+}
+
+func TestRenderReportsForClusterInvalidURL(t *testing.T) {
+	config := conf.DependenciesConfiguration{
+		TemplateRendererServer:   "not an url",
+		TemplateRendererEndpoint: "",
+		TemplateRendererURL:      "not an url",
+	}
+
+	rendereredReports, err := renderReportsForCluster(&config, "e1a379e4-9ac5-4353-8f82-ad066a734f18", []types.ReportItem{}, []utypes.RuleContent{})
+	v, _ := json.Marshal(rendereredReports)
+	log.Info().Msg(string(v))
+	assert.Error(t, err)
+	assert.Contains(t, err.Error(), "invalid character")
+}
+
 // TestGetAllContentFromMapEmptyCase tests the function getAllContentFromMap
 // for empty input
 func TestGetAllContentFromMapEmptyCase(t *testing.T) {
