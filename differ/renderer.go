@@ -62,7 +62,10 @@ func renderReportsForCluster(
 
 	err = json.Unmarshal(body, &receivedResult)
 	if err != nil {
-		log.Error().Err(err).Msg("Error trying to decode template renderer output from received answer")
+		log.Error().
+			Bytes("response body", body).
+			Err(err).
+			Msg("Error trying to decode template renderer output from received answer")
 		return nil, err
 	}
 
