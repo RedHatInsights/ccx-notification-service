@@ -164,7 +164,7 @@ func TestRenderReportsForClusterInvalidURL(t *testing.T) {
 	v, _ := json.Marshal(rendereredReports)
 	log.Info().Msg(string(v))
 	assert.Error(t, err)
-	assert.Contains(t, err.Error(), "invalid character")
+	assert.Contains(t, err.Error(), "unsupported protocol")
 }
 
 // TestGetAllContentFromMapEmptyCase tests the function getAllContentFromMap
