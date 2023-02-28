@@ -473,6 +473,7 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 				Int(totalRiskAttribute, totalRisk).
 				Msg(reportWithHighImpactMessage)
 			if !shouldNotify(cluster, r, types.ServiceLogTarget) {
+				NotificationNotSentSameState.Inc()
 				continue
 			}
 			// if new report differs from the older one -> send notification
@@ -504,6 +505,7 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 				Msg("Producing service log message")
 			_, _, err = serviceLogNotifier.ProduceMessage(msgBytes)
 			if err != nil {
+				NotificationNotSentErrorState.Inc()
 				log.Err(err).
 					Str(clusterAttribute, string(cluster.ClusterName)).
 					Str(ruleAttribute, string(ruleName)).
@@ -511,6 +513,7 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 					Msg(serviceLogSendErrorMessage)
 				return totalMessages, err
 			}
+			NotificationSent.Inc()
 			totalMessages++
 		}
 	}
