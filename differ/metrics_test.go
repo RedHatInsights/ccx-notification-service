@@ -179,3 +179,38 @@ func TestPushMetricsGatewayFailing(t *testing.T) {
 			e.ExitCode())
 	}
 }
+
+func TestPushMetricsInLoop(t *testing.T) {
+	// Fake a Pushgateway that responds with 202 to DELETE and with 200 in
+	// all other cases and counts the number of pushes received
+	var (
+		pushes          int
+		expectedPushes  = 5 // at least
+		timeBetweenPush = 100 * time.Millisecond
+		totalTime       = 1 * time.Second // give enough time
+	)
+
+	pgwOK := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", `text/plain; charset=utf-8`)
+			w.WriteHeader(http.StatusOK)
+			pushes++
+		}),
+	)
+	defer pgwOK.Close()
+
+	metricsConf := conf.MetricsConfiguration{
+		Job:                    "ccx_notification_service",
+		Namespace:              "ccx_notification_service",
+		GatewayURL:             pgwOK.URL,
+		GatewayTimeBetweenPush: timeBetweenPush,
+	}
+
+	ctx, cancel := context.WithTimeout(context.Background(), totalTime)
+
+	go differ.PushMetricsInLoop(ctx, metricsConf)
+	time.Sleep(totalTime)
+	cancel()
+
+	assert.GreaterOrEqual(t, pushes, expectedPushes, fmt.Sprintf("expected more than %d pushes but found %d", expectedPushes, pushes))
+}

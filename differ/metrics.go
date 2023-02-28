@@ -26,7 +26,9 @@ package differ
 // https://redhatinsights.github.io/ccx-notification-service/packages/differ/metrics.html
 
 import (
+	"context"
 	"net/http"
+	"time"
 
 	"github.com/prometheus/client_golang/prometheus"
 	"github.com/prometheus/client_golang/prometheus/promauto"
@@ -274,4 +276,24 @@ func PushCollectedMetrics(metricsConf conf.MetricsConfiguration) error {
 		Collector(NotificationSent).
 		Client(&client).
 		Push()
+}
+
+// PushMetricsInLoop pushes the metrics in a loop until context is done
+func PushMetricsInLoop(ctx context.Context, metricsConf conf.MetricsConfiguration) {
+	log.Info().Msgf("Metrics will be pushed in loop each %f seconds", metricsConf.GatewayTimeBetweenPush.Seconds())
+
+	ticker := time.NewTicker(metricsConf.GatewayTimeBetweenPush)
+	for {
+		select {
+		case <-ticker.C:
+			log.Debug().Msg("Pushing metrics")
+			err := PushCollectedMetrics(metricsConf)
+			if err != nil {
+				log.Error().Err(err).Msg("Error pushing the metrics in loop")
+			}
+			log.Debug().Msg("Metrics pushed")
+		case <-ctx.Done():
+			return
+		}
+	}
 }
