@@ -1134,7 +1134,7 @@ func startDiffer(config *conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	setupFiltersAndThresholds(config)
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)
-	PushMetricsInLoop(context.Background(), conf.GetMetricsConfiguration(config))
+	go PushMetricsInLoop(context.Background(), conf.GetMetricsConfiguration(config))
 
 	clusters, err := storage.ReadClusterList()
 	if err != nil {
