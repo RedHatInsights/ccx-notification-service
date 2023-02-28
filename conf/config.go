@@ -197,13 +197,14 @@ type NotificationsConfiguration struct {
 
 // MetricsConfiguration holds metrics related configuration
 type MetricsConfiguration struct {
-	Job              string        `mapstructure:"job_name" toml:"job_name"`
-	Namespace        string        `mapstructure:"namespace" toml:"namespace"`
-	Subsystem        string        `mapstructure:"subsystem" toml:"subsystem"`
-	GatewayURL       string        `mapstructure:"gateway_url" toml:"gateway_url"`
-	GatewayAuthToken string        `mapstructure:"gateway_auth_token" toml:"gateway_auth_token"`
-	Retries          int           `mapstructure:"retries" toml:"retries"`
-	RetryAfter       time.Duration `mapstructure:"retry_after" toml:"retry_after"`
+	Job                    string        `mapstructure:"job_name" toml:"job_name"`
+	Namespace              string        `mapstructure:"namespace" toml:"namespace"`
+	Subsystem              string        `mapstructure:"subsystem" toml:"subsystem"`
+	GatewayURL             string        `mapstructure:"gateway_url" toml:"gateway_url"`
+	GatewayAuthToken       string        `mapstructure:"gateway_auth_token" toml:"gateway_auth_token"`
+	Retries                int           `mapstructure:"retries" toml:"retries"`
+	RetryAfter             time.Duration `mapstructure:"retry_after" toml:"retry_after"`
+	GatewayTimeBetweenPush time.Duration `mapstructure:"gateway_time_between_push" toml:"gateway_time_between_push"`
 }
 
 // ProcessingConfiguration represents configuration for processing subsystem

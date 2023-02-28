@@ -63,6 +63,7 @@ namespace = "ccx_notification_service"
 subsystem = "devel"
 gateway_url = "localhost:9091"
 gateway_auth_token = ""
+gateway_time_between_push = "3s"
 
 [cleaner]
 # valid units are SQL epoch time units: months days hours minutes seconds"

@@ -76,6 +76,7 @@ gateway_auth_token = ""
 retries = 3
 # Valid time units are "ns", "us" (or "µs"), "ms", "s", "m", "h".
 retry_after = "60s"
+gateway_time_between_push = "30s"
 
 [cleaner]
 # valid units are SQL epoch time units: months days hours minutes seconds"

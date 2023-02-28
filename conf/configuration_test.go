@@ -334,6 +334,7 @@ func TestLoadMetricsConfiguration(t *testing.T) {
 	assert.Equal(t, "ccx_notification_service_namespace", configuration.Namespace)
 	assert.Equal(t, ":9091", configuration.GatewayURL)
 	assert.Equal(t, "", configuration.GatewayAuthToken)
+	assert.Equal(t, 60*time.Second, configuration.GatewayTimeBetweenPush)
 }
 
 // TestLoadNotificationsConfiguration tests loading the notifications configuration sub-tree
