@@ -60,10 +60,10 @@ func TestAddMetricsWithNamespaceAndSubsystem(t *testing.T) {
 
 func TestPushMetricsGatewayNotFailingWithRetriesThenOk(t *testing.T) {
 	var (
-		pushes          int
-		expectedPushes  = 6
-		timeBetweenPush = 200 * time.Millisecond // 0.5s
-		totalTime       = 2 * time.Second        // give enough time
+		pushes             int
+		expectedPushes     = 6
+		timeBetweenRetries = 200 * time.Millisecond // 0.5s
+		totalTime          = 2 * time.Second        // give enough time
 	)
 
 	testServer := httptest.NewServer(
@@ -85,7 +85,7 @@ func TestPushMetricsGatewayNotFailingWithRetriesThenOk(t *testing.T) {
 		Job:        "ccx_notification_service",
 		Namespace:  "ccx_notification_service",
 		GatewayURL: testServer.URL,
-		RetryAfter: timeBetweenPush,
+		RetryAfter: timeBetweenRetries,
 		Retries:    10,
 	}
 
@@ -102,10 +102,10 @@ func TestPushMetricsGatewayNotFailingWithRetriesThenOk(t *testing.T) {
 
 func TestPushMetricsGatewayNotFailingWithRetries(t *testing.T) {
 	var (
-		pushes          int
-		expectedPushes  = 1
-		timeBetweenPush = 100 * time.Millisecond // 0.1s
-		totalTime       = 500 * time.Millisecond // give enough time
+		pushes             int
+		expectedPushes     = 1
+		timeBetweenRetries = 100 * time.Millisecond // 0.1s
+		totalTime          = 500 * time.Millisecond // give enough time
 	)
 
 	testServer := httptest.NewServer(
@@ -123,7 +123,7 @@ func TestPushMetricsGatewayNotFailingWithRetries(t *testing.T) {
 		Job:        "ccx_notification_service",
 		Namespace:  "ccx_notification_service",
 		GatewayURL: testServer.URL,
-		RetryAfter: timeBetweenPush,
+		RetryAfter: timeBetweenRetries,
 		Retries:    10,
 	}
 
@@ -141,8 +141,8 @@ func TestPushMetricsGatewayNotFailingWithRetries(t *testing.T) {
 func TestPushMetricsGatewayFailing(t *testing.T) {
 	if os.Getenv("GATEWAY_502_FAIL_ALL_RETRIES") == "1" {
 		var (
-			timeBetweenPush = 100 * time.Millisecond // 0.1s
-			totalTime       = 1 * time.Second        // give enough time
+			timeBetweenRetries = 100 * time.Millisecond // 0.1s
+			totalTime          = 1 * time.Second        // give enough time
 		)
 
 		testServer := httptest.NewServer(
@@ -159,7 +159,7 @@ func TestPushMetricsGatewayFailing(t *testing.T) {
 			Job:        "ccx_notification_service",
 			Namespace:  "ccx_notification_service",
 			GatewayURL: testServer.URL,
-			RetryAfter: timeBetweenPush,
+			RetryAfter: timeBetweenRetries,
 			Retries:    10,
 		}
 
