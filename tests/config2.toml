@@ -59,6 +59,7 @@ max_age = "90 days"
 namespace ="ccx_notification_service_namespace"
 gateway_url = ":9091"
 auth_token = ""
+gateway_time_between_push = "60s"
 
 [processing]
 filter_allowed_clusters = true
