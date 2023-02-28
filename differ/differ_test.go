@@ -47,6 +47,8 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/types"
+
+	"github.com/prometheus/client_golang/prometheus/testutil"
 )
 
 var (
@@ -1500,12 +1502,27 @@ func TestProduceEntriesToServiceLog(t *testing.T) {
 	originalNotifier := serviceLogNotifier
 	serviceLogNotifier = &producerMock
 
+	var notificationSentBefore = int(testutil.ToFloat64(NotificationSent))
+	var notificationNotSentErrorStateBefore = int(testutil.ToFloat64(NotificationNotSentErrorState))
+	var notificationNotSentSameStateBefore = int(testutil.ToFloat64(NotificationNotSentSameState))
+
 	messages, err := produceEntriesToServiceLog(&config, cluster, rules, ruleContent, reports)
 	producerMock.AssertNumberOfCalls(t, "ProduceMessage", 2)
 	assert.Nil(t, err)
 	assert.Equal(t, 2, messages)
 
 	serviceLogNotifier = originalNotifier
+
+	notificationSentDiff := int(testutil.ToFloat64(NotificationSent)) - notificationSentBefore
+	notificationNotSentErrorStateDiff := int(testutil.ToFloat64(NotificationNotSentErrorState)) - notificationNotSentErrorStateBefore
+	notificationNotSentSameStateDiff := int(testutil.ToFloat64(NotificationNotSentSameState)) - notificationNotSentSameStateBefore
+
+	assert.Equal(t, 2, notificationSentDiff,
+		"Expected metric value to be 2 as we sent 2 messages")
+	assert.Equal(t, 0, notificationNotSentErrorStateDiff,
+		"Expected metric value to be 0 as we sent 2 messages successfully")
+	assert.Equal(t, 0, notificationNotSentSameStateDiff,
+		"Expected metric value to be 0 as the reports weren't already notified")
 }
 
 // TestConvertLogLevel tests the convertLogLevel function.
