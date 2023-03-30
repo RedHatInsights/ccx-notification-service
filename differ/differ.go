@@ -149,7 +149,7 @@ const (
 
 // Constants used to filter events
 const (
-	DefaultTotalRiskThreshold  = 3
+	DefaultTotalRiskThreshold  = 2
 	DefaultLikelihoodThreshold = 0
 	DefaultImpactThreshold     = 0
 	DefaultSeverityThreshold   = 0
