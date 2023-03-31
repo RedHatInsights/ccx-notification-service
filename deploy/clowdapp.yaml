@@ -65,7 +65,7 @@ objects:
           - name: CCX_NOTIFICATION_SERVICE__STORAGE__LOG_SQL_QUERIES
             value: 'true'
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__DEBUG
-            value: 'true'
+            value: 'false'
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__LOG_LEVEL
             value: ${LOG_LEVEL}
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__LOGGING_TO_CLOUD_WATCH_ENABLED
@@ -195,7 +195,7 @@ objects:
           - name: CCX_NOTIFICATION_SERVICE__STORAGE__LOG_SQL_QUERIES
             value: 'true'
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__DEBUG
-            value: 'true'
+            value: 'false'
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__LOG_LEVEL
             value: ${LOG_LEVEL}
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__LOGGING_TO_CLOUD_WATCH_ENABLED
