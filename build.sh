@@ -21,5 +21,5 @@ buildtime=$(date)
 branch=$(git rev-parse --abbrev-ref HEAD)
 commit=$(git rev-parse HEAD)
 
-go build -ldflags="-X 'main.BuildTime=$buildtime' -X 'main.BuildVersion=$version' -X 'main.BuildBranch=$branch' -X 'main.BuildCommit=$commit'"
+go build "$@" -ldflags="-X 'main.BuildTime=$buildtime' -X 'main.BuildVersion=$version' -X 'main.BuildBranch=$branch' -X 'main.BuildCommit=$commit'"
 exit $?
