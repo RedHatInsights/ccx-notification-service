@@ -33,10 +33,10 @@ import (
 
 // Messages
 const (
-	clusterName   = "cluster"
-	resolutionKey = "resolution"
+	clusterName      = "cluster"
+	resolutionKey    = "resolution"
+	resolutionMsg    = "Should notify user"
 	resolutionReason = "reason"
-	resolutionMsg = "Should notify user"
 
 	notificationTypeInstant = "instant"
 	notificationTypeWeekly  = "weekly"
@@ -147,7 +147,7 @@ func issuesEqual(issue1, issue2 types.ReportItem) bool {
 	/* Removing the Details comparison as a fix for https://issues.redhat.com/browse/CCXDEV-10817*/
 	if issue1.Type == issue2.Type &&
 		issue1.Module == issue2.Module &&
-		issue1.ErrorKey == issue2.ErrorKey {/* &&
+		issue1.ErrorKey == issue2.ErrorKey { /* &&
 		bytes.Equal(issue1.Details, issue2.Details) */
 		return true
 	}
