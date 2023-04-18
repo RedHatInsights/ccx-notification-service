@@ -23,7 +23,6 @@ package differ
 // https://redhatinsights.github.io/ccx-notification-service/packages/differ/comparator.html
 
 import (
-	"bytes"
 	"encoding/json"
 	"os"
 
@@ -145,10 +144,11 @@ func writeNotificationRecordFailed(err error) {
 
 // Function issuesEqual compares two issues from reports
 func issuesEqual(issue1, issue2 types.ReportItem) bool {
+	/* Removing the Details comparison as a fix for https://issues.redhat.com/browse/CCXDEV-10817*/
 	if issue1.Type == issue2.Type &&
 		issue1.Module == issue2.Module &&
-		issue1.ErrorKey == issue2.ErrorKey &&
-		bytes.Equal(issue1.Details, issue2.Details) {
+		issue1.ErrorKey == issue2.ErrorKey {/* &&
+		bytes.Equal(issue1.Details, issue2.Details) */
 		return true
 	}
 	return false
