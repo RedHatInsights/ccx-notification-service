@@ -36,6 +36,7 @@ import (
 const (
 	clusterName   = "cluster"
 	resolutionKey = "resolution"
+	resolutionReason = "reason"
 	resolutionMsg = "Should notify user"
 
 	notificationTypeInstant = "instant"
@@ -82,7 +83,7 @@ func getNotificationResolution(issue types.ReportItem, record *types.Notificatio
 	}
 
 	resolution = IssueNotInReport(oldReport, issue)
-	log.Info().Bool(resolutionKey, resolution).Msg(resolutionMsg)
+	log.Info().Bool(resolutionKey, resolution).Str(resolutionReason, "issue not found in previously notified report").Msg(resolutionMsg)
 	return
 }
 
@@ -91,7 +92,7 @@ func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem, eventTarge
 	key := types.ClusterOrgKey{OrgID: cluster.OrgID, ClusterName: cluster.ClusterName}
 	reported, ok := previouslyReported[eventTarget][key]
 	if !ok {
-		log.Info().Bool(resolutionKey, true).Msg(resolutionMsg)
+		log.Info().Bool(resolutionKey, true).Str(resolutionReason, "report not in cooldown").Msg(resolutionMsg)
 		return true
 	}
 

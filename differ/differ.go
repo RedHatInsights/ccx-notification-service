@@ -354,7 +354,7 @@ func findRuleByNameAndErrorKey(
 }
 
 // evaluateFilterExpression function tries to evaluate event filter expression
-// based on provided threshold values and actual reccomendation values
+// based on provided threshold values and actual recommendation values
 func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, eventValue EventValue) (int, error) {
 
 	// values to be passed into expression evaluator
