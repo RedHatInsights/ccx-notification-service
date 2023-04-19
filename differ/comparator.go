@@ -80,9 +80,7 @@ func getNotificationResolution(issue types.ReportItem, record *types.Notificatio
 			string(record.Report))
 		os.Exit(ExitStatusStorageError)
 	}
-
 	resolution = IssueNotInReport(oldReport, issue)
-	log.Info().Bool(resolutionKey, resolution).Str(resolutionReason, "issue not found in previously notified report").Msg(resolutionMsg)
 	return
 }
 
@@ -160,10 +158,11 @@ func issuesEqual(issue1, issue2 types.ReportItem) bool {
 func IssueNotInReport(oldReport types.Report, issue types.ReportItem) bool {
 	for _, oldIssue := range oldReport.Reports {
 		if issuesEqual(oldIssue, issue) {
-			log.Info().Msg("Issue already notified in previous report within cooldown time")
+			log.Info().Bool(resolutionKey, false).Str(resolutionReason, "issue found in previously notified report").Msg(resolutionMsg)
 			return false
 		}
 	}
+	log.Info().Bool(resolutionKey, true).Str(resolutionReason, "issue not found in previously notified report").Msg(resolutionMsg)
 	return true
 }
 
