@@ -160,7 +160,7 @@ func TestIssuesEqualDifferentDetails(t *testing.T) {
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue is different"),
 	}
-	assert.False(t, issuesEqual(issue1, issue2), "Compared issues should not be equal")
+	assert.True(t, issuesEqual(issue1, issue2), "Compared issues should be equal")
 }
 
 func TestIssuesEqualDifferentModule(t *testing.T) {
@@ -392,7 +392,7 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 	}
 }
 
-func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
+func TestShouldNotNotifySameRuleDifferentDetails(t *testing.T) {
 	storage := mocks.Storage{}
 	storage.On("ReadLastNotifiedRecordForClusterList",
 		mock.AnythingOfType("[]types.ClusterEntry"),
@@ -431,7 +431,7 @@ func TestShouldNotifySameRuleDifferentDetails(t *testing.T) {
 
 	previouslyReported[types.NotificationBackendTarget], _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours", types.NotificationBackendTarget)
 	for _, issue := range newReport.Reports {
-		assert.True(t, shouldNotify(testCluster, issue, types.NotificationBackendTarget))
+		assert.False(t, shouldNotify(testCluster, issue, types.NotificationBackendTarget))
 	}
 }
 

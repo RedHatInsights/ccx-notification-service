@@ -23,7 +23,6 @@ package differ
 // https://redhatinsights.github.io/ccx-notification-service/packages/differ/comparator.html
 
 import (
-	"bytes"
 	"encoding/json"
 	"os"
 
@@ -34,9 +33,10 @@ import (
 
 // Messages
 const (
-	clusterName   = "cluster"
-	resolutionKey = "resolution"
-	resolutionMsg = "Should notify user"
+	clusterName      = "cluster"
+	resolutionKey    = "resolution"
+	resolutionMsg    = "Should notify user"
+	resolutionReason = "reason"
 
 	notificationTypeInstant = "instant"
 	notificationTypeWeekly  = "weekly"
@@ -82,7 +82,7 @@ func getNotificationResolution(issue types.ReportItem, record *types.Notificatio
 	}
 
 	resolution = IssueNotInReport(oldReport, issue)
-	log.Info().Bool(resolutionKey, resolution).Msg(resolutionMsg)
+	log.Info().Bool(resolutionKey, resolution).Str(resolutionReason, "issue not found in previously notified report").Msg(resolutionMsg)
 	return
 }
 
@@ -91,7 +91,7 @@ func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem, eventTarge
 	key := types.ClusterOrgKey{OrgID: cluster.OrgID, ClusterName: cluster.ClusterName}
 	reported, ok := previouslyReported[eventTarget][key]
 	if !ok {
-		log.Info().Bool(resolutionKey, true).Msg(resolutionMsg)
+		log.Info().Bool(resolutionKey, true).Str(resolutionReason, "report not in cooldown").Msg(resolutionMsg)
 		return true
 	}
 
@@ -144,10 +144,11 @@ func writeNotificationRecordFailed(err error) {
 
 // Function issuesEqual compares two issues from reports
 func issuesEqual(issue1, issue2 types.ReportItem) bool {
+	/* Removing the Details comparison as a fix for https://issues.redhat.com/browse/CCXDEV-10817*/
 	if issue1.Type == issue2.Type &&
 		issue1.Module == issue2.Module &&
-		issue1.ErrorKey == issue2.ErrorKey &&
-		bytes.Equal(issue1.Details, issue2.Details) {
+		issue1.ErrorKey == issue2.ErrorKey { /* &&
+		bytes.Equal(issue1.Details, issue2.Details) */
 		return true
 	}
 	return false
