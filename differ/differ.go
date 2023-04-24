@@ -881,7 +881,7 @@ func setupServiceLogProducer(config *conf.ConfigStruct) {
 func generateInstantNotificationMessage(
 	clusterURI *string, accountID, orgID, clusterID string) (
 	notification types.NotificationMessage) {
-	events := []types.Event{}
+	var events []types.Event
 	context := types.NotificationContext{
 		notificationContextDisplayName: clusterID,
 		notificationContextHostURL:     strings.Replace(*clusterURI, "{cluster_id}", clusterID, 1),
@@ -891,7 +891,7 @@ func generateInstantNotificationMessage(
 		Bundle:      notificationBundleName,
 		Application: notificationApplicationName,
 		EventType:   types.InstantNotif.ToString(),
-		Timestamp:   time.Now().UTC().Format(time.RFC3339),
+		Timestamp:   time.Now().UTC().Format(time.RFC3339Nano),
 		AccountID:   accountID,
 		OrgID:       orgID,
 		Events:      events,
