@@ -11,7 +11,7 @@ require (
 	github.com/Shopify/sarama v1.27.1
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/google/uuid v1.3.0
-	github.com/lib/pq v1.10.5
+	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/microcosm-cc/bluemonday v1.0.21 // indirect
 	github.com/openshift-online/ocm-sdk-go v0.1.287
