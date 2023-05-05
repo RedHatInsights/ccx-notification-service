@@ -9,6 +9,7 @@ require (
 	github.com/RedHatInsights/insights-results-aggregator-data v1.3.3
 	github.com/RedHatInsights/insights-results-types v1.3.12
 	github.com/Shopify/sarama v1.27.1
+	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/lib/pq v1.10.9
@@ -20,4 +21,5 @@ require (
 	github.com/rs/zerolog v1.29.1
 	github.com/spf13/viper v1.15.0
 	github.com/stretchr/testify v1.8.2
+	gopkg.in/jcmturner/gokrb5.v7 v7.5.0 // indirect
 )
