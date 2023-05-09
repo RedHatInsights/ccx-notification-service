@@ -49,7 +49,9 @@ func init() {
 // Test Producer creation with a non accessible Kafka broker
 // This test assumes there is no local kafka instance currently running
 func TestNewProducerBadBroker(t *testing.T) {
-	const expectedErr = "kafka: client has run out of available brokers to talk to (Is your cluster reachable?)"
+	const expectedErrorMessage1 = "kafka: client has run out of available brokers to talk to: dial tcp: missing address"
+	const expectedErrorMessage2 = "kafka: client has run out of available brokers to talk to: dial tcp 127.0.0.1:9092: connect: connection refused"
+
 	_, err := New(&conf.ConfigStruct{
 		Kafka: conf.KafkaConfiguration{
 			Address: "",
@@ -57,12 +59,12 @@ func TestNewProducerBadBroker(t *testing.T) {
 			Timeout: 0,
 			Enabled: true,
 		}})
-	assert.EqualError(t, err, expectedErr)
+	assert.EqualError(t, err, expectedErrorMessage1)
 
 	_, err = New(&conf.ConfigStruct{
 		Kafka: brokerCfg,
 	})
-	assert.EqualError(t, err, expectedErr)
+	assert.EqualError(t, err, expectedErrorMessage2)
 }
 
 // TestProducerClose makes sure it's possible to close the connection
