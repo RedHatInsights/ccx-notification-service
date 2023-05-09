@@ -26,3 +26,4 @@ cpuprofile.prof
 memprofile.prof
 
 benchmark.txt
+benchmark.csv
