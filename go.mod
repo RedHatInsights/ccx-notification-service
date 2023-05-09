@@ -8,8 +8,7 @@ require (
 	github.com/RedHatInsights/insights-operator-utils v1.24.1
 	github.com/RedHatInsights/insights-results-aggregator-data v1.3.3
 	github.com/RedHatInsights/insights-results-types v1.3.12
-	github.com/Shopify/sarama v1.27.1
-	github.com/eapache/go-xerial-snappy v0.0.0-20180814174437-776d5712da21 // indirect
+	github.com/Shopify/sarama v1.38.1
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/google/uuid v1.3.0
 	github.com/lib/pq v1.10.9
