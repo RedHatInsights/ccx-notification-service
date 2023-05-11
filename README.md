@@ -1,6 +1,8 @@
 # ccx-notification-service
 CCX Notification Service
 
+[![forthebadge made-with-go](http://ForTheBadge.com/images/badges/made-with-go.svg)](https://go.dev/)
+
 [![GoDoc](https://godoc.org/github.com/RedHatInsights/ccx-notification-service?status.svg)](https://godoc.org/github.com/RedHatInsights/ccx-notification-service)
 [![GitHub Pages](https://img.shields.io/badge/%20-GitHub%20Pages-informational)](https://redhatinsights.github.io/ccx-notification-service/)
 [![Go Report Card](https://goreportcard.com/badge/github.com/RedHatInsights/ccx-notification-service)](https://goreportcard.com/report/github.com/RedHatInsights/ccx-notification-service)
