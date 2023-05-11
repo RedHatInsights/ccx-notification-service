@@ -46,7 +46,7 @@ jobs:
         - go build
         - wget -O docker-compose.yml https://raw.githubusercontent.com/RedHatInsights/insights-behavioral-spec/main/docker-compose.yml
         - POSTGRES_DB_NAME=notification docker-compose --profile test-notification-services up -d
-        - cid=$(docker ps | grep 'insights-behavioral-spec:ci' | cut -d ' ' -f 1)
+        - cid=$(docker ps | grep 'insights-behavioral-spec:latest' | cut -d ' ' -f 1)
         - docker cp ccx-notification-service $cid:`docker exec $cid bash -c 'echo "$VIRTUAL_ENV_BIN"'`
         - docker exec -u root $cid /bin/bash -c 'chmod +x $VIRTUAL_ENV_BIN/ccx-notification-service'
       script:
