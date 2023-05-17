@@ -1,5 +1,5 @@
 /*
-Copyright © 2021, 2022 Red Hat, Inc.
+Copyright © 2021, 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -258,7 +258,7 @@ func AddMetricsWithNamespaceAndSubsystem(namespace, subsystem string) {
 
 // PushCollectedMetrics function pushes the metrics to the configured prometheus push
 // gateway
-func PushCollectedMetrics(metricsConf conf.MetricsConfiguration) error {
+func PushCollectedMetrics(metricsConf *conf.MetricsConfiguration) error {
 	client := PushGatewayClient{metricsConf.GatewayAuthToken, http.Client{}}
 
 	// Creates a pusher to the gateway "$PUSHGW_URL/metrics/job/$(job_name)
@@ -279,7 +279,7 @@ func PushCollectedMetrics(metricsConf conf.MetricsConfiguration) error {
 }
 
 // PushMetricsInLoop pushes the metrics in a loop until context is done
-func PushMetricsInLoop(ctx context.Context, metricsConf conf.MetricsConfiguration) {
+func PushMetricsInLoop(ctx context.Context, metricsConf *conf.MetricsConfiguration) {
 	log.Info().Msgf("Metrics will be pushed in loop each %f seconds", metricsConf.GatewayTimeBetweenPush.Seconds())
 
 	ticker := time.NewTicker(metricsConf.GatewayTimeBetweenPush)

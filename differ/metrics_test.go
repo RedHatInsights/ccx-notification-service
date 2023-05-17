@@ -208,7 +208,7 @@ func TestPushMetricsInLoop(t *testing.T) {
 
 	ctx, cancel := context.WithTimeout(context.Background(), totalTime)
 
-	go differ.PushMetricsInLoop(ctx, metricsConf)
+	go differ.PushMetricsInLoop(ctx, &metricsConf)
 	time.Sleep(totalTime)
 	cancel()
 
