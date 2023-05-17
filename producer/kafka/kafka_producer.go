@@ -1,5 +1,5 @@
 /*
-Copyright © 2021, 2022 Red Hat, Inc.
+Copyright © 2021, 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -44,7 +44,7 @@ type Producer struct {
 func New(config *conf.ConfigStruct) (*Producer, error) {
 	kafkaConfig := conf.GetKafkaBrokerConfiguration(config)
 
-	saramaConfig, err := saramaConfigFromBrokerConfig(kafkaConfig)
+	saramaConfig, err := saramaConfigFromBrokerConfig(&kafkaConfig)
 	if err != nil {
 		log.Error().Err(err).Msg("Unable to create a valid Kafka configuration")
 	}
@@ -96,7 +96,7 @@ func (producer *Producer) Close() error {
 	return nil
 }
 
-func saramaConfigFromBrokerConfig(cfg conf.KafkaConfiguration) (*sarama.Config, error) {
+func saramaConfigFromBrokerConfig(cfg *conf.KafkaConfiguration) (*sarama.Config, error) {
 	saramaConfig := sarama.NewConfig()
 	saramaConfig.Version = sarama.V0_10_2_0
 

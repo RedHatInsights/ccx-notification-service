@@ -1,5 +1,5 @@
 /*
-Copyright © 2021, 2022 Red Hat, Inc.
+Copyright © 2021, 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -48,9 +48,9 @@ type Producer struct {
 }
 
 // New constructs a new instance of Producer implementation
-func New(config conf.ServiceLogConfiguration, ocmClient ocmclient.OCMClient) (*Producer, error) {
+func New(config *conf.ServiceLogConfiguration, ocmClient ocmclient.OCMClient) (*Producer, error) {
 	prod := &Producer{
-		Configuration:              config,
+		Configuration:              *config,
 		TokenRefreshmentStartDelay: time.Second,
 		TokenRefreshmentDelay:      time.Second,
 		TokenRefreshmentThreshold:  30 * time.Second,

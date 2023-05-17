@@ -865,7 +865,7 @@ func setupServiceLogProducer(config *conf.ConfigStruct) {
 		log.Error().Err(err).Msg("got error while setting up the connection to OCM API gateway")
 		return
 	}
-	serviceLogProducer, err := servicelog.New(serviceLogConfig, conn)
+	serviceLogProducer, err := servicelog.New(&serviceLogConfig, conn)
 	if err != nil {
 		ProducerSetupErrors.Inc()
 		log.Error().
