@@ -63,7 +63,8 @@ func TestServiceLogProducerNew(t *testing.T) {
 		},
 	}
 
-	producer, err := New(conf.GetServiceLogConfiguration(&config), gateway)
+	serviceLogConfiguration := conf.GetServiceLogConfiguration(&config)
+	producer, err := New(&serviceLogConfiguration, gateway)
 	helpers.FailOnError(t, err)
 
 	assert.Equal(t, producer.Configuration, conf.GetServiceLogConfiguration(&config))
