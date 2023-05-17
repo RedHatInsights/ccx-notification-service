@@ -882,7 +882,7 @@ func generateInstantNotificationMessage(
 	clusterURI *string, accountID, orgID, clusterID string) (
 	notification types.NotificationMessage) {
 	var events []types.Event
-	context := types.NotificationContext{
+	notificationContext := types.NotificationContext{
 		notificationContextDisplayName: clusterID,
 		notificationContextHostURL:     strings.Replace(*clusterURI, "{cluster_id}", clusterID, 1),
 	}
@@ -895,14 +895,14 @@ func generateInstantNotificationMessage(
 		AccountID:   accountID,
 		OrgID:       orgID,
 		Events:      events,
-		Context:     context,
+		Context:     notificationContext,
 	}
 	return
 }
 
 // generateWeeklyNotificationMessage function generates a notification message with one event based on the provided digest
 func generateWeeklyNotificationMessage(advisorURI *string, accountID string, digest types.Digest) (notification types.NotificationMessage) {
-	context := types.NotificationContext{
+	notificationContext := types.NotificationContext{
 		notificationContextAdvisorURL: *advisorURI,
 	}
 
@@ -933,7 +933,7 @@ func generateWeeklyNotificationMessage(advisorURI *string, accountID string, dig
 		Timestamp:   time.Now().UTC().Format(time.RFC3339),
 		AccountID:   accountID,
 		Events:      events,
-		Context:     context,
+		Context:     notificationContext,
 	}
 	return
 }
