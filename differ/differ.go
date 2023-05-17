@@ -1020,7 +1020,7 @@ func setupNotificationStates(storage *DBStorage) {
 }
 
 // registerMetrics registers metrics using the provided namespace, if any
-func registerMetrics(metricsConfig conf.MetricsConfiguration) {
+func registerMetrics(metricsConfig *conf.MetricsConfiguration) {
 	if metricsConfig.Namespace != "" {
 		log.Info().Str("namespace", metricsConfig.Namespace).Msg("Setting metrics namespace")
 		AddMetricsWithNamespaceAndSubsystem(
@@ -1047,7 +1047,7 @@ func closeNotifier(notifier producer.Producer) error {
 	return nil
 }
 
-func pushMetrics(metricsConf conf.MetricsConfiguration) {
+func pushMetrics(metricsConf *conf.MetricsConfiguration) {
 	err := PushCollectedMetrics(metricsConf)
 	if err != nil {
 		log.Err(err).Msg(metricsPushFailedMessage)
@@ -1115,7 +1115,8 @@ func startDiffer(config *conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	}
 
 	assertNotificationDestination(config)
-	registerMetrics(conf.GetMetricsConfiguration(config))
+	metricsConfiguration := conf.GetMetricsConfiguration(config)
+	registerMetrics(&metricsConfiguration)
 	log.Info().Msg(separator)
 	log.Info().Msg("Getting rule content and impacts from content service")
 
@@ -1134,7 +1135,7 @@ func startDiffer(config *conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	setupFiltersAndThresholds(config)
 	setupNotificationStates(storage)
 	setupNotificationTypes(storage)
-	go PushMetricsInLoop(context.Background(), conf.GetMetricsConfiguration(config))
+	go PushMetricsInLoop(context.Background(), &metricsConfiguration)
 
 	clusters, err := storage.ReadClusterList()
 	if err != nil {
@@ -1175,7 +1176,8 @@ func startDiffer(config *conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
 	closeDiffer(storage)
 	log.Info().Msg("Differ finished. Pushing metrics to the configured prometheus gateway.")
-	pushMetrics(conf.GetMetricsConfiguration(config))
+
+	pushMetrics(&metricsConfiguration)
 	log.Info().Msg(separator)
 }
 
