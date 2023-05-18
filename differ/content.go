@@ -1,5 +1,5 @@
 /*
-Copyright © 2021, 2022 Red Hat, Inc.
+Copyright © 2021, 2022, 2023 Red Hat, Inc.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -38,7 +38,7 @@ import (
 )
 
 // fetchAllRulesContent fetches the parsed rules provided by the content-service
-func fetchAllRulesContent(config conf.DependenciesConfiguration) (rules types.RulesMap, err error) {
+func fetchAllRulesContent(config *conf.DependenciesConfiguration) (rules types.RulesMap, err error) {
 	contentURL := httputils.SetHTTPPrefix(config.ContentServiceServer + config.ContentServiceEndpoint)
 
 	log.Info().Msgf("Fetching rules content from %s", contentURL)
