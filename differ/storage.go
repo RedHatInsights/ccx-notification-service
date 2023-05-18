@@ -70,7 +70,7 @@ type Storage interface {
 	ReadLastNotifiedRecordForClusterList(
 		clusterEntries []types.ClusterEntry, timeOffset string, eventTarget types.EventTarget) (types.NotifiedRecordsPerCluster, error)
 	WriteNotificationRecord(
-		notificationRecord types.NotificationRecord) error
+		notificationRecord *types.NotificationRecord) error
 	WriteNotificationRecordForCluster(
 		clusterEntry types.ClusterEntry,
 		notificationTypeID types.NotificationTypeID,
@@ -231,7 +231,7 @@ func inClauseFromStringSlice(slice []string) string {
 }
 
 // NewStorage function creates and initializes a new instance of Storage interface
-func NewStorage(configuration conf.StorageConfiguration) (*DBStorage, error) {
+func NewStorage(configuration *conf.StorageConfiguration) (*DBStorage, error) {
 	driverType, driverName, dataSource, err := initAndGetDriver(configuration)
 	if err != nil {
 		return nil, err
@@ -261,7 +261,7 @@ func NewFromConnection(connection *sql.DB, dbDriverType types.DBDriver) *DBStora
 
 // initAndGetDriver initializes driver(with logs if logSQLQueries is true),
 // checks if it's supported and returns driver type, driver name, dataSource and error
-func initAndGetDriver(configuration conf.StorageConfiguration) (driverType types.DBDriver, driverName, dataSource string, err error) {
+func initAndGetDriver(configuration *conf.StorageConfiguration) (driverType types.DBDriver, driverName, dataSource string, err error) {
 	driverName = configuration.Driver
 
 	switch driverName {
@@ -494,7 +494,7 @@ func (storage DBStorage) ReadReportForCluster(
 //
 // See also: WriteNotificationRecordForCluster, WriteNotificationRecordImpl
 func (storage DBStorage) WriteNotificationRecord(
-	notificationRecord types.NotificationRecord) error {
+	notificationRecord *types.NotificationRecord) error {
 
 	return storage.WriteNotificationRecordImpl(notificationRecord.OrgID,
 		notificationRecord.AccountNumber, notificationRecord.ClusterName,
