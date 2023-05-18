@@ -19,10 +19,6 @@ package differ
 // Documentation in literate-programming-style is available at:
 // https://redhatinsights.github.io/ccx-notification-writer/packages/differ/export_test.html
 
-import (
-	"github.com/RedHatInsights/ccx-notification-service/conf"
-)
-
 // Export for testing
 //
 // This source file contains name aliases of all package-private functions
@@ -35,11 +31,8 @@ import (
 var (
 	GetAllContentFromMap = getAllContentFromMap
 	ConvertLogLevel      = convertLogLevel
+	PushMetrics          = pushMetrics
 )
-
-func PushMetrics(metricsConf conf.MetricsConfiguration) {
-	pushMetrics(&metricsConf)
-}
 
 func InClauseFromStringSlice(slice []string) string {
 	return inClauseFromStringSlice(slice)
