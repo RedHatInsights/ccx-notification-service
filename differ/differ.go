@@ -382,7 +382,7 @@ func findRenderedReport(reports []types.RenderedReport, ruleName types.RuleName,
 	return types.RenderedReport{}, fmt.Errorf(ReportNotFoundError, ruleName, errorKey)
 }
 
-func createServiceLogEntry(report types.RenderedReport, cluster types.ClusterEntry, createdBy, username string) types.ServiceLogEntry {
+func createServiceLogEntry(report *types.RenderedReport, cluster types.ClusterEntry, createdBy, username string) types.ServiceLogEntry {
 	logEntry := types.ServiceLogEntry{
 		ClusterUUID: cluster.ClusterName,
 		Description: report.Reason,
@@ -493,7 +493,7 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 				continue
 			}
 
-			logEntry := createServiceLogEntry(renderedReport, cluster, createdBy, username)
+			logEntry := createServiceLogEntry(&renderedReport, cluster, createdBy, username)
 
 			msgBytes, err := json.Marshal(logEntry)
 			if err != nil {
@@ -1120,7 +1120,8 @@ func startDiffer(config *conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	log.Info().Msg(separator)
 	log.Info().Msg("Getting rule content and impacts from content service")
 
-	ruleContent, err := fetchAllRulesContent(conf.GetDependenciesConfiguration(config))
+	dependenciesConfiguration := conf.GetDependenciesConfiguration(config)
+	ruleContent, err := fetchAllRulesContent(&dependenciesConfiguration)
 	if err != nil {
 		FetchContentErrors.Inc()
 		os.Exit(ExitStatusFetchContentError)
@@ -1347,7 +1348,7 @@ func Run() {
 
 	// prepare the storage
 	storageConfiguration := conf.GetStorageConfiguration(&config)
-	storage, err := NewStorage(storageConfiguration)
+	storage, err := NewStorage(&storageConfiguration)
 	if err != nil {
 		StorageSetupErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
