@@ -303,11 +303,11 @@ func (_m *Storage) ReadStates() ([]types.State, error) {
 }
 
 // WriteNotificationRecord provides a mock function with given fields: notificationRecord
-func (_m *Storage) WriteNotificationRecord(notificationRecord types.NotificationRecord) error {
+func (_m *Storage) WriteNotificationRecord(notificationRecord *types.NotificationRecord) error {
 	ret := _m.Called(notificationRecord)
 
 	var r0 error
-	if rf, ok := ret.Get(0).(func(types.NotificationRecord) error); ok {
+	if rf, ok := ret.Get(0).(func(*types.NotificationRecord) error); ok {
 		r0 = rf(notificationRecord)
 	} else {
 		r0 = ret.Error(0)
