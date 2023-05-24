@@ -22,6 +22,6 @@ require (
 	github.com/rs/zerolog v1.29.1
 	github.com/spf13/afero v1.9.3 // indirect
 	github.com/spf13/viper v1.15.0
-	github.com/stretchr/testify v1.8.2
+	github.com/stretchr/testify v1.8.3
 	gopkg.in/jcmturner/gokrb5.v7 v7.5.0 // indirect
 )
