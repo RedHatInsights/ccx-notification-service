@@ -622,8 +622,8 @@ func TestProcessClustersInvalidReportFormatForClusterEntry(t *testing.T) {
 	processClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
-	assert.Contains(t, executionLog, "cannot unmarshal object into Go struct field Report.reports of type []types.ReportItem", "The string retrieved is not a list of reports. It should not deserialize correctly")
-	assert.Contains(t, executionLog, "No new issues to notify for cluster second_cluster", "the processReportsByCluster loop did not continue as extpected")
+	assert.Contains(t, executionLog, "cannot unmarshal object into Go struct field Report.reports of type types.ReportContent", "The string retrieved is not a list of reports. It should not deserialize correctly")
+	assert.Contains(t, executionLog, "No new issues to notify for cluster second_cluster", "the processReportsByCluster loop did not continue as expected")
 	assert.Contains(t, executionLog, "Number of reports not retrieved/deserialized: 1", "the first cluster should have been skipped")
 	assert.Contains(t, executionLog, "Number of empty reports skipped: 0")
 

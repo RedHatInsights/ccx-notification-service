@@ -40,7 +40,7 @@ import (
 func renderReportsForCluster(
 	config *conf.DependenciesConfiguration,
 	clusterName types.ClusterName,
-	reports []types.ReportItem,
+	reports types.ReportContent,
 	ruleContent types.Rules) ([]types.RenderedReport, error) {
 
 	log.Debug().Str("cluster", string(clusterName)).Msg("RenderReportsForCluster")
@@ -88,7 +88,7 @@ func getAllContentFromMap(ruleContent types.RulesMap) []utypes.RuleContent {
 
 func createTemplateRendererRequest(
 	rules types.Rules,
-	reports []types.ReportItem,
+	reports types.ReportContent,
 	clusterName types.ClusterName,
 	rendererURL string) (*http.Request, error) {
 

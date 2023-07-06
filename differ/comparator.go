@@ -70,7 +70,7 @@ func getNotificationType(notificationTypes []types.NotificationType, value strin
 	return -1
 }
 
-func getNotificationResolution(issue types.ReportItem, record *types.NotificationRecord) (resolution bool) {
+func getNotificationResolution(issue *types.ReportItem, record *types.NotificationRecord) (resolution bool) {
 	// it is not a brand new cluster -> check if issue was included in older report
 	var oldReport types.Report
 	err := json.Unmarshal([]byte(record.Report), &oldReport)
@@ -84,7 +84,7 @@ func getNotificationResolution(issue types.ReportItem, record *types.Notificatio
 	return
 }
 
-func shouldNotify(cluster types.ClusterEntry, issue types.ReportItem, eventTarget types.EventTarget) bool {
+func shouldNotify(cluster types.ClusterEntry, issue *types.ReportItem, eventTarget types.EventTarget) bool {
 	// check if the issue of the given cluster has previously been reported
 	key := types.ClusterOrgKey{OrgID: cluster.OrgID, ClusterName: cluster.ClusterName}
 	reported, ok := previouslyReported[eventTarget][key]
@@ -141,7 +141,7 @@ func writeNotificationRecordFailed(err error) {
 }
 
 // Function issuesEqual compares two issues from reports
-func issuesEqual(issue1, issue2 types.ReportItem) bool {
+func issuesEqual(issue1, issue2 *types.ReportItem) bool {
 	/* Removing the Details comparison as a fix for https://issues.redhat.com/browse/CCXDEV-10817*/
 	if issue1.Type == issue2.Type &&
 		issue1.Module == issue2.Module &&
@@ -155,7 +155,7 @@ func issuesEqual(issue1, issue2 types.ReportItem) bool {
 // IssueNotInReport searches for a specific issue in given OCP report.
 // It returns a boolean flag indicating that the report does not
 // contain the issue and thus user needs to be informed about it.
-func IssueNotInReport(oldReport types.Report, issue types.ReportItem) bool {
+func IssueNotInReport(oldReport types.Report, issue *types.ReportItem) bool {
 	for _, oldIssue := range oldReport.Reports {
 		if issuesEqual(oldIssue, issue) {
 			log.Info().Bool(resolutionKey, false).Str(resolutionReason, "issue found in previously notified report").Msg(resolutionMsg)

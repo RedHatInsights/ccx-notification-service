@@ -101,7 +101,7 @@ func TestRenderReportsForCluster(t *testing.T) {
 
 	rules := getAllContentFromMap(ruleContent)
 
-	reports := []types.ReportItem{
+	reports := types.ReportContent{
 		{
 			Type:     "rule",
 			Module:   "rule_1.report",
@@ -146,7 +146,7 @@ func TestRenderReportsForClusterInvalidJSON(t *testing.T) {
 		TemplateRendererURL:      server.URL,
 	}
 
-	rendereredReports, err := renderReportsForCluster(&config, "e1a379e4-9ac5-4353-8f82-ad066a734f18", []types.ReportItem{}, []utypes.RuleContent{})
+	rendereredReports, err := renderReportsForCluster(&config, "e1a379e4-9ac5-4353-8f82-ad066a734f18", types.ReportContent{}, []utypes.RuleContent{})
 	v, _ := json.Marshal(rendereredReports)
 	log.Info().Msg(string(v))
 	assert.Error(t, err)
@@ -160,7 +160,7 @@ func TestRenderReportsForClusterInvalidURL(t *testing.T) {
 		TemplateRendererURL:      "not an url",
 	}
 
-	rendereredReports, err := renderReportsForCluster(&config, "e1a379e4-9ac5-4353-8f82-ad066a734f18", []types.ReportItem{}, []utypes.RuleContent{})
+	rendereredReports, err := renderReportsForCluster(&config, "e1a379e4-9ac5-4353-8f82-ad066a734f18", types.ReportContent{}, []utypes.RuleContent{})
 	v, _ := json.Marshal(rendereredReports)
 	log.Info().Msg(string(v))
 	assert.Error(t, err)
