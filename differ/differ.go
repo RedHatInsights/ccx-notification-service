@@ -336,7 +336,7 @@ func moduleToRuleName(module types.ModuleName) types.RuleName {
 // ->
 // cluster_wide_proxy_auth_check
 func ruleIDToRuleName(ruleID types.RuleID) types.RuleName {
-	return types.RuleName(string(ruleID)[strings.LastIndex(string(ruleID), ".")+1:])
+	return types.RuleName(ruleID[strings.LastIndex(string(ruleID), ".")+1:])
 }
 
 func findRuleByNameAndErrorKey(
@@ -421,7 +421,7 @@ func evaluateTagFilter(filterEnabled bool, tagsSet, reportItemTags types.TagsSet
 }
 
 func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.ClusterEntry,
-	rules types.Rules, ruleContent types.RulesMap, reports []types.ReportItem) (totalMessages int, err error) {
+	rules types.Rules, ruleContent types.RulesMap, reports types.ReportContent) (totalMessages int, err error) {
 
 	// we need to pass the correct "created_by" and "username" attributes
 	// to ServiceLog REST API
@@ -429,19 +429,14 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 	createdBy := serviceLogConfiguration.CreatedBy
 	username := serviceLogConfiguration.Username
 
-	dependenciesConfiguration := conf.GetDependenciesConfiguration(configuration)
-	renderedReports, err := renderReportsForCluster(
-		&dependenciesConfiguration, cluster.ClusterName,
-		reports, rules)
-	if err != nil {
-		log.Err(err).
-			Str("cluster name", string(cluster.ClusterName)).
-			Msg(renderReportsFailedMessage)
-		return
-	}
+	//dependenciesConfiguration := conf.GetDependenciesConfiguration(configuration)
+	//renderedReports, err := renderReportsForCluster(
+	//	&dependenciesConfiguration, cluster.ClusterName,
+	//	reports, rules)
+	reportsToRender := make(types.ReportContent, 0, len(reports))
+
 	for _, r := range reports {
-		module := r.Module
-		ruleName := moduleToRuleName(module)
+		ruleName := moduleToRuleName(r.Module)
 		errorKey := r.ErrorKey
 
 		likelihood, impact, totalRisk, _, tags := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
@@ -481,13 +476,34 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 			log.Info().
 				Str(clusterName, string(cluster.ClusterName)).
 				Msg(differentReportMessage)
-			ReportWithHighImpact.Inc()
+			r.Module = types.ModuleName(ruleName)
+			reportsToRender = append(reportsToRender, r)
+		}
+	}
 
-			renderedReport, err := findRenderedReport(renderedReports, ruleName, errorKey)
+	if len(reportsToRender) != 0 {
+		dependenciesConfiguration := conf.GetDependenciesConfiguration(configuration)
+		renderedReports, e := renderReportsForCluster(
+			&dependenciesConfiguration, cluster.ClusterName,
+			reports, rules)
+
+		if e != nil {
+			log.Err(e).
+				Str("cluster name", string(cluster.ClusterName)).
+				Msg(renderReportsFailedMessage)
+			return totalMessages, e
+		}
+
+		for _, r := range reportsToRender {
+			ruleName := r.Module
+			errorKey := r.ErrorKey
+
+			ReportWithHighImpact.Inc()
+			renderedReport, e := findRenderedReport(renderedReports, types.RuleName(ruleName), errorKey)
 
 			addDetailedInfoURLToRenderedReport(&renderedReport, &configuration.ServiceLog.RuleDetailsURI)
 
-			if err != nil {
+			if e != nil {
 				log.Err(err).Msgf("Output from content template renderer does not contain "+
 					"result for cluster %s, rule %s and error key %s", cluster.ClusterName, ruleName, errorKey)
 				continue
@@ -495,24 +511,24 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 
 			logEntry := createServiceLogEntry(&renderedReport, cluster, createdBy, username)
 
-			msgBytes, err := json.Marshal(logEntry)
-			if err != nil {
-				log.Error().Err(err).Msg(invalidJSONContent)
+			msgBytes, e := json.Marshal(logEntry)
+			if e != nil {
+				log.Error().Err(e).Msg(invalidJSONContent)
 				continue
 			}
 
 			log.Info().
 				Str(clusterAttribute, string(cluster.ClusterName)).
 				Msg("Producing service log message")
-			_, _, err = serviceLogNotifier.ProduceMessage(msgBytes)
-			if err != nil {
+			_, _, e = serviceLogNotifier.ProduceMessage(msgBytes)
+			if e != nil {
 				NotificationNotSentErrorState.Inc()
-				log.Err(err).
+				log.Err(e).
 					Str(clusterAttribute, string(cluster.ClusterName)).
 					Str(ruleAttribute, string(ruleName)).
 					Str(errorKeyAttribute, string(errorKey)).
 					Msg(serviceLogSendErrorMessage)
-				return totalMessages, err
+				return totalMessages, e
 			}
 			NotificationSent.Inc()
 			totalMessages++
@@ -523,7 +539,7 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 }
 
 func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMap,
-	reportItems []types.ReportItem, storage Storage, report types.ClusterReport) (int, error) {
+	reportItems types.ReportContent, storage Storage, report types.ClusterReport) (int, error) {
 
 	notificationMsg := generateInstantNotificationMessage(
 		&notificationEventURLs.ClusterDetails,

@@ -144,7 +144,7 @@ func TestIssuesEqualSameIssues(t *testing.T) {
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue"),
 	}
-	assert.True(t, issuesEqual(issue1, issue2), "Compared issues should be equal")
+	assert.True(t, issuesEqual(&issue1, &issue2), "Compared issues should be equal")
 }
 
 func TestIssuesEqualDifferentDetails(t *testing.T) {
@@ -160,7 +160,7 @@ func TestIssuesEqualDifferentDetails(t *testing.T) {
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue is different"),
 	}
-	assert.True(t, issuesEqual(issue1, issue2), "Compared issues should be equal")
+	assert.True(t, issuesEqual(&issue1, &issue2), "Compared issues should be equal")
 }
 
 func TestIssuesEqualDifferentModule(t *testing.T) {
@@ -176,12 +176,12 @@ func TestIssuesEqualDifferentModule(t *testing.T) {
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue"),
 	}
-	assert.False(t, issuesEqual(issue1, issue2), "Compared issues should not be equal")
+	assert.False(t, issuesEqual(&issue1, &issue2), "Compared issues should not be equal")
 }
 
 func TestNewIssueNotInOldReport(t *testing.T) {
 	oldReport := types.Report{
-		Reports: []types.ReportItem{
+		Reports: types.ReportContent{
 			{
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
@@ -199,7 +199,7 @@ func TestNewIssueNotInOldReport(t *testing.T) {
 	}
 
 	assert.True(t,
-		IssueNotInReport(oldReport, issue),
+		IssueNotInReport(oldReport, &issue),
 		"New issue not in old report old report, so result should be true.",
 	)
 
@@ -207,7 +207,7 @@ func TestNewIssueNotInOldReport(t *testing.T) {
 
 func TestIssueNotInReportSameItemsInNewReport(t *testing.T) {
 	oldReport := types.Report{
-		Reports: []types.ReportItem{
+		Reports: types.ReportContent{
 			{
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
@@ -223,7 +223,7 @@ func TestIssueNotInReportSameItemsInNewReport(t *testing.T) {
 		},
 	}
 	newReport := types.Report{
-		Reports: []types.ReportItem{
+		Reports: types.ReportContent{
 			{
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
@@ -249,7 +249,7 @@ func TestIssueNotInReportSameItemsInNewReport(t *testing.T) {
 
 func TestIssueNotInReportSameLengthDifferentItemsInNewReport(t *testing.T) {
 	oldReport := types.Report{
-		Reports: []types.ReportItem{
+		Reports: types.ReportContent{
 			{
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
@@ -265,7 +265,7 @@ func TestIssueNotInReportSameLengthDifferentItemsInNewReport(t *testing.T) {
 		},
 	}
 	newReport := types.Report{
-		Reports: []types.ReportItem{
+		Reports: types.ReportContent{
 			{
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.rule_3.report",
@@ -291,7 +291,7 @@ func TestIssueNotInReportSameLengthDifferentItemsInNewReport(t *testing.T) {
 
 func TestIssueNotInReportLessItemsInNewReportAndIssueNotFoundInOldReports(t *testing.T) {
 	oldReport := types.Report{
-		Reports: []types.ReportItem{
+		Reports: types.ReportContent{
 			{
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
@@ -307,7 +307,7 @@ func TestIssueNotInReportLessItemsInNewReportAndIssueNotFoundInOldReports(t *tes
 		},
 	}
 	newReport := types.Report{
-		Reports: []types.ReportItem{
+		Reports: types.ReportContent{
 			{
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.rule_3.report",
@@ -327,7 +327,7 @@ func TestIssueNotInReportLessItemsInNewReportAndIssueNotFoundInOldReports(t *tes
 
 func TestIssueNotInReportLessItemsInNewReportAndIssueFoundInOldReports(t *testing.T) {
 	oldReport := types.Report{
-		Reports: []types.ReportItem{
+		Reports: types.ReportContent{
 			{
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
@@ -343,7 +343,7 @@ func TestIssueNotInReportLessItemsInNewReportAndIssueFoundInOldReports(t *testin
 		},
 	}
 	newReport := types.Report{
-		Reports: []types.ReportItem{
+		Reports: types.ReportContent{
 			{
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
@@ -376,7 +376,7 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 			},
 		)
 	newReport := types.Report{
-		Reports: []types.ReportItem{
+		Reports: types.ReportContent{
 			{
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
@@ -419,7 +419,7 @@ func TestShouldNotNotifySameRuleDifferentDetails(t *testing.T) {
 			},
 		)
 	newReport := types.Report{
-		Reports: []types.ReportItem{
+		Reports: types.ReportContent{
 			{
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.rule_4.report",
@@ -462,7 +462,7 @@ func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 			},
 		)
 	newReport := types.Report{
-		Reports: []types.ReportItem{
+		Reports: types.ReportContent{
 			{
 				Type:     "rule",
 				Module:   "ccx_rules_ocp.external.rules.new_rule.report",
