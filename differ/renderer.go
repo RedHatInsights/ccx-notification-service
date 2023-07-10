@@ -71,6 +71,7 @@ func renderReportsForCluster(
 
 	log.Debug().Interface("unmarshalled", receivedResult).Msg("Received result")
 
+	//TODO: create map[module+err_key]rendererReport here to not loop through rendered reports once for each report
 	return receivedResult.Reports[clusterName], nil
 }
 
