@@ -152,7 +152,7 @@ type CliFlags struct {
 	MaxAge                    string
 }
 
-// Report represents the array of items expected in a report
+// ReportContent represents the array of items expected in a report
 type ReportContent []*ReportItem
 
 // Report represents report send in a message consumed from any broker

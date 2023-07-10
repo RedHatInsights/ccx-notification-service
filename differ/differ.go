@@ -420,20 +420,8 @@ func evaluateTagFilter(filterEnabled bool, tagsSet, reportItemTags types.TagsSet
 	return true
 }
 
-func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.ClusterEntry,
-	rules types.Rules, ruleContent types.RulesMap, reports types.ReportContent) (totalMessages int, err error) {
-
-	// we need to pass the correct "created_by" and "username" attributes
-	// to ServiceLog REST API
-	serviceLogConfiguration := conf.GetServiceLogConfiguration(configuration)
-	createdBy := serviceLogConfiguration.CreatedBy
-	username := serviceLogConfiguration.Username
-
-	//dependenciesConfiguration := conf.GetDependenciesConfiguration(configuration)
-	//renderedReports, err := renderReportsForCluster(
-	//	&dependenciesConfiguration, cluster.ClusterName,
-	//	reports, rules)
-	reportsToRender := make(types.ReportContent, 0, len(reports))
+func getReportsWithIssuesToNotify(reports types.ReportContent, cluster types.ClusterEntry, ruleContent types.RulesMap) (reportsWithIssues types.ReportContent) {
+	reportsWithIssues = make(types.ReportContent, 0, len(reports))
 
 	for _, r := range reports {
 		ruleName := moduleToRuleName(r.Module)
@@ -477,21 +465,62 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 				Str(clusterName, string(cluster.ClusterName)).
 				Msg(differentReportMessage)
 			r.Module = types.ModuleName(ruleName)
-			reportsToRender = append(reportsToRender, r)
+			reportsWithIssues = append(reportsWithIssues, r)
 		}
 	}
+	return
+}
+
+func createAndSendServiceLogEntry(configuration *conf.ConfigStruct, renderedReport *types.RenderedReport,
+	cluster types.ClusterEntry) error {
+	// we need to pass the correct "created_by" and "username" attributes
+	// to ServiceLog REST API
+	serviceLogConfiguration := conf.GetServiceLogConfiguration(configuration)
+	createdBy := serviceLogConfiguration.CreatedBy
+	username := serviceLogConfiguration.Username
+
+	logEntry := createServiceLogEntry(renderedReport, cluster, createdBy, username)
+
+	msgBytes, err := json.Marshal(logEntry)
+	if err != nil {
+		log.Error().Err(err).Msg(invalidJSONContent)
+		return nil
+	}
+
+	log.Info().
+		Str(clusterAttribute, string(cluster.ClusterName)).
+		Msg("Producing service log message")
+	_, _, err = serviceLogNotifier.ProduceMessage(msgBytes)
+	if err != nil {
+		NotificationNotSentErrorState.Inc()
+		log.Err(err).
+			Str(clusterAttribute, string(cluster.ClusterName)).
+			Str(ruleAttribute, string(renderedReport.RuleID)).
+			Str(errorKeyAttribute, string(renderedReport.ErrorKey)).
+			Msg(serviceLogSendErrorMessage)
+		return err
+	}
+	NotificationSent.Inc()
+	return nil
+}
+
+func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.ClusterEntry,
+	rules types.Rules, ruleContent types.RulesMap, reports types.ReportContent) (totalMessages int, err error) {
+
+	//TODO: Use pointer when passing around clusterEntry
+	reportsToRender := getReportsWithIssuesToNotify(reports, cluster, ruleContent)
 
 	if len(reportsToRender) != 0 {
 		dependenciesConfiguration := conf.GetDependenciesConfiguration(configuration)
-		renderedReports, e := renderReportsForCluster(
+		renderedReports, err := renderReportsForCluster(
 			&dependenciesConfiguration, cluster.ClusterName,
-			reports, rules)
+			reportsToRender, rules)
 
-		if e != nil {
-			log.Err(e).
+		if err != nil {
+			log.Err(err).
 				Str("cluster name", string(cluster.ClusterName)).
 				Msg(renderReportsFailedMessage)
-			return totalMessages, e
+			return totalMessages, err
 		}
 
 		for _, r := range reportsToRender {
@@ -499,38 +528,20 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 			errorKey := r.ErrorKey
 
 			ReportWithHighImpact.Inc()
-			renderedReport, e := findRenderedReport(renderedReports, types.RuleName(ruleName), errorKey)
+			renderedReport, err := findRenderedReport(renderedReports, types.RuleName(ruleName), errorKey)
 
-			addDetailedInfoURLToRenderedReport(&renderedReport, &configuration.ServiceLog.RuleDetailsURI)
-
-			if e != nil {
+			if err != nil {
 				log.Err(err).Msgf("Output from content template renderer does not contain "+
 					"result for cluster %s, rule %s and error key %s", cluster.ClusterName, ruleName, errorKey)
 				continue
 			}
 
-			logEntry := createServiceLogEntry(&renderedReport, cluster, createdBy, username)
+			addDetailedInfoURLToRenderedReport(&renderedReport, &configuration.ServiceLog.RuleDetailsURI)
 
-			msgBytes, e := json.Marshal(logEntry)
-			if e != nil {
-				log.Error().Err(e).Msg(invalidJSONContent)
+			if err = createAndSendServiceLogEntry(configuration, &renderedReport, cluster); err != nil {
 				continue
 			}
 
-			log.Info().
-				Str(clusterAttribute, string(cluster.ClusterName)).
-				Msg("Producing service log message")
-			_, _, e = serviceLogNotifier.ProduceMessage(msgBytes)
-			if e != nil {
-				NotificationNotSentErrorState.Inc()
-				log.Err(e).
-					Str(clusterAttribute, string(cluster.ClusterName)).
-					Str(ruleAttribute, string(ruleName)).
-					Str(errorKeyAttribute, string(errorKey)).
-					Msg(serviceLogSendErrorMessage)
-				return totalMessages, e
-			}
-			NotificationSent.Inc()
 			totalMessages++
 		}
 	}
