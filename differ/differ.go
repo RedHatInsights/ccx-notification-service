@@ -464,7 +464,6 @@ func getReportsWithIssuesToNotify(reports types.ReportContent, cluster types.Clu
 			log.Info().
 				Str(clusterName, string(cluster.ClusterName)).
 				Msg(differentReportMessage)
-			r.Module = types.ModuleName(ruleName)
 			reportsWithIssues = append(reportsWithIssues, r)
 		}
 	}
@@ -524,11 +523,11 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 		}
 
 		for _, r := range reportsToRender {
-			ruleName := r.Module
+			ruleName := moduleToRuleName(r.Module)
 			errorKey := r.ErrorKey
 
 			ReportWithHighImpact.Inc()
-			renderedReport, err := findRenderedReport(renderedReports, types.RuleName(ruleName), errorKey)
+			renderedReport, err := findRenderedReport(renderedReports, ruleName, errorKey)
 
 			if err != nil {
 				log.Err(err).Msgf("Output from content template renderer does not contain "+
