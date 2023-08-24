@@ -486,7 +486,7 @@ func createAndSendServiceLogEntry(configuration *conf.ConfigStruct, renderedRepo
 		return nil
 	}
 
-	log.Info().
+	log.Debug().
 		Str(clusterAttribute, string(cluster.ClusterName)).
 		Msg("Producing service log message")
 	_, _, err = serviceLogNotifier.ProduceMessage(msgBytes)
@@ -595,7 +595,7 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 				continue
 			}
 			// if new report differs from the older one -> send notification
-			log.Info().
+			log.Debug().
 				Str(clusterName, string(cluster.ClusterName)).
 				Msg(differentReportMessage)
 			ReportWithHighImpact.Inc()
@@ -665,7 +665,7 @@ func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesM
 	}
 
 	for i, cluster := range clusters {
-		log.Info().
+		log.Debug().
 			Int("#", i).
 			Int("of", clustersCount).
 			Int(organizationIDAttribute, int(cluster.OrgID)).
@@ -761,7 +761,7 @@ func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storag
 	digest := types.Digest{}
 
 	for i, cluster := range clusters {
-		log.Info().
+		log.Debug().
 			Int("#", i).
 			Int(organizationIDAttribute, int(cluster.OrgID)).
 			Int(AccountNumberAttribute, int(cluster.AccountNumber)).
