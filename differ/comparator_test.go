@@ -61,12 +61,6 @@ var (
 			Frequency: "instant",
 			Comment:   "instant notifs",
 		},
-		{
-			ID:        2,
-			Value:     notificationTypeWeekly,
-			Frequency: "weekly",
-			Comment:   "weekly notifs",
-		},
 	}
 
 	testCluster = types.ClusterEntry{
@@ -111,7 +105,6 @@ func TestGetStates(t *testing.T) {
 
 func TestGetNotificationType(t *testing.T) {
 	assert.Equal(t, types.NotificationTypeID(1), getNotificationType(notificationTypesList, notificationTypeInstant))
-	assert.Equal(t, types.NotificationTypeID(2), getNotificationType(notificationTypesList, notificationTypeWeekly))
 	assert.Equal(t, types.NotificationTypeID(-1), getNotificationType(notificationTypesList, "any_other_type"))
 }
 
@@ -128,7 +121,6 @@ func TestGetNotifications(t *testing.T) {
 
 	assert.Nil(t, getNotificationTypes(&storage))
 	assert.Equal(t, types.NotificationTypeID(1), notificationTypes.Instant)
-	assert.Equal(t, types.NotificationTypeID(2), notificationTypes.Weekly)
 }
 
 func TestIssuesEqualSameIssues(t *testing.T) {

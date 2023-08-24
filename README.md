@@ -111,8 +111,6 @@ Configuration is described
 
 Provided a valid configuration, you can start the service with `./ccx-notification-service --instant-reports` 
 
-It is also possible to generate and send weekly reports with `./ccx-notification-service --weekly-reports`
-
 ### All command line options
 
 List of all available command line options:
@@ -128,8 +126,6 @@ List of all available command line options:
         show configuration
   -show-version
         show version and exit
-  -weekly-reports
-        create weekly reports
   -max-age string
         max age for displaying/cleaning old records
   -new-reports-cleanup

@@ -106,7 +106,6 @@ const (
 	reportWithHighImpactMessage = "Report with high impact detected"
 	differentReportMessage      = "Different report from the last one"
 	invalidJSONContent          = "The provided content cannot be encoded as JSON."
-	contextToEscapedStringError = "Notification message will not be generated as context couldn't be converted to escaped string."
 	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
 	eventFilterNotSetMessage    = "Event filter not set"
 	tagsNotSetMessage           = "Tags for tag filter not set"
@@ -132,19 +131,12 @@ const (
 	notificationPayloadRuleURL         = "rule_url"
 	notificationPayloadTotalRisk       = "total_risk"
 	notificationPayloadPublishDate     = "publish_date"
-	// WEEKLY NOTIFICATION PAYLOAD FIELDS
-	notificationPayloadTotalClusters        = "total_clusters"
-	notificationPayloadTotalRecommendations = "total_recommendations"
-	notificationPayloadTotalCritical        = "total_critical"
-	notificationPayloadTotalImportant       = "total_important"
-	notificationPayloadTotalIncidents       = "total_incidents"
 )
 
 // Constants for notification context expected fields
 const (
 	notificationContextDisplayName = "display_name"
 	notificationContextHostURL     = "host_url"
-	notificationContextAdvisorURL  = "advisor_url"
 )
 
 // Constants used to filter events
@@ -732,122 +724,11 @@ func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesM
 	log.Info().Msgf("Number of high impact issues notified: %d", notifiedIssues)
 }
 
-// getNotificationDigestForCurrentAccount function returns new digest object if none has been previously created for given account
-func getNotificationDigestForCurrentAccount(notificationsByAccount map[types.AccountNumber]types.Digest, accountNumber types.AccountNumber) (digest types.Digest) {
-	if _, ok := notificationsByAccount[accountNumber]; !ok {
-		log.Info().Msgf("Creating notification digest for account %d", accountNumber)
-		digest = types.Digest{}
-	} else {
-		log.Info().Msgf("Modifying notification digest for account %d", accountNumber)
-		digest = notificationsByAccount[accountNumber]
-	}
-	return
-}
-
-// updateDigestNotificationCounters function increments number of important or critical notification detected in a given weekly digest
-func updateDigestNotificationCounters(digest *types.Digest, totalRisk int) {
-	if totalRisk == 3 {
-		log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Important report detected. Adding to weekly digest")
-		digest.ImportantNotifications++
-	} else if totalRisk == 4 {
-		log.Warn().Int(totalRiskAttribute, totalRisk).Msg("Critical report detected. Adding to weekly digest")
-		digest.CriticalNotifications++
-	}
-}
-
-// processAllReportsFromCurrentWeek function creates weekly digest with for all the clusters corresponding to each user account
-func processAllReportsFromCurrentWeek(ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
-	digestByAccount := map[types.AccountNumber]types.Digest{}
-	digest := types.Digest{}
-
-	for i, cluster := range clusters {
-		log.Debug().
-			Int("#", i).
-			Int(organizationIDAttribute, int(cluster.OrgID)).
-			Int(AccountNumberAttribute, int(cluster.AccountNumber)).
-			Str(clusterAttribute, string(cluster.ClusterName)).
-			Msg(clusterEntryMessage)
-
-		digest = getNotificationDigestForCurrentAccount(digestByAccount, cluster.AccountNumber)
-		digest.ClustersAffected++
-
-		report, _, err := storage.ReadReportForCluster(cluster.OrgID, cluster.ClusterName)
-		if err != nil {
-			log.Err(err).Msg(operationFailedMessage)
-			os.Exit(ExitStatusStorageError)
-		}
-
-		var deserialized types.Report
-		err = json.Unmarshal([]byte(report), &deserialized)
-		if err != nil {
-			log.Err(err).Msg("Deserialization error - Couldn't create report object")
-			os.Exit(ExitStatusStorageError)
-		}
-
-		numReports := len(deserialized.Reports)
-		if numReports == 0 {
-			log.Info().Msgf("No reports in notification database for cluster %s", cluster.ClusterName)
-			continue
-		}
-		digest.Recommendations += numReports
-
-		for i, r := range deserialized.Reports {
-			moduleName := r.Module
-			ruleName := moduleToRuleName(moduleName)
-			errorKey := r.ErrorKey
-			likelihood, impact, totalRisk, _, _ := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
-
-			log.Info().
-				Int("#", i).
-				Str("type", r.Type).
-				Str(ruleAttribute, string(ruleName)).
-				Str(errorKeyAttribute, string(errorKey)).
-				Int("likelihood", likelihood).
-				Int("impact", impact).
-				Int(totalRiskAttribute, totalRisk).
-				Msg("Report")
-			updateDigestNotificationCounters(&digest, totalRisk)
-		}
-		digestByAccount[cluster.AccountNumber] = digest
-	}
-
-	for account, digest := range digestByAccount {
-		if digest.Recommendations == 0 {
-			log.Info().Msgf("No issues to notify to account %d", account)
-			continue
-		}
-
-		log.Info().
-			Int("account number", int(account)).
-			Int("total recommendations", digest.Recommendations).
-			Int("clusters affected", digest.ClustersAffected).
-			Int("critical notifications", digest.CriticalNotifications).
-			Int("important notifications", digest.ImportantNotifications).
-			Msg("Producing weekly notification for ")
-
-		notification := generateWeeklyNotificationMessage(&notificationEventURLs.InsightsAdvisor, fmt.Sprint(account), digest)
-		msgBytes, err := json.Marshal(notification)
-		if err != nil {
-			log.Error().Err(err).Msg(invalidJSONContent)
-			continue
-		}
-		_, _, err = kafkaNotifier.ProduceMessage(msgBytes)
-		if err != nil {
-			log.Error().
-				Str(errorStr, err.Error()).
-				Msg("Couldn't produce kafka event.")
-			os.Exit(ExitStatusKafkaProducerError)
-		}
-	}
-}
-
 // processClusters function creates desired notification messages for all the clusters obtained from the database
 func processClusters(config *conf.ConfigStruct, ruleContent types.RulesMap,
 	storage Storage, clusters []types.ClusterEntry) {
 	if notificationType == types.InstantNotif {
 		processReportsByCluster(config, ruleContent, storage, clusters)
-	} else if notificationType == types.WeeklyDigest {
-		processAllReportsFromCurrentWeek(ruleContent, storage, clusters)
 	}
 }
 
@@ -926,44 +807,6 @@ func generateInstantNotificationMessage(
 	return
 }
 
-// generateWeeklyNotificationMessage function generates a notification message with one event based on the provided digest
-func generateWeeklyNotificationMessage(advisorURI *string, accountID string, digest types.Digest) (notification types.NotificationMessage) {
-	notificationContext := types.NotificationContext{
-		notificationContextAdvisorURL: *advisorURI,
-	}
-
-	payload := types.EventPayload{
-		notificationPayloadTotalClusters:        fmt.Sprint(digest.ClustersAffected),
-		notificationPayloadTotalRecommendations: fmt.Sprint(digest.Recommendations),
-		notificationPayloadTotalIncidents:       fmt.Sprint(digest.Incidents),
-		notificationPayloadTotalCritical:        fmt.Sprint(digest.CriticalNotifications),
-		notificationPayloadTotalImportant:       fmt.Sprint(digest.ImportantNotifications),
-	}
-
-	events := []types.Event{
-		{
-			// The insights Notifications backend expects this
-			// field to be an empty object in the received JSON
-			Metadata: types.EventMetadata{},
-			// The insights Notifications backend expects to
-			// receive the payload as a string with all its fields
-			// as escaped strings
-			Payload: payload,
-		},
-	}
-
-	notification = types.NotificationMessage{
-		Bundle:      notificationBundleName,
-		Application: notificationApplicationName,
-		EventType:   types.WeeklyDigest.ToString(),
-		Timestamp:   time.Now().UTC().Format(time.RFC3339),
-		AccountID:   accountID,
-		Events:      events,
-		Context:     notificationContext,
-	}
-	return
-}
-
 func generateNotificationPayloadURL(
 	ruleURI *string, clusterID string, module types.ModuleName, errorKey types.ErrorKey) (
 	notificationPayloadURL string) {
@@ -1017,16 +860,11 @@ func checkArgs(args *types.CliFlags) {
 	}
 
 	// check if report type is specified on command line
-	if !args.InstantReports && !args.WeeklyReports {
+	if !args.InstantReports {
 		log.Error().Msg("Type of report needs to be specified on command line")
 		os.Exit(ExitStatusConfiguration)
 	}
-
-	if args.InstantReports {
-		notificationType = types.InstantNotif
-	} else {
-		notificationType = types.WeeklyDigest
-	}
+	notificationType = types.InstantNotif
 }
 
 func setupNotificationTypes(storage *DBStorage) {
@@ -1315,7 +1153,6 @@ func Run() {
 
 	// define and parse all command line options
 	flag.BoolVar(&cliFlags.InstantReports, "instant-reports", false, "create instant reports")
-	flag.BoolVar(&cliFlags.WeeklyReports, "weekly-reports", false, "create weekly reports")
 	flag.BoolVar(&cliFlags.ShowVersion, "show-version", false, "show version and exit")
 	flag.BoolVar(&cliFlags.ShowAuthors, "show-authors", false, "show authors and exit")
 	flag.BoolVar(&cliFlags.ShowConfiguration, "show-configuration", false, "show configuration and exit")
