@@ -97,7 +97,7 @@ func shouldNotify(cluster types.ClusterEntry, issue *types.ReportItem, eventTarg
 }
 
 func updateNotificationRecordSameState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp, eventTarget types.EventTarget) {
-	log.Info().Msgf("No new issues to notify for cluster %s", cluster.ClusterName)
+	log.Debug().Msgf("No new issues to notify for cluster %s", cluster.ClusterName)
 	NotificationNotSentSameState.Inc()
 	// store notification info about not sending the notification
 	err := storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SameState, report, notifiedAt, "", eventTarget)
@@ -107,7 +107,7 @@ func updateNotificationRecordSameState(storage Storage, cluster types.ClusterEnt
 }
 
 func updateNotificationRecordSentState(storage Storage, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp, eventTarget types.EventTarget) {
-	log.Info().Msgf("New issues notified for cluster %s", string(cluster.ClusterName))
+	log.Debug().Msgf("New issues notified for cluster %s", string(cluster.ClusterName))
 	NotificationSent.Inc()
 	err := storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.SentState, report, notifiedAt, "", eventTarget)
 	if err != nil {
@@ -116,7 +116,7 @@ func updateNotificationRecordSentState(storage Storage, cluster types.ClusterEnt
 }
 
 func updateNotificationRecordErrorState(storage Storage, err error, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp, eventTarget types.EventTarget) {
-	log.Info().Msgf("New issues couldn't be notified for cluster %s", string(cluster.ClusterName))
+	log.Error().Msgf("New issues couldn't be notified for cluster %s", string(cluster.ClusterName))
 	NotificationNotSentErrorState.Inc()
 	err = storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.ErrorState, report, notifiedAt, err.Error(), eventTarget)
 	if err != nil {
@@ -158,7 +158,7 @@ func issuesEqual(issue1, issue2 *types.ReportItem) bool {
 func IssueNotInReport(oldReport types.Report, issue *types.ReportItem) bool {
 	for _, oldIssue := range oldReport.Reports {
 		if issuesEqual(oldIssue, issue) {
-			log.Info().Bool(resolutionKey, false).Str(resolutionReason, "issue found in previously notified report").Msg(resolutionMsg)
+			log.Debug().Bool(resolutionKey, false).Str(resolutionReason, "issue found in previously notified report").Msg(resolutionMsg)
 			return false
 		}
 	}

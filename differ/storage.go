@@ -727,7 +727,7 @@ func (storage DBStorage) deleteRowImpl(
 
 	printableStatement := getPrintableStatement(sqlStatement)
 
-	log.Info().
+	log.Debug().
 		Str("delete one row", printableStatement).
 		Int(OrgIDMessage, int(orgID)).
 		Str(ClusterNameMessage, string(clusterName)).
