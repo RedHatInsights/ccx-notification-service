@@ -143,64 +143,6 @@ func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 }
 
 // ---------------------------------------------------------------------------------------
-func TestUpdateDigestNotificationCounters(t *testing.T) {
-	digest := types.Digest{}
-	expectedDigest := types.Digest{}
-	updateDigestNotificationCounters(&digest, 1)
-	assert.Equal(t, expectedDigest, digest, "No field in digest should be incremented if totalRisk == 1")
-	updateDigestNotificationCounters(&digest, 2)
-	assert.Equal(t, expectedDigest, digest, "No field in digest should be incremented if totalRisk == 2")
-	updateDigestNotificationCounters(&digest, 3)
-	expectedDigest.ImportantNotifications++
-	assert.Equal(t, expectedDigest, digest, "ImportantNotifications field should be incremented if totalRisk == 3")
-	updateDigestNotificationCounters(&digest, 4)
-	expectedDigest.CriticalNotifications++
-	assert.Equal(t, expectedDigest, digest, "CriticalNotifications field should be incremented if totalRisk == 4")
-	updateDigestNotificationCounters(&digest, 5)
-	assert.Equal(t, expectedDigest, digest, "No field in digest should be incremented if 3 < totalRisk or totalRisk > 4")
-}
-
-func TestGetNotificationDigestForCurrentAccount(t *testing.T) {
-	emptyDigest := types.Digest{}
-	existingDigest := types.Digest{
-		ClustersAffected:       23,
-		CriticalNotifications:  2,
-		ImportantNotifications: 4,
-		Recommendations:        8,
-		Incidents:              0,
-	}
-
-	notificationsByAccount := map[types.AccountNumber]types.Digest{
-		12345: existingDigest,
-	}
-	assert.Equal(t, emptyDigest, getNotificationDigestForCurrentAccount(notificationsByAccount, 100))
-	assert.Equal(t, existingDigest, getNotificationDigestForCurrentAccount(notificationsByAccount, 12345))
-}
-
-func TestGenerateWeeklyDigestNotificationMessage(t *testing.T) {
-	advisorURI := "the_uri_to_advisor_tab_in_ocm"
-	accountID := "a_stringified_account_id"
-	digest := types.Digest{}
-
-	notificationMsg := generateWeeklyNotificationMessage(&advisorURI, accountID, digest)
-
-	assert.NotEmpty(t, notificationMsg, "the generated notification message is empty")
-	assert.NotEmpty(t, notificationMsg.Events, "the generated notification message should have 1 event with digest's content")
-	assert.Equal(t, types.WeeklyDigest.ToString(), notificationMsg.EventType, "the generated notification message should be for weekly digest")
-	assert.Equal(t, notificationBundleName, notificationMsg.Bundle, "Generated notifications should indicate 'openshift' as bundle")
-	assert.Equal(t, notificationApplicationName, notificationMsg.Application, "Generated notifications should indicate 'openshift' as application name")
-	assert.Equal(t, accountID, notificationMsg.AccountID, "Generated notifications does not have expected account ID")
-	assert.Equal(t, types.NotificationContext{"advisor_url": "the_uri_to_advisor_tab_in_ocm"}, notificationMsg.Context, "Notification context is different from expected.")
-
-	assert.Equal(t, 1, len(notificationMsg.Events)) // Only one event, always, with the digest's content
-	expectedEvent := types.Event{
-		Metadata: types.EventMetadata{},
-		Payload:  types.EventPayload{"total_clusters": "0", "total_critical": "0", "total_important": "0", "total_incidents": "0", "total_recommendations": "0"},
-	}
-	assert.Equal(t, expectedEvent, notificationMsg.Events[0])
-}
-
-// ---------------------------------------------------------------------------------------
 func TestShowVersion(t *testing.T) {
 	assert.Contains(t, captureStdout(showVersion), versionMessage, "showVersion function is not displaying the expected content")
 }
@@ -1104,7 +1046,7 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 			return nil
 		},
 	)
-
+	previouslyReported[types.NotificationBackendTarget] = make(types.NotifiedRecordsPerCluster, 2)
 	previouslyReported[types.NotificationBackendTarget][types.ClusterOrgKey{OrgID: types.OrgID(1), ClusterName: "first_cluster"}] = types.NotificationRecord{
 		OrgID:              1,
 		AccountNumber:      4,
@@ -1270,6 +1212,7 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	originalNotifier := kafkaNotifier
 	kafkaNotifier = &producerMock
 
+	previouslyReported[types.NotificationBackendTarget] = make(types.NotifiedRecordsPerCluster, 1)
 	previouslyReported[types.NotificationBackendTarget][types.ClusterOrgKey{OrgID: types.OrgID(3), ClusterName: "a cluster"}] = types.NotificationRecord{
 		OrgID:              3,
 		AccountNumber:      4,
@@ -1295,139 +1238,6 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
 		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
 	}
-}
-
-// ---------------------------------------------------------------------------------------
-func TestProcessClustersWeeklyDigest(t *testing.T) {
-	buf := new(bytes.Buffer)
-	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-
-	mockBroker := sarama.NewMockBroker(t, 0)
-	defer mockBroker.Close()
-
-	mockBroker.SetHandlerByMap(
-		map[string]sarama.MockResponse{
-			"MetadataRequest": sarama.NewMockMetadataResponse(t).
-				SetBroker(mockBroker.Addr(), mockBroker.BrokerID()).
-				SetLeader(brokerCfg.Topic, 0, mockBroker.BrokerID()),
-			"OffsetRequest": sarama.NewMockOffsetResponse(t).
-				SetOffset(brokerCfg.Topic, 0, -1, 0).
-				SetOffset(brokerCfg.Topic, 0, -2, 0),
-			"FetchRequest": sarama.NewMockFetchResponse(t, 1),
-			"FindCoordinatorRequest": sarama.NewMockFindCoordinatorResponse(t).
-				SetCoordinator(sarama.CoordinatorGroup, "", mockBroker),
-			"OffsetFetchRequest": sarama.NewMockOffsetFetchResponse(t).
-				SetOffset("", brokerCfg.Topic, 0, 0, "", sarama.ErrNoError),
-		})
-
-	errorKeys := map[string]utypes.RuleErrorKeyContent{
-		"RULE_1": {
-			Metadata: utypes.ErrorKeyMetadata{
-				Description: "rule 1 error key description",
-				Impact: utypes.Impact{
-					Name:   "impact_1",
-					Impact: 3,
-				},
-				Likelihood: 2,
-			},
-			Reason:    "rule 1 reason",
-			HasReason: true,
-		},
-		"RULE_2": {
-			Metadata: utypes.ErrorKeyMetadata{
-				Description: "rule 2 error key description",
-				Impact: utypes.Impact{
-					Name:   "impact_2",
-					Impact: 2,
-				},
-				Likelihood: 3,
-			},
-			HasReason: false,
-		},
-	}
-
-	ruleContent := types.RulesMap{
-		"rule_1": {
-			Summary:    "rule 1 summary",
-			Reason:     "rule 1 reason",
-			Resolution: "rule 1 resolution",
-			MoreInfo:   "rule 1 more info",
-			ErrorKeys:  errorKeys,
-			HasReason:  true,
-		},
-		"rule_2": {
-			Summary:    "rule 2 summary",
-			Reason:     "",
-			Resolution: "rule 2 resolution",
-			MoreInfo:   "rule 2 more info",
-			ErrorKeys:  errorKeys,
-			HasReason:  false,
-		},
-	}
-
-	clusters := []types.ClusterEntry{
-		{
-			OrgID:         1,
-			AccountNumber: 1,
-			ClusterName:   "first_cluster",
-			KafkaOffset:   0,
-			UpdatedAt:     types.Timestamp(testTimestamp),
-		},
-		{
-			OrgID:         2,
-			AccountNumber: 2,
-			ClusterName:   "second_cluster",
-			KafkaOffset:   100,
-			UpdatedAt:     types.Timestamp(testTimestamp),
-		},
-	}
-
-	storage := mocks.Storage{}
-	storage.On("ReadReportForCluster",
-		mock.AnythingOfType("types.OrgID"),
-		mock.AnythingOfType("types.ClusterName")).Return(
-		func(orgID types.OrgID, clusterName types.ClusterName) types.ClusterReport {
-			return "{\"analysis_metadata\":{\"metadata\":\"some metadata\"},\"reports\":[{\"rule_id\":\"rule_1|RULE_1\",\"component\":\"ccx_rules_ocp.external.rules.rule_1.report\",\"type\":\"rule\",\"key\":\"RULE_1\",\"details\":\"some details\"}]}"
-		},
-		func(orgID types.OrgID, clusterName types.ClusterName) types.Timestamp {
-			return types.Timestamp(testTimestamp)
-		},
-		func(orgID types.OrgID, clusterName types.ClusterName) error {
-			return nil
-		},
-	)
-
-	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("types.ProducerMessage")).Return(
-		func(msg types.ProducerMessage) int32 {
-			testPartitionID++
-			return int32(testPartitionID)
-		},
-		func(msg types.ProducerMessage) int64 {
-			testOffset++
-			return int64(testOffset)
-		},
-		func(msg types.ProducerMessage) error {
-			return nil
-		},
-	)
-
-	originalNotifier := kafkaNotifier
-	kafkaNotifier = &producerMock
-
-	notificationType = types.WeeklyDigest
-	processClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
-
-	print(buf.String())
-
-	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"Creating notification digest for account 1\"}")
-	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"message\":\"Creating notification digest for account 2\"}")
-	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"account number\":1,\"total recommendations\":1,\"clusters affected\":1,\"critical notifications\":0,\"important notifications\":0,\"message\":\"Producing weekly notification for \"}")
-	assert.Contains(t, buf.String(), "{\"level\":\"info\",\"account number\":2,\"total recommendations\":1,\"clusters affected\":1,\"critical notifications\":0,\"important notifications\":0,\"message\":\"Producing weekly notification for \"}")
-
-	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	kafkaNotifier = originalNotifier
 }
 
 // ---------------------------------------------------------------------------------------

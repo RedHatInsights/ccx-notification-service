@@ -186,18 +186,16 @@ type EventType int
 // Event types as enum
 const (
 	InstantNotif EventType = iota
-	WeeklyDigest
 )
 
 // Event types string representation
 const (
 	eventTypeInstant = "new-recommendation"
-	eventTypeWeekly  = "weekly-digest"
 )
 
 // ToString function returns string representation of given event type
 func (e EventType) ToString() string {
-	return [...]string{eventTypeInstant, eventTypeWeekly}[e]
+	return [...]string{eventTypeInstant}[e]
 }
 
 // EventMetadata represents the metadata of the sent payload.

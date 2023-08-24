@@ -39,7 +39,6 @@ const (
 	resolutionReason = "reason"
 
 	notificationTypeInstant = "instant"
-	notificationTypeWeekly  = "weekly"
 
 	notificationStateSent  = "sent"
 	notificationStateSame  = "same"
@@ -173,7 +172,6 @@ func getNotificationTypes(storage Storage) error {
 	}
 	notificationTypes = types.NotificationTypes{
 		Instant: getNotificationType(rawNotificationTypes, notificationTypeInstant),
-		Weekly:  getNotificationType(rawNotificationTypes, notificationTypeWeekly),
 	}
 	return nil
 }

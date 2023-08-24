@@ -78,15 +78,6 @@ func TestArgsParsingNoFlags(t *testing.T) {
 	t.Fatalf("checkArgs didn't behave properly. Wanted exit status %d but got error\n %v", ExitStatusConfiguration, err)
 }
 
-// Test the checkArgs function when --weekly-reports flag is set
-func TestArgsParsingWeeklyReportsFlags(t *testing.T) {
-	args := types.CliFlags{
-		WeeklyReports: true,
-	}
-	checkArgs(&args)
-	assert.Equal(t, notificationType, types.WeeklyDigest)
-}
-
 // Test the checkArgs function when --instant-reports flag is set
 func TestArgsParsingInstantReportsFlags(t *testing.T) {
 	args := types.CliFlags{
