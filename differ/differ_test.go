@@ -502,8 +502,8 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 	}
 
 	buf := new(bytes.Buffer)
-	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	log.Logger = zerolog.New(buf).Level(zerolog.DebugLevel)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
 	processClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
 
@@ -616,8 +616,8 @@ func TestProcessClustersInvalidReportFormatForClusterEntry(t *testing.T) {
 	}
 
 	buf := new(bytes.Buffer)
-	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	log.Logger = zerolog.New(buf).Level(zerolog.DebugLevel)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
 	processClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
 
@@ -632,8 +632,8 @@ func TestProcessClustersInvalidReportFormatForClusterEntry(t *testing.T) {
 
 func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.T) {
 	buf := new(bytes.Buffer)
-	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	log.Logger = zerolog.New(buf).Level(zerolog.DebugLevel)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
 	errorKeys := map[string]utypes.RuleErrorKeyContent{
 		"RULE_1": {
@@ -1033,8 +1033,8 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 
 func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) {
 	buf := new(bytes.Buffer)
-	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	log.Logger = zerolog.New(buf).Level(zerolog.DebugLevel)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
 	errorKeys := map[string]utypes.RuleErrorKeyContent{
 		"RULE_1": {
@@ -1131,8 +1131,8 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 	processClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
 
 	executionLog := buf.String()
-	assert.Contains(t, executionLog, "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster first_cluster\"}\n", "Notification already sent for first_cluster's report, but corresponding log not found.")
-	assert.Contains(t, executionLog, "{\"level\":\"info\",\"message\":\"No new issues to notify for cluster second_cluster\"}\n", "Notification already sent for second_cluster's report, but corresponding log not found.")
+	assert.Contains(t, executionLog, "{\"level\":\"debug\",\"message\":\"No new issues to notify for cluster first_cluster\"}\n", "Notification already sent for first_cluster's report, but corresponding log not found.")
+	assert.Contains(t, executionLog, "{\"level\":\"debug\",\"message\":\"No new issues to notify for cluster second_cluster\"}\n", "Notification already sent for second_cluster's report, but corresponding log not found.")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 	previouslyReported = types.NotifiedRecordsPerClusterByTarget{
