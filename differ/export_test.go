@@ -29,9 +29,38 @@ package differ
 // https://medium.com/@robiplus/golang-trick-export-for-test-aa16cbd7b8cd
 // to see why this trick is needed.
 var (
-	GetAllContentFromMap = getAllContentFromMap
-	ConvertLogLevel      = convertLogLevel
-	PushMetrics          = pushMetrics
+	NotificationType  = notificationType
+	NotificationTypes = &notificationTypes
+	States            = &states
+
+	GetAllContentFromMap               = getAllContentFromMap
+	ConvertLogLevel                    = convertLogLevel
+	PushMetrics                        = pushMetrics
+	GenerateInstantNotificationMessage = generateInstantNotificationMessage
+	GenerateNotificationPayloadURL     = generateNotificationPayloadURL
+	AppendEventToNotificationMessage   = appendEventToNotificationMessage
+	CalculateTotalRisk                 = calculateTotalRisk
+	ModuleToRuleName                   = moduleToRuleName
+	AssertNotificationDestination      = assertNotificationDestination
+
+	CheckArgs            = checkArgs
+	GetState             = getState
+	GetStates            = getStates
+	GetNotificationType  = getNotificationType
+	GetNotificationTypes = getNotificationTypes
+)
+
+const (
+	VersionMessage              = versionMessage
+	AuthorsMessage              = authorsMessage
+	NotificationTypeInstant     = notificationTypeInstant
+	NotificationBundleName      = notificationBundleName
+	NotificationApplicationName = notificationApplicationName
+	NotificationPayloadRuleURL  = notificationPayloadRuleURL
+	NotificationStateSent       = notificationStateSent
+	NotificationStateSame       = notificationStateSame
+	NotificationStateLower      = notificationStateLower
+	NotificationStateError      = notificationStateError
 )
 
 func InClauseFromStringSlice(slice []string) string {
