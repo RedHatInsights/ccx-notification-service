@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package differ
+package differ_test
 
 // Documentation in literate-programming-style is available at:
 // https://redhatinsights.github.io/ccx-notification-writer/packages/differ/comparator_test.html
@@ -22,10 +22,10 @@ package differ
 import (
 	"testing"
 
-	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/RedHatInsights/ccx-notification-service/differ"
 	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 )
@@ -34,22 +34,22 @@ var (
 	statesList = []types.State{
 		{
 			ID:      1,
-			Value:   notificationStateSent,
+			Value:   differ.NotificationStateSent,
 			Comment: "sent state",
 		},
 		{
 			ID:      2,
-			Value:   notificationStateSame,
+			Value:   differ.NotificationStateSame,
 			Comment: "same state",
 		},
 		{
 			ID:      3,
-			Value:   notificationStateLower,
+			Value:   differ.NotificationStateLower,
 			Comment: "lower state",
 		},
 		{
 			ID:      4,
-			Value:   notificationStateError,
+			Value:   differ.NotificationStateError,
 			Comment: "error state",
 		},
 	}
@@ -57,7 +57,7 @@ var (
 	notificationTypesList = []types.NotificationType{
 		{
 			ID:        1,
-			Value:     notificationTypeInstant,
+			Value:     differ.NotificationTypeInstant,
 			Frequency: "instant",
 			Comment:   "instant notifs",
 		},
@@ -72,17 +72,12 @@ var (
 	}
 )
 
-func init() {
-	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	previouslyReported = make(types.NotifiedRecordsPerClusterByTarget)
-}
-
 func TestGetState(t *testing.T) {
-	assert.Equal(t, types.StateID(1), getState(statesList, notificationStateSent))
-	assert.Equal(t, types.StateID(2), getState(statesList, notificationStateSame))
-	assert.Equal(t, types.StateID(3), getState(statesList, notificationStateLower))
-	assert.Equal(t, types.StateID(4), getState(statesList, notificationStateError))
-	assert.Equal(t, types.StateID(-1), getState(statesList, "any_other_state"))
+	assert.Equal(t, types.StateID(1), differ.GetState(statesList, differ.NotificationStateSent))
+	assert.Equal(t, types.StateID(2), differ.GetState(statesList, differ.NotificationStateSame))
+	assert.Equal(t, types.StateID(3), differ.GetState(statesList, differ.NotificationStateLower))
+	assert.Equal(t, types.StateID(4), differ.GetState(statesList, differ.NotificationStateError))
+	assert.Equal(t, types.StateID(-1), differ.GetState(statesList, "any_other_state"))
 }
 
 func TestGetStates(t *testing.T) {
@@ -96,16 +91,16 @@ func TestGetStates(t *testing.T) {
 		},
 	)
 
-	assert.Nil(t, getStates(&storage))
-	assert.Equal(t, types.StateID(2), states.SameState)
-	assert.Equal(t, types.StateID(1), states.SentState)
-	assert.Equal(t, types.StateID(3), states.LowerIssueState)
-	assert.Equal(t, types.StateID(4), states.ErrorState)
+	assert.Nil(t, differ.GetStates(&storage))
+	assert.Equal(t, types.StateID(2), differ.States.SameState)
+	assert.Equal(t, types.StateID(1), differ.States.SentState)
+	assert.Equal(t, types.StateID(3), differ.States.LowerIssueState)
+	assert.Equal(t, types.StateID(4), differ.States.ErrorState)
 }
 
 func TestGetNotificationType(t *testing.T) {
-	assert.Equal(t, types.NotificationTypeID(1), getNotificationType(notificationTypesList, notificationTypeInstant))
-	assert.Equal(t, types.NotificationTypeID(-1), getNotificationType(notificationTypesList, "any_other_type"))
+	assert.Equal(t, types.NotificationTypeID(1), differ.GetNotificationType(notificationTypesList, differ.NotificationTypeInstant))
+	assert.Equal(t, types.NotificationTypeID(-1), differ.GetNotificationType(notificationTypesList, "any_other_type"))
 }
 
 func TestGetNotifications(t *testing.T) {
@@ -119,8 +114,8 @@ func TestGetNotifications(t *testing.T) {
 		},
 	)
 
-	assert.Nil(t, getNotificationTypes(&storage))
-	assert.Equal(t, types.NotificationTypeID(1), notificationTypes.Instant)
+	assert.Nil(t, differ.GetNotificationTypes(&storage))
+	assert.Equal(t, types.NotificationTypeID(1), differ.NotificationTypes.Instant)
 }
 
 func TestIssuesEqualSameIssues(t *testing.T) {
@@ -136,7 +131,7 @@ func TestIssuesEqualSameIssues(t *testing.T) {
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue"),
 	}
-	assert.True(t, issuesEqual(&issue1, &issue2), "Compared issues should be equal")
+	assert.True(t, differ.IssuesEqual(&issue1, &issue2), "Compared issues should be equal")
 }
 
 func TestIssuesEqualDifferentDetails(t *testing.T) {
@@ -152,7 +147,7 @@ func TestIssuesEqualDifferentDetails(t *testing.T) {
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue is different"),
 	}
-	assert.True(t, issuesEqual(&issue1, &issue2), "Compared issues should be equal")
+	assert.True(t, differ.IssuesEqual(&issue1, &issue2), "Compared issues should be equal")
 }
 
 func TestIssuesEqualDifferentModule(t *testing.T) {
@@ -168,7 +163,7 @@ func TestIssuesEqualDifferentModule(t *testing.T) {
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue"),
 	}
-	assert.False(t, issuesEqual(&issue1, &issue2), "Compared issues should not be equal")
+	assert.False(t, differ.IssuesEqual(&issue1, &issue2), "Compared issues should not be equal")
 }
 
 func TestNewIssueNotInOldReport(t *testing.T) {
@@ -191,7 +186,7 @@ func TestNewIssueNotInOldReport(t *testing.T) {
 	}
 
 	assert.True(t,
-		IssueNotInReport(oldReport, &issue),
+		differ.IssueNotInReport(oldReport, &issue),
 		"New issue not in old report old report, so result should be true.",
 	)
 
@@ -233,7 +228,7 @@ func TestIssueNotInReportSameItemsInNewReport(t *testing.T) {
 
 	for _, issue := range newReport.Reports {
 		assert.False(t,
-			IssueNotInReport(oldReport, issue),
+			differ.IssueNotInReport(oldReport, issue),
 			"New report has the same items than old report, so comparison result should be false.",
 		)
 	}
@@ -275,7 +270,7 @@ func TestIssueNotInReportSameLengthDifferentItemsInNewReport(t *testing.T) {
 
 	for _, issue := range newReport.Reports {
 		assert.True(t,
-			IssueNotInReport(oldReport, issue),
+			differ.IssueNotInReport(oldReport, issue),
 			"New and old report have different items, so result should be true.",
 		)
 	}
@@ -311,7 +306,7 @@ func TestIssueNotInReportLessItemsInNewReportAndIssueNotFoundInOldReports(t *tes
 
 	for _, issue := range newReport.Reports {
 		assert.True(t,
-			IssueNotInReport(oldReport, issue),
+			differ.IssueNotInReport(oldReport, issue),
 			"New report's issue has not been found in old report, so result should be true.",
 		)
 	}
@@ -347,7 +342,7 @@ func TestIssueNotInReportLessItemsInNewReportAndIssueFoundInOldReports(t *testin
 
 	for _, issue := range newReport.Reports {
 		assert.False(t,
-			IssueNotInReport(oldReport, issue),
+			differ.IssueNotInReport(oldReport, issue),
 			"New report's issue has been found in old report, so result should be false.",
 		)
 	}
@@ -378,9 +373,13 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 		},
 	}
 
-	previouslyReported[types.NotificationBackendTarget], _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours", types.NotificationBackendTarget)
+	d := differ.Differ{
+		Target: types.NotificationBackendTarget,
+	}
+
+	d.PreviouslyReported, _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours", types.NotificationBackendTarget)
 	for _, issue := range newReport.Reports {
-		assert.True(t, shouldNotify(testCluster, issue, types.NotificationBackendTarget))
+		assert.True(t, d.ShouldNotify(testCluster, issue))
 	}
 }
 
@@ -421,9 +420,14 @@ func TestShouldNotNotifySameRuleDifferentDetails(t *testing.T) {
 		},
 	}
 
-	previouslyReported[types.NotificationBackendTarget], _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours", types.NotificationBackendTarget)
+	d := differ.Differ{
+		Target: types.NotificationBackendTarget,
+	}
+
+	d.PreviouslyReported, _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours", types.NotificationBackendTarget)
+
 	for _, issue := range newReport.Reports {
-		assert.False(t, shouldNotify(testCluster, issue, types.NotificationBackendTarget))
+		assert.False(t, d.ShouldNotify(testCluster, issue))
 	}
 }
 
@@ -464,9 +468,13 @@ func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 		},
 	}
 
-	previouslyReported[types.NotificationBackendTarget], _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours", types.NotificationBackendTarget)
+	d := differ.Differ{
+		Target: types.NotificationBackendTarget,
+	}
+
+	d.PreviouslyReported, _ = storage.ReadLastNotifiedRecordForClusterList(make([]types.ClusterEntry, 0), "24 hours", types.NotificationBackendTarget)
 
 	for _, issue := range newReport.Reports {
-		assert.True(t, shouldNotify(testCluster, issue, types.NotificationBackendTarget))
+		assert.True(t, d.ShouldNotify(testCluster, issue))
 	}
 }

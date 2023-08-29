@@ -22,12 +22,11 @@ package differ
 // https://pkg.go.dev/github.com/RedHatInsights/ccx-notification-service/differ
 //
 // Documentation in literate-programming-style is available at:
-// https://redhatinsights.github.io/ccx-notification-service/packages/differ/differ.html
+// https://redhatinsights.github.io/ccx-notification-service/packages/differ/d.html
 
 import (
 	"context"
 	"encoding/json"
-	"flag"
 	"fmt"
 	"os"
 	"strings"
@@ -37,7 +36,6 @@ import (
 	"github.com/rs/zerolog/log"
 
 	"github.com/RedHatInsights/ccx-notification-service/ocmclient"
-	"github.com/RedHatInsights/ccx-notification-service/producer/disabled"
 	"github.com/RedHatInsights/ccx-notification-service/producer/servicelog"
 
 	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
@@ -107,13 +105,13 @@ const (
 	differentReportMessage      = "Different report from the last one"
 	invalidJSONContent          = "The provided content cannot be encoded as JSON."
 	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
-	eventFilterNotSetMessage    = "Event filter not set"
 	tagsNotSetMessage           = "Tags for tag filter not set"
 	evaluationErrorMessage      = "Evaluation error"
 	serviceLogSendErrorMessage  = "Sending entry to service log failed for this report"
 	renderReportsFailedMessage  = "Rendering reports failed for this cluster"
 	ReportNotFoundError         = "report for rule ID %v and error key %v has not been found"
 	destinationNotSet           = "No known event destination configured. Aborting."
+	onlyOneDestinationAllowed   = "Only one integration should be enabled (Kafka / Service log. Review your config."
 	configurationProblem        = "Configuration problem"
 	loadConfigurationMessage    = "Load configuration"
 )
@@ -141,11 +139,8 @@ const (
 
 // Constants used to filter events
 const (
-	DefaultTotalRiskThreshold  = 2
-	DefaultLikelihoodThreshold = 0
-	DefaultImpactThreshold     = 0
-	DefaultSeverityThreshold   = 0
-	DefaultEventFilter         = "totalRisk >= totalRiskThreshold"
+	DefaultTotalRiskThreshold = 2
+	DefaultEventFilter        = "totalRisk >= totalRiskThreshold"
 )
 
 // Constants used for creating Service Log entries - there is a length limit on text fields in Service Log,
@@ -179,138 +174,24 @@ type NotificationURLs struct {
 	InsightsAdvisor string
 }
 
+// Differ is the struct that holds all the dependencies and configuration of this service
+type Differ struct {
+	Storage            Storage
+	Notifier           producer.Producer
+	NotificationType   types.EventType
+	Target             types.EventTarget
+	PreviouslyReported types.NotifiedRecordsPerCluster
+	CoolDown           string
+	Thresholds         EventThresholds
+	Filter             string
+	FilterByTag        bool
+	TagsSet            types.TagsSet
+}
+
 var (
 	notificationType      types.EventType
-	kafkaNotifier         producer.Producer
-	serviceLogNotifier    producer.Producer
 	notificationEventURLs NotificationURLs
-	kafkaEventThresholds  EventThresholds = EventThresholds{
-		TotalRisk:  DefaultTotalRiskThreshold,
-		Likelihood: DefaultLikelihoodThreshold,
-		Impact:     DefaultImpactThreshold,
-		Severity:   DefaultSeverityThreshold,
-	}
-	serviceLogEventThresholds EventThresholds = EventThresholds{
-		TotalRisk:  DefaultTotalRiskThreshold,
-		Likelihood: DefaultLikelihoodThreshold,
-		Impact:     DefaultImpactThreshold,
-		Severity:   DefaultSeverityThreshold,
-	}
-	previouslyReported = types.NotifiedRecordsPerClusterByTarget{
-		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
-		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
-	}
-	// variables containing valus used for filtering by expression with
-	// resolution risk etc.
-	kafkaEventFilter      string = DefaultEventFilter
-	serviceLogEventFilter string = DefaultEventFilter
-
-	// variables containing values used for filtering by tags
-	kafkaFilterByTagsEnabled      bool = false
-	serviceLogFilterByTagsEnabled bool = false
-	kafkaTagsSet                  types.TagsSet
-	serviceLogTagsSet             types.TagsSet
 )
-
-// showVersion function displays version information.
-func showVersion() {
-	fmt.Println(versionMessage)
-}
-
-// showAuthors function displays information about authors.
-func showAuthors() {
-	fmt.Println(authorsMessage)
-}
-
-// showConfiguration function displays actual configuration.
-func showConfiguration(config *conf.ConfigStruct) {
-	brokerConfig := conf.GetKafkaBrokerConfiguration(config)
-	log.Info().
-		Bool("Enabled", brokerConfig.Enabled).
-		Str("Address", brokerConfig.Address).
-		Str("SecurityProtocol", brokerConfig.SecurityProtocol).
-		Str("SaslMechanism", brokerConfig.SaslMechanism).
-		Str("Topic", brokerConfig.Topic).
-		Str("Timeout", brokerConfig.Timeout.String()).
-		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
-		Int("Impact threshold", brokerConfig.ImpactThreshold).
-		Int("Severity threshold", brokerConfig.SeverityThreshold).
-		Int("Total risk threshold", brokerConfig.TotalRiskThreshold).
-		Str("Cooldown", brokerConfig.Cooldown).
-		Str("Event filter", brokerConfig.EventFilter).
-		Bool("Filter by tags", brokerConfig.TagFilterEnabled).
-		Strs("List of tags", brokerConfig.Tags).
-		Msg("Broker configuration")
-
-	serviceLogConfig := conf.GetServiceLogConfiguration(config)
-	log.Info().
-		Bool("Enabled", serviceLogConfig.Enabled).
-		Str("ClientID", serviceLogConfig.ClientID).
-		Str("Created by", serviceLogConfig.CreatedBy).
-		Str("Username", serviceLogConfig.Username).
-		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
-		Int("Impact threshold", brokerConfig.ImpactThreshold).
-		Int("Severity threshold", brokerConfig.SeverityThreshold).
-		Int("Total risk threshold", serviceLogConfig.TotalRiskThreshold).
-		Str("Cooldown", serviceLogConfig.Cooldown).
-		Str("Event filter", serviceLogConfig.EventFilter).
-		Str("OCM URL", serviceLogConfig.URL).
-		Bool("Filter by tags", serviceLogConfig.TagFilterEnabled).
-		Strs("List of tags", serviceLogConfig.Tags).
-		Msg("ServiceLog configuration")
-
-	storageConfig := conf.GetStorageConfiguration(config)
-	log.Info().
-		Str("Driver", storageConfig.Driver).
-		Str("DB Name", storageConfig.PGDBName).
-		Str("Username", storageConfig.PGUsername). // password is omitted on purpose
-		Str("Host", storageConfig.PGHost).
-		Int("Port", storageConfig.PGPort).
-		Bool("LogSQLQueries", storageConfig.LogSQLQueries).
-		Str("Parameters", storageConfig.PGParams).
-		Msg("Storage configuration")
-
-	dependenciesConfig := conf.GetDependenciesConfiguration(config)
-	log.Info().
-		Str("Content server", dependenciesConfig.ContentServiceServer).
-		Str("Content endpoint", dependenciesConfig.ContentServiceEndpoint).
-		Str("Template renderer server", dependenciesConfig.TemplateRendererServer).
-		Str("Template renderer endpoint", dependenciesConfig.TemplateRendererEndpoint).
-		Msg("Dependencies configuration")
-
-	loggingConfig := conf.GetLoggingConfiguration(config)
-	log.Info().
-		Str("Level", loggingConfig.LogLevel).
-		Bool("Pretty colored debug logging", loggingConfig.Debug).
-		Msg("Logging configuration")
-
-	notificationConfig := conf.GetNotificationsConfiguration(config)
-	log.Info().
-		Str("Insights Advisor URL", notificationConfig.InsightsAdvisorURL).
-		Str("Cluster details URI", notificationConfig.ClusterDetailsURI).
-		Str("Rule details URI", notificationConfig.RuleDetailsURI).
-		Msg("Notifications configuration")
-
-	metricsConfig := conf.GetMetricsConfiguration(config)
-
-	// Authentication token and metrics groups values are omitted on
-	// purpose
-	log.Info().
-		Str("Namespace", metricsConfig.Namespace).
-		Str("Subsystem", metricsConfig.Subsystem).
-		Str("Push Gateway", metricsConfig.GatewayURL).
-		Int("Retries", metricsConfig.Retries).
-		Str("Retry after", metricsConfig.RetryAfter.String()).
-		Msg("Metrics configuration")
-
-	processingConfig := conf.GetProcessingConfiguration(config)
-	log.Info().
-		Bool("Filter allowed clusters", processingConfig.FilterAllowedClusters).
-		Strs("List of allowed clusters", processingConfig.AllowedClusters).
-		Bool("Filter blocked clusters", processingConfig.FilterBlockedClusters).
-		Strs("List of blocked clusters", processingConfig.BlockedClusters).
-		Msg("Processing configuration")
-}
 
 func calculateTotalRisk(impact, likelihood int) int {
 	return (impact + likelihood) / 2
@@ -412,7 +293,7 @@ func evaluateTagFilter(filterEnabled bool, tagsSet, reportItemTags types.TagsSet
 	return true
 }
 
-func getReportsWithIssuesToNotify(reports types.ReportContent, cluster types.ClusterEntry, ruleContent types.RulesMap) (reportsWithIssues types.ReportContent) {
+func (d *Differ) getReportsWithIssuesToNotify(reports types.ReportContent, cluster types.ClusterEntry, ruleContent types.RulesMap) (reportsWithIssues types.ReportContent) {
 	reportsWithIssues = make(types.ReportContent, 0, len(reports))
 
 	for _, r := range reports {
@@ -426,17 +307,17 @@ func getReportsWithIssuesToNotify(reports types.ReportContent, cluster types.Clu
 			TotalRisk:  totalRisk,
 		}
 
+		//TODO: Duplicated
 		// try to evaluate event filter expression
-		result, err := evaluateFilterExpression(serviceLogEventFilter,
-			serviceLogEventThresholds, eventValue)
-
+		result, err := evaluateFilterExpression(d.Filter,
+			d.Thresholds, eventValue)
 		if err != nil {
 			log.Err(err).Msg(evaluationErrorMessage)
 			continue
 		}
 
 		// check if rule contains expected tag(s) if filtering by tags is enabled
-		ruleTagCondition := evaluateTagFilter(serviceLogFilterByTagsEnabled, serviceLogTagsSet, tags)
+		ruleTagCondition := evaluateTagFilter(d.FilterByTag, d.TagsSet, tags)
 
 		// send message to target only if message pass both filters
 		if result > 0 && ruleTagCondition {
@@ -448,7 +329,7 @@ func getReportsWithIssuesToNotify(reports types.ReportContent, cluster types.Clu
 				Int(impactAttribute, impact).
 				Int(totalRiskAttribute, totalRisk).
 				Msg(reportWithHighImpactMessage)
-			if !shouldNotify(cluster, r, types.ServiceLogTarget) {
+			if !d.ShouldNotify(cluster, r) {
 				NotificationNotSentSameState.Inc()
 				continue
 			}
@@ -462,7 +343,7 @@ func getReportsWithIssuesToNotify(reports types.ReportContent, cluster types.Clu
 	return
 }
 
-func createAndSendServiceLogEntry(configuration *conf.ConfigStruct, renderedReport *types.RenderedReport,
+func (d *Differ) createAndSendServiceLogEntry(configuration *conf.ConfigStruct, renderedReport *types.RenderedReport,
 	cluster types.ClusterEntry) error {
 	// we need to pass the correct "created_by" and "username" attributes
 	// to ServiceLog REST API
@@ -481,7 +362,7 @@ func createAndSendServiceLogEntry(configuration *conf.ConfigStruct, renderedRepo
 	log.Debug().
 		Str(clusterAttribute, string(cluster.ClusterName)).
 		Msg("Producing service log message")
-	_, _, err = serviceLogNotifier.ProduceMessage(msgBytes)
+	_, _, err = d.Notifier.ProduceMessage(msgBytes)
 	if err != nil {
 		NotificationNotSentErrorState.Inc()
 		log.Err(err).
@@ -495,11 +376,13 @@ func createAndSendServiceLogEntry(configuration *conf.ConfigStruct, renderedRepo
 	return nil
 }
 
-func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.ClusterEntry,
+// ProduceEntriesToServiceLog sends an entry to the service log integration
+// for each issue found in the given reports
+func (d *Differ) ProduceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.ClusterEntry,
 	rules types.Rules, ruleContent types.RulesMap, reports types.ReportContent) (totalMessages int, err error) {
 
 	//TODO: Use pointer when passing around clusterEntry
-	reportsToRender := getReportsWithIssuesToNotify(reports, cluster, ruleContent)
+	reportsToRender := d.getReportsWithIssuesToNotify(reports, cluster, ruleContent)
 
 	if len(reportsToRender) != 0 {
 		dependenciesConfiguration := conf.GetDependenciesConfiguration(configuration)
@@ -529,7 +412,7 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 
 			addDetailedInfoURLToRenderedReport(&renderedReport, &configuration.ServiceLog.RuleDetailsURI)
 
-			if err = createAndSendServiceLogEntry(configuration, &renderedReport, cluster); err != nil {
+			if err = d.createAndSendServiceLogEntry(configuration, &renderedReport, cluster); err != nil {
 				continue
 			}
 
@@ -540,8 +423,8 @@ func produceEntriesToServiceLog(configuration *conf.ConfigStruct, cluster types.
 	return totalMessages, nil
 }
 
-func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMap,
-	reportItems types.ReportContent, storage Storage, report types.ClusterReport) (int, error) {
+func (d *Differ) produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMap,
+	reportItems types.ReportContent, report types.ClusterReport) (int, error) {
 
 	notificationMsg := generateInstantNotificationMessage(
 		&notificationEventURLs.ClusterDetails,
@@ -562,16 +445,15 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 		}
 
 		// try to evaluate event filter expression
-		result, err := evaluateFilterExpression(kafkaEventFilter,
-			kafkaEventThresholds, eventValue)
-
+		result, err := evaluateFilterExpression(d.Filter,
+			d.Thresholds, eventValue)
 		if err != nil {
 			log.Err(err).Msg(evaluationErrorMessage)
 			continue
 		}
 
 		// check if rule contains expected tag(s) if filtering by tags is enabled
-		ruleTagCondition := evaluateTagFilter(kafkaFilterByTagsEnabled, kafkaTagsSet, tags)
+		ruleTagCondition := evaluateTagFilter(d.FilterByTag, d.TagsSet, tags)
 
 		// send message to target only if message pass both filters
 		if result > 0 && ruleTagCondition {
@@ -583,7 +465,7 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 				Int(impactAttribute, impact).
 				Int(totalRiskAttribute, totalRisk).
 				Msg(reportWithHighImpactMessage)
-			if !shouldNotify(cluster, r, types.NotificationBackendTarget) {
+			if !d.ShouldNotify(cluster, r) {
 				continue
 			}
 			// if new report differs from the older one -> send notification
@@ -597,7 +479,7 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 	}
 
 	if len(notificationMsg.Events) == 0 {
-		updateNotificationRecordSameState(storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
+		updateNotificationRecordSameState(d.Storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
 		return 0, nil
 	}
 
@@ -611,19 +493,19 @@ func produceEntriesToKafka(cluster types.ClusterEntry, ruleContent types.RulesMa
 		log.Error().Err(err).Msg(invalidJSONContent)
 		return -1, err
 	}
-	_, offset, err := kafkaNotifier.ProduceMessage(msgBytes)
+	_, offset, err := d.Notifier.ProduceMessage(msgBytes)
 	if err != nil {
 		log.Error().
 			Str(errorStr, err.Error()).
 			Msg("Couldn't send notification message to kafka topic.")
-		updateNotificationRecordErrorState(storage, err, cluster, report, notifiedAt, types.NotificationBackendTarget)
+		updateNotificationRecordErrorState(d.Storage, err, cluster, report, notifiedAt, types.NotificationBackendTarget)
 		return -1, err
 	}
 
 	if offset != -1 {
 		// update the database if any message is sent (not a DisabledProducer)
 		log.Debug().Msg("notifier is not disabled so DB is updated")
-		updateNotificationRecordSentState(storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
+		updateNotificationRecordSentState(d.Storage, cluster, report, notifiedAt, types.NotificationBackendTarget)
 		return len(notificationMsg.Events), nil
 	}
 	return 0, nil
@@ -645,7 +527,7 @@ func checkWriteError(err error) {
 	}
 }
 
-func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesMap, storage Storage, clusters []types.ClusterEntry) {
+func (d *Differ) processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesMap, clusters []types.ClusterEntry) {
 	notifiedIssues := 0
 	clustersCount := len(clusters)
 	skippedEntries := 0
@@ -665,10 +547,10 @@ func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesM
 			Str(clusterAttribute, string(cluster.ClusterName)).
 			Msg(clusterEntryMessage)
 
-		report, err := storage.ReadReportForClusterAtTime(cluster.OrgID, cluster.ClusterName, cluster.UpdatedAt)
+		report, err := d.Storage.ReadReportForClusterAtTime(cluster.OrgID, cluster.ClusterName, cluster.UpdatedAt)
 		if err != nil {
 			// is the problem reported already?
-			reportedAlready, readErr := storage.ReadErrorExists(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt))
+			reportedAlready, readErr := d.Storage.ReadErrorExists(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt))
 			checkReadError(readErr)
 
 			// if the error is reported already, skip to next one
@@ -679,7 +561,7 @@ func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesM
 			ReadReportForClusterErrors.Inc()
 			skippedEntries++
 			log.Err(err).Msg(operationFailedMessage)
-			writeErr := storage.WriteReadError(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt), err)
+			writeErr := d.Storage.WriteReadError(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt), err)
 			checkWriteError(writeErr)
 			continue
 		}
@@ -702,15 +584,15 @@ func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesM
 
 		if conf.GetServiceLogConfiguration(config).Enabled {
 			notifiedAt := types.Timestamp(time.Now())
-			newNotifiedIssues, err := produceEntriesToServiceLog(config, cluster, rules, ruleContent, deserialized.Reports)
-			updateNotificationRecordState(storage, cluster, report, newNotifiedIssues, notifiedAt, types.ServiceLogTarget, err)
+			newNotifiedIssues, err := d.ProduceEntriesToServiceLog(config, cluster, rules, ruleContent, deserialized.Reports)
+			updateNotificationRecordState(d.Storage, cluster, report, newNotifiedIssues, notifiedAt, types.ServiceLogTarget, err)
 			notifiedIssues += newNotifiedIssues
 		}
 
 		if !conf.GetKafkaBrokerConfiguration(config).Enabled {
 			continue
 		}
-		newNotifiedIssues, err := produceEntriesToKafka(cluster, ruleContent, deserialized.Reports, storage, report)
+		newNotifiedIssues, err := d.produceEntriesToKafka(cluster, ruleContent, deserialized.Reports, report)
 		if err != nil {
 			log.Err(err).
 				Str(clusterAttribute, string(cluster.ClusterName)).
@@ -724,25 +606,17 @@ func processReportsByCluster(config *conf.ConfigStruct, ruleContent types.RulesM
 	log.Info().Msgf("Number of high impact issues notified: %d", notifiedIssues)
 }
 
-// processClusters function creates desired notification messages for all the clusters obtained from the database
-func processClusters(config *conf.ConfigStruct, ruleContent types.RulesMap,
-	storage Storage, clusters []types.ClusterEntry) {
-	if notificationType == types.InstantNotif {
-		processReportsByCluster(config, ruleContent, storage, clusters)
+// ProcessClusters function creates desired notification messages for all the
+// clusters obtained from the database
+func (d *Differ) ProcessClusters(config *conf.ConfigStruct, ruleContent types.RulesMap,
+	clusters []types.ClusterEntry) {
+	if d.NotificationType == types.InstantNotif {
+		d.processReportsByCluster(config, ruleContent, clusters)
 	}
 }
 
-// setupKafkaProducer function creates a Kafka producer using the provided configuration
-func setupKafkaProducer(config *conf.ConfigStruct) {
-	// broker enable/disable is very important information, let's inform
-	// admins about the state
-	if !conf.GetKafkaBrokerConfiguration(config).Enabled {
-		kafkaNotifier = &disabled.Producer{}
-		log.Info().Msg("Broker config for Notification Service is disabled")
-		return
-	}
-	log.Info().Msg("Broker config for Notification Service is enabled")
-
+// SetupKafkaProducer function creates a Kafka producer using the provided configuration
+func (d *Differ) SetupKafkaProducer(config *conf.ConfigStruct) {
 	kafkaProducer, err := kafka.New(config)
 	if err != nil {
 		ProducerSetupErrors.Inc()
@@ -751,21 +625,12 @@ func setupKafkaProducer(config *conf.ConfigStruct) {
 			Msg("Couldn't initialize Kafka producer with the provided config.")
 		os.Exit(ExitStatusKafkaBrokerError)
 	}
-	kafkaNotifier = kafkaProducer
+	d.Notifier = kafkaProducer
 	log.Info().Msg("Kafka producer ready")
 }
 
-func setupServiceLogProducer(config *conf.ConfigStruct) {
-	// broker enable/disable is very important information, let's inform
-	// admins about the state
+func (d *Differ) setupServiceLogProducer(config *conf.ConfigStruct) {
 	serviceLogConfig := conf.GetServiceLogConfiguration(config)
-	if !serviceLogConfig.Enabled {
-		serviceLogNotifier = &disabled.Producer{}
-		log.Info().Msg("Service Log config for Notification Service is disabled")
-		return
-	}
-	log.Info().Msg("Service Log config for Notification Service is enabled")
-
 	conn, err := ocmclient.NewOCMClient(serviceLogConfig.ClientID, serviceLogConfig.ClientSecret,
 		serviceLogConfig.URL, serviceLogConfig.TokenURL)
 	if err != nil {
@@ -780,7 +645,8 @@ func setupServiceLogProducer(config *conf.ConfigStruct) {
 			Msg("Couldn't initialize Service Log producer with the provided config.")
 		os.Exit(ExitStatusServiceLogError)
 	}
-	serviceLogNotifier = serviceLogProducer
+	d.Notifier = serviceLogProducer
+	log.Info().Msg("Service Log producer ready")
 }
 
 // generateInstantNotificationMessage function generates a notification message
@@ -837,37 +703,7 @@ func appendEventToNotificationMessage(notificationPayloadURL string, notificatio
 	notification.Events = append(notification.Events, event)
 }
 
-// checkArgs function handles command line options passed to the process
-func checkArgs(args *types.CliFlags) {
-	switch {
-	case args.ShowVersion:
-		showVersion()
-		os.Exit(ExitStatusOK)
-	case args.ShowAuthors:
-		showAuthors()
-		os.Exit(ExitStatusOK)
-	case args.ShowConfiguration:
-		// config not loaded yet, just skip the rest of function for
-		// now
-		return
-	case args.PrintNewReportsForCleanup,
-		args.PerformNewReportsCleanup,
-		args.PrintOldReportsForCleanup,
-		args.PerformOldReportsCleanup:
-		// DB only operations, no need for additional args
-		return
-	default:
-	}
-
-	// check if report type is specified on command line
-	if !args.InstantReports {
-		log.Error().Msg("Type of report needs to be specified on command line")
-		os.Exit(ExitStatusConfiguration)
-	}
-	notificationType = types.InstantNotif
-}
-
-func setupNotificationTypes(storage *DBStorage) {
+func setupNotificationTypes(storage Storage) {
 	err := getNotificationTypes(storage)
 	if err != nil {
 		log.Err(err).Msg("Read notification types")
@@ -875,7 +711,7 @@ func setupNotificationTypes(storage *DBStorage) {
 	}
 }
 
-func setupNotificationStates(storage *DBStorage) {
+func setupNotificationStates(storage Storage) {
 	err := getStates(storage)
 	if err != nil {
 		log.Err(err).Msg("Read states")
@@ -893,7 +729,7 @@ func registerMetrics(metricsConfig *conf.MetricsConfiguration) {
 	}
 }
 
-func closeStorage(storage *DBStorage) error {
+func closeStorage(storage Storage) error {
 	err := storage.Close()
 	if err != nil {
 		log.Err(err).Msg(operationFailedMessage)
@@ -933,52 +769,33 @@ func pushMetrics(metricsConf *conf.MetricsConfiguration) {
 	log.Info().Msg("Metrics pushed successfully. Terminating notification service successfully.")
 }
 
-func deleteOperationSpecified(cliFlags types.CliFlags) bool {
-	return cliFlags.PrintNewReportsForCleanup ||
-		cliFlags.PerformNewReportsCleanup ||
-		cliFlags.PrintOldReportsForCleanup ||
-		cliFlags.PerformOldReportsCleanup
-}
-
 func assertNotificationDestination(config *conf.ConfigStruct) {
 	if !conf.GetKafkaBrokerConfiguration(config).Enabled && !conf.GetServiceLogConfiguration(config).Enabled {
 		log.Error().Msg(destinationNotSet)
 		os.Exit(ExitStatusConfiguration)
 	}
+	if conf.GetKafkaBrokerConfiguration(config).Enabled && conf.GetServiceLogConfiguration(config).Enabled {
+		log.Error().Msg(onlyOneDestinationAllowed)
+		os.Exit(ExitStatusConfiguration)
+	}
 }
 
-func retrievePreviouslyReportedForEventTarget(storage *DBStorage, cooldown string, clusters []types.ClusterEntry, target types.EventTarget) {
+func (d *Differ) retrievePreviouslyReportedForEventTarget(cooldown string, target types.EventTarget, clusters []types.ClusterEntry) {
 	log.Info().Msg("Reading previously reported issues for given cluster list...")
 	var err error
-	previouslyReported[target], err = storage.ReadLastNotifiedRecordForClusterList(clusters, cooldown, target)
+	d.PreviouslyReported, err = d.Storage.ReadLastNotifiedRecordForClusterList(clusters, cooldown, target)
 	if err != nil {
 		ReadReportedErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
 		os.Exit(ExitStatusStorageError)
 	}
-	log.Info().Int("target", int(target)).Int("retrieved", len(previouslyReported[target])).Msg("Done reading previously reported issues still in cooldown")
+	log.Info().Int("target", int(target)).Int("retrieved", len(d.PreviouslyReported)).Msg("Done reading previously reported issues still in cool down")
 }
 
-func retrievePreviouslyReportedReports(config *conf.ConfigStruct, storage *DBStorage, clusters []types.ClusterEntry) {
-	if conf.GetKafkaBrokerConfiguration(config).Enabled {
-		retrievePreviouslyReportedForEventTarget(storage,
-			conf.GetKafkaBrokerConfiguration(config).Cooldown, clusters, types.NotificationBackendTarget)
-	}
-	if conf.GetServiceLogConfiguration(config).Enabled {
-		retrievePreviouslyReportedForEventTarget(storage,
-			conf.GetServiceLogConfiguration(config).Cooldown, clusters, types.ServiceLogTarget)
-	}
-}
-
-func startDiffer(config *conf.ConfigStruct, storage *DBStorage, verbose bool) {
+func (d *Differ) start(config *conf.ConfigStruct) {
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
 
-	if verbose {
-		showConfiguration(config)
-	}
-
-	assertNotificationDestination(config)
 	metricsConfiguration := conf.GetMetricsConfiguration(config)
 	registerMetrics(&metricsConfiguration)
 	log.Info().Msg(separator)
@@ -997,12 +814,11 @@ func startDiffer(config *conf.ConfigStruct, storage *DBStorage, verbose bool) {
 	notifConfig := conf.GetNotificationsConfiguration(config)
 
 	setupNotificationURLs(notifConfig)
-	setupFiltersAndThresholds(config)
-	setupNotificationStates(storage)
-	setupNotificationTypes(storage)
+	setupNotificationStates(d.Storage)
+	setupNotificationTypes(d.Storage)
 	go PushMetricsInLoop(context.Background(), &metricsConfiguration)
 
-	clusters, err := storage.ReadClusterList()
+	clusters, err := d.Storage.ReadClusterList()
 	if err != nil {
 		ReadClusterListErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
@@ -1024,24 +840,14 @@ func startDiffer(config *conf.ConfigStruct, storage *DBStorage, verbose bool) {
 		os.Exit(ExitStatusOK)
 	}
 	log.Info().Int(clustersAttribute, entries).Msg("Read cluster list: done")
-
 	log.Info().Msg(separator)
-	retrievePreviouslyReportedReports(config, storage, clusters)
-	log.Info().Msg(separator)
-
-	log.Info().Msg("Preparing Kafka producer")
-	setupKafkaProducer(config)
-	log.Info().Msg(separator)
-	log.Info().Msg("Preparing Service Log producer")
-	setupServiceLogProducer(config)
-	log.Info().Msg("Service Log producer ready")
+	d.retrievePreviouslyReportedForEventTarget(d.CoolDown, d.Target, clusters)
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
-	processClusters(config, ruleContent, storage, clusters)
+	d.ProcessClusters(config, ruleContent, clusters)
 	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
-	closeDiffer(storage)
+	d.close()
 	log.Info().Msg("Differ finished. Pushing metrics to the configured prometheus gateway.")
-
 	pushMetrics(&metricsConfiguration)
 	log.Info().Msg(separator)
 }
@@ -1052,21 +858,25 @@ func setupNotificationURLs(config conf.NotificationsConfiguration) {
 	notificationEventURLs.InsightsAdvisor = config.InsightsAdvisorURL
 }
 
-func closeDiffer(storage *DBStorage) {
+func exitWithErrorForTarget(t types.EventTarget) {
+	if t == types.NotificationBackendTarget {
+		os.Exit(ExitStatusKafkaBrokerError)
+	}
+	if t == types.ServiceLogTarget {
+		os.Exit(ExitStatusServiceLogError)
+	}
+}
+
+func (d *Differ) close() {
 	log.Info().Msg(separator)
-	err := closeStorage(storage)
+	err := closeStorage(d.Storage)
 	if err != nil {
 		defer os.Exit(ExitStatusStorageError)
 	}
 	log.Info().Msg(separator)
-	err = closeNotifier(kafkaNotifier)
+	err = closeNotifier(d.Notifier)
 	if err != nil {
-		defer os.Exit(ExitStatusKafkaBrokerError)
-	}
-	log.Info().Msg(separator)
-	err = closeNotifier(serviceLogNotifier)
-	if err != nil {
-		defer os.Exit(ExitStatusServiceLogError)
+		exitWithErrorForTarget(d.Target)
 	}
 	log.Info().Msg(separator)
 }
@@ -1075,55 +885,57 @@ func closeDiffer(storage *DBStorage) {
 // filter messages sent to targets (Notification backend and ServiceLog at this moment):
 //  1. filter based on likelihood, impact, severity, and total risk
 //  2. filter based on rule type that's identified by tags
-func setupFiltersAndThresholds(config *conf.ConfigStruct) {
+func (d *Differ) setupFiltersAndThresholds(config *conf.ConfigStruct) {
 	kafkaBrokerConfiguration := conf.GetKafkaBrokerConfiguration(config)
+	if kafkaBrokerConfiguration.Enabled {
+		d.Thresholds = EventThresholds{
+			TotalRisk:  kafkaBrokerConfiguration.TotalRiskThreshold,
+			Likelihood: kafkaBrokerConfiguration.LikelihoodThreshold,
+			Impact:     kafkaBrokerConfiguration.ImpactThreshold,
+			Severity:   kafkaBrokerConfiguration.SeverityThreshold,
+		}
+		if kafkaBrokerConfiguration.EventFilter == "" {
+			d.Filter = DefaultEventFilter
+		} else {
+			d.Filter = kafkaBrokerConfiguration.EventFilter
+		}
+		// filtering by tags
+		d.FilterByTag = kafkaBrokerConfiguration.TagFilterEnabled
+		d.TagsSet = kafkaBrokerConfiguration.TagsSet
 
-	kafkaEventThresholds.Likelihood = kafkaBrokerConfiguration.LikelihoodThreshold
-	kafkaEventThresholds.Impact = kafkaBrokerConfiguration.ImpactThreshold
-	kafkaEventThresholds.Severity = kafkaBrokerConfiguration.SeverityThreshold
-	kafkaEventThresholds.TotalRisk = kafkaBrokerConfiguration.TotalRiskThreshold
-	kafkaEventFilter = kafkaBrokerConfiguration.EventFilter
-
-	if kafkaEventFilter == "" {
-		err := fmt.Errorf(configurationProblem)
-		log.Err(err).Msg(eventFilterNotSetMessage)
-		os.Exit(ExitStatusEventFilterError)
-	}
-
-	// filtering by tags
-	kafkaFilterByTagsEnabled = kafkaBrokerConfiguration.TagFilterEnabled
-	kafkaTagsSet = kafkaBrokerConfiguration.TagsSet
-
-	// check if tags set is provided via configuration if filtering is enabled
-	if kafkaFilterByTagsEnabled && kafkaTagsSet == nil {
-		err := fmt.Errorf(configurationProblem)
-		log.Err(err).Msg(tagsNotSetMessage)
-		os.Exit(ExitStatusEventFilterError)
+		// check if tags set is provided via configuration if filtering is enabled
+		if d.FilterByTag && d.TagsSet == nil {
+			err := fmt.Errorf(configurationProblem)
+			log.Err(err).Msg(tagsNotSetMessage)
+			os.Exit(ExitStatusEventFilterError)
+		}
+		return
 	}
 
 	serviceLogConfiguration := conf.GetServiceLogConfiguration(config)
+	if serviceLogConfiguration.Enabled {
+		d.Thresholds = EventThresholds{
+			TotalRisk:  serviceLogConfiguration.TotalRiskThreshold,
+			Likelihood: serviceLogConfiguration.LikelihoodThreshold,
+			Impact:     serviceLogConfiguration.ImpactThreshold,
+			Severity:   serviceLogConfiguration.SeverityThreshold,
+		}
+		if serviceLogConfiguration.EventFilter == "" {
+			d.Filter = DefaultEventFilter
+		} else {
+			d.Filter = serviceLogConfiguration.EventFilter
+		}
+		// filtering by tags
+		d.FilterByTag = serviceLogConfiguration.TagFilterEnabled
+		d.TagsSet = serviceLogConfiguration.TagsSet
 
-	serviceLogEventThresholds.Likelihood = serviceLogConfiguration.LikelihoodThreshold
-	serviceLogEventThresholds.Impact = serviceLogConfiguration.ImpactThreshold
-	serviceLogEventThresholds.Severity = serviceLogConfiguration.SeverityThreshold
-	serviceLogEventThresholds.TotalRisk = serviceLogConfiguration.TotalRiskThreshold
-	serviceLogEventFilter = serviceLogConfiguration.EventFilter
-
-	if serviceLogEventFilter == "" {
-		err := fmt.Errorf(configurationProblem)
-		log.Err(err).Msg(eventFilterNotSetMessage)
-		os.Exit(ExitStatusEventFilterError)
-	}
-
-	// filtering by tags
-	serviceLogFilterByTagsEnabled = serviceLogConfiguration.TagFilterEnabled
-	serviceLogTagsSet = serviceLogConfiguration.TagsSet
-
-	// check if tags set is provided via configuration if filtering is enabled
-	if serviceLogFilterByTagsEnabled && serviceLogTagsSet == nil {
-		err := fmt.Errorf(configurationProblem)
-		log.Err(err).Msg(tagsNotSetMessage)
-		os.Exit(ExitStatusEventFilterError)
+		// check if tags set is provided via configuration if filtering is enabled
+		if d.FilterByTag && d.TagsSet == nil {
+			err := fmt.Errorf(configurationProblem)
+			log.Err(err).Msg(tagsNotSetMessage)
+			os.Exit(ExitStatusEventFilterError)
+		}
+		return
 	}
 }
 
@@ -1149,21 +961,7 @@ func convertLogLevel(level string) zerolog.Level {
 //
 //gocyclo:ignore
 func Run() {
-	var cliFlags types.CliFlags
-
-	// define and parse all command line options
-	flag.BoolVar(&cliFlags.InstantReports, "instant-reports", false, "create instant reports")
-	flag.BoolVar(&cliFlags.ShowVersion, "show-version", false, "show version and exit")
-	flag.BoolVar(&cliFlags.ShowAuthors, "show-authors", false, "show authors and exit")
-	flag.BoolVar(&cliFlags.ShowConfiguration, "show-configuration", false, "show configuration and exit")
-	flag.BoolVar(&cliFlags.PrintNewReportsForCleanup, "print-new-reports-for-cleanup", false, "print new reports to be cleaned up")
-	flag.BoolVar(&cliFlags.PerformNewReportsCleanup, "new-reports-cleanup", false, "perform new reports clean up")
-	flag.BoolVar(&cliFlags.PrintOldReportsForCleanup, "print-old-reports-for-cleanup", false, "print old reports to be cleaned up")
-	flag.BoolVar(&cliFlags.PerformOldReportsCleanup, "old-reports-cleanup", false, "perform old reports clean up")
-	flag.BoolVar(&cliFlags.CleanupOnStartup, "cleanup-on-startup", false, "perform database clean up on startup")
-	flag.BoolVar(&cliFlags.Verbose, "verbose", false, "verbose logs")
-	flag.StringVar(&cliFlags.MaxAge, "max-age", "", "max age for displaying/cleaning old records")
-	flag.Parse()
+	cliFlags := setupCliFlags()
 	checkArgs(&cliFlags)
 
 	// config has exactly the same structure as *.toml file
@@ -1187,7 +985,7 @@ func Run() {
 	// configuration is loaded, so it would be possible to display it if
 	// asked by user
 	if cliFlags.ShowConfiguration {
-		showConfiguration(&config)
+		ShowConfiguration(&config)
 		os.Exit(ExitStatusOK)
 	}
 
@@ -1208,6 +1006,10 @@ func Run() {
 		Str("configured", config.LoggingConf.LogLevel).
 		Int("internal", int(logLevel)).
 		Msg("Log level")
+
+	if cliFlags.Verbose {
+		ShowConfiguration(&config)
+	}
 
 	// prepare the storage
 	storageConfiguration := conf.GetStorageConfiguration(&config)
@@ -1236,5 +1038,29 @@ func Run() {
 		// if previous operation is correct, just continue
 	}
 
-	startDiffer(&config, storage, cliFlags.Verbose)
+	d := New(&config, storage)
+	d.start(&config)
+}
+
+// New constructs new implementation of Differ interface
+func New(config *conf.ConfigStruct, storage Storage) *Differ {
+	assertNotificationDestination(config)
+	d := Differ{
+		Storage:            storage,
+		NotificationType:   notificationType,
+		PreviouslyReported: make(types.NotifiedRecordsPerCluster),
+		Thresholds:         EventThresholds{},
+	}
+	if conf.GetKafkaBrokerConfiguration(config).Enabled {
+		d.Target = types.NotificationBackendTarget
+		d.SetupKafkaProducer(config)
+		d.CoolDown = conf.GetKafkaBrokerConfiguration(config).Cooldown
+	} else if conf.GetServiceLogConfiguration(config).Enabled {
+		d.Target = types.ServiceLogTarget
+		d.setupServiceLogProducer(config)
+		d.CoolDown = conf.GetServiceLogConfiguration(config).Cooldown
+	}
+	d.setupFiltersAndThresholds(config)
+
+	return &d
 }

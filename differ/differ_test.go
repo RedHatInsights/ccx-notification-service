@@ -5,7 +5,7 @@ Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
 You may obtain a copy of the License at
 
-    http://www.apache.org/licenses/LICENSE-2.0
+   http://www.apache.org/licenses/LICENSE-2.0
 
 Unless required by applicable law or agreed to in writing, software
 distributed under the License is distributed on an "AS IS" BASIS,
@@ -14,7 +14,7 @@ See the License for the specific language governing permissions and
 limitations under the License.
 */
 
-package differ
+package differ_test
 
 // Documentation in literate-programming-style is available at:
 // https://redhatinsights.github.io/ccx-notification-writer/packages/differ/differ_test.html
@@ -24,7 +24,12 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
-	"io"
+	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
+	"github.com/RedHatInsights/insights-results-aggregator-data/testdata"
+	utypes "github.com/RedHatInsights/insights-results-types"
+	"github.com/prometheus/client_golang/prometheus/testutil"
+	"github.com/rs/zerolog/log"
+	"github.com/stretchr/testify/mock"
 	"net/http"
 	"net/http/httptest"
 	"os"
@@ -32,23 +37,13 @@ import (
 	"testing"
 	"time"
 
+	"github.com/RedHatInsights/ccx-notification-service/conf"
+	"github.com/RedHatInsights/ccx-notification-service/differ"
+	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
+	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/Shopify/sarama"
 	"github.com/rs/zerolog"
-	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
-	"github.com/stretchr/testify/mock"
-
-	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
-	"github.com/RedHatInsights/insights-operator-utils/logger"
-	"github.com/RedHatInsights/insights-results-aggregator-data/testdata"
-
-	utypes "github.com/RedHatInsights/insights-results-types"
-
-	"github.com/RedHatInsights/ccx-notification-service/conf"
-	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
-	"github.com/RedHatInsights/ccx-notification-service/types"
-
-	"github.com/prometheus/client_golang/prometheus/testutil"
 )
 
 var (
@@ -74,24 +69,6 @@ type Payload struct {
 
 func init() {
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	notificationType = types.InstantNotif
-}
-
-// Can't redirect zerolog/log to buffer directly in some tests due to clowder
-// init
-func captureStdout(f func()) string {
-	originalStdOutFile := os.Stdout
-	r, w, _ := os.Pipe()
-	os.Stdout = w
-
-	f()
-
-	_ = w.Close()
-	os.Stdout = originalStdOutFile
-
-	var buf bytes.Buffer
-	_, _ = io.Copy(&buf, r)
-	return buf.String()
 }
 
 // ---------------------------------------------------------------------------------------
@@ -101,14 +78,14 @@ func TestGenerateInstantReportNotificationMessage(t *testing.T) {
 	orgID := "a_stringified_org_id"
 	clusterID := "the_displayed_cluster_ID"
 
-	notificationMsg := generateInstantNotificationMessage(&clusterURI, accountID, orgID, clusterID)
+	notificationMsg := differ.GenerateInstantNotificationMessage(&clusterURI, accountID, orgID, clusterID)
 
 	assert.NotEmpty(t, notificationMsg, "the generated notification message is empty")
 	assert.Empty(t, notificationMsg.Events, "the generated notification message should not have any events")
 	assert.Equal(t, types.InstantNotif.ToString(), notificationMsg.EventType, "the generated notification message should be for instant notifications")
 	assert.Equal(t, types.NotificationContext{"display_name": "the_displayed_cluster_ID", "host_url": "the_cluster_uri_in_ocm_for_the_displayed_cluster_ID"}, notificationMsg.Context, "Notification context is different from expected.")
-	assert.Equal(t, notificationBundleName, notificationMsg.Bundle, "Generated notifications should indicate 'openshift' as bundle")
-	assert.Equal(t, notificationApplicationName, notificationMsg.Application, "Generated notifications should indicate 'openshift' as application name")
+	assert.Equal(t, differ.NotificationBundleName, notificationMsg.Bundle, "Generated notifications should indicate 'openshift' as bundle")
+	assert.Equal(t, differ.NotificationApplicationName, notificationMsg.Application, "Generated notifications should indicate 'openshift' as application name")
 	assert.Equal(t, accountID, notificationMsg.AccountID, "Generated notifications does not have expected account ID")
 	assert.Equal(t, orgID, notificationMsg.OrgID, "Generated notifications does not have expected org ID")
 }
@@ -118,7 +95,7 @@ func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	accountID := "a_stringified_account_id"
 	orgID := "a_stringified_org_id"
 	clusterID := "the_displayed_cluster_ID"
-	notificationMsg := generateInstantNotificationMessage(&clusterURI, accountID, orgID, clusterID)
+	notificationMsg := differ.GenerateInstantNotificationMessage(&clusterURI, accountID, orgID, clusterID)
 
 	assert.Empty(t, notificationMsg.Events, "the generated notification message should not have any events")
 
@@ -129,98 +106,17 @@ func TestAppendEventsToExistingInstantReportNotificationMsg(t *testing.T) {
 	module := "a.module"
 	errorKey := "an_error_key"
 
-	notificationPayloadURL := generateNotificationPayloadURL(&ruleURI, clusterID, types.ModuleName(module), types.ErrorKey(errorKey))
-	appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleDescription, totalRisk, publishDate)
+	notificationPayloadURL := differ.GenerateNotificationPayloadURL(&ruleURI, clusterID, types.ModuleName(module), types.ErrorKey(errorKey))
+	differ.AppendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleDescription, totalRisk, publishDate)
 	assert.Equal(t, len(notificationMsg.Events), 1, "the notification message should have 1 event")
 	assert.Equal(t, notificationMsg.Events[0].Metadata, types.EventMetadata{}, "All notification messages should have empty metadata")
 
 	payload := notificationMsg.Events[0].Payload
-	assert.Equal(t, payload[notificationPayloadRuleURL], "a_given_uri/the_displayed_cluster_ID/a|module/an_error_key", fmt.Sprintf("The rule URL %s is not correct", payload[notificationPayloadRuleURL]))
+	assert.Equal(t, payload[differ.NotificationPayloadRuleURL], "a_given_uri/the_displayed_cluster_ID/a|module/an_error_key", fmt.Sprintf("The rule URL %s is not correct", payload[differ.NotificationPayloadRuleURL]))
 
-	appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleDescription, totalRisk, publishDate)
+	differ.AppendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, ruleDescription, totalRisk, publishDate)
 	assert.Equal(t, len(notificationMsg.Events), 2, "the notification message should have 2 events")
 	assert.Equal(t, notificationMsg.Events[1].Metadata, types.EventMetadata{}, "All notification messages should have empty metadata")
-}
-
-// ---------------------------------------------------------------------------------------
-func TestShowVersion(t *testing.T) {
-	assert.Contains(t, captureStdout(showVersion), versionMessage, "showVersion function is not displaying the expected content")
-}
-
-func TestShowAuthors(t *testing.T) {
-	assert.Contains(t, captureStdout(showAuthors), authorsMessage, "showAuthors function is not displaying the expected content")
-}
-
-func TestShowConfiguration(t *testing.T) {
-	brokerAddr := "localhost:29092"
-	brokerTopic := "test_topic"
-	contentServer := "content server"
-	contentEndpoint := "content endpoint"
-	templateRendererServer := "template renderer server"
-	templateRendererEndpoint := "template renderer endpoint"
-	db := "db"
-	driver := "test_driver"
-	advisorURL := "an uri"
-	clustersURI := "a {cluster} details uri"
-	ruleURI := "a {rule} details uri"
-	metricsJob := "ccx"
-	metricsNamespace := "notification"
-	metricsGateway := "localhost:12345"
-
-	config := conf.ConfigStruct{
-		LoggingConf: logger.LoggingConfiguration{
-			Debug:    true,
-			LogLevel: "info",
-		},
-		Storage: conf.StorageConfiguration{
-			Driver:   driver,
-			PGDBName: db,
-		},
-		Dependencies: conf.DependenciesConfiguration{
-			ContentServiceServer:     contentServer,
-			ContentServiceEndpoint:   contentEndpoint,
-			TemplateRendererServer:   templateRendererServer,
-			TemplateRendererEndpoint: templateRendererEndpoint,
-		},
-		Kafka: conf.KafkaConfiguration{
-			Address:     brokerAddr,
-			Topic:       brokerTopic,
-			Timeout:     0,
-			Enabled:     true,
-			EventFilter: "totalRisk >= totalRiskThreshold",
-		},
-		Notifications: conf.NotificationsConfiguration{
-			InsightsAdvisorURL: advisorURL,
-			ClusterDetailsURI:  clustersURI,
-			RuleDetailsURI:     ruleURI,
-		},
-		Metrics: conf.MetricsConfiguration{
-			Job:        metricsJob,
-			Namespace:  metricsNamespace,
-			GatewayURL: metricsGateway,
-			Retries:    4,
-			RetryAfter: 1,
-		},
-		Cleaner: conf.CleanerConfiguration{
-			MaxAge: "70 days",
-		},
-	}
-
-	buf := new(bytes.Buffer)
-	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-
-	showConfiguration(&config)
-	output := buf.String()
-
-	// Assert that at least one item of each struct is shown
-	assert.Contains(t, output, brokerAddr)
-	assert.Contains(t, output, clustersURI)
-	assert.Contains(t, output, db)
-	assert.Contains(t, output, templateRendererServer)
-	assert.Contains(t, output, driver)
-	assert.Contains(t, output, "\"Pretty colored debug logging\":true")
-	assert.Contains(t, output, metricsGateway)
 }
 
 // ---------------------------------------------------------------------------------------
@@ -243,14 +139,14 @@ func TestTotalRiskCalculation(t *testing.T) {
 		{3, 4, 3},
 	}
 	for _, item := range testVals {
-		assert.Equal(t, item.expectedRisk, calculateTotalRisk(item.impact, item.likelihood))
+		assert.Equal(t, item.expectedRisk, differ.CalculateTotalRisk(item.impact, item.likelihood))
 	}
 }
 
 func TestModuleNameToRuleNameValidRuleName(t *testing.T) {
 	moduleName := types.ModuleName("ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report")
 	ruleName := types.RuleName("cluster_wide_proxy_auth_check")
-	assert.Equal(t, ruleName, moduleToRuleName(moduleName))
+	assert.Equal(t, ruleName, differ.ModuleToRuleName(moduleName))
 }
 
 // ---------------------------------------------------------------------------------------
@@ -266,15 +162,55 @@ func TestSetupNotificationProducerInvalidBrokerConf(t *testing.T) {
 			},
 		}
 
-		setupKafkaProducer(&testConfig)
+		d := differ.Differ{}
+		d.SetupKafkaProducer(&testConfig)
 	}
 	cmd := exec.Command(os.Args[0], "-test.run=TestSetupNotificationProducerInvalidBrokerConf")
 	cmd.Env = append(os.Environ(), "SETUP_PRODUCER=1")
 	err := cmd.Run()
-	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != ExitStatusKafkaBrokerError {
+	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != differ.ExitStatusKafkaBrokerError {
 		t.Fatalf(
 			"Should exit with status ExitStatusKafkaBrokerError(%d). Got status %d",
-			ExitStatusKafkaBrokerError,
+			differ.ExitStatusKafkaBrokerError,
+			e.ExitCode())
+	}
+}
+
+func TestAssertNotificationDestinationNone(t *testing.T) {
+	if os.Getenv("ASSERT_DEST") == "1" {
+		testConfig := conf.ConfigStruct{}
+		differ.AssertNotificationDestination(&testConfig)
+	}
+	cmd := exec.Command(os.Args[0], "-test.run=TestAssertNotificationDestinationNone")
+	cmd.Env = append(os.Environ(), "ASSERT_DEST=1")
+	err := cmd.Run()
+	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != differ.ExitStatusConfiguration {
+		t.Fatalf(
+			"Should exit with status ExitStatusConfiguration(%d). Got status %d",
+			differ.ExitStatusConfiguration,
+			e.ExitCode())
+	}
+}
+
+func TestAssertNotificationDestinationMoreThanOne(t *testing.T) {
+	if os.Getenv("ASSERT_DEST") == "1" {
+		testConfig := conf.ConfigStruct{
+			Kafka: conf.KafkaConfiguration{
+				Enabled: true,
+			},
+			ServiceLog: conf.ServiceLogConfiguration{
+				Enabled: true,
+			},
+		}
+		differ.AssertNotificationDestination(&testConfig)
+	}
+	cmd := exec.Command(os.Args[0], "-test.run=TestAssertNotificationDestinationMoreThanOne")
+	cmd.Env = append(os.Environ(), "ASSERT_DEST=1")
+	err := cmd.Run()
+	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != differ.ExitStatusConfiguration {
+		t.Fatalf(
+			"Should exit with status ExitStatusConfiguration(%d). Got status %d",
+			differ.ExitStatusConfiguration,
 			e.ExitCode())
 	}
 }
@@ -312,33 +248,34 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 		Producer:      nil,
 	}
 
-	setupKafkaProducer(&testConfig)
+	d := differ.Differ{}
 
-	prod := kafkaNotifier.(*kafka.Producer)
+	d.SetupKafkaProducer(&testConfig)
 
-	assert.Equal(t, kafkaProducer.Configuration.Address, prod.Configuration.Address)
-	assert.Equal(t, kafkaProducer.Configuration.Topic, prod.Configuration.Topic)
-	assert.Equal(t, kafkaProducer.Configuration.Timeout, prod.Configuration.Timeout)
+	producer := d.Notifier.(*kafka.Producer)
+
+	assert.Equal(t, kafkaProducer.Configuration.Address, producer.Configuration.Address)
+	assert.Equal(t, kafkaProducer.Configuration.Topic, producer.Configuration.Topic)
+	assert.Equal(t, kafkaProducer.Configuration.Timeout, producer.Configuration.Timeout)
 	assert.Nil(t, kafkaProducer.Producer, "Unexpected behavior: Producer was not set up correctly")
-	assert.NotNil(t, prod.Producer, "Unexpected behavior: Producer was not set up correctly")
+	assert.NotNil(t, producer.Producer, "Unexpected behavior: Producer was not set up correctly")
 
-	err := kafkaNotifier.Close()
+	err := d.Notifier.Close()
 	assert.Nil(t, err, "Unexpected behavior: Producer was not closed successfully")
 }
 
-func TestStartDifferNoDestination(t *testing.T) {
-	if os.Getenv("SETUP_PRODUCER") == "1" {
+func TestNewDifferNoDestination(t *testing.T) {
+	if os.Getenv("TEST_NEW_DIFFER") == "1" {
 		testConfig := conf.ConfigStruct{}
-
-		startDiffer(&testConfig, nil, false)
+		_ = differ.New(&testConfig, nil)
 	}
-	cmd := exec.Command(os.Args[0], "-test.run=TestStartDifferNoDestination")
-	cmd.Env = append(os.Environ(), "SETUP_PRODUCER=1")
+	cmd := exec.Command(os.Args[0], "-test.run=TestNewDifferNoDestination")
+	cmd.Env = append(os.Environ(), "TEST_NEW_DIFFER=1")
 	err := cmd.Run()
-	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != ExitStatusConfiguration {
+	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != differ.ExitStatusConfiguration {
 		t.Fatalf(
 			"Should exit with status ExitStatusConfiguration(%d). Got status %d",
-			ExitStatusConfiguration,
+			differ.ExitStatusConfiguration,
 			e.ExitCode())
 	}
 }
@@ -447,7 +384,12 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 	log.Logger = zerolog.New(buf).Level(zerolog.DebugLevel)
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
-	processClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
+	d := differ.Differ{
+		Storage:          &storage,
+		NotificationType: types.InstantNotif,
+		Target:           types.NotificationBackendTarget,
+	}
+	d.ProcessClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "no rows in result set", "No report should be retrieved for the first cluster")
@@ -561,7 +503,12 @@ func TestProcessClustersInvalidReportFormatForClusterEntry(t *testing.T) {
 	log.Logger = zerolog.New(buf).Level(zerolog.DebugLevel)
 	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
-	processClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
+	d := differ.Differ{
+		Storage:          &storage,
+		NotificationType: types.InstantNotif,
+		Target:           types.NotificationBackendTarget,
+	}
+	d.ProcessClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "cannot unmarshal object into Go struct field Report.reports of type types.ReportContent", "The string retrieved is not a list of reports. It should not deserialize correctly")
@@ -665,7 +612,16 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 		},
 	)
 
-	processClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
+	d := differ.Differ{
+		Storage:          &storage,
+		NotificationType: types.InstantNotif,
+		Target:           types.NotificationBackendTarget,
+		Thresholds: differ.EventThresholds{
+			TotalRisk: differ.DefaultTotalRiskThreshold,
+		},
+		Filter: differ.DefaultEventFilter,
+	}
+	d.ProcessClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "No new issues to notify for cluster first_cluster", "processClusters shouldn't generate any notification for 'first_cluster' with given data")
@@ -711,9 +667,6 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 			return nil
 		},
 	)
-
-	originalNotifier := kafkaNotifier
-	kafkaNotifier = &producerMock
 
 	errorKeys := map[string]utypes.RuleErrorKeyContent{
 		"RULE_1": {
@@ -823,7 +776,17 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 		},
 	)
 
-	processClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
+	d := differ.Differ{
+		Storage:          &storage,
+		NotificationType: types.InstantNotif,
+		Target:           types.NotificationBackendTarget,
+		Thresholds: differ.EventThresholds{
+			TotalRisk: differ.DefaultTotalRiskThreshold,
+		},
+		Filter:   differ.DefaultEventFilter,
+		Notifier: &producerMock,
+	}
+	d.ProcessClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "Report with high impact detected", "processClusters should create a notification for 'first_cluster' with given data")
@@ -831,7 +794,6 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"cluster\":\"second_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	kafkaNotifier = originalNotifier
 }
 
 func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
@@ -871,9 +833,6 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 			return nil
 		},
 	)
-
-	originalNotifier := kafkaNotifier
-	kafkaNotifier = &producerMock
 
 	errorKeys := map[string]utypes.RuleErrorKeyContent{
 		"RULE_1": {
@@ -962,15 +921,23 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 		},
 	)
 
-	processClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
+	d := differ.Differ{
+		Storage:          &storage,
+		NotificationType: types.InstantNotif,
+		Target:           types.NotificationBackendTarget,
+		Thresholds: differ.EventThresholds{
+			TotalRisk: differ.DefaultTotalRiskThreshold,
+		},
+		Filter:   differ.DefaultEventFilter,
+		Notifier: &producerMock,
+	}
+	d.ProcessClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"cluster\":\"first_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"cluster\":\"second_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
 
-	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	kafkaNotifier = originalNotifier
 }
 
 func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) {
@@ -1046,8 +1013,19 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 			return nil
 		},
 	)
-	previouslyReported[types.NotificationBackendTarget] = make(types.NotifiedRecordsPerCluster, 2)
-	previouslyReported[types.NotificationBackendTarget][types.ClusterOrgKey{OrgID: types.OrgID(1), ClusterName: "first_cluster"}] = types.NotificationRecord{
+
+	d := differ.Differ{
+		Storage:          &storage,
+		NotificationType: types.InstantNotif,
+		Target:           types.NotificationBackendTarget,
+		Thresholds: differ.EventThresholds{
+			TotalRisk: differ.DefaultTotalRiskThreshold,
+		},
+		Filter: differ.DefaultEventFilter,
+	}
+
+	d.PreviouslyReported = make(types.NotifiedRecordsPerCluster, 2)
+	d.PreviouslyReported[types.ClusterOrgKey{OrgID: types.OrgID(1), ClusterName: "first_cluster"}] = types.NotificationRecord{
 		OrgID:              1,
 		AccountNumber:      4,
 		ClusterName:        "first_cluster",
@@ -1059,7 +1037,7 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 		ErrorLog:           "",
 	}
 
-	previouslyReported[types.NotificationBackendTarget][types.ClusterOrgKey{OrgID: types.OrgID(2), ClusterName: "second_cluster"}] = types.NotificationRecord{
+	d.PreviouslyReported[types.ClusterOrgKey{OrgID: types.OrgID(2), ClusterName: "second_cluster"}] = types.NotificationRecord{
 		OrgID:              2,
 		AccountNumber:      4,
 		ClusterName:        "second_cluster",
@@ -1070,17 +1048,11 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 		NotifiedAt:         types.Timestamp(testTimestamp.Add(-2)),
 		ErrorLog:           "",
 	}
-	processClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
+	d.ProcessClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"debug\",\"message\":\"No new issues to notify for cluster first_cluster\"}\n", "Notification already sent for first_cluster's report, but corresponding log not found.")
 	assert.Contains(t, executionLog, "{\"level\":\"debug\",\"message\":\"No new issues to notify for cluster second_cluster\"}\n", "Notification already sent for second_cluster's report, but corresponding log not found.")
-
-	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	previouslyReported = types.NotifiedRecordsPerClusterByTarget{
-		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
-		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
-	}
 }
 
 func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
@@ -1209,11 +1181,20 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 		},
 	)
 
-	originalNotifier := kafkaNotifier
-	kafkaNotifier = &producerMock
+	d := differ.Differ{
+		Storage:          &storage,
+		NotificationType: types.InstantNotif,
+		Target:           types.NotificationBackendTarget,
+		Thresholds: differ.EventThresholds{
+			TotalRisk: differ.DefaultTotalRiskThreshold,
+		},
+		Filter: differ.DefaultEventFilter,
+	}
 
-	previouslyReported[types.NotificationBackendTarget] = make(types.NotifiedRecordsPerCluster, 1)
-	previouslyReported[types.NotificationBackendTarget][types.ClusterOrgKey{OrgID: types.OrgID(3), ClusterName: "a cluster"}] = types.NotificationRecord{
+	d.Notifier = &producerMock
+
+	d.PreviouslyReported = make(types.NotifiedRecordsPerCluster, 1)
+	d.PreviouslyReported[types.ClusterOrgKey{OrgID: types.OrgID(3), ClusterName: "a cluster"}] = types.NotificationRecord{
 		OrgID:              3,
 		AccountNumber:      4,
 		ClusterName:        "a cluster",
@@ -1225,19 +1206,12 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 		ErrorLog:           "",
 	}
 
-	processClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, &storage, clusters)
+	d.ProcessClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, clusters)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"Report with high impact detected\"}\n")
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"cluster\":\"first_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"cluster\":\"second_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'second_cluster' with given data")
-
-	zerolog.SetGlobalLevel(zerolog.WarnLevel)
-	kafkaNotifier = originalNotifier
-	previouslyReported = types.NotifiedRecordsPerClusterByTarget{
-		types.NotificationBackendTarget: types.NotifiedRecordsPerCluster{},
-		types.ServiceLogTarget:          types.NotifiedRecordsPerCluster{},
-	}
 }
 
 // ---------------------------------------------------------------------------------------
@@ -1269,8 +1243,26 @@ func TestProduceEntriesToServiceLog(t *testing.T) {
 			TemplateRendererURL:      server.URL + "/rendered_reports",
 		},
 	}
-	serviceLogEventThresholds.TotalRisk = 1
-	serviceLogEventFilter = "totalRisk > totalRiskThreshold"
+
+	producerMock := mocks.Producer{}
+	producerMock.On("ProduceMessage", mock.AnythingOfType("types.ProducerMessage")).Return(
+		func(msg types.ProducerMessage) int32 {
+			return 0
+		},
+		func(msg types.ProducerMessage) int64 {
+			return 0
+		},
+		func(msg types.ProducerMessage) error {
+			return nil
+		},
+	)
+
+	d := differ.Differ{
+		NotificationType: types.InstantNotif,
+		Target:           types.NotificationBackendTarget,
+		Filter:           differ.DefaultEventFilter,
+		Notifier:         &producerMock,
+	}
 
 	ruleContent := types.RulesMap{
 		"node_installer_degraded": testdata.RuleContent1,
@@ -1278,7 +1270,7 @@ func TestProduceEntriesToServiceLog(t *testing.T) {
 		"rule3":                   testdata.RuleContent3,
 	}
 
-	rules := getAllContentFromMap(ruleContent)
+	rules := differ.GetAllContentFromMap(ruleContent)
 
 	cluster := types.ClusterEntry{
 		OrgID:         1,
@@ -1296,39 +1288,21 @@ func TestProduceEntriesToServiceLog(t *testing.T) {
 	}
 	reports := deserialized.Reports
 
-	producerMock := mocks.Producer{}
-	producerMock.On("ProduceMessage", mock.AnythingOfType("types.ProducerMessage")).Return(
-		func(msg types.ProducerMessage) int32 {
-			return 0
-		},
-		func(msg types.ProducerMessage) int64 {
-			return 0
-		},
-		func(msg types.ProducerMessage) error {
-			return nil
-		},
-	)
+	var notificationSentBefore = int(testutil.ToFloat64(differ.NotificationSent))
+	var notificationNotSentErrorStateBefore = int(testutil.ToFloat64(differ.NotificationNotSentErrorState))
+	var notificationNotSentSameStateBefore = int(testutil.ToFloat64(differ.NotificationNotSentSameState))
 
-	originalNotifier := serviceLogNotifier
-	serviceLogNotifier = &producerMock
-
-	var notificationSentBefore = int(testutil.ToFloat64(NotificationSent))
-	var notificationNotSentErrorStateBefore = int(testutil.ToFloat64(NotificationNotSentErrorState))
-	var notificationNotSentSameStateBefore = int(testutil.ToFloat64(NotificationNotSentSameState))
-
-	messages, err := produceEntriesToServiceLog(&config, cluster, rules, ruleContent, reports)
-	producerMock.AssertNumberOfCalls(t, "ProduceMessage", 2)
+	messages, err := d.ProduceEntriesToServiceLog(&config, cluster, rules, ruleContent, reports)
+	producerMock.AssertNumberOfCalls(t, "ProduceMessage", 3)
 	assert.Nil(t, err)
-	assert.Equal(t, 2, messages)
+	assert.Equal(t, 3, messages)
 
-	serviceLogNotifier = originalNotifier
+	notificationSentDiff := int(testutil.ToFloat64(differ.NotificationSent)) - notificationSentBefore
+	notificationNotSentErrorStateDiff := int(testutil.ToFloat64(differ.NotificationNotSentErrorState)) - notificationNotSentErrorStateBefore
+	notificationNotSentSameStateDiff := int(testutil.ToFloat64(differ.NotificationNotSentSameState)) - notificationNotSentSameStateBefore
 
-	notificationSentDiff := int(testutil.ToFloat64(NotificationSent)) - notificationSentBefore
-	notificationNotSentErrorStateDiff := int(testutil.ToFloat64(NotificationNotSentErrorState)) - notificationNotSentErrorStateBefore
-	notificationNotSentSameStateDiff := int(testutil.ToFloat64(NotificationNotSentSameState)) - notificationNotSentSameStateBefore
-
-	assert.Equal(t, 2, notificationSentDiff,
-		"Expected metric value to be 2 as we sent 2 messages")
+	assert.Equal(t, 3, notificationSentDiff,
+		"Expected metric value to be 3 as we sent 3 messages")
 	assert.Equal(t, 0, notificationNotSentErrorStateDiff,
 		"Expected metric value to be 0 as we sent 2 messages successfully")
 	assert.Equal(t, 0, notificationNotSentSameStateDiff,
@@ -1390,9 +1364,7 @@ func TestConvertLogLevel(t *testing.T) {
 	}
 
 	for _, td := range testData {
-		// perform conversion
-		output := ConvertLogLevel(td.Input)
-		// check if converted value is eqaual to expected one
+		output := differ.ConvertLogLevel(td.Input)
 		assert.Equal(t, output, td.Output)
 	}
 }

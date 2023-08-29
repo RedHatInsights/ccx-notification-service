@@ -70,7 +70,7 @@ func getNotificationType(notificationTypes []types.NotificationType, value strin
 }
 
 func getNotificationResolution(issue *types.ReportItem, record *types.NotificationRecord) (resolution bool) {
-	// it is not a brand new cluster -> check if issue was included in older report
+	// check if detected issue was included in older report
 	var oldReport types.Report
 	err := json.Unmarshal([]byte(record.Report), &oldReport)
 	if err != nil {
@@ -83,12 +83,13 @@ func getNotificationResolution(issue *types.ReportItem, record *types.Notificati
 	return
 }
 
-func shouldNotify(cluster types.ClusterEntry, issue *types.ReportItem, eventTarget types.EventTarget) bool {
-	// check if the issue of the given cluster has previously been reported
+// ShouldNotify asserts whether an issue has already been sent in a previous
+// notification event
+func (d *Differ) ShouldNotify(cluster types.ClusterEntry, issue *types.ReportItem) bool {
 	key := types.ClusterOrgKey{OrgID: cluster.OrgID, ClusterName: cluster.ClusterName}
-	reported, ok := previouslyReported[eventTarget][key]
+	reported, ok := d.PreviouslyReported[key]
 	if !ok {
-		log.Info().Bool(resolutionKey, true).Str(resolutionReason, "report not in cooldown").Msg(resolutionMsg)
+		log.Info().Bool(resolutionKey, true).Str(resolutionReason, "report not in cool down").Msg(resolutionMsg)
 		return true
 	}
 
@@ -139,9 +140,9 @@ func writeNotificationRecordFailed(err error) {
 	log.Error().Err(err).Msg("Write notification record failed")
 }
 
-// Function issuesEqual compares two issues from reports
-func issuesEqual(issue1, issue2 *types.ReportItem) bool {
-	/* Removing the Details comparison as a fix for https://issues.redhat.com/browse/CCXDEV-10817*/
+// IssuesEqual compares two issues from reports
+func IssuesEqual(issue1, issue2 *types.ReportItem) bool {
+	/* Removing the Details' comparison as a fix for https://issues.redhat.com/browse/CCXDEV-10817*/
 	if issue1.Type == issue2.Type &&
 		issue1.Module == issue2.Module &&
 		issue1.ErrorKey == issue2.ErrorKey { /* &&
@@ -156,7 +157,7 @@ func issuesEqual(issue1, issue2 *types.ReportItem) bool {
 // contain the issue and thus user needs to be informed about it.
 func IssueNotInReport(oldReport types.Report, issue *types.ReportItem) bool {
 	for _, oldIssue := range oldReport.Reports {
-		if issuesEqual(oldIssue, issue) {
+		if IssuesEqual(oldIssue, issue) {
 			log.Debug().Bool(resolutionKey, false).Str(resolutionReason, "issue found in previously notified report").Msg(resolutionMsg)
 			return false
 		}
