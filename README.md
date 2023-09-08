@@ -23,6 +23,7 @@ CCX Notification Service
 * [Database](#database)
     * [Schema description](#schema-description)
 * [Notification templates](#notification-templates)
+* [Definition of Done for new features and fixes](#definition-of-done-for-new-features-and-fixes)
 * [Testing](#testing)
 * [BDD tests](#bdd-tests)
 * [Package manifest](#package-manifest)
@@ -160,6 +161,11 @@ Notification templates used to send e-mails etc. to customers are stored in diff
 
 Templates used by this notification service are available at:
 [https://github.com/RedHatInsights/notifications-backend/tree/master/backend/src/main/resources/templates/AdvisorOpenshift](https://github.com/RedHatInsights/notifications-backend/tree/master/engine/src/main/resources/templates/AdvisorOpenshift)
+
+## Definition of Done for new features and fixes
+
+Please look at [DoD.md](DoD.md) document for definition of done for new features and fixes.
+
 
 ## Testing
 
