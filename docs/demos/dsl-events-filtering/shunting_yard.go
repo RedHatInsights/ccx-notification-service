@@ -25,6 +25,7 @@ import (
 )
 
 // toRPN function transforms sequence of tokens with expression into PRN code
+//
 //gocyclo:ignore
 func toRPN(s scanner.Scanner) []TokenWithValue {
 	const stringFmt = "%s "
