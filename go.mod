@@ -17,7 +17,7 @@ require (
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/microcosm-cc/bluemonday v1.0.21 // indirect
 	github.com/openshift-online/ocm-sdk-go v0.1.340
-	github.com/prometheus/client_golang v1.15.1
+	github.com/prometheus/client_golang v1.16.0
 	github.com/redhatinsights/app-common-go v1.6.3
 	github.com/rs/zerolog v1.29.1
 	github.com/spf13/afero v1.9.3 // indirect
