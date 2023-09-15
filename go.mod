@@ -11,7 +11,7 @@ require (
 	github.com/Shopify/sarama v1.38.1
 	github.com/archdx/zerolog-sentry v0.0.1 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
-	github.com/google/uuid v1.3.0
+	github.com/google/uuid v1.3.1
 	github.com/jcmturner/gokrb5/v8 v8.4.3 // indirect
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
