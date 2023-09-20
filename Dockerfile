@@ -28,6 +28,10 @@ FROM registry.access.redhat.com/ubi8/ubi-micro:latest
 COPY --from=builder /opt/app-root/src/ccx-notification-service .
 COPY --from=builder /opt/app-root/src/config.toml .
 
+# copy the certificates from builder image
+COPY --from=builder /etc/ssl /etc/ssl
+COPY --from=builder /etc/pki /etc/pki
+
 USER 1001
 
 CMD ["/ccx-notification-service"]
