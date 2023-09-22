@@ -25,8 +25,9 @@ package kafka
 // https://redhatinsights.github.io/ccx-notification-service/packages/producer/kafka/kafka_producer.html
 
 import (
-	"github.com/RedHatInsights/ccx-notification-service/types"
 	"strings"
+
+	"github.com/RedHatInsights/ccx-notification-service/types"
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	tlsutils "github.com/RedHatInsights/insights-operator-utils/tls"
@@ -51,7 +52,7 @@ func New(config *conf.ConfigStruct) (*Producer, error) {
 
 	producer, err := sarama.NewSyncProducer([]string{kafkaConfig.Address}, saramaConfig)
 	if err != nil {
-		log.Error().Err(err).Msgf("unable to start a Kafka producer with broker address %s", kafkaConfig.Address)
+		log.Error().Str("Kafka address", kafkaConfig.Address).Err(err).Msg("unable to start a Kafka producer")
 		return nil, err
 	}
 
@@ -80,7 +81,7 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 	if err != nil {
 		log.Error().Err(err).Msg("failed to produce message to Kafka")
 	} else {
-		log.Info().Msgf("message sent to partition %d at offset %d\n", partitionID, offset)
+		log.Info().Int("partition", int(partitionID)).Int("offset", int(offset)).Msg("message sent")
 	}
 	return
 }
@@ -106,7 +107,7 @@ func saramaConfigFromBrokerConfig(cfg *conf.KafkaConfiguration) (*sarama.Config,
 	if cfg.CertPath != "" {
 		tlsConfig, err := tlsutils.NewTLSConfig(cfg.CertPath)
 		if err != nil {
-			log.Error().Msgf("Unable to load TLS config for %s cert", cfg.CertPath)
+			log.Error().Str("path", cfg.CertPath).Msg("Unable to load TLS config for certificate")
 			return nil, err
 		}
 		saramaConfig.Net.TLS.Config = tlsConfig
