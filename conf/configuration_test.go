@@ -29,6 +29,7 @@ import (
 
 	"testing"
 
+	"github.com/RedHatInsights/insights-operator-utils/logger"
 	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
 	clowder "github.com/redhatinsights/app-common-go/pkg/api/v1"
 	"github.com/rs/zerolog"
@@ -408,6 +409,27 @@ func TestLoadStorageConfigFromClowder(t *testing.T) {
 	assert.Equal(t, port, storageCfg.PGPort)
 	assert.Equal(t, user, storageCfg.PGUsername)
 	assert.Equal(t, pass, storageCfg.PGPassword)
+}
+
+// TestGetCloudWatchConfiguration checks the function GetCloudWatchConfiguration
+func TestGetCloudWatchConfiguration(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	os.Clearenv()
+	mustSetEnv(t, "ACG_CONFIG", "../tests/clowder_config.json")
+
+	cfg, err := conf.LoadConfiguration(envVar, "../tests/config1")
+	assert.NoError(t, err, "error loading configuration")
+
+	assert.Equal(t, logger.CloudWatchConfiguration{
+		AWSAccessID:             "",
+		AWSSecretKey:            "",
+		AWSSessionToken:         "",
+		AWSRegion:               "",
+		LogGroup:                "",
+		StreamName:              "",
+		CreateStreamIfNotExists: false,
+		Debug:                   false,
+	}, conf.GetCloudWatchConfiguration(&cfg))
 }
 
 // TestLoadConfigurationNoKafkaBroker test if number of configured brokers are
