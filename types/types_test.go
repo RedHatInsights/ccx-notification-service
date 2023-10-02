@@ -56,3 +56,11 @@ func TestMakeSetOfTags(t *testing.T) {
 		assert.Equal(t, value, scenario.expected)
 	}
 }
+
+/* TestToString function checks the behaviour of EventType.ToString() method. */
+func TestToString(t *testing.T) {
+	const expected = "new-recommendation"
+
+	asString := types.InstantNotif.ToString()
+	assert.Equal(t, asString, expected, "Unexpected string")
+}
