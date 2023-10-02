@@ -883,3 +883,17 @@ func TestGetProcessingConfigurationIsImmutable(t *testing.T) {
 	// and compare original configuration with possibly mutated one
 	assert.Equal(t, config, origConfig, "GetProcessingConfiguration must not be mutable")
 }
+
+// TestCreateURLPositiveCase checks the function createURL when correct data to
+// create valid URL are used
+func TestCreateURLPositiveCase(t *testing.T) {
+	url, err := conf.CreateURL("http://foo", "bar")
+	assert.Nil(t, err)
+	assert.Equal(t, "http://foo/bar", url, "Unexpected URL returned")
+}
+
+// TestCreateURLNegativeCase checks the function createURL when wrong server is used
+func TestCreateURLNegativeCase(t *testing.T) {
+	_, err := conf.CreateURL(":\\", "\\")
+	assert.NotNil(t, err)
+}
