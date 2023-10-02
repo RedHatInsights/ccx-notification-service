@@ -78,7 +78,7 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 		return -1, -1, err
 	}
 
-	// now the request has been created, so it's safe to ass a header to it
+	// now the request has been created, so it's safe to add a header to it
 	req.Header.Add("Authorization", "Bearer "+producer.AccessToken)
 
 	response, err := client.Do(req)
