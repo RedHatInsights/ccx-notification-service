@@ -21,6 +21,12 @@ package servicelog
 
 import (
 	"encoding/json"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"testing"
+	"time"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/types"
@@ -28,11 +34,6 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
-	"io"
-	"net/http"
-	"net/http/httptest"
-	"testing"
-	"time"
 )
 
 func setupMockOCMGateway() *mocks.OCMClient {
@@ -198,6 +199,37 @@ func TestServiceLogProducerTooLongSummary(t *testing.T) {
 
 	_, _, err = producer.ProduceMessage(msgBytes)
 	assert.EqualError(t, err, "received unexpected response status code - 500 Internal Server Error")
+}
+
+func TestServiceLogProducerInvalidServiceLogURL(t *testing.T) {
+	serviceLogServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if r.Header.Get("Authorization") != "Bearer online_token" {
+			t.Errorf("Expected 'Authorization: Bearer token' header, got: '%s'", r.Header.Get("Authorization"))
+		}
+		w.WriteHeader(http.StatusBadRequest)
+		_, err := w.Write([]byte(`{"id":"21","kind":"Error","href":"/api/service_logs/v1/errors/21","code":"OCM-CA-21","reason":"json: cannot unmarshal string into Go value of type openapi.ClusterLog","operation_id":"2DnejRUk4UfCwsDqhupK7lqxkzF"}`))
+		if err != nil {
+			log.Fatal().Msg(err.Error())
+		}
+	}))
+	defer serviceLogServer.Close()
+
+	config := conf.ServiceLogConfiguration{
+		Enabled: true,
+		URL:     "\\:",
+		Timeout: 15 * time.Second,
+	}
+
+	producer := Producer{
+		Configuration: config,
+		AccessToken:   "online_token",
+	}
+
+	msgBytes, err := json.Marshal("nonsense")
+	helpers.FailOnError(t, err)
+
+	_, _, err = producer.ProduceMessage(msgBytes)
+	assert.EqualError(t, err, "parse \"http://\\\\:\": invalid character \"\\\\\" in host name")
 }
 
 func TestServiceLogProducerClose(t *testing.T) {
