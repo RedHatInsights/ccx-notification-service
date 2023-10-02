@@ -29,6 +29,7 @@ import (
 
 	"testing"
 
+	"github.com/RedHatInsights/insights-operator-utils/logger"
 	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
 	clowder "github.com/redhatinsights/app-common-go/pkg/api/v1"
 	"github.com/rs/zerolog"
@@ -408,6 +409,59 @@ func TestLoadStorageConfigFromClowder(t *testing.T) {
 	assert.Equal(t, port, storageCfg.PGPort)
 	assert.Equal(t, user, storageCfg.PGUsername)
 	assert.Equal(t, pass, storageCfg.PGPassword)
+}
+
+// TestGetCloudWatchConfiguration checks the function GetCloudWatchConfiguration
+func TestGetCloudWatchConfiguration(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	os.Clearenv()
+	mustSetEnv(t, "ACG_CONFIG", "../tests/clowder_config.json")
+
+	cfg, err := conf.LoadConfiguration(envVar, "../tests/config1")
+	assert.NoError(t, err, "error loading configuration")
+
+	assert.Equal(t, logger.CloudWatchConfiguration{
+		AWSAccessID:             "",
+		AWSSecretKey:            "",
+		AWSSessionToken:         "",
+		AWSRegion:               "",
+		LogGroup:                "",
+		StreamName:              "",
+		CreateStreamIfNotExists: false,
+		Debug:                   false,
+	}, conf.GetCloudWatchConfiguration(&cfg))
+}
+
+// TestGetSentryLoggingConfiguration checks the function GetSentryLoggingConfiguration
+func TestGetSentryLoggingConfiguration(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	os.Clearenv()
+	mustSetEnv(t, "ACG_CONFIG", "../tests/sentry_logging.json")
+
+	cfg, err := conf.LoadConfiguration(envVar, "../tests/config1")
+	assert.NoError(t, err, "error loading configuration")
+
+	assert.Equal(t, logger.SentryLoggingConfiguration{
+		SentryDSN:         "",
+		SentryEnvironment: "",
+	}, conf.GetSentryLoggingConfiguration(&cfg))
+}
+
+// TestGetKafkaZerologConfiguration checks the function GetKafkaZeroLogConfiguration
+func TestGetKafkaZerologConfiguration(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	os.Clearenv()
+	mustSetEnv(t, "ACG_CONFIG", "../tests/kafka_zerolog.json")
+
+	cfg, err := conf.LoadConfiguration(envVar, "../tests/config1")
+	assert.NoError(t, err, "error loading configuration")
+
+	assert.Equal(t, logger.KafkaZerologConfiguration{
+		Broker:   "",
+		Topic:    "",
+		CertPath: "",
+		Level:    "",
+	}, conf.GetKafkaZerologConfiguration(&cfg))
 }
 
 // TestLoadConfigurationNoKafkaBroker test if number of configured brokers are
@@ -882,4 +936,18 @@ func TestGetProcessingConfigurationIsImmutable(t *testing.T) {
 
 	// and compare original configuration with possibly mutated one
 	assert.Equal(t, config, origConfig, "GetProcessingConfiguration must not be mutable")
+}
+
+// TestCreateURLPositiveCase checks the function createURL when correct data to
+// create valid URL are used
+func TestCreateURLPositiveCase(t *testing.T) {
+	url, err := conf.CreateURL("http://foo", "bar")
+	assert.Nil(t, err)
+	assert.Equal(t, "http://foo/bar", url, "Unexpected URL returned")
+}
+
+// TestCreateURLNegativeCase checks the function createURL when wrong server is used
+func TestCreateURLNegativeCase(t *testing.T) {
+	_, err := conf.CreateURL(":\\", "\\")
+	assert.NotNil(t, err)
 }
