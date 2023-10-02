@@ -432,6 +432,21 @@ func TestGetCloudWatchConfiguration(t *testing.T) {
 	}, conf.GetCloudWatchConfiguration(&cfg))
 }
 
+// TestGetSentryLoggingConfiguration checks the function GetSentryLoggingConfiguration
+func TestGetSentryLoggingConfiguration(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	os.Clearenv()
+	mustSetEnv(t, "ACG_CONFIG", "../tests/sentry_logging.json")
+
+	cfg, err := conf.LoadConfiguration(envVar, "../tests/config1")
+	assert.NoError(t, err, "error loading configuration")
+
+	assert.Equal(t, logger.SentryLoggingConfiguration{
+		SentryDSN:         "",
+		SentryEnvironment: "",
+	}, conf.GetSentryLoggingConfiguration(&cfg))
+}
+
 // TestLoadConfigurationNoKafkaBroker test if number of configured brokers are
 // tested properly when no broker config exists
 func TestLoadConfigurationNoKafkaBroker(t *testing.T) {
