@@ -56,3 +56,35 @@ func TestMakeSetOfTags(t *testing.T) {
 		assert.Equal(t, value, scenario.expected)
 	}
 }
+
+/* TestToString function checks the behaviour of EventType.ToString() method. */
+func TestToString(t *testing.T) {
+	const expected = "new-recommendation"
+
+	asString := types.InstantNotif.ToString()
+	assert.Equal(t, expected, asString, "Unexpected string returned for InstantNotif.ToString")
+}
+
+/* TestError function checks the behaviour of MissingMandatoryFile.Error() method. */
+func TestError(t *testing.T) {
+	/* create error structure first */
+	err := types.MissingMandatoryFile{
+		FileName: "foo",
+	}
+
+	const expected = "Missing required file: foo"
+	asString := err.Error()
+	assert.Equal(t, expected, asString, "Unexpected error string")
+}
+
+/* TestErrorEmptyFilename function checks the behaviour of MissingMandatoryFile.Error() method. */
+func TestErrorEmptyFilename(t *testing.T) {
+	/* create error structure first */
+	err := types.MissingMandatoryFile{
+		FileName: "",
+	}
+
+	const expected = "Missing required file: "
+	asString := err.Error()
+	assert.Equal(t, expected, asString, "Unexpected error string")
+}
