@@ -27,13 +27,14 @@ package servicelog
 import (
 	"bytes"
 	"fmt"
+	"net/http"
+	"time"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/ocmclient"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	httputils "github.com/RedHatInsights/insights-operator-utils/http"
 	"github.com/rs/zerolog/log"
-	"net/http"
-	"time"
 )
 
 // Producer is an implementation of Producer interface for Service Log
@@ -72,11 +73,13 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 	}
 
 	req, err := http.NewRequest(http.MethodPost, serviceLogURL, bytes.NewBuffer(msg))
-	req.Header.Add("Authorization", "Bearer "+producer.AccessToken)
 	if err != nil {
 		log.Error().Err(err).Str("url", serviceLogURL).Msg("Error setting up HTTP POST request")
 		return -1, -1, err
 	}
+
+	// now the request has been created, so it's safe to ass a header to it
+	req.Header.Add("Authorization", "Bearer "+producer.AccessToken)
 
 	response, err := client.Do(req)
 	if err != nil {
