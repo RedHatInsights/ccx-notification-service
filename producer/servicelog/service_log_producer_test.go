@@ -21,6 +21,7 @@ package servicelog
 
 import (
 	"encoding/json"
+	"errors"
 	"io"
 	"net/http"
 	"net/http/httptest"
@@ -52,6 +53,24 @@ func setupMockOCMGateway() *mocks.OCMClient {
 	)
 	return &gateway
 }
+
+func setupMockOCMGatewayWithError() *mocks.OCMClient {
+	gateway := mocks.OCMClient{}
+	gateway.On("GetTokens",
+		mock.AnythingOfType("time.Duration")).Return(
+		func(delay time.Duration) string {
+			return "online_token"
+		},
+		func(delay time.Duration) string {
+			return "refresh_token"
+		},
+		func(delay time.Duration) error {
+			return errors.New("Error retrieving token")
+		},
+	)
+	return &gateway
+}
+
 func TestServiceLogProducerNew(t *testing.T) {
 	gateway := setupMockOCMGateway()
 	config := conf.ConfigStruct{
@@ -73,6 +92,23 @@ func TestServiceLogProducerNew(t *testing.T) {
 	assert.Equal(t, producer.TokenRefreshmentStartDelay, time.Second)
 	assert.Equal(t, producer.TokenRefreshmentDelay, time.Second)
 	assert.Equal(t, producer.TokenRefreshmentThreshold, 30*time.Second)
+}
+
+func TestServiceLogProducerNewOnError(t *testing.T) {
+	gateway := setupMockOCMGatewayWithError()
+	config := conf.ConfigStruct{
+		ServiceLog: conf.ServiceLogConfiguration{
+			ClientID:     "test_id",
+			ClientSecret: "test_secret",
+			Enabled:      true,
+			URL:          "http://testserver:8000/",
+			Timeout:      15 * time.Second,
+		},
+	}
+
+	serviceLogConfiguration := conf.GetServiceLogConfiguration(&config)
+	_, err := New(&serviceLogConfiguration, gateway)
+	assert.NotNil(t, err, "Error is expected to be returned")
 }
 
 func TestServiceLogProducerSendMessage(t *testing.T) {
