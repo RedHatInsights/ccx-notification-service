@@ -106,6 +106,17 @@ func TestNewStorageWithLogging(t *testing.T) {
 	assert.NoError(t, err, "error retrieving new storage")
 }
 
+// TestNewStorageReturnedImplementation check what implementation of storage is returnd
+func TestNewStorageReturnedImplementation(t *testing.T) {
+	s, _ := differ.NewStorage(&conf.StorageConfiguration{
+		Driver:        "postgres",
+		PGPort:        1234,
+		PGUsername:    "user",
+		LogSQLQueries: true,
+	})
+	assert.IsType(t, &differ.DBStorage{}, s)
+}
+
 // TestReadLastNotifiedRecordForClusterListEmptyClusterEntries test checks how
 // empty sequence of cluster entries is handled by metohd
 // ReadLastNotifiedRecordForClusterList
