@@ -86,6 +86,14 @@ func TestNewStorageError(t *testing.T) {
 	assert.EqualError(t, err, "driver non existing driver is not supported")
 }
 
+// TestNewStorageNoType checks whether constructor for new storage returns error for improper storage configuration
+func TestNewStorageNoType(t *testing.T) {
+	_, err := differ.NewStorage(&conf.StorageConfiguration{
+		Driver: "",
+	})
+	assert.EqualError(t, err, "driver  is not supported")
+}
+
 // TestReadLastNotifiedRecordForClusterListEmptyClusterEntries test checks how
 // empty sequence of cluster entries is handled by metohd
 // ReadLastNotifiedRecordForClusterList
