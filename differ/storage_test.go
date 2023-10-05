@@ -31,6 +31,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/differ"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 )
@@ -75,6 +76,45 @@ func checkAllExpectations(t *testing.T, mock sqlmock.Sqlmock) {
 	if err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
+}
+
+// TestNewStorageError checks whether constructor for new storage returns error for improper storage configuration
+func TestNewStorageError(t *testing.T) {
+	_, err := differ.NewStorage(&conf.StorageConfiguration{
+		Driver: "non existing driver",
+	})
+	assert.EqualError(t, err, "driver non existing driver is not supported")
+}
+
+// TestNewStorageNoType checks whether constructor for new storage returns error for improper storage configuration
+func TestNewStorageNoType(t *testing.T) {
+	_, err := differ.NewStorage(&conf.StorageConfiguration{
+		Driver: "",
+	})
+	assert.EqualError(t, err, "driver  is not supported")
+}
+
+// TestNewStorageWithLogging tests creating new storage with logs
+func TestNewStorageWithLogging(t *testing.T) {
+	_, err := differ.NewStorage(&conf.StorageConfiguration{
+		Driver:        "postgres",
+		PGPort:        1234,
+		PGUsername:    "user",
+		LogSQLQueries: true,
+	})
+
+	assert.NoError(t, err, "error retrieving new storage")
+}
+
+// TestNewStorageReturnedImplementation check what implementation of storage is returnd
+func TestNewStorageReturnedImplementation(t *testing.T) {
+	s, _ := differ.NewStorage(&conf.StorageConfiguration{
+		Driver:        "postgres",
+		PGPort:        1234,
+		PGUsername:    "user",
+		LogSQLQueries: true,
+	})
+	assert.IsType(t, &differ.DBStorage{}, s)
 }
 
 // TestReadLastNotifiedRecordForClusterListEmptyClusterEntries test checks how
