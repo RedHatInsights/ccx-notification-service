@@ -31,6 +31,7 @@ import (
 	"github.com/DATA-DOG/go-sqlmock"
 	"github.com/stretchr/testify/assert"
 
+	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/differ"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 )
@@ -75,6 +76,14 @@ func checkAllExpectations(t *testing.T, mock sqlmock.Sqlmock) {
 	if err != nil {
 		t.Errorf("there were unfulfilled expectations: %s", err)
 	}
+}
+
+// TestNewStorageError checks whether constructor for new storage returns error for improper storage configuration
+func TestNewStorageError(t *testing.T) {
+	_, err := differ.NewStorage(&conf.StorageConfiguration{
+		Driver: "non existing driver",
+	})
+	assert.EqualError(t, err, "driver non existing driver is not supported")
 }
 
 // TestReadLastNotifiedRecordForClusterListEmptyClusterEntries test checks how
