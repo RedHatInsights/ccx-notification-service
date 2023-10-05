@@ -94,6 +94,18 @@ func TestNewStorageNoType(t *testing.T) {
 	assert.EqualError(t, err, "driver  is not supported")
 }
 
+// TestNewStorageWithLogging tests creating new storage with logs
+func TestNewStorageWithLogging(t *testing.T) {
+	_, err := differ.NewStorage(&conf.StorageConfiguration{
+		Driver:        "postgres",
+		PGPort:        1234,
+		PGUsername:    "user",
+		LogSQLQueries: true,
+	})
+
+	assert.NoError(t, err, "error retrieving new storage")
+}
+
 // TestReadLastNotifiedRecordForClusterListEmptyClusterEntries test checks how
 // empty sequence of cluster entries is handled by metohd
 // ReadLastNotifiedRecordForClusterList
