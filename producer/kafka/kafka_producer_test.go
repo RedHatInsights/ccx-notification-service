@@ -108,6 +108,74 @@ func TestProducerNew(t *testing.T) {
 	helpers.FailOnError(t, prod.Close())
 }
 
+// TestSaramaConfigFromBrokerWithSASLEnabled function checks that the Sarama config returned
+// for a broker configuration with SASL enabled contains the expected fields
+func TestSaramaConfigFromBrokerWithSASLEnabledNoSASLMechanism(t *testing.T) {
+	// valid broker configuration for local Kafka instance
+	var brokerConfiguration = conf.KafkaConfiguration{
+		Address:          "localhost:9092",
+		Topic:            "platform.notifications.ingress",
+		Enabled:          true,
+		SecurityProtocol: "SASL_",
+		SaslUsername:     "sasl_user",
+		SaslPassword:     "sasl_password",
+		SaslMechanism:    "",
+	}
+
+	saramaConfig, err := SaramaConfigFromBrokerConfig(&brokerConfiguration)
+	assert.Nil(t, err)
+	assert.True(t, saramaConfig.Net.SASL.Enable)
+	assert.Equal(t, saramaConfig.Net.SASL.User, brokerConfiguration.SaslUsername)
+	assert.Equal(t, saramaConfig.Net.SASL.Password, brokerConfiguration.SaslPassword)
+	assert.Nil(t, saramaConfig.Net.SASL.SCRAMClientGeneratorFunc, "SCRAM client generator function should not be created with given config")
+}
+
+// TestSaramaConfigFromBrokerWithSASLEnabled function checks that the Sarama config returned
+// for a broker configuration with SASL enabled using SCRAM authentication mechanism
+// contains expected fields
+func TestSaramaConfigFromBrokerWithSASLEnabledSCRAMAuth(t *testing.T) {
+	// valid broker configuration for local Kafka instance
+	var brokerConfiguration = conf.KafkaConfiguration{
+		Address:          "localhost:9092",
+		Topic:            "platform.notifications.ingress",
+		Enabled:          true,
+		SecurityProtocol: "SASL_",
+		SaslUsername:     "sasl_user",
+		SaslPassword:     "sasl_password",
+		SaslMechanism:    sarama.SASLTypeSCRAMSHA512,
+	}
+
+	saramaConfig, err := SaramaConfigFromBrokerConfig(&brokerConfiguration)
+	assert.Nil(t, err)
+	assert.True(t, saramaConfig.Net.SASL.Enable)
+	assert.Equal(t, saramaConfig.Net.SASL.User, brokerConfiguration.SaslUsername)
+	assert.Equal(t, saramaConfig.Net.SASL.Password, brokerConfiguration.SaslPassword)
+	assert.NotNil(t, saramaConfig.Net.SASL.SCRAMClientGeneratorFunc, "SCRAM client generator function should have been created with given config")
+}
+
+// TestSaramaConfigFromBrokerWithSASLEnabled function checks that the Sarama config returned
+// for a broker configuration with SASL enabled using unhandled authentication mechanism
+// contains expected fields
+func TestSaramaConfigFromBrokerWithSASLEnabledUnexpectedAuthMechanism(t *testing.T) {
+	// valid broker configuration for local Kafka instance
+	var brokerConfiguration = conf.KafkaConfiguration{
+		Address:          "localhost:9092",
+		Topic:            "platform.notifications.ingress",
+		Enabled:          true,
+		SecurityProtocol: "SASL_",
+		SaslUsername:     "sasl_user",
+		SaslPassword:     "sasl_password",
+		SaslMechanism:    sarama.SASLTypeSCRAMSHA256,
+	}
+
+	saramaConfig, err := SaramaConfigFromBrokerConfig(&brokerConfiguration)
+	assert.Nil(t, err)
+	assert.True(t, saramaConfig.Net.SASL.Enable)
+	assert.Equal(t, saramaConfig.Net.SASL.User, brokerConfiguration.SaslUsername)
+	assert.Equal(t, saramaConfig.Net.SASL.Password, brokerConfiguration.SaslPassword)
+	assert.Nil(t, saramaConfig.Net.SASL.SCRAMClientGeneratorFunc, "SCRAM client generator function should not be created with given config")
+}
+
 func TestProducerSendEmptyNotificationMessage(t *testing.T) {
 	mockProducer := mocks.NewSyncProducer(t, nil)
 	mockProducer.ExpectSendMessageAndSucceed()
