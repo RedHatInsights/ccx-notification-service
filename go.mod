@@ -11,19 +11,15 @@ require (
 	github.com/Shopify/sarama v1.38.1
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/google/uuid v1.3.1
-	github.com/jcmturner/gokrb5/v8 v8.4.3 // indirect
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
 	github.com/microcosm-cc/bluemonday v1.0.21 // indirect
 	github.com/openshift-online/ocm-sdk-go v0.1.373
 	github.com/prometheus/client_golang v1.17.0
-	github.com/prometheus/procfs v0.11.1 // indirect
 	github.com/redhatinsights/app-common-go v1.6.3
 	github.com/rs/zerolog v1.31.0
-	github.com/spf13/afero v1.9.5 // indirect
 	github.com/spf13/viper v1.16.0
 	github.com/stretchr/testify v1.8.4
-	github.com/xdg/scram v0.0.0-20180814205039-7eeb5667e42c
+	github.com/xdg/scram v1.0.5
 	golang.org/x/net v0.17.0 // indirect
-	google.golang.org/grpc v1.58.3
 )
