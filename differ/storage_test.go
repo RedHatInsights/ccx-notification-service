@@ -1419,3 +1419,32 @@ func TestCleanupOldReports(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestCleanupOldReportsOnError function checks the method Storage.CleanupOldReports when error is
+// detected during cleanup operation.
+func TestCleanupOldReportsOnError(t *testing.T) {
+	const cleanupStatement = "DELETE FROM reported WHERE updated_at < NOW\\(\\) - \\$1::INTERVAL"
+	const maxAge = "1 day"
+
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	mock.ExpectExec(cleanupStatement).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	_, err := storage.CleanupOldReports(maxAge)
+	assert.Error(t, err, "error was expected while writing error report")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
