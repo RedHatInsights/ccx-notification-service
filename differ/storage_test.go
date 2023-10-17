@@ -1281,3 +1281,58 @@ func TestReadReportForClusterAtTimeOnError(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestCleanup function checks the method Storage.Cleanup.
+func TestCleanup(t *testing.T) {
+	const cleanupStatement = "DELETE FROM foo"
+	const maxAge = "1 day"
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	mock.ExpectExec(cleanupStatement).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	affected, err := storage.Cleanup(maxAge, cleanupStatement)
+	assert.Equal(t, affected, 1)
+	assert.NoError(t, err, "error was not expected while cleaning operation")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestCleanupOnError function checks the method Storage.Cleanup when error is
+// detected during cleanup operation.
+func TestCleanupOnError(t *testing.T) {
+	const cleanupStatement = "DELETE FROM foo"
+	const maxAge = "1 day"
+
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	mock.ExpectExec(cleanupStatement).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	_, err := storage.Cleanup(maxAge, cleanupStatement)
+	assert.Error(t, err, "error was expected while writing error report")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
