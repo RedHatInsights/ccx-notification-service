@@ -297,6 +297,7 @@ type ServiceLogEntry struct {
 	ClusterUUID ClusterName `json:"cluster_uuid"`
 	Description string      `json:"description"`
 	ServiceName string      `json:"service_name"`
+	Severity    string      `json:"severity"`
 	Summary     string      `json:"summary"`
 	CreatedBy   string      `json:"created_by"`
 	Username    string      `json:"username"`

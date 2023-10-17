@@ -260,6 +260,7 @@ func createServiceLogEntry(report *types.RenderedReport, cluster types.ClusterEn
 		ClusterUUID: cluster.ClusterName,
 		Description: report.Reason,
 		ServiceName: serviceName,
+		Severity:    "Info",
 		Summary:     report.Description,
 		CreatedBy:   createdBy,
 		Username:    username,
