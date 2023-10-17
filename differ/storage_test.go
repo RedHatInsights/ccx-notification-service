@@ -1336,3 +1336,30 @@ func TestCleanupOnError(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestCleanupNewReports function checks the method
+// Storage.CleanupNewReports.
+func TestCleanupNewReports(t *testing.T) {
+	const cleanupStatement = "DELETE FROM new_reports WHERE updated_at < NOW\\(\\) - \\$1::INTERVAL"
+	const maxAge = "1 day"
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	mock.ExpectExec(cleanupStatement).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	affected, err := storage.CleanupNewReports(maxAge)
+	assert.Equal(t, affected, 1)
+	assert.NoError(t, err, "error was not expected while cleaning operation")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
