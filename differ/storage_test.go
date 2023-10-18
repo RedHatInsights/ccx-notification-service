@@ -1717,3 +1717,150 @@ func TestReadNotificationTypesOnError(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestPrintNewReportsEmptyRecordSet checks if method Storage.PrintNewReports performs
+// the right query when empty set is returned.
+func TestPrintNewReportsEmptyRecordSet(t *testing.T) {
+	const maxAge = "1 day"
+	const tableName = "foo"
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"org_id", "account_number", "cluster_name", "updated_at", "kafka_offset"})
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT id, value, FROM foo ORDER BY id"
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := storage.PrintNewReports(maxAge, expectedQuery, tableName)
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying database")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestPrintNewReportsNonEmptyRecordSet checks if method Storage.PrintNewReports performs
+// the right query when non empty set is returned.
+func TestPrintNewReportsNonEmptyRecordSet(t *testing.T) {
+	const maxAge = "1 day"
+	const tableName = "foo"
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"org_id", "account_number", "cluster_name", "updated_at", "kafka_offset"})
+
+	// these three rows should be returned
+	rows.AddRow(0, 1000, "ID=0", time.Now(), 0)
+	rows.AddRow(1, 1001, "ID=1", time.Now(), 0)
+	rows.AddRow(2, 1002, "ID=2", time.Now(), 0)
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT id, value, FROM foo ORDER BY id"
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := storage.PrintNewReports(maxAge, expectedQuery, tableName)
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying database")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestPrintNewReportsOnScanError checks if method Storage.PrintNewReports performs
+// the test for query errors.
+func TestPrintNewReportsOnScanError(t *testing.T) {
+	const maxAge = "1 day"
+	const tableName = "foo"
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"org_id", "account_number", "cluster_name", "updated_at", "kafka_offset"})
+
+	// these three rows should be returned
+	rows.AddRow(0, "not a number!", "ID=0", time.Now(), 0)
+	rows.AddRow(1, "not a number!", "ID=1", time.Now(), 0)
+	rows.AddRow(2, "not a number!", "ID=2", time.Now(), 0)
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT id, value, FROM foo ORDER BY id"
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := storage.PrintNewReports(maxAge, expectedQuery, tableName)
+
+	// tested method should return an error
+	assert.Error(t, err, "error was expected while querying database")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestPrintNewReportsOnError checks if method Storage.ReadNotificationTypes returns
+// expected results on error.
+func TestPrintNewReportsOnError(t *testing.T) {
+	const maxAge = "1 day"
+	const tableName = "foo"
+
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT id, value, frequency, comment FROM notification_types ORDER BY id"
+
+	// let's raise an error!
+	mock.ExpectQuery(expectedQuery).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := storage.PrintNewReports(maxAge, expectedQuery, tableName)
+
+	// tested method SHOULD return an error
+	assert.Error(t, err, "an error is expected while quering notification types table")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
