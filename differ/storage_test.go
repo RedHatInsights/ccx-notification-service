@@ -1476,3 +1476,33 @@ func TestDeleteRowFromNewReports(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestDeleteRowFromNewReportsOnError function checks the method
+// Storage.DeleteRowFromNewReports.
+func TestDeleteRowFromNewReportsOnError(t *testing.T) {
+	const cleanupStatement = "DELETE FROM new_reports WHERE org_id = \\$1 AND cluster = \\$2 AND updated_at = \\$3"
+	const orgID = 2
+	const clusterName = "00000000-0000-0000-0000-000000000000"
+
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	mock.ExpectExec(cleanupStatement).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	_, err := storage.DeleteRowFromNewReports(types.OrgID(orgID), types.ClusterName(clusterName), types.Timestamp(time.Now()))
+	assert.Error(t, err, "error was expected while deleting one row")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
