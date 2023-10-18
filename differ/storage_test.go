@@ -1564,3 +1564,37 @@ func TestDeleteRowFromReportedOnError(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestReadNotificationTypesEmptyRecordSet checks if method Storage.ReadNotificationTypes returns
+// empty record set.
+func TestReadNotificationTypesEmptyRecordSet(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"id", "value", "frequency", "comment"})
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT id, value, frequency, comment FROM notification_types ORDER BY id"
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	notificationTypes, err := storage.ReadNotificationTypes()
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying notification types")
+
+	// no notification types should be returned
+	assert.Empty(t, notificationTypes, "Set of states should be empty")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
