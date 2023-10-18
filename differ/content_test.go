@@ -11,6 +11,7 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/RedHatInsights/insights-content-service/content"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
 
@@ -61,9 +62,11 @@ func Handler(w http.ResponseWriter, r *http.Request) {
 	err := enc.Encode(con)
 	var tosend string
 	if err != nil {
-		fmt.Fprint(w, tosend)
 		return
 	}
 	tosend = temp.String()
-	fmt.Fprint(w, tosend)
+	_, err = fmt.Fprint(w, tosend)
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
 }
