@@ -1643,3 +1643,42 @@ func TestReadNotificationTypesNonEmptyRecordSet(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestReadNotificationTypesOnScanError checks if method Storage.ReadNotificationTypes returns
+// expected results on scan error.
+func TestReadNotificationTypesOnScanError(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"id", "value", "frequency", "comment"})
+
+	// these three rows should be returned
+	rows.AddRow("this is not integer!", 1000, 3, "ID=0")
+	rows.AddRow(1, 2000, 3, "ID=1")
+	rows.AddRow(2, 3000, 3, "ID=2")
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT id, value, frequency, comment FROM notification_types ORDER BY id"
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	notificationTypes, err := storage.ReadNotificationTypes()
+
+	// tested method SHOULD return an error
+	assert.Error(t, err, "an error is expected while scanning states table")
+
+	// no states should be returned
+	assert.Empty(t, notificationTypes, "Set of notification types should be empty")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
