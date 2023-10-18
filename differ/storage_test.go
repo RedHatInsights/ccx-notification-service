@@ -1506,3 +1506,61 @@ func TestDeleteRowFromNewReportsOnError(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestDeleteRowFromReported function checks the method
+// Storage.DeleteRowFromReported.
+func TestDeleteRowFromReported(t *testing.T) {
+	const cleanupStatement = "DELETE   FROM reported  WHERE org_id = \\$1    AND cluster = \\$2    AND notified_at = \\$3"
+	const orgID = 2
+	const clusterName = "00000000-0000-0000-0000-000000000000"
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	mock.ExpectExec(cleanupStatement).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	affected, err := storage.DeleteRowFromReported(types.OrgID(orgID), types.ClusterName(clusterName), types.Timestamp(time.Now()))
+	assert.Equal(t, affected, 1)
+	assert.NoError(t, err, "error was not expected while deleting one row")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestDeleteRowFromReportedOnError function checks the method
+// Storage.DeleteRowFromReported.
+func TestDeleteRowFromReportedOnError(t *testing.T) {
+	const cleanupStatement = "DELETE   FROM reported  WHERE org_id = \\$1    AND cluster = \\$2    AND notified_at = \\$3"
+	const orgID = 2
+	const clusterName = "00000000-0000-0000-0000-000000000000"
+
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	mock.ExpectExec(cleanupStatement).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	_, err := storage.DeleteRowFromReported(types.OrgID(orgID), types.ClusterName(clusterName), types.Timestamp(time.Now()))
+	assert.Error(t, err, "error was expected while deleting one row")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
