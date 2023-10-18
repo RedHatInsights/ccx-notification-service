@@ -1864,3 +1864,18 @@ func TestPrintNewReportsOnError(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestStorageClose tests method Storage.Close
+func TestStorageClose(t *testing.T) {
+	storage, err := differ.NewStorage(&conf.StorageConfiguration{
+		Driver:        "postgres",
+		PGPort:        1234,
+		PGUsername:    "user",
+		LogSQLQueries: true,
+	})
+
+	assert.NoError(t, err, "error retrieving new storage")
+
+	err = storage.Close()
+	assert.NoError(t, err, "error closing storage")
+}
