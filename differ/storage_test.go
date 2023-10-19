@@ -1989,7 +1989,7 @@ func TestPrintNewReportsForCleanupOnScanError(t *testing.T) {
 	checkAllExpectations(t, mock)
 }
 
-// TestPrintNewReportsForCleanupOnError checks if method Storage.ReadNotificationTypes returns
+// TestPrintNewReportsForCleanupOnError checks if method Storage.PrintNewReportsForCleanup returns
 // expected results on error.
 func TestPrintNewReportsForCleanupOnError(t *testing.T) {
 	const maxAge = "1 day"
@@ -2132,7 +2132,7 @@ func TestPrintOldReportsForCleanupOnScanError(t *testing.T) {
 	checkAllExpectations(t, mock)
 }
 
-// TestPrintOldReportsForCleanupOnError checks if method Storage.ReadNotificationTypes returns
+// TestPrintOldReportsForCleanupOnError checks if method Storage.PrintOldReportsForCleanup returns
 // expected results on error.
 func TestPrintOldReportsForCleanupOnError(t *testing.T) {
 	const maxAge = "1 day"
