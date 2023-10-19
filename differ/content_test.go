@@ -38,6 +38,31 @@ func TestFetchAllRulesContentOk(t *testing.T) {
 	allContentFromMap := getAllContentFromMap(rules)
 	assert.NotEmpty(t, allContentFromMap)
 	assert.Len(t, allContentFromMap, 2)
+
+	expected1 := utypes.RuleContent{
+		Plugin:     utypes.RulePluginInfo{Name: "", NodeID: "", ProductCode: "", PythonModule: ""},
+		ErrorKeys:  map[string]utypes.RuleErrorKeyContent{"err_key": utypes.RuleErrorKeyContent{Metadata: utypes.ErrorKeyMetadata{Description: "", Impact: utypes.Impact{Name: "Two", Impact: 2}, Likelihood: 0, PublishDate: "2020-04-03T16:13:30+02:00", ResolutionRisk: 3, Status: "inactive", Tags: []string(nil)}, TotalRisk: 0, Generic: "Generic message", Summary: "# Rule 1 Summary\n", Resolution: "", MoreInfo: "# Some more information\n\n## would be put\n\n### into this file\n", Reason: "Reason", HasReason: true}},
+		Generic:    "",
+		Summary:    "# Rule 1 Summary\n",
+		Resolution: "",
+		MoreInfo:   "# Some more information\n\n## would be put\n\n### into this file\n",
+		Reason:     "Reason",
+		HasReason:  true,
+	}
+
+	expected2 := utypes.RuleContent{
+		Plugin:     utypes.RulePluginInfo{Name: "", NodeID: "", ProductCode: "", PythonModule: ""},
+		ErrorKeys:  map[string]utypes.RuleErrorKeyContent{"err_key": utypes.RuleErrorKeyContent{Metadata: utypes.ErrorKeyMetadata{Description: "", Impact: utypes.Impact{Name: "", Impact: 0}, Likelihood: 0, PublishDate: "2020-04-03T16:13:30+02:00", ResolutionRisk: 0, Status: "inactive", Tags: []string(nil)}, TotalRisk: 0, Generic: "Generic", Summary: "# Rule 1 Summary\n", Resolution: "", MoreInfo: "# Some more information\n\n## would be put\n\n### into this file\n", Reason: "Reason", HasReason: true}},
+		Generic:    "",
+		Summary:    "# Rule 1 Summary\n",
+		Resolution: "",
+		MoreInfo:   "# Some more information\n\n## would be put\n\n### into this file\n",
+		Reason:     "Reason",
+		HasReason:  true,
+	}
+
+	assert.Contains(t, allContentFromMap, expected1)
+	assert.Contains(t, allContentFromMap, expected2)
 }
 
 func TestFetchAllRulesContentNoInternal(t *testing.T) {
