@@ -2022,3 +2022,36 @@ func TestPrintNewReportsForCleanupOnError(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestPrintOldReportsForCleanupEmptyRecordSet checks if method Storage.PrintOldReportsForCleanup performs
+// the right query when empty set is returned.
+func TestPrintOldReportsForCleanupEmptyRecordSet(t *testing.T) {
+	const maxAge = "1 day"
+
+	// prepare Old mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"org_id", "account_number", "cluster_name", "updated_at", "kafka_offset"})
+
+	// expected query performed by tested function
+	expectedQuery := "SELECT org_id, account_number, cluster, updated_at, 0\n\t\t  FROM reported\n\t\t WHERE updated_at < NOW\\(\\) - \\$1::INTERVAL\n\t\t ORDER BY updated_at\n"
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := storage.PrintOldReportsForCleanup(maxAge)
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying database")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
