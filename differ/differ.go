@@ -81,6 +81,18 @@ const (
 	ExitStatusServiceLogError
 )
 
+// Total risk values
+const (
+	// TotalRiskLow is the numerical representation of 'Low' total risk
+	TotalRiskLow = 1
+	// TotalRiskModerate is the numerical representation of 'Moderate' total risk
+	TotalRiskModerate = iota + 1
+	// TotalRiskImportant   is the numerical representation of 'Important  ' total risk
+	TotalRiskImportant
+	// TotalRiskCriticalis the numerical representation of 'Critical' total risk
+	TotalRiskCritical
+)
+
 // Messages
 const (
 	serviceName                 = "CCX Notification Service"
@@ -147,6 +159,11 @@ const (
 const (
 	serviceLogSummaryMaxLength     = 255
 	serviceLogDescriptionMaxLength = 4000
+
+	ServiceLogSeverityInfo     = "Info"
+	ServiceLogSeverityWarning  = "Warning"
+	ServiceLogSeverityMajor    = "Major"
+	ServiceLogSeverityCritical = "Critical"
 )
 
 // EventThresholds structure contains all threshold values for event filter
@@ -187,9 +204,13 @@ type Differ struct {
 	TagsSet            types.TagsSet
 }
 
+// TODO: same way we have a Differ struct now, we should have a struct
+// holding the details of each notification target instead of global
+// variables.
 var (
 	notificationType      types.EventType
 	notificationEventURLs NotificationURLs
+	serviceLogSeverityMap map[int]string
 )
 
 func calculateTotalRisk(impact, likelihood int) int {
@@ -244,6 +265,14 @@ func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, ev
 	return evaluator.Evaluate(eventFilter, values)
 }
 
+func setServiceLogSeverityMap() {
+	serviceLogSeverityMap = make(map[int]string, 4)
+	serviceLogSeverityMap[TotalRiskLow] = ServiceLogSeverityInfo
+	serviceLogSeverityMap[TotalRiskModerate] = ServiceLogSeverityWarning
+	serviceLogSeverityMap[TotalRiskImportant] = ServiceLogSeverityMajor
+	serviceLogSeverityMap[TotalRiskCritical] = ServiceLogSeverityCritical
+}
+
 func findRenderedReport(reports []types.RenderedReport, ruleName types.RuleName, errorKey types.ErrorKey) (types.RenderedReport, error) {
 	for _, report := range reports {
 		reportRuleName := ruleIDToRuleName(report.RuleID)
@@ -254,12 +283,12 @@ func findRenderedReport(reports []types.RenderedReport, ruleName types.RuleName,
 	return types.RenderedReport{}, fmt.Errorf(ReportNotFoundError, ruleName, errorKey)
 }
 
-func createServiceLogEntry(report *types.RenderedReport, cluster types.ClusterEntry, createdBy, username string) types.ServiceLogEntry {
+func createServiceLogEntry(report *types.RenderedReport, cluster types.ClusterEntry, createdBy, username, severity string) types.ServiceLogEntry {
 	logEntry := types.ServiceLogEntry{
 		ClusterUUID: cluster.ClusterName,
 		Description: report.Reason,
 		ServiceName: serviceName,
-		Severity:    "Info",
+		Severity:    severity,
 		Summary:     report.Description,
 		CreatedBy:   createdBy,
 		Username:    username,
@@ -334,6 +363,7 @@ func (d *Differ) getReportsWithIssuesToNotify(reports types.ReportContent, clust
 				Int(totalRiskAttribute, totalRisk).
 				Msg(ReportWithHighImpactMessage)
 
+			r.TotalRisk = eventValue.TotalRisk
 			reportsWithIssues = append(reportsWithIssues, r)
 		}
 	}
@@ -341,14 +371,14 @@ func (d *Differ) getReportsWithIssuesToNotify(reports types.ReportContent, clust
 }
 
 func (d *Differ) createAndSendServiceLogEntry(configuration *conf.ConfigStruct, renderedReport *types.RenderedReport,
-	cluster types.ClusterEntry) error {
+	totalRisk int, cluster types.ClusterEntry) error {
 	// we need to pass the correct "created_by" and "username" attributes
 	// to ServiceLog REST API
 	serviceLogConfiguration := conf.GetServiceLogConfiguration(configuration)
 	createdBy := serviceLogConfiguration.CreatedBy
 	username := serviceLogConfiguration.Username
 
-	logEntry := createServiceLogEntry(renderedReport, cluster, createdBy, username)
+	logEntry := createServiceLogEntry(renderedReport, cluster, createdBy, username, serviceLogSeverityMap[totalRisk])
 
 	msgBytes, err := json.Marshal(logEntry)
 	if err != nil {
@@ -358,6 +388,7 @@ func (d *Differ) createAndSendServiceLogEntry(configuration *conf.ConfigStruct, 
 
 	log.Debug().
 		Str(clusterAttribute, string(cluster.ClusterName)).
+		Str("message", string(msgBytes)).
 		Msg("Producing service log message")
 	_, _, err = d.Notifier.ProduceMessage(msgBytes)
 	if err != nil {
@@ -409,7 +440,7 @@ func (d *Differ) ProduceEntriesToServiceLog(configuration *conf.ConfigStruct, cl
 
 			addDetailedInfoURLToRenderedReport(&renderedReport, &configuration.ServiceLog.RuleDetailsURI)
 
-			if err = d.createAndSendServiceLogEntry(configuration, &renderedReport, cluster); err != nil {
+			if err = d.createAndSendServiceLogEntry(configuration, &renderedReport, r.TotalRisk, cluster); err != nil {
 				continue
 			}
 
@@ -528,6 +559,7 @@ func (d *Differ) processReportsByCluster(config *conf.ConfigStruct, ruleContent 
 
 	var rules types.Rules
 	if conf.GetServiceLogConfiguration(config).Enabled {
+		setServiceLogSeverityMap()
 		rules = getAllContentFromMap(ruleContent)
 	}
 

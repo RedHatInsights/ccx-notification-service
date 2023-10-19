@@ -29,9 +29,10 @@ package differ
 // https://medium.com/@robiplus/golang-trick-export-for-test-aa16cbd7b8cd
 // to see why this trick is needed.
 var (
-	NotificationType  = notificationType
-	NotificationTypes = &notificationTypes
-	States            = &states
+	NotificationType      = notificationType
+	NotificationTypes     = &notificationTypes
+	ServiceLogSeverityMap = &serviceLogSeverityMap
+	States                = &states
 
 	GetAllContentFromMap               = getAllContentFromMap
 	ConvertLogLevel                    = convertLogLevel
@@ -48,6 +49,11 @@ var (
 	GetStates            = getStates
 	GetNotificationType  = getNotificationType
 	GetNotificationTypes = getNotificationTypes
+
+	ServiceLogSummaryMaxLength     = serviceLogSummaryMaxLength
+	ServiceLogDescriptionMaxLength = serviceLogDescriptionMaxLength
+	SetServiceLogSeverityMap       = setServiceLogSeverityMap
+	CreateServiceLogEntry          = createServiceLogEntry
 )
 
 const (
