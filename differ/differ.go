@@ -101,7 +101,7 @@ const (
 	clustersAttribute           = "clusters"
 	totalRiskAttribute          = "totalRisk"
 	errorStr                    = "Error:"
-	reportWithHighImpactMessage = "Report with high impact detected"
+	ReportWithHighImpactMessage = "Report with impact higher than configured threshold detected"
 	invalidJSONContent          = "The provided content cannot be encoded as JSON."
 	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
 	tagsNotSetMessage           = "Tags for tag filter not set"
@@ -332,7 +332,8 @@ func (d *Differ) getReportsWithIssuesToNotify(reports types.ReportContent, clust
 				Int(likelihoodAttribute, likelihood).
 				Int(impactAttribute, impact).
 				Int(totalRiskAttribute, totalRisk).
-				Msg(reportWithHighImpactMessage)
+				Msg(ReportWithHighImpactMessage)
+
 			reportsWithIssues = append(reportsWithIssues, r)
 		}
 	}
@@ -463,7 +464,7 @@ func (d *Differ) produceEntriesToKafka(cluster types.ClusterEntry, ruleContent t
 				Int(likelihoodAttribute, likelihood).
 				Int(impactAttribute, impact).
 				Int(totalRiskAttribute, totalRisk).
-				Msg(reportWithHighImpactMessage)
+				Msg(ReportWithHighImpactMessage)
 			ReportWithHighImpact.Inc()
 			notificationPayloadURL := generateNotificationPayloadURL(&notificationEventURLs.RuleDetails, string(cluster.ClusterName), module, errorKey)
 			appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano))
