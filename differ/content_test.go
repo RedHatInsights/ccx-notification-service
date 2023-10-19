@@ -31,7 +31,7 @@ func makeFetchRequest(testFileName string) (rules types.RulesMap, err error) {
 	return rules, err
 }
 
-// TestFetchAllRulesContentOk cheks if the functon fetchAllRulesContent return valid  RulesMap
+// TestFetchAllRulesContentOk checks if the function fetchAllRulesContent return valid RulesMap
 func TestFetchAllRulesContentOk(t *testing.T) {
 	rules, err := makeFetchRequest("ok.json")
 	assert.NoError(t, err)
@@ -39,6 +39,7 @@ func TestFetchAllRulesContentOk(t *testing.T) {
 	assert.NotEmpty(t, allContentFromMap)
 	assert.Len(t, allContentFromMap, 2)
 }
+
 func TestFetchAllRulesContentNoInternal(t *testing.T) {
 	rules, err := makeFetchRequest("no_internal.json")
 	assert.NoError(t, err)
@@ -46,18 +47,21 @@ func TestFetchAllRulesContentNoInternal(t *testing.T) {
 	assert.NotEmpty(t, allContentFromMap)
 	assert.Len(t, allContentFromMap, 1)
 }
+
 func TestFetchAllRulesContentNoExternal(t *testing.T) {
 	rules, err := makeFetchRequest("no_external.json")
 	assert.NoError(t, err)
 	allContentFromMap := getAllContentFromMap(rules)
 	assert.Empty(t, allContentFromMap)
 }
+
 func TestFetchAllRulesContentMissing(t *testing.T) {
 	rules, err := makeFetchRequest("missing.json")
 	assert.NoError(t, err)
 	allContentFromMap := getAllContentFromMap(rules)
 	assert.Empty(t, allContentFromMap)
 }
+
 func Handler(w http.ResponseWriter, r *http.Request) {
 	var con utypes.RuleContentDirectory
 	print(r.RequestURI)
