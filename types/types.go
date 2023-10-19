@@ -153,7 +153,7 @@ type CliFlags struct {
 }
 
 // ReportContent represents the array of items expected in a report
-type ReportContent []*ReportItem
+type ReportContent []*EvaluatedReportItem
 
 // Report represents report send in a message consumed from any broker
 type Report struct {
@@ -178,6 +178,12 @@ type ReportItem struct {
 	Module   ModuleName      `json:"component"`
 	ErrorKey ErrorKey        `json:"key"`
 	Details  json.RawMessage `json:"details"`
+}
+
+// EvaluatedReportItem represents a report item with additional information after evaluation
+type EvaluatedReportItem struct {
+	ReportItem
+	TotalRisk int
 }
 
 // EventType represents the allowed event types in notification messages
