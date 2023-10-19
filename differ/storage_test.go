@@ -1884,7 +1884,6 @@ func TestStorageClose(t *testing.T) {
 // the right query when empty set is returned.
 func TestPrintNewReportsForCleanupEmptyRecordSet(t *testing.T) {
 	const maxAge = "1 day"
-	const tableName = "foo"
 
 	// prepare new mocked connection to database
 	connection, mock := mustCreateMockConnection(t)
@@ -1918,7 +1917,6 @@ func TestPrintNewReportsForCleanupEmptyRecordSet(t *testing.T) {
 // the right query when non empty set is returned.
 func TestPrintNewReportsForCleanupNonEmptyRecordSet(t *testing.T) {
 	const maxAge = "1 day"
-	const tableName = "foo"
 
 	// prepare new mocked connection to database
 	connection, mock := mustCreateMockConnection(t)
@@ -1957,7 +1955,6 @@ func TestPrintNewReportsForCleanupNonEmptyRecordSet(t *testing.T) {
 // the test for query errors.
 func TestPrintNewReportsForCleanupOnScanError(t *testing.T) {
 	const maxAge = "1 day"
-	const tableName = "foo"
 
 	// prepare new mocked connection to database
 	connection, mock := mustCreateMockConnection(t)
@@ -1996,7 +1993,6 @@ func TestPrintNewReportsForCleanupOnScanError(t *testing.T) {
 // expected results on error.
 func TestPrintNewReportsForCleanupOnError(t *testing.T) {
 	const maxAge = "1 day"
-	const tableName = "foo"
 
 	// error to be thrown
 	mockedError := errors.New("mocked error")
