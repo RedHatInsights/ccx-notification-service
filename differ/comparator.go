@@ -69,7 +69,7 @@ func getNotificationType(notificationTypes []types.NotificationType, value strin
 	return -1
 }
 
-func getNotificationResolution(issue *types.ReportItem, record *types.NotificationRecord) (resolution bool) {
+func getNotificationResolution(issue *types.EvaluatedReportItem, record *types.NotificationRecord) (resolution bool) {
 	// check if detected issue was included in older report
 	var oldReport types.Report
 	err := json.Unmarshal([]byte(record.Report), &oldReport)
@@ -85,7 +85,7 @@ func getNotificationResolution(issue *types.ReportItem, record *types.Notificati
 
 // ShouldNotify asserts whether an issue has already been sent in a previous
 // notification event
-func (d *Differ) ShouldNotify(cluster types.ClusterEntry, issue *types.ReportItem) bool {
+func (d *Differ) ShouldNotify(cluster types.ClusterEntry, issue *types.EvaluatedReportItem) bool {
 	key := types.ClusterOrgKey{OrgID: cluster.OrgID, ClusterName: cluster.ClusterName}
 	reported, ok := d.PreviouslyReported[key]
 	if !ok {
@@ -141,7 +141,7 @@ func writeNotificationRecordFailed(err error) {
 }
 
 // IssuesEqual compares two issues from reports
-func IssuesEqual(issue1, issue2 *types.ReportItem) bool {
+func IssuesEqual(issue1, issue2 *types.EvaluatedReportItem) bool {
 	/* Removing the Details' comparison as a fix for https://issues.redhat.com/browse/CCXDEV-10817*/
 	if issue1.Type == issue2.Type &&
 		issue1.Module == issue2.Module &&
@@ -155,7 +155,7 @@ func IssuesEqual(issue1, issue2 *types.ReportItem) bool {
 // IssueNotInReport searches for a specific issue in given OCP report.
 // It returns a boolean flag indicating that the report does not
 // contain the issue and thus user needs to be informed about it.
-func IssueNotInReport(oldReport types.Report, issue *types.ReportItem) bool {
+func IssueNotInReport(oldReport types.Report, issue *types.EvaluatedReportItem) bool {
 	for _, oldIssue := range oldReport.Reports {
 		if IssuesEqual(oldIssue, issue) {
 			log.Debug().Bool(resolutionKey, false).Str(resolutionReason, "issue found in previously notified report").Msg(resolutionMsg)

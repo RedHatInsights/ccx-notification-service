@@ -119,50 +119,50 @@ func TestGetNotifications(t *testing.T) {
 }
 
 func TestIssuesEqualSameIssues(t *testing.T) {
-	issue1 := types.ReportItem{
+	issue1 := types.EvaluatedReportItem{ReportItem: types.ReportItem{
 		Type:     "rule",
 		Module:   "ccx_rules_ocp.external.rules.rule_1.report",
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue"),
-	}
-	issue2 := types.ReportItem{
+	}}
+	issue2 := types.EvaluatedReportItem{ReportItem: types.ReportItem{
 		Type:     "rule",
 		Module:   "ccx_rules_ocp.external.rules.rule_1.report",
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue"),
-	}
+	}}
 	assert.True(t, differ.IssuesEqual(&issue1, &issue2), "Compared issues should be equal")
 }
 
 func TestIssuesEqualDifferentDetails(t *testing.T) {
-	issue1 := types.ReportItem{
+	issue1 := types.EvaluatedReportItem{ReportItem: types.ReportItem{
 		Type:     "rule",
 		Module:   "ccx_rules_ocp.external.rules.rule_1.report",
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue"),
-	}
-	issue2 := types.ReportItem{
+	}}
+	issue2 := types.EvaluatedReportItem{ReportItem: types.ReportItem{
 		Type:     "rule",
 		Module:   "ccx_rules_ocp.external.rules.rule_1.report",
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue is different"),
-	}
+	}}
 	assert.True(t, differ.IssuesEqual(&issue1, &issue2), "Compared issues should be equal")
 }
 
 func TestIssuesEqualDifferentModule(t *testing.T) {
-	issue1 := types.ReportItem{
+	issue1 := types.EvaluatedReportItem{ReportItem: types.ReportItem{
 		Type:     "rule",
 		Module:   "ccx_rules_ocp.external.rules.rule_1.report",
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue"),
-	}
-	issue2 := types.ReportItem{
+	}}
+	issue2 := types.EvaluatedReportItem{ReportItem: types.ReportItem{
 		Type:     "rule",
 		Module:   "ccx_rules_ocp.external.rules.rule_2.report",
 		ErrorKey: "SOME_ERROR_KEY",
 		Details:  []byte("details of the issue"),
-	}
+	}}
 	assert.False(t, differ.IssuesEqual(&issue1, &issue2), "Compared issues should not be equal")
 }
 
@@ -170,20 +170,22 @@ func TestNewIssueNotInOldReport(t *testing.T) {
 	oldReport := types.Report{
 		Reports: types.ReportContent{
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
-				ErrorKey: "SOME_ERROR_KEY",
-				Details:  []byte("details of the issue"),
+				ReportItem: types.ReportItem{
+					Type:     "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_1.report",
+					ErrorKey: "SOME_ERROR_KEY",
+					Details:  []byte("details of the issue"),
+				},
 			},
 		},
 	}
 
-	issue := types.ReportItem{
+	issue := types.EvaluatedReportItem{ReportItem: types.ReportItem{
 		Type:     "rule",
 		Module:   "ccx_rules_ocp.external.rules.rule_2.report",
 		ErrorKey: "SOME_OTHER_ERROR_KEY",
 		Details:  []byte("details of the other issue"),
-	}
+	}}
 
 	assert.True(t,
 		differ.IssueNotInReport(oldReport, &issue),
@@ -196,32 +198,38 @@ func TestIssueNotInReportSameItemsInNewReport(t *testing.T) {
 	oldReport := types.Report{
 		Reports: types.ReportContent{
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
-				ErrorKey: "SOME_ERROR_KEY",
-				Details:  []byte("details of the issue"),
+				ReportItem: types.ReportItem{
+					Type:     "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_1.report",
+					ErrorKey: "SOME_ERROR_KEY",
+					Details:  []byte("details of the issue"),
+				},
 			},
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_2.report",
-				ErrorKey: "SOME_OTHER_ERROR_KEY",
-				Details:  []byte("details of the other issue"),
+				ReportItem: types.ReportItem{
+					Type:     "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_2.report",
+					ErrorKey: "SOME_OTHER_ERROR_KEY",
+					Details:  []byte("details of the other issue"),
+				},
 			},
 		},
 	}
 	newReport := types.Report{
 		Reports: types.ReportContent{
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
-				ErrorKey: "SOME_ERROR_KEY",
-				Details:  []byte("details of the issue"),
+				ReportItem: types.ReportItem{Type: "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_1.report",
+					ErrorKey: "SOME_ERROR_KEY",
+					Details:  []byte("details of the issue"),
+				},
 			},
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_2.report",
-				ErrorKey: "SOME_OTHER_ERROR_KEY",
-				Details:  []byte("details of the other issue"),
+				ReportItem: types.ReportItem{Type: "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_2.report",
+					ErrorKey: "SOME_OTHER_ERROR_KEY",
+					Details:  []byte("details of the other issue"),
+				},
 			},
 		},
 	}
@@ -238,32 +246,39 @@ func TestIssueNotInReportSameLengthDifferentItemsInNewReport(t *testing.T) {
 	oldReport := types.Report{
 		Reports: types.ReportContent{
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
-				ErrorKey: "SOME_ERROR_KEY",
-				Details:  []byte("details of the issue"),
+				ReportItem: types.ReportItem{
+					Type:     "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_1.report",
+					ErrorKey: "SOME_ERROR_KEY",
+					Details:  []byte("details of the issue"),
+				},
 			},
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_2.report",
-				ErrorKey: "SOME_OTHER_ERROR_KEY",
-				Details:  []byte("details of the other issue"),
+				ReportItem: types.ReportItem{
+					Type:     "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_2.report",
+					ErrorKey: "SOME_OTHER_ERROR_KEY",
+					Details:  []byte("details of the other issue"),
+				},
 			},
 		},
 	}
 	newReport := types.Report{
 		Reports: types.ReportContent{
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_3.report",
-				ErrorKey: "SOME_ERROR_KEY",
-				Details:  []byte("details of the issue 3"),
+				ReportItem: types.ReportItem{
+					Type:     "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_3.report",
+					ErrorKey: "SOME_ERROR_KEY",
+					Details:  []byte("details of the issue 3"),
+				},
 			},
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_4.report",
-				ErrorKey: "SOME_OTHER_ERROR_KEY",
-				Details:  []byte("details of the other issue 4"),
+				ReportItem: types.ReportItem{Type: "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_4.report",
+					ErrorKey: "SOME_OTHER_ERROR_KEY",
+					Details:  []byte("details of the other issue 4"),
+				},
 			},
 		},
 	}
@@ -280,26 +295,30 @@ func TestIssueNotInReportLessItemsInNewReportAndIssueNotFoundInOldReports(t *tes
 	oldReport := types.Report{
 		Reports: types.ReportContent{
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
-				ErrorKey: "SOME_ERROR_KEY",
-				Details:  []byte("details of the issue"),
+				ReportItem: types.ReportItem{Type: "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_1.report",
+					ErrorKey: "SOME_ERROR_KEY",
+					Details:  []byte("details of the issue"),
+				},
 			},
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_2.report",
-				ErrorKey: "SOME_OTHER_ERROR_KEY",
-				Details:  []byte("details of the other issue"),
+				ReportItem: types.ReportItem{Type: "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_2.report",
+					ErrorKey: "SOME_OTHER_ERROR_KEY",
+					Details:  []byte("details of the other issue"),
+				},
 			},
 		},
 	}
 	newReport := types.Report{
 		Reports: types.ReportContent{
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_3.report",
-				ErrorKey: "SOME_ERROR_KEY",
-				Details:  []byte("details of the new issue"),
+				ReportItem: types.ReportItem{
+					Type:     "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_3.report",
+					ErrorKey: "SOME_ERROR_KEY",
+					Details:  []byte("details of the new issue"),
+				},
 			},
 		},
 	}
@@ -316,26 +335,30 @@ func TestIssueNotInReportLessItemsInNewReportAndIssueFoundInOldReports(t *testin
 	oldReport := types.Report{
 		Reports: types.ReportContent{
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
-				ErrorKey: "SOME_ERROR_KEY",
-				Details:  []byte("details of the issue"),
+				ReportItem: types.ReportItem{Type: "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_1.report",
+					ErrorKey: "SOME_ERROR_KEY",
+					Details:  []byte("details of the issue"),
+				},
 			},
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_2.report",
-				ErrorKey: "SOME_OTHER_ERROR_KEY",
-				Details:  []byte("details of the other issue"),
+				ReportItem: types.ReportItem{
+					Type:     "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_2.report",
+					ErrorKey: "SOME_OTHER_ERROR_KEY",
+					Details:  []byte("details of the other issue"),
+				},
 			},
 		},
 	}
 	newReport := types.Report{
 		Reports: types.ReportContent{
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
-				ErrorKey: "SOME_ERROR_KEY",
-				Details:  []byte("details of the issue"),
+				ReportItem: types.ReportItem{Type: "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_1.report",
+					ErrorKey: "SOME_ERROR_KEY",
+					Details:  []byte("details of the issue"),
+				},
 			},
 		},
 	}
@@ -365,10 +388,12 @@ func TestShouldNotifyNoPreviousRecord(t *testing.T) {
 	newReport := types.Report{
 		Reports: types.ReportContent{
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_1.report",
-				ErrorKey: "SOME_ERROR_KEY",
-				Details:  []byte("details of the issue"),
+				ReportItem: types.ReportItem{
+					Type:     "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_1.report",
+					ErrorKey: "SOME_ERROR_KEY",
+					Details:  []byte("details of the issue"),
+				},
 			},
 		},
 	}
@@ -412,10 +437,11 @@ func TestShouldNotNotifySameRuleDifferentDetails(t *testing.T) {
 	newReport := types.Report{
 		Reports: types.ReportContent{
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.rule_4.report",
-				ErrorKey: "RULE_4",
-				Details:  []byte("The details differ somehow"),
+				ReportItem: types.ReportItem{Type: "rule",
+					Module:   "ccx_rules_ocp.external.rules.rule_4.report",
+					ErrorKey: "RULE_4",
+					Details:  []byte("The details differ somehow"),
+				},
 			},
 		},
 	}
@@ -460,10 +486,12 @@ func TestShouldNotifyIssueNotFoundInPreviousRecords(t *testing.T) {
 	newReport := types.Report{
 		Reports: types.ReportContent{
 			{
-				Type:     "rule",
-				Module:   "ccx_rules_ocp.external.rules.new_rule.report",
-				ErrorKey: "NEW_RULE_NOT_PREVIOUSLY_REPORTED",
-				Details:  []byte("New rule with bunch of details"),
+				ReportItem: types.ReportItem{
+					Type:     "rule",
+					Module:   "ccx_rules_ocp.external.rules.new_rule.report",
+					ErrorKey: "NEW_RULE_NOT_PREVIOUSLY_REPORTED",
+					Details:  []byte("New rule with bunch of details"),
+				},
 			},
 		},
 	}
