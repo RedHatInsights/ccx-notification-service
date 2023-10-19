@@ -29,7 +29,7 @@ import (
 // evaluator for default expression used by Notification Service
 func TestEvaluatorDefaultExpression(t *testing.T) {
 	const expression = "totalRisk >= totalRiskThreshold"
-	const totalRiskThreshold = 3
+	const totalRiskThreshold = TotalRiskImportant
 
 	thresholds := EventThresholds{
 		Likelihood: 0,
@@ -42,7 +42,7 @@ func TestEvaluatorDefaultExpression(t *testing.T) {
 		Likelihood: 0,
 		Impact:     0,
 		Severity:   0,
-		TotalRisk:  3,
+		TotalRisk:  TotalRiskImportant,
 	}
 
 	// try all combinations of totalRisk
