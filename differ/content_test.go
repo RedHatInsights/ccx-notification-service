@@ -3,14 +3,17 @@ package differ
 import (
 	"bytes"
 	"encoding/gob"
+	"encoding/json"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
+	"os"
 	"testing"
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
-	"github.com/RedHatInsights/insights-content-service/content"
+	utypes "github.com/RedHatInsights/insights-results-types"
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 )
@@ -30,41 +33,54 @@ func makeFetchRequest(testFileName string) (rules types.RulesMap, err error) {
 
 // TestFetchAllRulesContentOk cheks if the functon fetchAllRulesContent return valid  RulesMap
 func TestFetchAllRulesContentOk(t *testing.T) {
-	rules, err := makeFetchRequest("ok")
+	rules, err := makeFetchRequest("ok.json")
 	assert.NoError(t, err)
 	allContentFromMap := getAllContentFromMap(rules)
 	assert.NotEmpty(t, allContentFromMap)
 	assert.Len(t, allContentFromMap, 2)
 }
 func TestFetchAllRulesContentNoInternal(t *testing.T) {
-	rules, err := makeFetchRequest("no_internal")
+	rules, err := makeFetchRequest("no_internal.json")
 	assert.NoError(t, err)
 	allContentFromMap := getAllContentFromMap(rules)
 	assert.NotEmpty(t, allContentFromMap)
 	assert.Len(t, allContentFromMap, 1)
 }
 func TestFetchAllRulesContentNoExternal(t *testing.T) {
-	rules, err := makeFetchRequest("no_external")
+	rules, err := makeFetchRequest("no_external.json")
 	assert.NoError(t, err)
 	allContentFromMap := getAllContentFromMap(rules)
 	assert.Empty(t, allContentFromMap)
 }
 func TestFetchAllRulesContentMissing(t *testing.T) {
-	rules, err := makeFetchRequest("missing")
+	rules, err := makeFetchRequest("missing.json")
 	assert.NoError(t, err)
 	allContentFromMap := getAllContentFromMap(rules)
 	assert.Empty(t, allContentFromMap)
 }
 func Handler(w http.ResponseWriter, r *http.Request) {
-	con, _, _ := content.ParseRuleContentDir("../" + r.RequestURI)
-	var temp bytes.Buffer
-	enc := gob.NewEncoder(&temp)
-	err := enc.Encode(con)
+	var con utypes.RuleContentDirectory
+	print(r.RequestURI)
+	jsonFile, err := os.Open(".." + r.RequestURI)
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+	jsonValue, err := io.ReadAll(jsonFile)
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+	err = json.Unmarshal(jsonValue, &con)
+	if err != nil {
+		log.Fatal().Msg(err.Error())
+	}
+	var buffer bytes.Buffer
+	enc := gob.NewEncoder(&buffer)
+	err = enc.Encode(con)
 	var tosend string
 	if err != nil {
 		return
 	}
-	tosend = temp.String()
+	tosend = buffer.String()
 	_, err = fmt.Fprint(w, tosend)
 	if err != nil {
 		log.Fatal().Msg(err.Error())
