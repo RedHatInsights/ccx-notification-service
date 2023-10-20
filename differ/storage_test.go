@@ -2186,3 +2186,27 @@ func tryToWriteNotificationRecord(storage *differ.DBStorage) error {
 
 // expected query performed by tested function
 const expectedStatementWriteNotificationReportImpl = "INSERT INTO reported \\(org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log, event_type_id\\) VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5\\, \\$6\\, \\$7\\, \\$8\\, \\$9\\, \\$10\\)"
+
+// TestWriteNotificationRecordImpl function checks the method
+// Storage.WriteNotificationRecordImpl.
+func TestWriteNotificationRecordImpl(t *testing.T) {
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	mock.ExpectExec(expectedStatementWriteNotificationReportImpl).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := tryToWriteNotificationRecord(storage)
+	assert.NoError(t, err, "error was not expected while writing report for cluster")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
