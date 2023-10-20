@@ -386,6 +386,8 @@ func (storage DBStorage) ReadClusterList() ([]types.ClusterEntry, error) {
 	}
 
 	defer func() {
+		// try to close row set in all cases
+		// even on scan error etc.
 		err := rows.Close()
 		if err != nil {
 			log.Error().Err(err).Msg(unableToCloseDBRowsHandle)
@@ -402,9 +404,6 @@ func (storage DBStorage) ReadClusterList() ([]types.ClusterEntry, error) {
 		)
 
 		if err := rows.Scan(&orgID, &accountNumber, &clusterName, &kafkaOffset, &updatedAt); err != nil {
-			if closeErr := rows.Close(); closeErr != nil {
-				log.Error().Err(closeErr).Msg(unableToCloseDBRowsHandle)
-			}
 			return clusterList, err
 		}
 		clusterList = append(clusterList, types.ClusterEntry{
