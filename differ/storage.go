@@ -345,6 +345,8 @@ func (storage DBStorage) ReadStates() ([]types.State, error) {
 	}
 
 	defer func() {
+		// try to close row set in all cases
+		// even on scan error etc.
 		err := rows.Close()
 		if err != nil {
 			log.Error().Err(err).Msg(unableToCloseDBRowsHandle)
@@ -359,9 +361,6 @@ func (storage DBStorage) ReadStates() ([]types.State, error) {
 		)
 
 		if err := rows.Scan(&id, &value, &comment); err != nil {
-			if closeErr := rows.Close(); closeErr != nil {
-				log.Error().Err(closeErr).Msg(unableToCloseDBRowsHandle)
-			}
 			return states, err
 		}
 		states = append(states, types.State{
