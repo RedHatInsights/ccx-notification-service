@@ -69,6 +69,17 @@ severity. This is an example how log entry could look like:
 }
 ```
 
+The severity field is set using a 1-1 relationship with the calculated total risk
+of the processed issues. The equivalence between our severity levels and the service
+log severity levels is as follows:
+
+```
+Critical - Critical
+Important - Major
+Moderate - Warning
+Low - Info
+```
+
 ### Formats and styles in description field
 
 The description field of logs supports markdown formatting and it is encouraged
