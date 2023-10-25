@@ -54,9 +54,8 @@ func TestAddMetricsWithNamespaceAndSubsystem(t *testing.T) {
 	assert.NotNil(t, differ.NotificationNotSentSameState)
 	assert.NotNil(t, differ.NotificationNotSentErrorState)
 	assert.NotNil(t, differ.NotificationSent)
+	assert.NotNil(t, differ.NoSeverityTotalRisk)
 }
-
-// TODO: TestPushMetrics
 
 func TestPushMetricsGatewayNotFailingWithRetriesThenOk(t *testing.T) {
 	var (

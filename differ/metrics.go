@@ -51,6 +51,7 @@ const (
 	NotificationNotSentSameStateName  = "notification_not_sent_same_state"
 	NotificationNotSentErrorStateName = "notification_not_sent_error_state"
 	NotificationSentName              = "notification_sent"
+	NoSeverityTotalRiskName           = "total_risk_no_severity"
 )
 
 // Metrics helps
@@ -66,6 +67,7 @@ const (
 	NotificationNotSentSameStateHelp  = "The total number of notifications not sent because we parsed the same report"
 	NotificationNotSentErrorStateHelp = "The total number of notifications not sent because of a Kafka producer error"
 	NotificationSentHelp              = "The total number of notifications sent"
+	NoSeverityTotalRiskHelp           = "The total number of times we handled a total risk that does not have an equivalent service log severity level"
 )
 
 // PushGatewayClient is a simple wrapper over http.Client so that prometheus
@@ -159,6 +161,12 @@ var NotificationSent = promauto.NewCounter(prometheus.CounterOpts{
 	Help: NotificationSentHelp,
 })
 
+// NoSeverityTotalRisk shows how many times a total risk not mapped to a service log severity is received
+var NoSeverityTotalRisk = promauto.NewCounter(prometheus.CounterOpts{
+	Name: NoSeverityTotalRiskName,
+	Help: NoSeverityTotalRiskHelp,
+})
+
 // AddMetricsWithNamespaceAndSubsystem register the desired metrics using a given namespace
 func AddMetricsWithNamespaceAndSubsystem(namespace, subsystem string) {
 	// exposed metrics
@@ -174,6 +182,7 @@ func AddMetricsWithNamespaceAndSubsystem(namespace, subsystem string) {
 	prometheus.Unregister(NotificationNotSentSameState)
 	prometheus.Unregister(NotificationNotSentErrorState)
 	prometheus.Unregister(NotificationSent)
+	prometheus.Unregister(NoSeverityTotalRisk)
 
 	// FetchContentErrors shows number of errors during fetch from content service
 	FetchContentErrors = promauto.NewCounter(prometheus.CounterOpts{
@@ -254,6 +263,14 @@ func AddMetricsWithNamespaceAndSubsystem(namespace, subsystem string) {
 		Name:      NotificationSentName,
 		Help:      NotificationSentHelp,
 	})
+
+	// NoSeverityTotalRisk shows  how many times a total risk not mapped to a service log severity is received
+	NoSeverityTotalRisk = promauto.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: subsystem,
+		Name:      NoSeverityTotalRiskName,
+		Help:      NoSeverityTotalRiskHelp,
+	})
 }
 
 // PushCollectedMetrics function pushes the metrics to the configured prometheus push
@@ -274,6 +291,7 @@ func PushCollectedMetrics(metricsConf *conf.MetricsConfiguration) error {
 		Collector(NotificationNotSentSameState).
 		Collector(NotificationNotSentErrorState).
 		Collector(NotificationSent).
+		Collector(NoSeverityTotalRisk).
 		Client(&client).
 		Push()
 }
