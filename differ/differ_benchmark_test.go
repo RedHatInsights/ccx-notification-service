@@ -17,8 +17,9 @@ limitations under the License.
 package differ
 
 import (
-	"github.com/RedHatInsights/ccx-notification-service/types"
 	"testing"
+
+	"github.com/RedHatInsights/ccx-notification-service/types"
 )
 
 func BenchmarkFindRenderedReport(b *testing.B) {

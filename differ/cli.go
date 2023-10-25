@@ -19,10 +19,11 @@ package differ
 import (
 	"flag"
 	"fmt"
+	"os"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/rs/zerolog/log"
-	"os"
 )
 
 // ShowVersion function displays version information.

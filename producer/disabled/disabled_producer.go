@@ -30,7 +30,7 @@ type Producer struct {
 }
 
 // ProduceMessage doesn't publish any message.
-func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID int32, offset int64, err error) {
+func (producer *Producer) ProduceMessage(_ types.ProducerMessage) (partitionID int32, offset int64, err error) {
 	return 0, -1, nil
 }
 

@@ -1025,9 +1025,8 @@ func Run() {
 		err := PerformCleanupOperation(storage, cliFlags)
 		if err != nil {
 			os.Exit(ExitStatusCleanerError)
-		} else {
-			os.Exit(ExitStatusOK)
 		}
+		os.Exit(ExitStatusOK)
 	}
 
 	// perform database cleanup on startup if specified on command line
