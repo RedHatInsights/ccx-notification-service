@@ -1,8 +1,9 @@
 name: Go linters
 
 on:
-  - push
-  - pull_request
+  push:
+    branches: ["master"]
+  pull_request:
 
 jobs:
   golint:
