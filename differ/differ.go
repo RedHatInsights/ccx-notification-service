@@ -89,8 +89,12 @@ const (
 	TotalRiskModerate = iota + 1
 	// TotalRiskImportant   is the numerical representation of 'Important  ' total risk
 	TotalRiskImportant
-	// TotalRiskCriticalis the numerical representation of 'Critical' total risk
+	// TotalRiskCritical is the numerical representation of 'Critical' total risk
 	TotalRiskCritical
+	// TotalRiskMax is the highest total risk handled
+	TotalRiskMax = TotalRiskCritical
+	// TotalRiskMin is the lowest total risk handled
+	TotalRiskMin = TotalRiskLow
 )
 
 // Messages
@@ -113,7 +117,7 @@ const (
 	clustersAttribute           = "clusters"
 	totalRiskAttribute          = "totalRisk"
 	errorStr                    = "Error:"
-	ReportWithHighImpactMessage = "Report with impact higher than configured threshold detected"
+	reportWithHighImpactMessage = "Report with impact higher than configured threshold detected"
 	invalidJSONContent          = "The provided content cannot be encoded as JSON."
 	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
 	tagsNotSetMessage           = "Tags for tag filter not set"
@@ -125,6 +129,7 @@ const (
 	onlyOneDestinationAllowed   = "Only one integration should be enabled (Kafka / Service log. Review your config."
 	configurationProblem        = "Configuration problem"
 	loadConfigurationMessage    = "Load configuration"
+	noEquivalentSeverityMessage = "No Service log severity defined for given total risk. Creating event with Info severity"
 )
 
 // Constants for notification message top level fields
@@ -361,13 +366,21 @@ func (d *Differ) getReportsWithIssuesToNotify(reports types.ReportContent, clust
 				Int(likelihoodAttribute, likelihood).
 				Int(impactAttribute, impact).
 				Int(totalRiskAttribute, totalRisk).
-				Msg(ReportWithHighImpactMessage)
+				Msg(reportWithHighImpactMessage)
 
 			r.TotalRisk = eventValue.TotalRisk
 			reportsWithIssues = append(reportsWithIssues, r)
 		}
 	}
 	return
+}
+
+func getServiceLogSeverity(totalRisk int) string {
+	if totalRisk >= TotalRiskMin && totalRisk <= TotalRiskMax {
+		return serviceLogSeverityMap[totalRisk]
+	}
+	log.Warn().Int("total_risk", totalRisk).Msg(noEquivalentSeverityMessage)
+	return ServiceLogSeverityInfo
 }
 
 func (d *Differ) createAndSendServiceLogEntry(configuration *conf.ConfigStruct, renderedReport *types.RenderedReport,
@@ -378,7 +391,7 @@ func (d *Differ) createAndSendServiceLogEntry(configuration *conf.ConfigStruct, 
 	createdBy := serviceLogConfiguration.CreatedBy
 	username := serviceLogConfiguration.Username
 
-	logEntry := createServiceLogEntry(renderedReport, cluster, createdBy, username, serviceLogSeverityMap[totalRisk])
+	logEntry := createServiceLogEntry(renderedReport, cluster, createdBy, username, getServiceLogSeverity(totalRisk))
 
 	msgBytes, err := json.Marshal(logEntry)
 	if err != nil {
@@ -495,7 +508,7 @@ func (d *Differ) produceEntriesToKafka(cluster types.ClusterEntry, ruleContent t
 				Int(likelihoodAttribute, likelihood).
 				Int(impactAttribute, impact).
 				Int(totalRiskAttribute, totalRisk).
-				Msg(ReportWithHighImpactMessage)
+				Msg(reportWithHighImpactMessage)
 			ReportWithHighImpact.Inc()
 			notificationPayloadURL := generateNotificationPayloadURL(&notificationEventURLs.RuleDetails, string(cluster.ClusterName), module, errorKey)
 			appendEventToNotificationMessage(notificationPayloadURL, &notificationMsg, description, totalRisk, time.Time(cluster.UpdatedAt).UTC().Format(time.RFC3339Nano))

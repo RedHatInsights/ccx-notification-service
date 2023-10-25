@@ -54,6 +54,7 @@ var (
 	ServiceLogDescriptionMaxLength = serviceLogDescriptionMaxLength
 	SetServiceLogSeverityMap       = setServiceLogSeverityMap
 	CreateServiceLogEntry          = createServiceLogEntry
+	GetServiceLogSeverity          = getServiceLogSeverity
 )
 
 const (
@@ -67,6 +68,8 @@ const (
 	NotificationStateSame       = notificationStateSame
 	NotificationStateLower      = notificationStateLower
 	NotificationStateError      = notificationStateError
+	ReportWithHighImpactMessage = reportWithHighImpactMessage
+	NoEquivalentSeverityMessage = noEquivalentSeverityMessage
 )
 
 func InClauseFromStringSlice(slice []string) string {
