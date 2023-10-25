@@ -21,15 +21,16 @@ package differ_test
 
 import (
 	"bytes"
+	"io"
+	"os"
+	"os/exec"
+	"testing"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/differ"
 	"github.com/RedHatInsights/insights-operator-utils/logger"
 	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
-	"io"
-	"os"
-	"os/exec"
-	"testing"
 
 	"github.com/stretchr/testify/assert"
 

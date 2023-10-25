@@ -19,10 +19,11 @@ package ocmclient
 
 import (
 	"fmt"
-	gateway "github.com/openshift-online/ocm-sdk-go"
-	"github.com/rs/zerolog/log"
 	"net/http"
 	"time"
+
+	gateway "github.com/openshift-online/ocm-sdk-go"
+	"github.com/rs/zerolog/log"
 )
 
 // OCMGateway is an implementation of the OCMClient interface

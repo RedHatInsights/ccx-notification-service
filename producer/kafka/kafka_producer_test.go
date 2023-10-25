@@ -21,14 +21,15 @@ package kafka
 
 import (
 	"encoding/json"
+	"testing"
+	"time"
+
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
 	"github.com/Shopify/sarama"
 	"github.com/Shopify/sarama/mocks"
 	"github.com/stretchr/testify/assert"
-	"testing"
-	"time"
 
 	"github.com/rs/zerolog"
 )

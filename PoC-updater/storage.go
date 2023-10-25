@@ -38,8 +38,9 @@ import (
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	//"github.com/RedHatInsights/ccx-notification-service/types"
-	"github.com/rs/zerolog/log"
 	"updater/types"
+
+	"github.com/rs/zerolog/log"
 )
 
 // Storage represents an interface to almost any database or storage system
