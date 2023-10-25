@@ -44,11 +44,9 @@ func init() {
 
 // mustLoadConfiguration function loads configuration file or the actual test
 // will fail
-func mustLoadConfiguration(envVar string) {
+func mustLoadConfiguration(t *testing.T, envVar string) {
 	_, err := conf.LoadConfiguration(envVar, "../tests/config1")
-	if err != nil {
-		panic(err)
-	}
+	helpers.FailOnError(t, err)
 }
 
 // mustSetEnv function set specified environment variable or the actual test
@@ -62,7 +60,7 @@ func mustSetEnv(t *testing.T, key, val string) {
 // with check that load was correct
 func TestLoadDefaultConfiguration(t *testing.T) {
 	os.Clearenv()
-	mustLoadConfiguration("nonExistingEnvVar")
+	mustLoadConfiguration(t, "nonExistingEnvVar")
 }
 
 // TestLoadConfigurationFromEnvVariable tests loading the config. file for
@@ -71,7 +69,7 @@ func TestLoadConfigurationFromEnvVariable(t *testing.T) {
 	os.Clearenv()
 
 	mustSetEnv(t, "CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "../tests/config2")
-	mustLoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE")
+	mustLoadConfiguration(t, "CCX_NOTIFICATION_SERVICE_CONFIG_FILE")
 }
 
 // TestLoadConfigurationNonEnvVarUnknownConfigFile tests loading an unexisting
@@ -319,7 +317,7 @@ func TestLoadConfigurationFromEnvVariableClowderEnabled(t *testing.T) {
 
 	mustSetEnv(t, "CCX_NOTIFICATION_SERVICE_CONFIG_FILE", "../tests/config2")
 	mustSetEnv(t, "ACG_CONFIG", "../tests/clowder_config.json")
-	mustLoadConfiguration("CCX_NOTIFICATION_SERVICE_CONFIG_FILE")
+	mustLoadConfiguration(t, "CCX_NOTIFICATION_SERVICE_CONFIG_FILE")
 }
 
 // TestLoadNotificationsConfiguration tests loading the notifications configuration sub-tree
@@ -610,7 +608,7 @@ func TestLoadConfigurationKafkaBrokerAuthConfigMissingSASL(t *testing.T) {
 	os.Clearenv()
 
 	var port = 1234
-	var authType clowder.BrokerConfigAuthtype = ""
+	var authType clowder.BrokerConfigAuthtype
 
 	var brokersConfig []clowder.BrokerConfig = []clowder.BrokerConfig{
 		{
@@ -658,7 +656,7 @@ func TestLoadConfigurationKafkaBrokerAuthConfig(t *testing.T) {
 	os.Clearenv()
 
 	var port = 1234
-	var authType clowder.BrokerConfigAuthtype = ""
+	var authType clowder.BrokerConfigAuthtype
 
 	var username = "username"
 	var password = "password"
