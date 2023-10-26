@@ -191,3 +191,73 @@ func TestShowConfiguration(t *testing.T) {
 	assert.Contains(t, output, "\"Pretty colored debug logging\":true")
 	assert.Contains(t, output, metricsGateway)
 }
+
+func TestDeleteOperationSpecified(t *testing.T) {
+	testcases := []struct {
+		cliFlags types.CliFlags
+		want     bool
+	}{
+		{
+			cliFlags: types.CliFlags{
+				PrintNewReportsForCleanup: true,
+				PerformNewReportsCleanup:  true,
+				PrintOldReportsForCleanup: true,
+				PerformOldReportsCleanup:  true,
+			},
+			want: true,
+		},
+		{
+			cliFlags: types.CliFlags{
+				PrintNewReportsForCleanup: false,
+				PerformNewReportsCleanup:  false,
+				PrintOldReportsForCleanup: false,
+				PerformOldReportsCleanup:  false,
+			},
+			want: false,
+		},
+		{
+			cliFlags: types.CliFlags{
+				PrintNewReportsForCleanup: true,
+				PerformNewReportsCleanup:  false,
+				PrintOldReportsForCleanup: false,
+				PerformOldReportsCleanup:  false,
+			},
+			want: true,
+		},
+		{
+			cliFlags: types.CliFlags{
+				PrintNewReportsForCleanup: false,
+				PerformNewReportsCleanup:  true,
+				PrintOldReportsForCleanup: false,
+				PerformOldReportsCleanup:  false,
+			},
+			want: true,
+		},
+		{
+			cliFlags: types.CliFlags{
+				PrintNewReportsForCleanup: false,
+				PerformNewReportsCleanup:  false,
+				PrintOldReportsForCleanup: true,
+				PerformOldReportsCleanup:  false,
+			},
+			want: true,
+		},
+		{
+			cliFlags: types.CliFlags{
+				PrintNewReportsForCleanup: false,
+				PerformNewReportsCleanup:  false,
+				PrintOldReportsForCleanup: false,
+				PerformOldReportsCleanup:  true,
+			},
+			want: true,
+		},
+	}
+
+	for _, tc := range testcases {
+		if tc.want {
+			assert.True(t, differ.DeleteOperationSpecified(tc.cliFlags), "a DELETE operation was specified in the CLI flags")
+		} else {
+			assert.False(t, differ.DeleteOperationSpecified(tc.cliFlags), "a DELETE operation wasn't specified in the CLI flags")
+		}
+	}
+}

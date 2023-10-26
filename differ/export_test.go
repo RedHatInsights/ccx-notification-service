@@ -55,6 +55,7 @@ var (
 	SetServiceLogSeverityMap       = setServiceLogSeverityMap
 	CreateServiceLogEntry          = createServiceLogEntry
 	GetServiceLogSeverity          = getServiceLogSeverity
+	DeleteOperationSpecified       = deleteOperationSpecified
 )
 
 const (
