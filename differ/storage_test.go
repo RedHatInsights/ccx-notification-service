@@ -2270,6 +2270,7 @@ const expectedStatementWriteNotificationReport = "INSERT INTO reported \\(org_id
 // TestWriteNotificationRecord function checks the method
 // Storage.WriteNotificationRecord.
 func TestWriteNotificationRecord(t *testing.T) {
+	// empty record to be stored in database
 	notificationRecord := types.NotificationRecord{}
 
 	// prepare new mocked connection to database
@@ -2295,6 +2296,7 @@ func TestWriteNotificationRecord(t *testing.T) {
 // TestWriteNotificationRecordOnError function checks the method
 // Storage.WriteNotificationRecord.
 func TestWriteNotificationRecordOnError(t *testing.T) {
+	// empty record to be stored in database
 	notificationRecord := types.NotificationRecord{}
 
 	// error to be thrown
@@ -2325,6 +2327,7 @@ func TestWriteNotificationRecordOnError(t *testing.T) {
 // TestWriteNotificationRecordWrongDriver function checks the method
 // Storage.WriteNotificationRecord.
 func TestWriteNotificationRecordWrongDriver(t *testing.T) {
+	// empty record to be stored in database
 	notificationRecord := types.NotificationRecord{}
 
 	// prepare new mocked connection to database
