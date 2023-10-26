@@ -2166,7 +2166,7 @@ func TestPrintOldReportsForCleanupOnError(t *testing.T) {
 	checkAllExpectations(t, mock)
 }
 
-func tryToWriteNotificationRecord(storage *differ.DBStorage) error {
+func tryToWriteNotificationRecordImpl(storage *differ.DBStorage) error {
 	// insert parameters
 	orgID := types.OrgID(1)
 	accountNumber := types.AccountNumber(2)
@@ -2201,7 +2201,7 @@ func TestWriteNotificationRecordImpl(t *testing.T) {
 	storage := differ.NewFromConnection(connection, 1)
 
 	// call the tested method
-	err := tryToWriteNotificationRecord(storage)
+	err := tryToWriteNotificationRecordImpl(storage)
 	assert.NoError(t, err, "error was not expected while writing report for cluster")
 
 	// connection to mocked DB needs to be closed properly
@@ -2227,7 +2227,7 @@ func TestWriteNotificationRecordImplOnError(t *testing.T) {
 	storage := differ.NewFromConnection(connection, 1)
 
 	// call the tested method
-	err := tryToWriteNotificationRecord(storage)
+	err := tryToWriteNotificationRecordImpl(storage)
 
 	// error is expected to be returned from called method
 	assert.Error(t, err, "error was expected while writing error report")
@@ -2252,7 +2252,7 @@ func TestWriteNotificationRecordImplWrongDriver(t *testing.T) {
 	storage := differ.NewFromConnection(connection, wrongDatabaseDriver)
 
 	// call the tested method
-	err := tryToWriteNotificationRecord(storage)
+	err := tryToWriteNotificationRecordImpl(storage)
 
 	// error is expected to be returned from called method
 	assert.Error(t, err, "error was expected while writing error report")
