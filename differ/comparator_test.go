@@ -54,7 +54,7 @@ var (
 		},
 	}
 
-	notificationTypesList = []types.NotificationType{
+	notificationTypesListInstantOnly = []types.NotificationType{
 		{
 			ID:        1,
 			Value:     differ.NotificationTypeInstant,
@@ -99,15 +99,15 @@ func TestGetStates(t *testing.T) {
 }
 
 func TestGetNotificationType(t *testing.T) {
-	assert.Equal(t, types.NotificationTypeID(1), differ.GetNotificationType(notificationTypesList, differ.NotificationTypeInstant))
-	assert.Equal(t, types.NotificationTypeID(-1), differ.GetNotificationType(notificationTypesList, "any_other_type"))
+	assert.Equal(t, types.NotificationTypeID(1), differ.GetNotificationType(notificationTypesListInstantOnly, differ.NotificationTypeInstant))
+	assert.Equal(t, types.NotificationTypeID(-1), differ.GetNotificationType(notificationTypesListInstantOnly, "any_other_type"))
 }
 
 func TestGetNotifications(t *testing.T) {
 	storage := mocks.Storage{}
 	storage.On("ReadNotificationTypes").Return(
 		func() []types.NotificationType {
-			return notificationTypesList
+			return notificationTypesListInstantOnly
 		},
 		func() error {
 			return nil
@@ -116,6 +116,8 @@ func TestGetNotifications(t *testing.T) {
 
 	assert.Nil(t, differ.GetNotificationTypes(&storage))
 	assert.Equal(t, types.NotificationTypeID(1), differ.NotificationTypes.Instant)
+	// reset it to not affect other tests
+	differ.NotificationTypes.Instant = 0
 }
 
 func TestIssuesEqualSameIssues(t *testing.T) {

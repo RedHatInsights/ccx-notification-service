@@ -56,15 +56,53 @@ var (
 	testOffset      = 0
 )
 
-type Payload struct {
-	PublishDate     string `json:"publish_date"`
-	RuleDescription string `json:"rule_description"`
-	RuleURL         string `json:"rule_url"`
-	TotalRisk       string `json:"total_risk"`
-}
-
 func init() {
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
+}
+
+// ---------------------------------------------------------------------------------------
+func TestSetupNotificationTypesReadOk(t *testing.T) {
+	assert.Equal(t, &types.NotificationTypes{Instant: 0, Weekly: 0}, differ.NotificationTypes)
+
+	// if there is something in the DB - it should set properly
+	stor := &mocks.Storage{}
+	stor.On("ReadNotificationTypes").Return(
+		func() []types.NotificationType {
+			return notificationTypesListInstantOnly
+		},
+		func() error {
+			return nil
+		},
+	)
+	differ.SetupNotificationTypes(stor)
+	assert.Equal(t, &types.NotificationTypes{Instant: 1, Weekly: 0}, differ.NotificationTypes)
+	// reset it to not affect other tests
+	differ.NotificationTypes.Instant = 0
+}
+
+func TestSetupNotificationTypesError(t *testing.T) {
+	if os.Getenv("SETUP_NOTIF_TYPE_ERORR") == "1" {
+		stor := &mocks.Storage{}
+		stor.On("ReadNotificationTypes").Return(
+			func() []types.NotificationType {
+				n := make([]types.NotificationType, 0)
+				return n
+			},
+			func() error {
+				return sql.ErrNoRows
+			},
+		)
+		differ.SetupNotificationTypes(stor)
+	}
+	cmd := exec.Command(os.Args[0], "-test.run=TestSetupNotificationTypesError")
+	cmd.Env = append(os.Environ(), "SETUP_NOTIF_TYPE_ERORR=1")
+	err := cmd.Run()
+	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != differ.ExitStatusStorageError {
+		t.Fatalf(
+			"Should exit with status ExitStatusStorageError(%d). Got status %d",
+			differ.ExitStatusStorageError,
+			e.ExitCode())
+	}
 }
 
 // ---------------------------------------------------------------------------------------
