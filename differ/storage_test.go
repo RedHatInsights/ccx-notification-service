@@ -2351,3 +2351,27 @@ func TestWriteNotificationRecordWrongDriver(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+func tryToWriteNotificationRecordForCluster(storage *differ.DBStorage) error {
+	// insert parameters
+	notificationTypeID := types.NotificationTypeID(0)
+	stateID := types.StateID(0)
+	report := types.ClusterReport("")
+	notifiedAt := types.Timestamp(time.Now())
+	errorLog := ""
+	eventTarget := types.EventTarget(1)
+
+	clusterEntry := types.ClusterEntry{
+		OrgID:         types.OrgID(1),
+		AccountNumber: types.AccountNumber(2),
+		ClusterName:   types.ClusterName("foo"),
+	}
+
+	// call the tested function
+	return storage.WriteNotificationRecordForCluster(clusterEntry,
+		notificationTypeID, stateID, report, notifiedAt,
+		errorLog, eventTarget)
+}
+
+// expected query performed by tested function
+const expectedStatementWriteNotificationReportForCluster = "INSERT INTO reported \\(org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log, event_type_id\\) VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5\\, \\$6\\, \\$7\\, \\$8\\, \\$9\\, \\$10\\)"
