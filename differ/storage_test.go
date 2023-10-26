@@ -2166,7 +2166,7 @@ func TestPrintOldReportsForCleanupOnError(t *testing.T) {
 	checkAllExpectations(t, mock)
 }
 
-func tryToWriteNotificationRecord(storage *differ.DBStorage) error {
+func tryToWriteNotificationRecordImpl(storage *differ.DBStorage) error {
 	// insert parameters
 	orgID := types.OrgID(1)
 	accountNumber := types.AccountNumber(2)
@@ -2201,7 +2201,7 @@ func TestWriteNotificationRecordImpl(t *testing.T) {
 	storage := differ.NewFromConnection(connection, 1)
 
 	// call the tested method
-	err := tryToWriteNotificationRecord(storage)
+	err := tryToWriteNotificationRecordImpl(storage)
 	assert.NoError(t, err, "error was not expected while writing report for cluster")
 
 	// connection to mocked DB needs to be closed properly
@@ -2227,7 +2227,7 @@ func TestWriteNotificationRecordImplOnError(t *testing.T) {
 	storage := differ.NewFromConnection(connection, 1)
 
 	// call the tested method
-	err := tryToWriteNotificationRecord(storage)
+	err := tryToWriteNotificationRecordImpl(storage)
 
 	// error is expected to be returned from called method
 	assert.Error(t, err, "error was expected while writing error report")
@@ -2252,7 +2252,92 @@ func TestWriteNotificationRecordImplWrongDriver(t *testing.T) {
 	storage := differ.NewFromConnection(connection, wrongDatabaseDriver)
 
 	// call the tested method
-	err := tryToWriteNotificationRecord(storage)
+	err := tryToWriteNotificationRecordImpl(storage)
+
+	// error is expected to be returned from called method
+	assert.Error(t, err, "error was expected while writing error report")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// expected query performed by tested function
+const expectedStatementWriteNotificationReport = "INSERT INTO reported \\(org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log, event_type_id\\) VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5\\, \\$6\\, \\$7\\, \\$8\\, \\$9\\, \\$10\\)"
+
+// TestWriteNotificationRecord function checks the method
+// Storage.WriteNotificationRecord.
+func TestWriteNotificationRecord(t *testing.T) {
+	notificationRecord := types.NotificationRecord{}
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	mock.ExpectExec(expectedStatementWriteNotificationReport).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := storage.WriteNotificationRecord(&notificationRecord)
+	assert.NoError(t, err, "error was not expected while writing report for cluster")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestWriteNotificationRecordOnError function checks the method
+// Storage.WriteNotificationRecord.
+func TestWriteNotificationRecordOnError(t *testing.T) {
+	notificationRecord := types.NotificationRecord{}
+
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	mock.ExpectExec(expectedStatementWriteNotificationReport).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := storage.WriteNotificationRecord(&notificationRecord)
+
+	// error is expected to be returned from called method
+	assert.Error(t, err, "error was expected while writing error report")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestWriteNotificationRecordWrongDriver function checks the method
+// Storage.WriteNotificationRecord.
+func TestWriteNotificationRecordWrongDriver(t *testing.T) {
+	notificationRecord := types.NotificationRecord{}
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected database operations
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, wrongDatabaseDriver)
+
+	// call the tested method
+	err := storage.WriteNotificationRecord(&notificationRecord)
 
 	// error is expected to be returned from called method
 	assert.Error(t, err, "error was expected while writing error report")
