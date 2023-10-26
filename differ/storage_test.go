@@ -2321,3 +2321,30 @@ func TestWriteNotificationRecordOnError(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestWriteNotificationRecordWrongDriver function checks the method
+// Storage.WriteNotificationRecord.
+func TestWriteNotificationRecordWrongDriver(t *testing.T) {
+	notificationRecord := types.NotificationRecord{}
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected database operations
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, wrongDatabaseDriver)
+
+	// call the tested method
+	err := storage.WriteNotificationRecord(&notificationRecord)
+
+	// error is expected to be returned from called method
+	assert.Error(t, err, "error was expected while writing error report")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
