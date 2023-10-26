@@ -44,11 +44,12 @@ var (
 	ModuleToRuleName                   = moduleToRuleName
 	AssertNotificationDestination      = assertNotificationDestination
 
-	CheckArgs            = checkArgs
-	GetState             = getState
-	GetStates            = getStates
-	GetNotificationType  = getNotificationType
-	GetNotificationTypes = getNotificationTypes
+	CheckArgs              = checkArgs
+	GetState               = getState
+	GetStates              = getStates
+	GetNotificationType    = getNotificationType
+	GetNotificationTypes   = getNotificationTypes
+	SetupNotificationTypes = setupNotificationTypes
 
 	ServiceLogSummaryMaxLength     = serviceLogSummaryMaxLength
 	ServiceLogDescriptionMaxLength = serviceLogDescriptionMaxLength
