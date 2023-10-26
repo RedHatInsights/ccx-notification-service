@@ -2270,6 +2270,7 @@ const expectedStatementWriteNotificationReport = "INSERT INTO reported \\(org_id
 // TestWriteNotificationRecord function checks the method
 // Storage.WriteNotificationRecord.
 func TestWriteNotificationRecord(t *testing.T) {
+	// empty record to be stored in database
 	notificationRecord := types.NotificationRecord{}
 
 	// prepare new mocked connection to database
@@ -2295,6 +2296,7 @@ func TestWriteNotificationRecord(t *testing.T) {
 // TestWriteNotificationRecordOnError function checks the method
 // Storage.WriteNotificationRecord.
 func TestWriteNotificationRecordOnError(t *testing.T) {
+	// empty record to be stored in database
 	notificationRecord := types.NotificationRecord{}
 
 	// error to be thrown
@@ -2325,6 +2327,7 @@ func TestWriteNotificationRecordOnError(t *testing.T) {
 // TestWriteNotificationRecordWrongDriver function checks the method
 // Storage.WriteNotificationRecord.
 func TestWriteNotificationRecordWrongDriver(t *testing.T) {
+	// empty record to be stored in database
 	notificationRecord := types.NotificationRecord{}
 
 	// prepare new mocked connection to database
@@ -2338,6 +2341,106 @@ func TestWriteNotificationRecordWrongDriver(t *testing.T) {
 
 	// call the tested method
 	err := storage.WriteNotificationRecord(&notificationRecord)
+
+	// error is expected to be returned from called method
+	assert.Error(t, err, "error was expected while writing error report")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+func tryToWriteNotificationRecordForCluster(storage *differ.DBStorage) error {
+	// insert parameters
+	notificationTypeID := types.NotificationTypeID(0)
+	stateID := types.StateID(0)
+	report := types.ClusterReport("")
+	notifiedAt := types.Timestamp(time.Now())
+	errorLog := ""
+	eventTarget := types.EventTarget(1)
+
+	clusterEntry := types.ClusterEntry{
+		OrgID:         types.OrgID(1),
+		AccountNumber: types.AccountNumber(2),
+		ClusterName:   types.ClusterName("foo"),
+	}
+
+	// call the tested function
+	return storage.WriteNotificationRecordForCluster(clusterEntry,
+		notificationTypeID, stateID, report, notifiedAt,
+		errorLog, eventTarget)
+}
+
+// expected query performed by tested function
+const expectedStatementWriteNotificationReportForCluster = "INSERT INTO reported \\(org_id, account_number, cluster, notification_type, state, report, updated_at, notified_at, error_log, event_type_id\\) VALUES \\(\\$1, \\$2, \\$3, \\$4, \\$5\\, \\$6\\, \\$7\\, \\$8\\, \\$9\\, \\$10\\)"
+
+// TestWriteNotificationRecordForCluster function checks the method
+// Storage.WriteNotificationRecordForCluster.
+func TestWriteNotificationRecordForCluster(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	mock.ExpectExec(expectedStatementWriteNotificationReportForCluster).WillReturnResult(sqlmock.NewResult(1, 1))
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := tryToWriteNotificationRecordForCluster(storage)
+	assert.NoError(t, err, "error was not expected while writing report for cluster")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestWriteNotificationRecordForClusterOnError function checks the method
+// Storage.WriteNotificationRecordForCluster.
+func TestWriteNotificationRecordForClusterOnError(t *testing.T) {
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	mock.ExpectExec(expectedStatementWriteNotificationReportForCluster).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	err := tryToWriteNotificationRecordForCluster(storage)
+
+	// error is expected to be returned from called method
+	assert.Error(t, err, "error was expected while writing error report")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestWriteNotificationRecordForClusterWrongDriver function checks the method
+// Storage.WriteNotificationRecordForCluster.
+func TestWriteNotificationRecordForClusterWrongDriver(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected database operations
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, wrongDatabaseDriver)
+
+	// call the tested method
+	err := tryToWriteNotificationRecordForCluster(storage)
 
 	// error is expected to be returned from called method
 	assert.Error(t, err, "error was expected while writing error report")
