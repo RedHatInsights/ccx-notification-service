@@ -58,6 +58,7 @@ var (
 	GetServiceLogSeverity          = getServiceLogSeverity
 	DeleteOperationSpecified       = deleteOperationSpecified
 	CloseStorage                   = closeStorage
+	PrintNewReportsForCleanup      = printNewReportsForCleanup
 )
 
 const (
