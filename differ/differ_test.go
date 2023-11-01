@@ -1307,3 +1307,15 @@ func TestConvertLogLevel(t *testing.T) {
 		assert.Equal(t, output, td.Output)
 	}
 }
+
+// Test the function closeStorage from differ.go
+func TestCloseStorage(t *testing.T) {
+	config := conf.StorageConfiguration{
+		Driver: "sqlite3",
+	}
+	storage, err := differ.NewStorage(&config)
+	assert.Nil(t, err, "Storage should be created w/o error")
+
+	err = differ.CloseStorage(storage)
+	assert.Nil(t, err, "Storage should be closed w/o error")
+}
