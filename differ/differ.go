@@ -818,7 +818,8 @@ func assertNotificationDestination(config *conf.ConfigStruct) {
 	}
 }
 
-func (d *Differ) retrievePreviouslyReportedForEventTarget(cooldown string, target types.EventTarget, clusters []types.ClusterEntry) {
+// RetrievePreviouslyReportedForEventTarget reads previously reported issues
+func (d *Differ) RetrievePreviouslyReportedForEventTarget(cooldown string, target types.EventTarget, clusters []types.ClusterEntry) {
 	log.Info().Msg("Reading previously reported issues for given cluster list...")
 	var err error
 	d.PreviouslyReported, err = d.Storage.ReadLastNotifiedRecordForClusterList(clusters, cooldown, target)
@@ -879,7 +880,7 @@ func (d *Differ) start(config *conf.ConfigStruct) {
 	}
 	log.Info().Int(clustersAttribute, entries).Msg("Read cluster list: done")
 	log.Info().Msg(separator)
-	d.retrievePreviouslyReportedForEventTarget(d.CoolDown, d.Target, clusters)
+	d.RetrievePreviouslyReportedForEventTarget(d.CoolDown, d.Target, clusters)
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
 	d.ProcessClusters(config, ruleContent, clusters)
