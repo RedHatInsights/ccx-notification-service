@@ -818,7 +818,7 @@ func assertNotificationDestination(config *conf.ConfigStruct) {
 	}
 }
 
-// function reads previously reported issues
+// RetrievePreviouslyReportedForEventTarget reads previously reported issues
 func (d *Differ) RetrievePreviouslyReportedForEventTarget(cooldown string, target types.EventTarget, clusters []types.ClusterEntry) {
 	log.Info().Msg("Reading previously reported issues for given cluster list...")
 	var err error
