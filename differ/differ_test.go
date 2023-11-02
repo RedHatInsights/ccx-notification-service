@@ -1434,3 +1434,14 @@ func TestRetrievePreviouslyReportedForEventTargetEmptyClusterEntries(t *testing.
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"message\":\"Reading previously reported issues for given cluster list...\"}\n{\"level\":\"info\",\"target\":1,\"retrieved\":0,\"message\":\"Done reading previously reported issues still in cool down\"}\n")
 }
+// Test the function closeStorage from differ.go
+func TestCloseStorage(t *testing.T) {
+	config := conf.StorageConfiguration{
+		Driver: "sqlite3",
+	}
+	storage, err := differ.NewStorage(&config)
+	assert.Nil(t, err, "Storage should be created w/o error")
+
+	err = differ.CloseStorage(storage)
+	assert.Nil(t, err, "Storage should be closed w/o error")
+}
