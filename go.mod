@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.3.1
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/openshift-online/ocm-sdk-go v0.1.377
+	github.com/openshift-online/ocm-sdk-go v0.1.381
 	github.com/prometheus/client_golang v1.17.0
 	github.com/redhatinsights/app-common-go v1.6.3
 	github.com/rs/zerolog v1.31.0
