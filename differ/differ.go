@@ -920,11 +920,11 @@ func (d *Differ) close() {
 	log.Info().Msg(separator)
 }
 
-// setupFiltersAndThresholds function setup both techniques that can be used to
+// SetupFiltersAndThresholds function setup both techniques that can be used to
 // filter messages sent to targets (Notification backend and ServiceLog at this moment):
 //  1. filter based on likelihood, impact, severity, and total risk
 //  2. filter based on rule type that's identified by tags
-func (d *Differ) setupFiltersAndThresholds(config *conf.ConfigStruct) {
+func (d *Differ) SetupFiltersAndThresholds(config *conf.ConfigStruct) {
 	kafkaBrokerConfiguration := conf.GetKafkaBrokerConfiguration(config)
 	if kafkaBrokerConfiguration.Enabled {
 		d.Thresholds = EventThresholds{
@@ -1098,7 +1098,7 @@ func New(config *conf.ConfigStruct, storage Storage) *Differ {
 		d.setupServiceLogProducer(config)
 		d.CoolDown = conf.GetServiceLogConfiguration(config).Cooldown
 	}
-	d.setupFiltersAndThresholds(config)
+	d.SetupFiltersAndThresholds(config)
 
 	return &d
 }
