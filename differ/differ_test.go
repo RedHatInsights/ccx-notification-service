@@ -1446,3 +1446,107 @@ func TestCloseStorage(t *testing.T) {
 	err = differ.CloseStorage(storage)
 	assert.Nil(t, err, "Storage should be closed w/o error")
 }
+
+// TestSetupFiltersAndThresholds_Kafka tests proper configuration of filters and thresholds based on config
+func TestSetupFiltersAndThresholds_Kafka(t *testing.T) {
+	tagsSet := types.MakeSetOfTags([]string{"tag1", "tag2"})
+
+	testConfig := conf.ConfigStruct{
+		Kafka: conf.KafkaConfiguration{
+			Address:             "localhost:9092",
+			Topic:               "platform.notifications.ingress",
+			Enabled:             true,
+			LikelihoodThreshold: 1,
+			ImpactThreshold:     2,
+			SeverityThreshold:   3,
+			TotalRiskThreshold:  4,
+			TagFilterEnabled:    true,
+			TagsSet:             tagsSet,
+		},
+	}
+
+	expectedThresholds := differ.EventThresholds{
+		Likelihood: 1,
+		Impact:     2,
+		Severity:   3,
+		TotalRisk:  4,
+	}
+
+	d := differ.Differ{}
+	d.SetupFiltersAndThresholds(&testConfig)
+
+	assert.Equal(t, d.Thresholds, expectedThresholds)
+	assert.Equal(t, d.Filter, differ.DefaultEventFilter)
+	assert.Equal(t, d.FilterByTag, true)
+	assert.Equal(t, d.TagsSet, tagsSet)
+}
+
+// TestSetupFiltersAndThresholds_Kafka_NonDefaultFilter tests proper configuration of differ event filter
+func TestSetupFiltersAndThresholds_Kafka_NonDefaultFilter(t *testing.T) {
+	const customFilter = "totalRisk >= totalRiskThreshold && likelihood+2 > likelihoodThreshold"
+
+	testConfig := conf.ConfigStruct{
+		Kafka: conf.KafkaConfiguration{
+			Address:     "localhost:9092",
+			Topic:       "platform.notifications.ingress",
+			Enabled:     true,
+			EventFilter: customFilter,
+		},
+	}
+
+	d := differ.Differ{}
+	d.SetupFiltersAndThresholds(&testConfig)
+
+	assert.Equal(t, d.Filter, customFilter)
+}
+
+// TestSetupFiltersAndThresholds_Servicelog tests proper configuration of filters and thresholds based on config
+func TestSetupFiltersAndThresholds_Servicelog(t *testing.T) {
+	tagsSet := types.MakeSetOfTags([]string{"tag1", "tag2"})
+
+	testConfig := conf.ConfigStruct{
+		ServiceLog: conf.ServiceLogConfiguration{
+			URL:                 "localhost:9092",
+			Enabled:             true,
+			LikelihoodThreshold: 1,
+			ImpactThreshold:     2,
+			SeverityThreshold:   3,
+			TotalRiskThreshold:  4,
+			TagFilterEnabled:    true,
+			TagsSet:             tagsSet,
+		},
+	}
+
+	expectedThresholds := differ.EventThresholds{
+		Likelihood: 1,
+		Impact:     2,
+		Severity:   3,
+		TotalRisk:  4,
+	}
+
+	d := differ.Differ{}
+	d.SetupFiltersAndThresholds(&testConfig)
+
+	assert.Equal(t, d.Thresholds, expectedThresholds)
+	assert.Equal(t, d.Filter, differ.DefaultEventFilter)
+	assert.Equal(t, d.FilterByTag, true)
+	assert.Equal(t, d.TagsSet, tagsSet)
+}
+
+// TestSetupFiltersAndThresholds_Servicelog_NonDefaultFilter tests proper configuration of differ event filter
+func TestSetupFiltersAndThresholds_Servicelog_NonDefaultFilter(t *testing.T) {
+	const customFilter = "totalRisk >= totalRiskThreshold && likelihood+2 > likelihoodThreshold"
+
+	testConfig := conf.ConfigStruct{
+		ServiceLog: conf.ServiceLogConfiguration{
+			URL:         "localhost:9092",
+			Enabled:     true,
+			EventFilter: customFilter,
+		},
+	}
+
+	d := differ.Differ{}
+	d.SetupFiltersAndThresholds(&testConfig)
+
+	assert.Equal(t, d.Filter, customFilter)
+}
