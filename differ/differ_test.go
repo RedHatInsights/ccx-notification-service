@@ -1439,6 +1439,43 @@ func TestSetupFiltersAndThresholds_Servicelog_NonDefaultFilter(t *testing.T) {
 	assert.Equal(t, d.Filter, customFilter)
 }
 
-func TestRun(t *testing.T) {
-	// differ.Run()
+func TestRunStatusStorageError(t *testing.T) {
+	retval := differ.Run(conf.ConfigStruct{}, types.CliFlags{})
+	assert.Equal(t, differ.ExitStatusStorageError, retval)
+}
+
+func TestRunStatusCleanerError(t *testing.T) {
+	config := conf.ConfigStruct{
+		Storage: conf.StorageConfiguration{
+			Driver: "sqlite3",
+		},
+	}
+	cliFlags := types.CliFlags{
+		PrintNewReportsForCleanup: true,
+	}
+	retval := differ.Run(config, cliFlags)
+	assert.Equal(t, differ.ExitStatusCleanerError, retval)
+}
+
+func TestRunStatusCleanerError2(t *testing.T) {
+	config := conf.ConfigStruct{
+		Storage: conf.StorageConfiguration{
+			Driver: "sqlite3",
+		},
+	}
+	cliFlags := types.CliFlags{
+		CleanupOnStartup: true,
+	}
+	retval := differ.Run(config, cliFlags)
+	assert.Equal(t, differ.ExitStatusCleanerError, retval)
+}
+
+func TestRunDifferNewError(t *testing.T) {
+	config := conf.ConfigStruct{
+		Storage: conf.StorageConfiguration{
+			Driver: "sqlite3",
+		},
+	}
+	retval := differ.Run(config, types.CliFlags{})
+	assert.Equal(t, differ.ExitStatusFetchContentError, retval)
 }
