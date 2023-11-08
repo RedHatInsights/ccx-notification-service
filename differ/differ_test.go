@@ -74,8 +74,9 @@ func TestSetupNotificationTypesReadOk(t *testing.T) {
 			return nil
 		},
 	)
-	differ.SetupNotificationTypes(stor)
+	err := differ.SetupNotificationTypes(stor)
 	assert.Equal(t, &types.NotificationTypes{Instant: 1, Weekly: 0}, differ.NotificationTypes)
+	assert.Nil(t, err)
 	// reset it to not affect other tests
 	differ.NotificationTypes.Instant = 0
 }
@@ -244,7 +245,8 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 
 	d := differ.Differ{}
 
-	d.SetupKafkaProducer(&testConfig)
+	err := d.SetupKafkaProducer(&testConfig)
+	assert.Nil(t, err)
 
 	producer := d.Notifier.(*kafka.Producer)
 
@@ -254,14 +256,14 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 	assert.Nil(t, kafkaProducer.Producer, "Unexpected behavior: Producer was not set up correctly")
 	assert.NotNil(t, producer.Producer, "Unexpected behavior: Producer was not set up correctly")
 
-	err := d.Notifier.Close()
+	err = d.Notifier.Close()
 	assert.Nil(t, err, "Unexpected behavior: Producer was not closed successfully")
 }
 
 func TestNewDifferNoDestination(t *testing.T) {
 	testConfig := conf.ConfigStruct{}
 	_, err := differ.New(&testConfig, nil)
-	assert.Nil(t, err)
+	assert.ErrorIs(t, err, &differ.StatusConfiguration{})
 }
 
 // ---------------------------------------------------------------------------------------
@@ -1271,7 +1273,8 @@ func TestRetrievePreviouslyReportedForEventTarget(t *testing.T) {
 		WithArgs(timeOffset).
 		WillReturnRows(rows)
 
-	d.RetrievePreviouslyReportedForEventTarget(timeOffset, types.NotificationBackendTarget, clusterEntries)
+	err := d.RetrievePreviouslyReportedForEventTarget(timeOffset, types.NotificationBackendTarget, clusterEntries)
+	assert.Nil(t, err)
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"message\":\"Reading previously reported issues for given cluster list...\"}\n{\"level\":\"info\",\"target\":1,\"retrieved\":2,\"message\":\"Done reading previously reported issues still in cool down\"}\n")
 }
@@ -1317,7 +1320,8 @@ func TestRetrievePreviouslyReportedForEventTargetEmptyClusterEntries(t *testing.
 	}
 
 	// call tested method
-	d.RetrievePreviouslyReportedForEventTarget(timeOffset, types.NotificationBackendTarget, clusterEntries)
+	err := d.RetrievePreviouslyReportedForEventTarget(timeOffset, types.NotificationBackendTarget, clusterEntries)
+	assert.Nil(t, err)
 	// test returned values
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"message\":\"Reading previously reported issues for given cluster list...\"}\n{\"level\":\"info\",\"target\":1,\"retrieved\":0,\"message\":\"Done reading previously reported issues still in cool down\"}\n")
@@ -1361,8 +1365,9 @@ func TestSetupFiltersAndThresholds_Kafka(t *testing.T) {
 	}
 
 	d := differ.Differ{}
-	d.SetupFiltersAndThresholds(&testConfig)
+	err := d.SetupFiltersAndThresholds(&testConfig)
 
+	assert.Nil(t, err)
 	assert.Equal(t, d.Thresholds, expectedThresholds)
 	assert.Equal(t, d.Filter, differ.DefaultEventFilter)
 	assert.Equal(t, d.FilterByTag, true)
@@ -1383,8 +1388,9 @@ func TestSetupFiltersAndThresholds_Kafka_NonDefaultFilter(t *testing.T) {
 	}
 
 	d := differ.Differ{}
-	d.SetupFiltersAndThresholds(&testConfig)
+	err := d.SetupFiltersAndThresholds(&testConfig)
 
+	assert.Nil(t, err)
 	assert.Equal(t, d.Filter, customFilter)
 }
 
@@ -1413,8 +1419,9 @@ func TestSetupFiltersAndThresholds_Servicelog(t *testing.T) {
 	}
 
 	d := differ.Differ{}
-	d.SetupFiltersAndThresholds(&testConfig)
+	err := d.SetupFiltersAndThresholds(&testConfig)
 
+	assert.Nil(t, err)
 	assert.Equal(t, d.Thresholds, expectedThresholds)
 	assert.Equal(t, d.Filter, differ.DefaultEventFilter)
 	assert.Equal(t, d.FilterByTag, true)
@@ -1434,8 +1441,9 @@ func TestSetupFiltersAndThresholds_Servicelog_NonDefaultFilter(t *testing.T) {
 	}
 
 	d := differ.Differ{}
-	d.SetupFiltersAndThresholds(&testConfig)
+	err := d.SetupFiltersAndThresholds(&testConfig)
 
+	assert.Nil(t, err)
 	assert.Equal(t, d.Filter, customFilter)
 }
 
@@ -1477,5 +1485,5 @@ func TestRunDifferNewError(t *testing.T) {
 		},
 	}
 	retval := differ.Run(config, types.CliFlags{})
-	assert.Equal(t, differ.ExitStatusFetchContentError, retval)
+	assert.Equal(t, differ.ExitStatusConfiguration, retval)
 }

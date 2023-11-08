@@ -924,7 +924,7 @@ func (d *Differ) close() (err error) {
 		return errorForTarget(d.Target)
 	}
 	log.Info().Msg(separator)
-	return nil
+	return
 }
 
 // SetupFiltersAndThresholds function setup both techniques that can be used to
@@ -987,8 +987,6 @@ func (d *Differ) SetupFiltersAndThresholds(config *conf.ConfigStruct) error {
 }
 
 // Run function is entry point to the differ
-//
-//gocyclo:ignore
 func Run(config conf.ConfigStruct, cliFlags types.CliFlags) int {
 	// prepare the storage
 	storageConfiguration := conf.GetStorageConfiguration(&config)
@@ -1028,7 +1026,9 @@ func Run(config conf.ConfigStruct, cliFlags types.CliFlags) int {
 
 // New constructs new implementation of Differ interface
 func New(config *conf.ConfigStruct, storage Storage) (*Differ, error) {
-	assertNotificationDestination(config)
+	if err := assertNotificationDestination(config); err != nil {
+		return nil, err
+	}
 	d := Differ{
 		Storage:            storage,
 		NotificationType:   notificationType,
