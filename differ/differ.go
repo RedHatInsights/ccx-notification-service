@@ -988,6 +988,10 @@ func (d *Differ) SetupFiltersAndThresholds(config *conf.ConfigStruct) error {
 
 // Run function is entry point to the differ
 func Run(config conf.ConfigStruct, cliFlags types.CliFlags) int {
+	if cliFlags.InstantReports {
+		notificationType = types.InstantNotif
+	}
+
 	// prepare the storage
 	storageConfiguration := conf.GetStorageConfiguration(&config)
 	storage, err := NewStorage(&storageConfiguration)

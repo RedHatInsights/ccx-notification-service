@@ -24,10 +24,6 @@ const (
 	authorsMessage = "Pavel Tisnovsky, Papa Bakary Camara, Red Hat Inc."
 )
 
-var (
-	notificationType types.EventType
-)
-
 // showVersion function displays version information.
 func showVersion() {
 	fmt.Println(versionMessage)
@@ -174,7 +170,6 @@ func checkArgs(args *types.CliFlags) {
 		log.Error().Msg("Type of report needs to be specified on command line")
 		os.Exit(ExitStatusConfiguration)
 	}
-	notificationType = types.InstantNotif
 }
 
 func convertLogLevel(level string) zerolog.Level {
