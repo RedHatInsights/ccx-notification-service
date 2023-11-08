@@ -35,7 +35,7 @@ var (
 	States                = &states
 
 	GetAllContentFromMap               = getAllContentFromMap
-	ConvertLogLevel                    = convertLogLevel
+	FetchAllRulesContent               = fetchAllRulesContent
 	PushMetrics                        = pushMetrics
 	GenerateInstantNotificationMessage = generateInstantNotificationMessage
 	GenerateNotificationPayloadURL     = generateNotificationPayloadURL
@@ -44,7 +44,6 @@ var (
 	ModuleToRuleName                   = moduleToRuleName
 	AssertNotificationDestination      = assertNotificationDestination
 
-	CheckArgs              = checkArgs
 	GetState               = getState
 	GetStates              = getStates
 	GetNotificationType    = getNotificationType
@@ -62,8 +61,6 @@ var (
 )
 
 const (
-	VersionMessage              = versionMessage
-	AuthorsMessage              = authorsMessage
 	NotificationTypeInstant     = notificationTypeInstant
 	NotificationBundleName      = notificationBundleName
 	NotificationApplicationName = notificationApplicationName

@@ -28,11 +28,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"os"
 	"strings"
 	"time"
 
-	"github.com/rs/zerolog"
 	"github.com/rs/zerolog/log"
 
 	"github.com/RedHatInsights/ccx-notification-service/ocmclient"
@@ -44,13 +42,6 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/producer"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/RedHatInsights/insights-operator-utils/evaluator"
-	"github.com/RedHatInsights/insights-operator-utils/logger"
-)
-
-// Configuration-related constants
-const (
-	configFileEnvVariableName = "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
-	defaultConfigFileName     = "config"
 )
 
 // Exit codes
@@ -100,8 +91,6 @@ const (
 // Messages
 const (
 	serviceName                 = "CCX Notification Service"
-	versionMessage              = "Notification service version 1.0"
-	authorsMessage              = "Pavel Tisnovsky, Papa Bakary Camara, Red Hat Inc."
 	separator                   = "------------------------------------------------------------"
 	operationFailedMessage      = "Operation failed"
 	clusterEntryMessage         = "cluster entry"
@@ -128,7 +117,6 @@ const (
 	destinationNotSet           = "No known event destination configured. Aborting."
 	onlyOneDestinationAllowed   = "Only one integration should be enabled (Kafka / Service log. Review your config."
 	configurationProblem        = "Configuration problem"
-	loadConfigurationMessage    = "Load configuration"
 	noEquivalentSeverityMessage = "No Service log severity defined for given total risk. Creating event with Info severity"
 )
 
@@ -654,26 +642,27 @@ func (d *Differ) ProcessClusters(config *conf.ConfigStruct, ruleContent types.Ru
 }
 
 // SetupKafkaProducer function creates a Kafka producer using the provided configuration
-func (d *Differ) SetupKafkaProducer(config *conf.ConfigStruct) {
+func (d *Differ) SetupKafkaProducer(config *conf.ConfigStruct) error {
 	kafkaProducer, err := kafka.New(config)
 	if err != nil {
 		ProducerSetupErrors.Inc()
 		log.Error().
 			Str(errorStr, err.Error()).
 			Msg("Couldn't initialize Kafka producer with the provided config.")
-		os.Exit(ExitStatusKafkaBrokerError)
+		return &KafkaBrokerError{}
 	}
 	d.Notifier = kafkaProducer
 	log.Info().Msg("Kafka producer ready")
+	return nil
 }
 
-func (d *Differ) setupServiceLogProducer(config *conf.ConfigStruct) {
+func (d *Differ) setupServiceLogProducer(config *conf.ConfigStruct) error {
 	serviceLogConfig := conf.GetServiceLogConfiguration(config)
 	conn, err := ocmclient.NewOCMClient(serviceLogConfig.ClientID, serviceLogConfig.ClientSecret,
 		serviceLogConfig.URL, serviceLogConfig.TokenURL)
 	if err != nil {
 		log.Error().Err(err).Msg("got error while setting up the connection to OCM API gateway")
-		return
+		return nil
 	}
 	serviceLogProducer, err := servicelog.New(&serviceLogConfig, conn)
 	if err != nil {
@@ -681,10 +670,11 @@ func (d *Differ) setupServiceLogProducer(config *conf.ConfigStruct) {
 		log.Error().
 			Str(errorStr, err.Error()).
 			Msg("Couldn't initialize Service Log producer with the provided config.")
-		os.Exit(ExitStatusServiceLogError)
+		return &ServiceLogError{Msg: err.Error()}
 	}
 	d.Notifier = serviceLogProducer
 	log.Info().Msg("Service Log producer ready")
+	return nil
 }
 
 // generateInstantNotificationMessage function generates a notification message
@@ -741,20 +731,22 @@ func appendEventToNotificationMessage(notificationPayloadURL string, notificatio
 	notification.Events = append(notification.Events, event)
 }
 
-func setupNotificationTypes(storage Storage) {
+func setupNotificationTypes(storage Storage) error {
 	err := getNotificationTypes(storage)
 	if err != nil {
 		log.Err(err).Msg("Read notification types")
-		os.Exit(ExitStatusStorageError)
+		return &StatusStorageError{}
 	}
+	return nil
 }
 
-func setupNotificationStates(storage Storage) {
+func setupNotificationStates(storage Storage) error {
 	err := getStates(storage)
 	if err != nil {
 		log.Err(err).Msg("Read states")
-		os.Exit(ExitStatusStorageError)
+		return &StatusStorageError{}
 	}
+	return nil
 }
 
 // registerMetrics registers metrics using the provided namespace, if any
@@ -785,12 +777,12 @@ func closeNotifier(notifier producer.Producer) error {
 	return nil
 }
 
-func pushMetrics(metricsConf *conf.MetricsConfiguration) {
+func pushMetrics(metricsConf *conf.MetricsConfiguration) error {
 	err := PushCollectedMetrics(metricsConf)
 	if err != nil {
 		log.Err(err).Msg(metricsPushFailedMessage)
 		if metricsConf.RetryAfter == 0 || metricsConf.Retries == 0 {
-			os.Exit(ExitStatusMetricsError)
+			return &StatusMetricsError{}
 		}
 		for i := metricsConf.Retries; i > 0; i-- {
 			time.Sleep(metricsConf.RetryAfter)
@@ -798,40 +790,43 @@ func pushMetrics(metricsConf *conf.MetricsConfiguration) {
 			err = PushCollectedMetrics(metricsConf)
 			if err == nil {
 				log.Info().Msg("Metrics pushed successfully. Terminating notification service successfully.")
-				return
+				return nil
 			}
 			log.Err(err).Msg(metricsPushFailedMessage)
 		}
-		os.Exit(ExitStatusMetricsError)
+		return &StatusMetricsError{}
 	}
 	log.Info().Msg("Metrics pushed successfully. Terminating notification service successfully.")
+	return nil
 }
 
-func assertNotificationDestination(config *conf.ConfigStruct) {
+func assertNotificationDestination(config *conf.ConfigStruct) error {
 	if !conf.GetKafkaBrokerConfiguration(config).Enabled && !conf.GetServiceLogConfiguration(config).Enabled {
 		log.Error().Msg(destinationNotSet)
-		os.Exit(ExitStatusConfiguration)
+		return &StatusConfiguration{}
 	}
 	if conf.GetKafkaBrokerConfiguration(config).Enabled && conf.GetServiceLogConfiguration(config).Enabled {
 		log.Error().Msg(onlyOneDestinationAllowed)
-		os.Exit(ExitStatusConfiguration)
+		return &StatusConfiguration{}
 	}
+	return nil
 }
 
 // RetrievePreviouslyReportedForEventTarget reads previously reported issues
-func (d *Differ) RetrievePreviouslyReportedForEventTarget(cooldown string, target types.EventTarget, clusters []types.ClusterEntry) {
+func (d *Differ) RetrievePreviouslyReportedForEventTarget(cooldown string, target types.EventTarget, clusters []types.ClusterEntry) error {
 	log.Info().Msg("Reading previously reported issues for given cluster list...")
 	var err error
 	d.PreviouslyReported, err = d.Storage.ReadLastNotifiedRecordForClusterList(clusters, cooldown, target)
 	if err != nil {
 		ReadReportedErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusStorageError)
+		return &StatusStorageError{}
 	}
 	log.Info().Int("target", int(target)).Int("retrieved", len(d.PreviouslyReported)).Msg("Done reading previously reported issues still in cool down")
+	return nil
 }
 
-func (d *Differ) start(config *conf.ConfigStruct) {
+func (d *Differ) start(config *conf.ConfigStruct) error {
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
 
@@ -844,7 +839,7 @@ func (d *Differ) start(config *conf.ConfigStruct) {
 	ruleContent, err := fetchAllRulesContent(&dependenciesConfiguration)
 	if err != nil {
 		FetchContentErrors.Inc()
-		os.Exit(ExitStatusFetchContentError)
+		return &FetchStatusContentError{}
 	}
 
 	log.Info().Msg(separator)
@@ -853,15 +848,19 @@ func (d *Differ) start(config *conf.ConfigStruct) {
 	notifConfig := conf.GetNotificationsConfiguration(config)
 
 	setupNotificationURLs(notifConfig)
-	setupNotificationStates(d.Storage)
-	setupNotificationTypes(d.Storage)
+	if err := setupNotificationStates(d.Storage); err != nil {
+		return err
+	}
+	if err := setupNotificationTypes(d.Storage); err != nil {
+		return err
+	}
 	go PushMetricsInLoop(context.Background(), &metricsConfiguration)
 
 	clusters, err := d.Storage.ReadClusterList()
 	if err != nil {
 		ReadClusterListErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusStorageError)
+		return &StatusStorageError{}
 	}
 
 	// filter clusters according to allow list and block list
@@ -876,19 +875,26 @@ func (d *Differ) start(config *conf.ConfigStruct) {
 	entries := len(clusters)
 	if entries == 0 {
 		log.Info().Msg("Differ finished")
-		os.Exit(ExitStatusOK)
+		return nil
 	}
 	log.Info().Int(clustersAttribute, entries).Msg("Read cluster list: done")
 	log.Info().Msg(separator)
-	d.RetrievePreviouslyReportedForEventTarget(d.CoolDown, d.Target, clusters)
+	if err := d.RetrievePreviouslyReportedForEventTarget(d.CoolDown, d.Target, clusters); err != nil {
+		return err
+	}
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
 	d.ProcessClusters(config, ruleContent, clusters)
 	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
-	d.close()
+	if err := d.close(); err != nil {
+		return err
+	}
 	log.Info().Msg("Differ finished. Pushing metrics to the configured prometheus gateway.")
-	pushMetrics(&metricsConfiguration)
+	if err := pushMetrics(&metricsConfiguration); err != nil {
+		return err
+	}
 	log.Info().Msg(separator)
+	return nil
 }
 
 func setupNotificationURLs(config conf.NotificationsConfiguration) {
@@ -897,34 +903,35 @@ func setupNotificationURLs(config conf.NotificationsConfiguration) {
 	notificationEventURLs.InsightsAdvisor = config.InsightsAdvisorURL
 }
 
-func exitWithErrorForTarget(t types.EventTarget) {
+func errorForTarget(t types.EventTarget) error {
 	if t == types.NotificationBackendTarget {
-		os.Exit(ExitStatusKafkaBrokerError)
+		return &KafkaBrokerError{}
 	}
 	if t == types.ServiceLogTarget {
-		os.Exit(ExitStatusServiceLogError)
+		return &ServiceLogError{}
 	}
+	return nil
 }
 
-func (d *Differ) close() {
+func (d *Differ) close() (err error) {
 	log.Info().Msg(separator)
-	err := closeStorage(d.Storage)
-	if err != nil {
-		defer os.Exit(ExitStatusStorageError)
+	if err = closeStorage(d.Storage); err != nil {
+		err = &StatusStorageError{}
 	}
 	log.Info().Msg(separator)
-	err = closeNotifier(d.Notifier)
-	if err != nil {
-		exitWithErrorForTarget(d.Target)
+	errNotifier := closeNotifier(d.Notifier)
+	if errNotifier != nil {
+		return errorForTarget(d.Target)
 	}
 	log.Info().Msg(separator)
+	return nil
 }
 
 // SetupFiltersAndThresholds function setup both techniques that can be used to
 // filter messages sent to targets (Notification backend and ServiceLog at this moment):
 //  1. filter based on likelihood, impact, severity, and total risk
 //  2. filter based on rule type that's identified by tags
-func (d *Differ) SetupFiltersAndThresholds(config *conf.ConfigStruct) {
+func (d *Differ) SetupFiltersAndThresholds(config *conf.ConfigStruct) error {
 	kafkaBrokerConfiguration := conf.GetKafkaBrokerConfiguration(config)
 	if kafkaBrokerConfiguration.Enabled {
 		d.Thresholds = EventThresholds{
@@ -944,11 +951,11 @@ func (d *Differ) SetupFiltersAndThresholds(config *conf.ConfigStruct) {
 
 		// check if tags set is provided via configuration if filtering is enabled
 		if d.FilterByTag && d.TagsSet == nil {
-			err := fmt.Errorf(configurationProblem)
+			err := &StatusEventFilterError{Msg: configurationProblem}
 			log.Err(err).Msg(tagsNotSetMessage)
-			os.Exit(ExitStatusEventFilterError)
+			return err
 		}
-		return
+		return nil
 	}
 
 	serviceLogConfiguration := conf.GetServiceLogConfiguration(config)
@@ -970,118 +977,57 @@ func (d *Differ) SetupFiltersAndThresholds(config *conf.ConfigStruct) {
 
 		// check if tags set is provided via configuration if filtering is enabled
 		if d.FilterByTag && d.TagsSet == nil {
-			err := fmt.Errorf(configurationProblem)
+			err := &StatusEventFilterError{Msg: configurationProblem}
 			log.Err(err).Msg(tagsNotSetMessage)
-			os.Exit(ExitStatusEventFilterError)
+			return err
 		}
-		return
+		return nil
 	}
-}
-
-func convertLogLevel(level string) zerolog.Level {
-	level = strings.ToLower(strings.TrimSpace(level))
-	switch level {
-	case "debug":
-		return zerolog.DebugLevel
-	case "info":
-		return zerolog.InfoLevel
-	case "warn", "warning":
-		return zerolog.WarnLevel
-	case "error":
-		return zerolog.ErrorLevel
-	case "fatal":
-		return zerolog.FatalLevel
-	}
-
-	return zerolog.DebugLevel
+	return nil
 }
 
 // Run function is entry point to the differ
 //
 //gocyclo:ignore
-func Run() {
-	cliFlags := setupCliFlags()
-	checkArgs(&cliFlags)
-
-	// config has exactly the same structure as *.toml file
-	config, err := conf.LoadConfiguration(configFileEnvVariableName, defaultConfigFileName)
-	if err != nil {
-		log.Err(err).Msg(loadConfigurationMessage)
-		os.Exit(ExitStatusConfiguration)
-	}
-
-	err = logger.InitZerolog(
-		conf.GetLoggingConfiguration(&config),
-		conf.GetCloudWatchConfiguration(&config),
-		conf.GetSentryLoggingConfiguration(&config),
-		conf.GetKafkaZerologConfiguration(&config),
-	)
-	if err != nil {
-		log.Err(err).Msg(loadConfigurationMessage)
-		os.Exit(ExitStatusConfiguration)
-	}
-
-	// configuration is loaded, so it would be possible to display it if
-	// asked by user
-	if cliFlags.ShowConfiguration {
-		ShowConfiguration(&config)
-		os.Exit(ExitStatusOK)
-	}
-
-	// override default value by one read from configuration file
-	if cliFlags.MaxAge == "" {
-		cliFlags.MaxAge = config.Cleaner.MaxAge
-	}
-
-	if config.LoggingConf.Debug {
-		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
-	}
-
-	// set log level
-	// TODO: refactor utils/logger appropriately
-	logLevel := convertLogLevel(config.LoggingConf.LogLevel)
-	zerolog.SetGlobalLevel(logLevel)
-	log.Info().
-		Str("configured", config.LoggingConf.LogLevel).
-		Int("internal", int(logLevel)).
-		Msg("Log level")
-
-	if cliFlags.Verbose {
-		ShowConfiguration(&config)
-	}
-
+func Run(config conf.ConfigStruct, cliFlags types.CliFlags) int {
 	// prepare the storage
 	storageConfiguration := conf.GetStorageConfiguration(&config)
 	storage, err := NewStorage(&storageConfiguration)
 	if err != nil {
 		StorageSetupErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
-		os.Exit(ExitStatusStorageError)
+		return ExitStatusStorageError
 	}
 
 	if deleteOperationSpecified(cliFlags) {
 		err := PerformCleanupOperation(storage, cliFlags)
 		if err != nil {
-			os.Exit(ExitStatusCleanerError)
+			return ExitStatusCleanerError
 		}
-		os.Exit(ExitStatusOK)
+		return ExitStatusOK
 	}
 
 	// perform database cleanup on startup if specified on command line
 	if cliFlags.CleanupOnStartup {
 		err := PerformCleanupOnStartup(storage, cliFlags)
 		if err != nil {
-			os.Exit(ExitStatusCleanerError)
+			return ExitStatusCleanerError
 		}
 		// if previous operation is correct, just continue
 	}
 
-	d := New(&config, storage)
-	d.start(&config)
+	d, err := New(&config, storage)
+	if err != nil {
+		return selectError(err)
+	}
+
+	err = d.start(&config)
+
+	return selectError(err)
 }
 
 // New constructs new implementation of Differ interface
-func New(config *conf.ConfigStruct, storage Storage) *Differ {
+func New(config *conf.ConfigStruct, storage Storage) (*Differ, error) {
 	assertNotificationDestination(config)
 	d := Differ{
 		Storage:            storage,
@@ -1091,14 +1037,46 @@ func New(config *conf.ConfigStruct, storage Storage) *Differ {
 	}
 	if conf.GetKafkaBrokerConfiguration(config).Enabled {
 		d.Target = types.NotificationBackendTarget
-		d.SetupKafkaProducer(config)
+		if err := d.SetupKafkaProducer(config); err != nil {
+			return nil, err
+		}
 		d.CoolDown = conf.GetKafkaBrokerConfiguration(config).Cooldown
 	} else if conf.GetServiceLogConfiguration(config).Enabled {
 		d.Target = types.ServiceLogTarget
-		d.setupServiceLogProducer(config)
+		if err := d.setupServiceLogProducer(config); err != nil {
+			return nil, err
+		}
 		d.CoolDown = conf.GetServiceLogConfiguration(config).Cooldown
 	}
-	d.SetupFiltersAndThresholds(config)
+	err := d.SetupFiltersAndThresholds(config)
+	if err != nil {
+		return nil, err
+	}
 
-	return &d
+	return &d, nil
+}
+
+func selectError(err error) int {
+	if err == nil {
+		return ExitStatusError
+	}
+
+	switch err.(type) {
+	case *FetchStatusContentError:
+		return ExitStatusFetchContentError
+	case *StatusStorageError:
+		return ExitStatusStorageError
+	case *KafkaBrokerError:
+		return ExitStatusKafkaBrokerError
+	case *ServiceLogError:
+		return ExitStatusServiceLogError
+	case *StatusMetricsError:
+		return ExitStatusMetricsError
+	case *StatusConfiguration:
+		return ExitStatusConfiguration
+	case *StatusEventFilterError:
+		return ExitStatusEventFilterError
+	}
+
+	return ExitStatusOK
 }
