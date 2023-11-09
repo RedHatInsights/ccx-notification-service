@@ -26,7 +26,6 @@ import (
 	"bytes"
 	"encoding/gob"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/rs/zerolog/log"
@@ -60,7 +59,7 @@ func fetchAllRulesContent(config *conf.DependenciesConfiguration) (rules types.R
 	err = gob.NewDecoder(bytes.NewReader(body)).Decode(&receivedContent)
 	if err != nil {
 		log.Error().Err(err).Msg("Error trying to decode rules content from received answer")
-		os.Exit(ExitStatusFetchContentError)
+		return nil, err
 	}
 
 	rules = receivedContent.Rules

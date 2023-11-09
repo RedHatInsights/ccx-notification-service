@@ -51,7 +51,7 @@ func PerformCleanupOperation(storage *DBStorage, cliFlags types.CliFlags) error 
 	case cliFlags.PerformOldReportsCleanup:
 		return performOldReportsCleanup(storage, cliFlags)
 	default:
-		return errors.New("Unknown operation selected")
+		return errors.New("unknown operation selected")
 	}
 }
 

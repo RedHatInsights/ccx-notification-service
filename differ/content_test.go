@@ -1,4 +1,4 @@
-package differ
+package differ_test
 
 import (
 	"bytes"
@@ -12,6 +12,7 @@ import (
 	"testing"
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
+	"github.com/RedHatInsights/ccx-notification-service/differ"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	utypes "github.com/RedHatInsights/insights-results-types"
 	"github.com/rs/zerolog/log"
@@ -19,7 +20,7 @@ import (
 )
 
 func makeFetchRequest(testFileName string) (rules types.RulesMap, err error) {
-	config, err := conf.LoadConfiguration(configFileEnvVariableName, defaultConfigFileName)
+	config, err := conf.LoadConfiguration(conf.ConfigFileEnvVariableName, conf.DefaultConfigFileName)
 	if err != nil {
 		return rules, err
 	}
@@ -27,7 +28,7 @@ func makeFetchRequest(testFileName string) (rules types.RulesMap, err error) {
 	depencenciesConfiguration := conf.GetDependenciesConfiguration(&config)
 	depencenciesConfiguration.ContentServiceServer = server.URL
 	depencenciesConfiguration.ContentServiceEndpoint = "/tests/content/" + testFileName
-	rules, err = fetchAllRulesContent(&depencenciesConfiguration)
+	rules, err = differ.FetchAllRulesContent(&depencenciesConfiguration)
 	return rules, err
 }
 
@@ -35,13 +36,13 @@ func makeFetchRequest(testFileName string) (rules types.RulesMap, err error) {
 func TestFetchAllRulesContentOk(t *testing.T) {
 	rules, err := makeFetchRequest("ok.json")
 	assert.NoError(t, err)
-	allContentFromMap := getAllContentFromMap(rules)
+	allContentFromMap := differ.GetAllContentFromMap(rules)
 	assert.NotEmpty(t, allContentFromMap)
 	assert.Len(t, allContentFromMap, 2)
 
 	expected1 := utypes.RuleContent{
 		Plugin:     utypes.RulePluginInfo{Name: "", NodeID: "", ProductCode: "", PythonModule: ""},
-		ErrorKeys:  map[string]utypes.RuleErrorKeyContent{"err_key": utypes.RuleErrorKeyContent{Metadata: utypes.ErrorKeyMetadata{Description: "", Impact: utypes.Impact{Name: "Two", Impact: 2}, Likelihood: 0, PublishDate: "2020-04-03T16:13:30+02:00", ResolutionRisk: 3, Status: "inactive", Tags: []string(nil)}, TotalRisk: 0, Generic: "Generic message", Summary: "# Rule 1 Summary\n", Resolution: "", MoreInfo: "# Some more information\n\n## would be put\n\n### into this file\n", Reason: "Reason", HasReason: true}},
+		ErrorKeys:  map[string]utypes.RuleErrorKeyContent{"err_key": {Metadata: utypes.ErrorKeyMetadata{Description: "", Impact: utypes.Impact{Name: "Two", Impact: 2}, Likelihood: 0, PublishDate: "2020-04-03T16:13:30+02:00", ResolutionRisk: 3, Status: "inactive", Tags: []string(nil)}, TotalRisk: 0, Generic: "Generic message", Summary: "# Rule 1 Summary\n", Resolution: "", MoreInfo: "# Some more information\n\n## would be put\n\n### into this file\n", Reason: "Reason", HasReason: true}},
 		Generic:    "",
 		Summary:    "# Rule 1 Summary\n",
 		Resolution: "",
@@ -52,7 +53,7 @@ func TestFetchAllRulesContentOk(t *testing.T) {
 
 	expected2 := utypes.RuleContent{
 		Plugin:     utypes.RulePluginInfo{Name: "", NodeID: "", ProductCode: "", PythonModule: ""},
-		ErrorKeys:  map[string]utypes.RuleErrorKeyContent{"err_key": utypes.RuleErrorKeyContent{Metadata: utypes.ErrorKeyMetadata{Description: "", Impact: utypes.Impact{Name: "", Impact: 0}, Likelihood: 0, PublishDate: "2020-04-03T16:13:30+02:00", ResolutionRisk: 0, Status: "inactive", Tags: []string(nil)}, TotalRisk: 0, Generic: "Generic", Summary: "# Rule 1 Summary\n", Resolution: "", MoreInfo: "# Some more information\n\n## would be put\n\n### into this file\n", Reason: "Reason", HasReason: true}},
+		ErrorKeys:  map[string]utypes.RuleErrorKeyContent{"err_key": {Metadata: utypes.ErrorKeyMetadata{Description: "", Impact: utypes.Impact{Name: "", Impact: 0}, Likelihood: 0, PublishDate: "2020-04-03T16:13:30+02:00", ResolutionRisk: 0, Status: "inactive", Tags: []string(nil)}, TotalRisk: 0, Generic: "Generic", Summary: "# Rule 1 Summary\n", Resolution: "", MoreInfo: "# Some more information\n\n## would be put\n\n### into this file\n", Reason: "Reason", HasReason: true}},
 		Generic:    "",
 		Summary:    "# Rule 1 Summary\n",
 		Resolution: "",
@@ -68,13 +69,13 @@ func TestFetchAllRulesContentOk(t *testing.T) {
 func TestFetchAllRulesContentNoInternal(t *testing.T) {
 	rules, err := makeFetchRequest("no_internal.json")
 	assert.NoError(t, err)
-	allContentFromMap := getAllContentFromMap(rules)
+	allContentFromMap := differ.GetAllContentFromMap(rules)
 	assert.NotEmpty(t, allContentFromMap)
 	assert.Len(t, allContentFromMap, 1)
 
 	expected1 := utypes.RuleContent{
 		Plugin:     utypes.RulePluginInfo{Name: "", NodeID: "", ProductCode: "", PythonModule: ""},
-		ErrorKeys:  map[string]utypes.RuleErrorKeyContent{"err_key": utypes.RuleErrorKeyContent{Metadata: utypes.ErrorKeyMetadata{Description: "", Impact: utypes.Impact{Name: "Two", Impact: 2}, Likelihood: 0, PublishDate: "2020-04-03T16:13:30+02:00", ResolutionRisk: 3, Status: "inactive", Tags: []string(nil)}, TotalRisk: 0, Generic: "Generic", Summary: "# Rule 1 Summary\n", Resolution: "", MoreInfo: "# Some more information\n\n## would be put\n\n### into this file\n", Reason: "Reason", HasReason: true}},
+		ErrorKeys:  map[string]utypes.RuleErrorKeyContent{"err_key": {Metadata: utypes.ErrorKeyMetadata{Description: "", Impact: utypes.Impact{Name: "Two", Impact: 2}, Likelihood: 0, PublishDate: "2020-04-03T16:13:30+02:00", ResolutionRisk: 3, Status: "inactive", Tags: []string(nil)}, TotalRisk: 0, Generic: "Generic", Summary: "# Rule 1 Summary\n", Resolution: "", MoreInfo: "# Some more information\n\n## would be put\n\n### into this file\n", Reason: "Reason", HasReason: true}},
 		Generic:    "",
 		Summary:    "# Rule 1 Summary\n",
 		Resolution: "",
@@ -89,14 +90,14 @@ func TestFetchAllRulesContentNoInternal(t *testing.T) {
 func TestFetchAllRulesContentNoExternal(t *testing.T) {
 	rules, err := makeFetchRequest("no_external.json")
 	assert.NoError(t, err)
-	allContentFromMap := getAllContentFromMap(rules)
+	allContentFromMap := differ.GetAllContentFromMap(rules)
 	assert.Empty(t, allContentFromMap)
 }
 
 func TestFetchAllRulesContentMissing(t *testing.T) {
 	rules, err := makeFetchRequest("missing.json")
 	assert.NoError(t, err)
-	allContentFromMap := getAllContentFromMap(rules)
+	allContentFromMap := differ.GetAllContentFromMap(rules)
 	assert.Empty(t, allContentFromMap)
 }
 

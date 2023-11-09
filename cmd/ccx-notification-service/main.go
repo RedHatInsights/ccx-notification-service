@@ -49,9 +49,69 @@ package main
 // https://redhatinsights.github.io/ccx-notification-service/packages/ccx_notification_service.html
 
 import (
+	"os"
+
+	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/differ"
+	"github.com/RedHatInsights/insights-operator-utils/logger"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
+)
+
+// Configuration-related constants
+const (
+	loadConfigurationMessage = "Load configuration"
 )
 
 func main() {
-	differ.Run()
+	cliFlags := setupCliFlags()
+	checkArgs(&cliFlags)
+
+	// config has exactly the same structure as *.toml file
+	config, err := conf.LoadConfiguration(conf.ConfigFileEnvVariableName, conf.DefaultConfigFileName)
+	if err != nil {
+		log.Err(err).Msg(loadConfigurationMessage)
+		os.Exit(ExitStatusConfiguration)
+	}
+
+	err = logger.InitZerolog(
+		conf.GetLoggingConfiguration(&config),
+		conf.GetCloudWatchConfiguration(&config),
+		conf.GetSentryLoggingConfiguration(&config),
+		conf.GetKafkaZerologConfiguration(&config),
+	)
+	if err != nil {
+		log.Err(err).Msg(loadConfigurationMessage)
+		os.Exit(ExitStatusConfiguration)
+	}
+
+	// configuration is loaded, so it would be possible to display it if
+	// asked by user
+	if cliFlags.ShowConfiguration {
+		showConfiguration(&config)
+		os.Exit(ExitStatusOK)
+	}
+
+	// override default value by one read from configuration file
+	if cliFlags.MaxAge == "" {
+		cliFlags.MaxAge = config.Cleaner.MaxAge
+	}
+
+	if config.LoggingConf.Debug {
+		log.Logger = log.Output(zerolog.ConsoleWriter{Out: os.Stderr})
+	}
+	// set log level
+	// TODO: refactor utils/logger appropriately
+	logLevel := convertLogLevel(config.LoggingConf.LogLevel)
+	zerolog.SetGlobalLevel(logLevel)
+	log.Info().
+		Str("configured", config.LoggingConf.LogLevel).
+		Int("internal", int(logLevel)).
+		Msg("Log level")
+
+	if cliFlags.Verbose {
+		showConfiguration(&config)
+	}
+
+	os.Exit(differ.Run(config, cliFlags))
 }

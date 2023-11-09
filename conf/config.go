@@ -84,6 +84,12 @@ const (
 	noStorage                       = "warning: no storage section in Clowder config"
 )
 
+// Constants for env var name and default config filename
+const (
+	ConfigFileEnvVariableName = "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	DefaultConfigFileName     = "config"
+)
+
 // ConfigStruct is a structure holding the whole notification service
 // configuration
 type ConfigStruct struct {
@@ -99,6 +105,7 @@ type ConfigStruct struct {
 	Metrics           MetricsConfiguration              `mapstructure:"metrics" toml:"metrics"`
 	Cleaner           CleanerConfiguration              `mapstructure:"cleaner" toml:"cleaner"`
 	Processing        ProcessingConfiguration           `mapstructure:"processing" toml:"processing"`
+	DeleteOperation   bool
 }
 
 // LoggingConfiguration represents configuration for logging in general

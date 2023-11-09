@@ -23,8 +23,6 @@ import (
 	"bytes"
 	"database/sql"
 	"fmt"
-	"os"
-	"os/exec"
 	"regexp"
 	"testing"
 	"time"
@@ -76,35 +74,26 @@ func TestSetupNotificationTypesReadOk(t *testing.T) {
 			return nil
 		},
 	)
-	differ.SetupNotificationTypes(stor)
+	err := differ.SetupNotificationTypes(stor)
 	assert.Equal(t, &types.NotificationTypes{Instant: 1, Weekly: 0}, differ.NotificationTypes)
+	assert.Nil(t, err)
 	// reset it to not affect other tests
 	differ.NotificationTypes.Instant = 0
 }
 
 func TestSetupNotificationTypesError(t *testing.T) {
-	if os.Getenv("SETUP_NOTIF_TYPE_ERORR") == "1" {
-		stor := &mocks.Storage{}
-		stor.On("ReadNotificationTypes").Return(
-			func() []types.NotificationType {
-				n := make([]types.NotificationType, 0)
-				return n
-			},
-			func() error {
-				return sql.ErrNoRows
-			},
-		)
-		differ.SetupNotificationTypes(stor)
-	}
-	cmd := exec.Command(os.Args[0], "-test.run=TestSetupNotificationTypesError")
-	cmd.Env = append(os.Environ(), "SETUP_NOTIF_TYPE_ERORR=1")
-	err := cmd.Run()
-	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != differ.ExitStatusStorageError {
-		t.Fatalf(
-			"Should exit with status ExitStatusStorageError(%d). Got status %d",
-			differ.ExitStatusStorageError,
-			e.ExitCode())
-	}
+	stor := &mocks.Storage{}
+	stor.On("ReadNotificationTypes").Return(
+		func() []types.NotificationType {
+			n := make([]types.NotificationType, 0)
+			return n
+		},
+		func() error {
+			return sql.ErrNoRows
+		},
+	)
+	err := differ.SetupNotificationTypes(stor)
+	assert.ErrorIs(t, err, &differ.StatusStorageError{})
 }
 
 // ---------------------------------------------------------------------------------------
@@ -187,68 +176,38 @@ func TestModuleNameToRuleNameValidRuleName(t *testing.T) {
 
 // ---------------------------------------------------------------------------------------
 func TestSetupNotificationProducerInvalidBrokerConf(t *testing.T) {
-	if os.Getenv("SETUP_PRODUCER") == "1" {
-		testConfig := conf.ConfigStruct{
-			Kafka: conf.KafkaConfiguration{
-				Address:     "invalid_address",
-				Topic:       "",
-				Timeout:     0,
-				Enabled:     true,
-				EventFilter: "totalRisk >= totalRiskThreshold",
-			},
-		}
+	testConfig := conf.ConfigStruct{
+		Kafka: conf.KafkaConfiguration{
+			Address:     "invalid_address",
+			Topic:       "",
+			Timeout:     0,
+			Enabled:     true,
+			EventFilter: "totalRisk >= totalRiskThreshold",
+		},
+	}
 
-		d := differ.Differ{}
-		d.SetupKafkaProducer(&testConfig)
-	}
-	cmd := exec.Command(os.Args[0], "-test.run=TestSetupNotificationProducerInvalidBrokerConf")
-	cmd.Env = append(os.Environ(), "SETUP_PRODUCER=1")
-	err := cmd.Run()
-	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != differ.ExitStatusKafkaBrokerError {
-		t.Fatalf(
-			"Should exit with status ExitStatusKafkaBrokerError(%d). Got status %d",
-			differ.ExitStatusKafkaBrokerError,
-			e.ExitCode())
-	}
+	d := differ.Differ{}
+	err := d.SetupKafkaProducer(&testConfig)
+	assert.ErrorIs(t, err, &differ.KafkaBrokerError{})
 }
 
 func TestAssertNotificationDestinationNone(t *testing.T) {
-	if os.Getenv("ASSERT_DEST") == "1" {
-		testConfig := conf.ConfigStruct{}
-		differ.AssertNotificationDestination(&testConfig)
-	}
-	cmd := exec.Command(os.Args[0], "-test.run=TestAssertNotificationDestinationNone")
-	cmd.Env = append(os.Environ(), "ASSERT_DEST=1")
-	err := cmd.Run()
-	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != differ.ExitStatusConfiguration {
-		t.Fatalf(
-			"Should exit with status ExitStatusConfiguration(%d). Got status %d",
-			differ.ExitStatusConfiguration,
-			e.ExitCode())
-	}
+	testConfig := conf.ConfigStruct{}
+	err := differ.AssertNotificationDestination(&testConfig)
+	assert.ErrorIs(t, err, &differ.StatusConfiguration{})
 }
 
 func TestAssertNotificationDestinationMoreThanOne(t *testing.T) {
-	if os.Getenv("ASSERT_DEST") == "1" {
-		testConfig := conf.ConfigStruct{
-			Kafka: conf.KafkaConfiguration{
-				Enabled: true,
-			},
-			ServiceLog: conf.ServiceLogConfiguration{
-				Enabled: true,
-			},
-		}
-		differ.AssertNotificationDestination(&testConfig)
+	testConfig := conf.ConfigStruct{
+		Kafka: conf.KafkaConfiguration{
+			Enabled: true,
+		},
+		ServiceLog: conf.ServiceLogConfiguration{
+			Enabled: true,
+		},
 	}
-	cmd := exec.Command(os.Args[0], "-test.run=TestAssertNotificationDestinationMoreThanOne")
-	cmd.Env = append(os.Environ(), "ASSERT_DEST=1")
-	err := cmd.Run()
-	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != differ.ExitStatusConfiguration {
-		t.Fatalf(
-			"Should exit with status ExitStatusConfiguration(%d). Got status %d",
-			differ.ExitStatusConfiguration,
-			e.ExitCode())
-	}
+	err := differ.AssertNotificationDestination(&testConfig)
+	assert.ErrorIs(t, err, &differ.StatusConfiguration{})
 }
 
 func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
@@ -286,7 +245,8 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 
 	d := differ.Differ{}
 
-	d.SetupKafkaProducer(&testConfig)
+	err := d.SetupKafkaProducer(&testConfig)
+	assert.Nil(t, err)
 
 	producer := d.Notifier.(*kafka.Producer)
 
@@ -296,24 +256,14 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 	assert.Nil(t, kafkaProducer.Producer, "Unexpected behavior: Producer was not set up correctly")
 	assert.NotNil(t, producer.Producer, "Unexpected behavior: Producer was not set up correctly")
 
-	err := d.Notifier.Close()
+	err = d.Notifier.Close()
 	assert.Nil(t, err, "Unexpected behavior: Producer was not closed successfully")
 }
 
 func TestNewDifferNoDestination(t *testing.T) {
-	if os.Getenv("TEST_NEW_DIFFER") == "1" {
-		testConfig := conf.ConfigStruct{}
-		_ = differ.New(&testConfig, nil)
-	}
-	cmd := exec.Command(os.Args[0], "-test.run=TestNewDifferNoDestination")
-	cmd.Env = append(os.Environ(), "TEST_NEW_DIFFER=1")
-	err := cmd.Run()
-	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != differ.ExitStatusConfiguration {
-		t.Fatalf(
-			"Should exit with status ExitStatusConfiguration(%d). Got status %d",
-			differ.ExitStatusConfiguration,
-			e.ExitCode())
-	}
+	testConfig := conf.ConfigStruct{}
+	_, err := differ.New(&testConfig, nil)
+	assert.ErrorIs(t, err, &differ.StatusConfiguration{})
 }
 
 // ---------------------------------------------------------------------------------------
@@ -1250,66 +1200,6 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"cluster\":\"second_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'second_cluster' with given data")
 }
 
-// TestConvertLogLevel tests the convertLogLevel function.
-func TestConvertLogLevel(t *testing.T) {
-	type TestData struct {
-		Input  string
-		Output zerolog.Level
-	}
-
-	testData := []TestData{
-		{
-			Input:  "",
-			Output: zerolog.DebugLevel,
-		},
-		{
-			Input:  "debug",
-			Output: zerolog.DebugLevel,
-		},
-		{
-			Input:  " debug",
-			Output: zerolog.DebugLevel,
-		},
-		{
-			Input:  " debug ",
-			Output: zerolog.DebugLevel,
-		},
-		{
-			Input:  "info",
-			Output: zerolog.InfoLevel,
-		},
-		{
-			Input:  "warn",
-			Output: zerolog.WarnLevel,
-		},
-		{
-			Input:  "warning",
-			Output: zerolog.WarnLevel,
-		},
-		{
-			Input:  "error",
-			Output: zerolog.ErrorLevel,
-		},
-		{
-			Input:  "fatal",
-			Output: zerolog.FatalLevel,
-		},
-		{
-			Input:  " fatal",
-			Output: zerolog.FatalLevel,
-		},
-		{
-			Input:  "fatal ",
-			Output: zerolog.FatalLevel,
-		},
-	}
-
-	for _, td := range testData {
-		output := differ.ConvertLogLevel(td.Input)
-		assert.Equal(t, output, td.Output)
-	}
-}
-
 func TestRetrievePreviouslyReportedForEventTarget(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
@@ -1383,7 +1273,8 @@ func TestRetrievePreviouslyReportedForEventTarget(t *testing.T) {
 		WithArgs(timeOffset).
 		WillReturnRows(rows)
 
-	d.RetrievePreviouslyReportedForEventTarget(timeOffset, types.NotificationBackendTarget, clusterEntries)
+	err := d.RetrievePreviouslyReportedForEventTarget(timeOffset, types.NotificationBackendTarget, clusterEntries)
+	assert.Nil(t, err)
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"message\":\"Reading previously reported issues for given cluster list...\"}\n{\"level\":\"info\",\"target\":1,\"retrieved\":2,\"message\":\"Done reading previously reported issues still in cool down\"}\n")
 }
@@ -1429,7 +1320,8 @@ func TestRetrievePreviouslyReportedForEventTargetEmptyClusterEntries(t *testing.
 	}
 
 	// call tested method
-	d.RetrievePreviouslyReportedForEventTarget(timeOffset, types.NotificationBackendTarget, clusterEntries)
+	err := d.RetrievePreviouslyReportedForEventTarget(timeOffset, types.NotificationBackendTarget, clusterEntries)
+	assert.Nil(t, err)
 	// test returned values
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "{\"level\":\"info\",\"message\":\"Reading previously reported issues for given cluster list...\"}\n{\"level\":\"info\",\"target\":1,\"retrieved\":0,\"message\":\"Done reading previously reported issues still in cool down\"}\n")
@@ -1473,8 +1365,9 @@ func TestSetupFiltersAndThresholds_Kafka(t *testing.T) {
 	}
 
 	d := differ.Differ{}
-	d.SetupFiltersAndThresholds(&testConfig)
+	err := d.SetupFiltersAndThresholds(&testConfig)
 
+	assert.Nil(t, err)
 	assert.Equal(t, d.Thresholds, expectedThresholds)
 	assert.Equal(t, d.Filter, differ.DefaultEventFilter)
 	assert.Equal(t, d.FilterByTag, true)
@@ -1495,8 +1388,9 @@ func TestSetupFiltersAndThresholds_Kafka_NonDefaultFilter(t *testing.T) {
 	}
 
 	d := differ.Differ{}
-	d.SetupFiltersAndThresholds(&testConfig)
+	err := d.SetupFiltersAndThresholds(&testConfig)
 
+	assert.Nil(t, err)
 	assert.Equal(t, d.Filter, customFilter)
 }
 
@@ -1525,8 +1419,9 @@ func TestSetupFiltersAndThresholds_Servicelog(t *testing.T) {
 	}
 
 	d := differ.Differ{}
-	d.SetupFiltersAndThresholds(&testConfig)
+	err := d.SetupFiltersAndThresholds(&testConfig)
 
+	assert.Nil(t, err)
 	assert.Equal(t, d.Thresholds, expectedThresholds)
 	assert.Equal(t, d.Filter, differ.DefaultEventFilter)
 	assert.Equal(t, d.FilterByTag, true)
@@ -1546,7 +1441,49 @@ func TestSetupFiltersAndThresholds_Servicelog_NonDefaultFilter(t *testing.T) {
 	}
 
 	d := differ.Differ{}
-	d.SetupFiltersAndThresholds(&testConfig)
+	err := d.SetupFiltersAndThresholds(&testConfig)
 
+	assert.Nil(t, err)
 	assert.Equal(t, d.Filter, customFilter)
+}
+
+func TestRunStatusStorageError(t *testing.T) {
+	retval := differ.Run(conf.ConfigStruct{}, types.CliFlags{})
+	assert.Equal(t, differ.ExitStatusStorageError, retval)
+}
+
+func TestRunStatusCleanerError(t *testing.T) {
+	config := conf.ConfigStruct{
+		Storage: conf.StorageConfiguration{
+			Driver: "sqlite3",
+		},
+	}
+	cliFlags := types.CliFlags{
+		PrintNewReportsForCleanup: true,
+	}
+	retval := differ.Run(config, cliFlags)
+	assert.Equal(t, differ.ExitStatusCleanerError, retval)
+}
+
+func TestRunStatusCleanerError2(t *testing.T) {
+	config := conf.ConfigStruct{
+		Storage: conf.StorageConfiguration{
+			Driver: "sqlite3",
+		},
+	}
+	cliFlags := types.CliFlags{
+		CleanupOnStartup: true,
+	}
+	retval := differ.Run(config, cliFlags)
+	assert.Equal(t, differ.ExitStatusCleanerError, retval)
+}
+
+func TestRunDifferNewError(t *testing.T) {
+	config := conf.ConfigStruct{
+		Storage: conf.StorageConfiguration{
+			Driver: "sqlite3",
+		},
+	}
+	retval := differ.Run(config, types.CliFlags{})
+	assert.Equal(t, differ.ExitStatusConfiguration, retval)
 }

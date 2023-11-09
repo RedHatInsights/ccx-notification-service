@@ -585,7 +585,7 @@ func (storage DBStorage) ReadErrorExists(
 		return exists, nil
 	}
 
-	return false, errors.New("Unable to read from table read_errors")
+	return false, errors.New("unable to read from table read_errors")
 }
 
 // WriteReadError method writes information about read error into table

@@ -24,8 +24,6 @@ import (
 	"fmt"
 	"net/http"
 	"net/http/httptest"
-	"os"
-	"os/exec"
 	"testing"
 	"time"
 
@@ -88,9 +86,8 @@ func TestPushMetricsGatewayNotFailingWithRetriesThenOk(t *testing.T) {
 		Retries:    10,
 	}
 
-	go differ.PushMetrics(&metricsConf)
-
-	time.Sleep(totalTime)
+	err := differ.PushMetrics(&metricsConf)
+	assert.Nil(t, err)
 	cancel()
 
 	log.Info().Int("pushes", pushes).Msg("debug")
@@ -126,9 +123,8 @@ func TestPushMetricsGatewayNotFailingWithRetries(t *testing.T) {
 		Retries:    10,
 	}
 
-	go differ.PushMetrics(&metricsConf)
-
-	time.Sleep(totalTime)
+	err := differ.PushMetrics(&metricsConf)
+	assert.Nil(t, err)
 	cancel()
 
 	log.Info().Int("pushes", pushes).Msg("debug")
@@ -138,45 +134,32 @@ func TestPushMetricsGatewayNotFailingWithRetries(t *testing.T) {
 }
 
 func TestPushMetricsGatewayFailing(t *testing.T) {
-	if os.Getenv("GATEWAY_502_FAIL_ALL_RETRIES") == "1" {
-		var (
-			timeBetweenRetries = 100 * time.Millisecond // 0.1s
-			totalTime          = 1 * time.Second        // give enough time
-		)
+	var (
+		timeBetweenRetries = 100 * time.Millisecond // 0.1s
+		totalTime          = 1 * time.Second        // give enough time
+	)
 
-		testServer := httptest.NewServer(
-			http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set("Content-Type", `text/plain; charset=utf-8`)
-				w.WriteHeader(http.StatusBadGateway)
-			}),
-		)
-		defer testServer.Close()
+	testServer := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", `text/plain; charset=utf-8`)
+			w.WriteHeader(http.StatusBadGateway)
+		}),
+	)
+	defer testServer.Close()
 
-		_, cancel := context.WithTimeout(context.Background(), totalTime)
+	_, cancel := context.WithTimeout(context.Background(), totalTime)
 
-		metricsConf := conf.MetricsConfiguration{
-			Job:        "ccx_notification_service",
-			Namespace:  "ccx_notification_service",
-			GatewayURL: testServer.URL,
-			RetryAfter: timeBetweenRetries,
-			Retries:    10,
-		}
-
-		go differ.PushMetrics(&metricsConf)
-
-		time.Sleep(totalTime)
-		cancel()
+	metricsConf := conf.MetricsConfiguration{
+		Job:        "ccx_notification_service",
+		Namespace:  "ccx_notification_service",
+		GatewayURL: testServer.URL,
+		RetryAfter: timeBetweenRetries,
+		Retries:    10,
 	}
 
-	cmd := exec.Command(os.Args[0], "-test.run=TestPushMetricsGatewayFailing")
-	cmd.Env = append(os.Environ(), "GATEWAY_502_FAIL_ALL_RETRIES=1")
-	err := cmd.Run()
-	if e, ok := err.(*exec.ExitError); ok && e.ExitCode() != differ.ExitStatusMetricsError {
-		t.Fatalf(
-			"Should exit with status ExitStatusMetricsError(%d). Got status %d",
-			differ.ExitStatusMetricsError,
-			e.ExitCode())
-	}
+	err := differ.PushMetrics(&metricsConf)
+	assert.ErrorIs(t, err, &differ.StatusMetricsError{})
+	cancel()
 }
 
 func TestPushMetricsInLoop(t *testing.T) {
