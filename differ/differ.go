@@ -1062,7 +1062,7 @@ func New(config *conf.ConfigStruct, storage Storage) (*Differ, error) {
 
 func selectError(err error) int {
 	if err == nil {
-		return ExitStatusError
+		return ExitStatusOK
 	}
 
 	switch err.(type) {
