@@ -38,7 +38,7 @@ require (
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.6.0 // indirect
 	github.com/getkin/kin-openapi v0.22.1 // indirect
-	github.com/getsentry/sentry-go v0.24.1 // indirect
+	github.com/getsentry/sentry-go v0.25.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
 	github.com/golang-jwt/jwt/v4 v4.4.2 // indirect
 	github.com/golang/glog v1.0.0 // indirect
