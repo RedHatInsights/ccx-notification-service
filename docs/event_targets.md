@@ -36,7 +36,7 @@ notification service, and it is recommended to keep their number for a given
 application to the lowest (for ease of use of the application mostly).
 
 The JSON schema for the expected event is currently defined in the
-[RedHatInsights/insights-schemas-java repository](https://github.com/RedHatInsights/insights-schemas-java/blob/master/insights-notification-schemas-java/src/main/resources/schemas/Action.json). 
+[RedHatInsights/insights-schemas-java repository](https://github.com/RedHatInsights/insights-schemas-java/blob/master/insights-notification-schemas-java/src/main/resources/schemas/Action.json).
 Depending on the version specified in the notification event, the template engine
 could in theory provide different functionalities. The current default version
 is "2.0.0", which does not bring new changes in the message's fields, but instead
@@ -51,9 +51,11 @@ external consumption.
 
 ![service_log.png](images/service_log.png)
 
-Log entries are created against a particular UUID. They include a
-summary/title, a description, a timestamp of when the event occurred, and a
-severity. This is an example how log entry could look like:
+Log entries are created against a particular UUID. Created events are sent to
+the `/api/service_logs/v1/cluster_logs` endpoint using a POST query. Said query
+includes JSON object with a summary/title, a description, a timestamp of when
+the event occurred, and a severity. This is an example how log entry could look
+like:
 
 ```json
 {
@@ -143,13 +145,13 @@ to use it.
 
 ### Service Log in context of the CCX Notification Service
 
-CCX Notification Service sends JSON entry to Service Log containing 
+CCX Notification Service sends JSON entry to Service Log containing
 the following subset of fields (each entry is associated with a single report):
 
-- `summary` is set to `description` of the rendered report received from 
+- `summary` is set to `description` of the rendered report received from
   [template renderer](https://github.com/RedHatInsights/insights-content-template-renderer)
   response
-- `description` is set to `reason` of the rendered report received from 
+- `description` is set to `reason` of the rendered report received from
   [template renderer](https://github.com/RedHatInsights/insights-content-template-renderer)
   response. It also includes a link to the corresponding `recommendation` page of the Advisor,
   where more detailed information about the rule can be found.
