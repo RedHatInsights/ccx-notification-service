@@ -3,7 +3,7 @@ debug = true
 log_level = ""
 
 [kafka_broker]
-address = "localhost:9092"
+addresses = "localhost:9092"
 topic = "test_notification_topic"
 cooldown = "24 hours"
 

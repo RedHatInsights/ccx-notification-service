@@ -37,7 +37,7 @@ objects:
               memory: ${MEMORY_REQUEST}
           env:
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__ADDRESS
-            value: ${KAFKA_BOOTSTRAP_HOST}:${KAFKA_BOOTSTRAP_PORT}
+            value: "[${KAFKA_BOOTSTRAP_HOST}:${KAFKA_BOOTSTRAP_PORT}]"
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__TOPIC
             value: ${OUTGOING_TOPIC}
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__TIMEOUT

@@ -193,7 +193,6 @@ func TestNewIssueNotInOldReport(t *testing.T) {
 		differ.IssueNotInReport(oldReport, &issue),
 		"New issue not in old report old report, so result should be true.",
 	)
-
 }
 
 func TestIssueNotInReportSameItemsInNewReport(t *testing.T) {

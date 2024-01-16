@@ -105,7 +105,7 @@ func TestLoadingConfigurationEnvVariableBadValueDefaultConfigFailure(t *testing.
 	assert.Contains(t, err.Error(), `fatal error config file: Config File "non existing file" Not Found in`)
 }
 
-// TestLoadBrokerConfiguration tests loading the broker configuration sub-tree
+// TestLoadBrokerConfiguration tests loading the broker configuration subtree
 func TestLoadBrokerConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	expectedTimeout, _ := time.ParseDuration("20s")
@@ -115,27 +115,28 @@ func TestLoadBrokerConfiguration(t *testing.T) {
 	assert.Nil(t, err, "Failed loading configuration file from env var!")
 
 	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
+	notifCfg := conf.GetNotifEventsConfiguration(&config)
 
 	assert.True(t, brokerCfg.Enabled)
-	assert.Equal(t, "localhost:29092", brokerCfg.Address)
+	assert.Equal(t, "localhost:29092", brokerCfg.Addresses)
 	assert.Equal(t, "ccx_test_notifications", brokerCfg.Topic)
 	assert.Equal(t, expectedTimeout, brokerCfg.Timeout)
-	assert.False(t, brokerCfg.TagFilterEnabled)
 
-	assert.Len(t, brokerCfg.Tags, 2)
-	assert.Equal(t, "tag1", brokerCfg.Tags[0])
-	assert.Equal(t, "tag2", brokerCfg.Tags[1])
+	assert.False(t, notifCfg.TagFilterEnabled)
+	assert.Len(t, notifCfg.Tags, 2)
+	assert.Equal(t, "tag1", notifCfg.Tags[0])
+	assert.Equal(t, "tag2", notifCfg.Tags[1])
 
-	assert.Len(t, brokerCfg.TagsSet, 2)
+	assert.Len(t, notifCfg.TagsSet, 2)
 
-	_, foundTag1 := brokerCfg.TagsSet["tag1"]
+	_, foundTag1 := notifCfg.TagsSet["tag1"]
 	assert.True(t, foundTag1)
-	_, foundTag2 := brokerCfg.TagsSet["tag2"]
+	_, foundTag2 := notifCfg.TagsSet["tag2"]
 	assert.True(t, foundTag2)
 }
 
 // TestLoadServiceLogConfiguration tests loading the ServiceLog configuration
-// sub-tree
+// subtree
 func TestLoadServiceLogConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	expectedTimeout, _ := time.ParseDuration("15s")
@@ -169,7 +170,7 @@ func TestLoadServiceLogConfiguration(t *testing.T) {
 }
 
 // TestLoadServiceLogConfigurationBadURL tests loading the ServiceLog
-// configuration sub-tree with invalid URL
+// configuration subtree with invalid URL
 func TestLoadServiceLogConfigurationBadURL(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 
@@ -180,7 +181,7 @@ func TestLoadServiceLogConfigurationBadURL(t *testing.T) {
 	assert.Error(t, err)
 }
 
-// TestLoadStorageConfiguration tests loading the storage configuration sub-tree
+// TestLoadStorageConfiguration tests loading the storage configuration subtree
 func TestLoadStorageConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	mustSetEnv(t, envVar, "../tests/config2")
@@ -200,7 +201,7 @@ func TestLoadStorageConfiguration(t *testing.T) {
 }
 
 // TestLoadProcessingConfiguration3AllowedClusters tests loading the processing
-// configuration sub-tree
+// configuration subtree
 func TestLoadProcessingConfiguration3AllowedClusters(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 
@@ -219,7 +220,7 @@ func TestLoadProcessingConfiguration3AllowedClusters(t *testing.T) {
 }
 
 // TestLoadProcessingConfigurationNoAllowedClusters tests loading the
-// processing configuration sub-tree
+// processing configuration subtree
 func TestLoadProcessingConfigurationNoAllowedClusters(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 
@@ -235,7 +236,7 @@ func TestLoadProcessingConfigurationNoAllowedClusters(t *testing.T) {
 }
 
 // TestLoadProcessingConfiguration3BlockedClusters tests loading the processing
-// configuration sub-tree
+// configuration subtree
 func TestLoadProcessingConfiguration3BlockedClusters(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 
@@ -254,7 +255,7 @@ func TestLoadProcessingConfiguration3BlockedClusters(t *testing.T) {
 }
 
 // TestLoadProcessingConfigurationNoBlockedClusters tests loading the
-// processing configuration sub-tree
+// processing configuration subtree
 func TestLoadProcessingConfigurationNoBlockedClusters(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 
@@ -269,7 +270,7 @@ func TestLoadProcessingConfigurationNoBlockedClusters(t *testing.T) {
 	assert.Len(t, processingCfg.BlockedClusters, 0)
 }
 
-// TestLoadLoggingConfiguration tests loading the logging configuration sub-tree
+// TestLoadLoggingConfiguration tests loading the logging configuration subtree
 func TestLoadLoggingConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	mustSetEnv(t, envVar, "../tests/config2")
@@ -282,7 +283,7 @@ func TestLoadLoggingConfiguration(t *testing.T) {
 	assert.Equal(t, "", loggingCfg.LogLevel)
 }
 
-// TestLoadDependenciesConfiguration tests loading the dependencies configuration sub-tree
+// TestLoadDependenciesConfiguration tests loading the dependencies configuration subtree
 func TestLoadDependenciesConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 	mustSetEnv(t, envVar, "../tests/config2")
@@ -294,7 +295,7 @@ func TestLoadDependenciesConfiguration(t *testing.T) {
 	assert.Equal(t, ":8081", depsCfg.ContentServiceEndpoint)
 }
 
-// TestLoadNotificationsConfiguration tests loading the notifications configuration sub-tree
+// TestLoadNotificationsConfiguration tests loading the notifications configuration subtree
 func TestLoadNotificationsConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 
@@ -320,7 +321,7 @@ func TestLoadConfigurationFromEnvVariableClowderEnabled(t *testing.T) {
 	mustLoadConfiguration(t, "CCX_NOTIFICATION_SERVICE_CONFIG_FILE")
 }
 
-// TestLoadNotificationsConfiguration tests loading the notifications configuration sub-tree
+// TestLoadNotificationsConfiguration tests loading the notifications configuration subtree
 func TestLoadMetricsConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 
@@ -336,7 +337,7 @@ func TestLoadMetricsConfiguration(t *testing.T) {
 	assert.Equal(t, 60*time.Second, configuration.GatewayTimeBetweenPush)
 }
 
-// TestLoadNotificationsConfiguration tests loading the notifications configuration sub-tree
+// TestLoadNotificationsConfiguration tests loading the notifications configuration subtree
 func TestLoadCleanerConfiguration(t *testing.T) {
 	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
 
@@ -373,7 +374,7 @@ func TestLoadClowderConfiguration(t *testing.T) {
 	assert.NoError(t, err, "error loading configuration")
 
 	brokerCfg := conf.GetKafkaBrokerConfiguration(&cfg)
-	assert.Equal(t, fmt.Sprintf("%s:%d", hostname, port), brokerCfg.Address)
+	assert.Equal(t, fmt.Sprintf("%s:%d", hostname, port), brokerCfg.Addresses)
 }
 
 // TestLoadStorageConfigFromClowder tests loading a clowder config that should overwrite some
@@ -486,7 +487,7 @@ func TestLoadConfigurationNoKafkaBroker(t *testing.T) {
 	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 
 	// check broker configuration
-	assert.Equal(t, "localhost:29092", brokerCfg.Address)
+	assert.Equal(t, "localhost:29092", brokerCfg.Addresses)
 	assert.Equal(t, "ccx_test_notifications", brokerCfg.Topic)
 	assert.True(t, brokerCfg.Enabled)
 }
@@ -498,7 +499,7 @@ func TestLoadConfigurationKafkaBrokerEmptyConfig(t *testing.T) {
 	os.Clearenv()
 
 	// just one empty broker configuration
-	var brokersConfig []clowder.BrokerConfig = []clowder.BrokerConfig{
+	var brokersConfig = []clowder.BrokerConfig{
 		{},
 	}
 
@@ -521,7 +522,7 @@ func TestLoadConfigurationKafkaBrokerEmptyConfig(t *testing.T) {
 	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 
 	// check broker configuration
-	assert.Equal(t, "", brokerCfg.Address)
+	assert.Equal(t, "", brokerCfg.Addresses)
 	assert.Equal(t, "ccx_test_notifications", brokerCfg.Topic)
 	assert.True(t, brokerCfg.Enabled)
 }
@@ -558,7 +559,7 @@ func TestLoadConfigurationKafkaBrokerNoPort(t *testing.T) {
 
 	// check broker configuration
 	// no port should be set
-	assert.Equal(t, "test", brokerCfg.Address)
+	assert.Equal(t, "test", brokerCfg.Addresses)
 	assert.Equal(t, "ccx_test_notifications", brokerCfg.Topic)
 	assert.True(t, brokerCfg.Enabled)
 }
@@ -596,7 +597,7 @@ func TestLoadConfigurationKafkaBrokerPort(t *testing.T) {
 	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 
 	// check broker configuration
-	assert.Equal(t, "test:1234", brokerCfg.Address)
+	assert.Equal(t, "test:1234", brokerCfg.Addresses)
 	assert.Equal(t, "ccx_test_notifications", brokerCfg.Topic)
 	assert.True(t, brokerCfg.Enabled)
 }
@@ -610,7 +611,7 @@ func TestLoadConfigurationKafkaBrokerAuthConfigMissingSASL(t *testing.T) {
 	var port = 1234
 	var authType clowder.BrokerConfigAuthtype
 
-	var brokersConfig []clowder.BrokerConfig = []clowder.BrokerConfig{
+	var brokersConfig = []clowder.BrokerConfig{
 		{
 			Hostname: "test",
 			Port:     &port,
@@ -638,7 +639,7 @@ func TestLoadConfigurationKafkaBrokerAuthConfigMissingSASL(t *testing.T) {
 	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 
 	// check broker configuration
-	assert.Equal(t, "test:1234", brokerCfg.Address)
+	assert.Equal(t, "test:1234", brokerCfg.Addresses)
 	assert.Equal(t, "ccx_test_notifications", brokerCfg.Topic)
 	assert.True(t, brokerCfg.Enabled)
 
@@ -663,17 +664,18 @@ func TestLoadConfigurationKafkaBrokerAuthConfig(t *testing.T) {
 	var saslMechanism = "mechanism"
 	var securityProtocol = "security_protocol"
 
-	var brokersConfig []clowder.BrokerConfig = []clowder.BrokerConfig{
+	var brokersConfig = []clowder.BrokerConfig{
 		{
-			Hostname: "test",
-			Port:     &port,
-			Authtype: &authType,
+			Hostname:         "test",
+			Port:             &port,
+			Authtype:         &authType,
+			SecurityProtocol: &securityProtocol,
 			// proper SASL configuration
 			Sasl: &clowder.KafkaSASLConfig{
-				Username:         &username,
-				Password:         &password,
-				SaslMechanism:    &saslMechanism,
-				SecurityProtocol: &securityProtocol},
+				Username:      &username,
+				Password:      &password,
+				SaslMechanism: &saslMechanism,
+			},
 		},
 	}
 
@@ -697,7 +699,7 @@ func TestLoadConfigurationKafkaBrokerAuthConfig(t *testing.T) {
 	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
 
 	// check broker configuration
-	assert.Equal(t, "test:1234", brokerCfg.Address)
+	assert.Equal(t, "test:1234", brokerCfg.Addresses)
 	assert.Equal(t, "ccx_test_notifications", brokerCfg.Topic)
 	assert.True(t, brokerCfg.Enabled)
 
@@ -742,7 +744,7 @@ func TestLoadConfigurationKafkaTopicUpdatedFromClowder(t *testing.T) {
 	assert.NoError(t, err, "Failed loading configuration file")
 
 	brokerCfg := conf.GetKafkaBrokerConfiguration(&config)
-	assert.Equal(t, fmt.Sprintf("%s:%d", hostname, port), brokerCfg.Address)
+	assert.Equal(t, fmt.Sprintf("%s:%d", hostname, port), brokerCfg.Addresses)
 	assert.Equal(t, newTopicName, brokerCfg.Topic)
 
 	// config with different broker configuration, broker's hostname taken from clowder, but no topic to map to
@@ -752,7 +754,7 @@ func TestLoadConfigurationKafkaTopicUpdatedFromClowder(t *testing.T) {
 	assert.NoError(t, err, "Failed loading configuration file")
 
 	brokerCfg = conf.GetKafkaBrokerConfiguration(&config)
-	assert.Equal(t, fmt.Sprintf("%s:%d", hostname, port), brokerCfg.Address)
+	assert.Equal(t, fmt.Sprintf("%s:%d", hostname, port), brokerCfg.Addresses)
 	assert.Equal(t, topicName, brokerCfg.Topic)
 }
 

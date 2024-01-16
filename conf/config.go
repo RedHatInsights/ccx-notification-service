@@ -20,7 +20,7 @@ limitations under the License.
 // configuration from provided configuration file and/or from environment
 // variables. Additionally several specific functions named
 // GetStorageConfiguration, GetLoggingConfiguration,
-// GetKafkaBrokerConfiguration, GetNotificationsConfiguration and
+// GetKafkaConfiguration, GetNotificationsConfiguration and
 // GetMetricsConfiguration are to be used to return specific configuration
 // options.
 package conf
@@ -63,6 +63,9 @@ import (
 	"strings"
 	"time"
 
+	clowderutils "github.com/RedHatInsights/insights-operator-utils/clowder"
+	"github.com/RedHatInsights/insights-operator-utils/kafka"
+
 	"github.com/BurntSushi/toml"
 	clowder "github.com/redhatinsights/app-common-go/pkg/api/v1"
 
@@ -93,19 +96,20 @@ const (
 // ConfigStruct is a structure holding the whole notification service
 // configuration
 type ConfigStruct struct {
-	LoggingConf       logger.LoggingConfiguration       `mapstructure:"logging" toml:"logging"`
-	CloudWatchConf    logger.CloudWatchConfiguration    `mapstructure:"cloudwatch" toml:"cloudwatch"`
-	SentryLoggingConf logger.SentryLoggingConfiguration `mapstructure:"sentry" toml:"sentry"`
-	KafkaZerologConf  logger.KafkaZerologConfiguration  `mapstructure:"kafka_zerolog" toml:"kafka_zerolog"`
-	Storage           StorageConfiguration              `mapstructure:"storage" toml:"storage"`
-	Kafka             KafkaConfiguration                `mapstructure:"kafka_broker" toml:"kafka_broker"`
-	ServiceLog        ServiceLogConfiguration           `mapstructure:"service_log" toml:"service_log"`
-	Dependencies      DependenciesConfiguration         `mapstructure:"dependencies" toml:"dependencies"`
-	Notifications     NotificationsConfiguration        `mapstructure:"notifications" toml:"notifications"`
-	Metrics           MetricsConfiguration              `mapstructure:"metrics" toml:"metrics"`
-	Cleaner           CleanerConfiguration              `mapstructure:"cleaner" toml:"cleaner"`
-	Processing        ProcessingConfiguration           `mapstructure:"processing" toml:"processing"`
-	DeleteOperation   bool
+	LoggingConf        logger.LoggingConfiguration       `mapstructure:"logging" toml:"logging"`
+	CloudWatchConf     logger.CloudWatchConfiguration    `mapstructure:"cloudwatch" toml:"cloudwatch"`
+	SentryLoggingConf  logger.SentryLoggingConfiguration `mapstructure:"sentry" toml:"sentry"`
+	KafkaZerologConf   logger.KafkaZerologConfiguration  `mapstructure:"kafka_zerolog" toml:"kafka_zerolog"`
+	Storage            StorageConfiguration              `mapstructure:"storage" toml:"storage"`
+	Kafka              kafka.BrokerConfiguration         `mapstructure:"kafka_broker" toml:"kafka_broker"`
+	NotificationEvents NotificationEventsConfiguration   `mapstructure:"notification_events" toml:"notification_events"`
+	ServiceLog         ServiceLogConfiguration           `mapstructure:"service_log" toml:"service_log"`
+	Dependencies       DependenciesConfiguration         `mapstructure:"dependencies" toml:"dependencies"`
+	Notifications      NotificationsConfiguration        `mapstructure:"notifications" toml:"notifications"`
+	Metrics            MetricsConfiguration              `mapstructure:"metrics" toml:"metrics"`
+	Cleaner            CleanerConfiguration              `mapstructure:"cleaner" toml:"cleaner"`
+	Processing         ProcessingConfiguration           `mapstructure:"processing" toml:"processing"`
+	DeleteOperation    bool
 }
 
 // LoggingConfiguration represents configuration for logging in general
@@ -151,25 +155,16 @@ type CleanerConfiguration struct {
 	MaxAge string `mapstructure:"max_age" toml:"max_age"`
 }
 
-// KafkaConfiguration represents configuration of Kafka brokers and topics
-type KafkaConfiguration struct {
-	Enabled             bool          `mapstructure:"enabled" toml:"enabled"`
-	Address             string        `mapstructure:"address" toml:"address"`
-	SecurityProtocol    string        `mapstructure:"security_protocol" toml:"security_protocol"`
-	CertPath            string        `mapstructure:"cert_path" toml:"cert_path"`
-	SaslMechanism       string        `mapstructure:"sasl_mechanism" toml:"sasl_mechanism"`
-	SaslUsername        string        `mapstructure:"sasl_username" toml:"sasl_username"`
-	SaslPassword        string        `mapstructure:"sasl_password" toml:"sasl_password"`
-	Topic               string        `mapstructure:"topic"   toml:"topic"`
-	Timeout             time.Duration `mapstructure:"timeout" toml:"timeout"`
-	LikelihoodThreshold int           `mapstructure:"likelihood_threshold" toml:"likelihood_threshold"`
-	ImpactThreshold     int           `mapstructure:"impact_threshold" toml:"impact_threshold"`
-	SeverityThreshold   int           `mapstructure:"severity_threshold" toml:"severity_threshold"`
-	TotalRiskThreshold  int           `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
-	Cooldown            string        `mapstructure:"cooldown" toml:"cooldown"`
-	EventFilter         string        `mapstructure:"event_filter" toml:"event_filter"`
-	TagFilterEnabled    bool          `mapstructure:"tag_filter_enabled" toml:"tag_filter_enabled"`
-	Tags                []string      `mapstructure:"tags" toml:"tags"`
+// NotificationEventsConfiguration represents configuration related with notification events
+type NotificationEventsConfiguration struct {
+	LikelihoodThreshold int      `mapstructure:"likelihood_threshold" toml:"likelihood_threshold"`
+	ImpactThreshold     int      `mapstructure:"impact_threshold" toml:"impact_threshold"`
+	SeverityThreshold   int      `mapstructure:"severity_threshold" toml:"severity_threshold"`
+	TotalRiskThreshold  int      `mapstructure:"total_risk_threshold" toml:"total_risk_threshold"`
+	Cooldown            string   `mapstructure:"cooldown" toml:"cooldown"`
+	EventFilter         string   `mapstructure:"event_filter" toml:"event_filter"`
+	TagFilterEnabled    bool     `mapstructure:"tag_filter_enabled" toml:"tag_filter_enabled"`
+	Tags                []string `mapstructure:"tags" toml:"tags"`
 	TagsSet             types.TagsSet
 }
 
@@ -297,7 +292,7 @@ func LoadConfiguration(configFileEnvVariableName, defaultConfigFile string) (Con
 	}
 
 	// convert list/slice into regular set
-	configuration.Kafka.TagsSet = types.MakeSetOfTags(configuration.Kafka.Tags)
+	configuration.NotificationEvents.TagsSet = types.MakeSetOfTags(configuration.NotificationEvents.Tags)
 	configuration.ServiceLog.TagsSet = types.MakeSetOfTags(configuration.ServiceLog.Tags)
 
 	// everything's should be ok
@@ -339,8 +334,13 @@ func GetKafkaZerologConfiguration(configuration *ConfigStruct) logger.KafkaZerol
 }
 
 // GetKafkaBrokerConfiguration returns kafka broker configuration
-func GetKafkaBrokerConfiguration(configuration *ConfigStruct) KafkaConfiguration {
+func GetKafkaBrokerConfiguration(configuration *ConfigStruct) kafka.BrokerConfiguration {
 	return configuration.Kafka
+}
+
+// GetNotifEventsConfiguration returns configuration of notification events sent through Kafka
+func GetNotifEventsConfiguration(configuration *ConfigStruct) NotificationEventsConfiguration {
+	return configuration.NotificationEvents
 }
 
 // GetServiceLogConfiguration returns ServiceLog configuration
@@ -384,37 +384,8 @@ func updateConfigFromClowder(configuration *ConfigStruct) {
 	if clowder.LoadedConfig.Kafka == nil {
 		fmt.Println(noKafkaConfig)
 	} else {
-		// make sure broker(s) are configured in Clowder
-		if len(clowder.LoadedConfig.Kafka.Brokers) > 0 {
-			broker := clowder.LoadedConfig.Kafka.Brokers[0]
-			// port can be empty in clowder, so taking it into account
-			if broker.Port != nil {
-				configuration.Kafka.Address = fmt.Sprintf("%s:%d", broker.Hostname, *broker.Port)
-			} else {
-				configuration.Kafka.Address = broker.Hostname
-			}
-
-			// SSL config
-			if broker.Authtype != nil {
-				fmt.Println("kafka is configured to use authentication")
-				if broker.Sasl != nil {
-					configuration.Kafka.SaslUsername = *broker.Sasl.Username
-					configuration.Kafka.SaslPassword = *broker.Sasl.Password
-					configuration.Kafka.SaslMechanism = *broker.Sasl.SaslMechanism
-					configuration.Kafka.SecurityProtocol = *broker.Sasl.SecurityProtocol
-					if caPath, err := clowder.LoadedConfig.KafkaCa(broker); err == nil {
-						configuration.Kafka.CertPath = caPath
-					}
-				} else {
-					fmt.Println(noSaslConfig)
-				}
-			}
-
-		} else {
-			fmt.Println(noBrokerConfig)
-		}
-
-		updateTopicsMapping(configuration)
+		clowderutils.UseBrokerConfig(&configuration.Kafka, clowder.LoadedConfig)
+		clowderutils.UseClowderTopics(&configuration.Kafka, clowder.KafkaTopics)
 	}
 
 	if clowder.LoadedConfig.Database != nil {
@@ -426,14 +397,5 @@ func updateConfigFromClowder(configuration *ConfigStruct) {
 		configuration.Storage.PGPassword = clowder.LoadedConfig.Database.Password
 	} else {
 		fmt.Println(noStorage)
-	}
-}
-
-func updateTopicsMapping(configuration *ConfigStruct) {
-	// Updating topics from clowder mapping if available
-	if topicCfg, ok := clowder.KafkaTopics[configuration.Kafka.Topic]; ok {
-		configuration.Kafka.Topic = topicCfg.Name
-	} else {
-		fmt.Printf(noTopicMapping, configuration.Kafka.Topic)
 	}
 }

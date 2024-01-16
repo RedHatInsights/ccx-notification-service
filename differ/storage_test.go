@@ -141,7 +141,6 @@ func TestReadLastNotifiedRecordForClusterListEmptyClusterEntries(t *testing.T) {
 	// test returned values
 	assert.NoError(t, err, "error running ReadLastNotifiedRecordForClusterList")
 	assert.Len(t, records, 0, "empty output is expected")
-
 }
 
 func TestReadLastNotifiedRecordForClusterList(t *testing.T) {
@@ -2190,7 +2189,6 @@ const expectedStatementWriteNotificationReportImpl = "INSERT INTO reported \\(or
 // TestWriteNotificationRecordImpl function checks the method
 // Storage.WriteNotificationRecordImpl.
 func TestWriteNotificationRecordImpl(t *testing.T) {
-
 	// prepare new mocked connection to database
 	connection, mock := mustCreateMockConnection(t)
 

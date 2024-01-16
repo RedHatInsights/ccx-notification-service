@@ -25,20 +25,18 @@ package kafka
 // https://redhatinsights.github.io/ccx-notification-service/packages/producer/kafka/kafka_producer.html
 
 import (
-	"crypto/sha512"
+	"github.com/RedHatInsights/ccx-notification-service/types"
+	"github.com/RedHatInsights/insights-operator-utils/kafka"
 	"strings"
 
-	"github.com/RedHatInsights/ccx-notification-service/types"
-
 	"github.com/RedHatInsights/ccx-notification-service/conf"
-	tlsutils "github.com/RedHatInsights/insights-operator-utils/tls"
 	"github.com/Shopify/sarama"
 	"github.com/rs/zerolog/log"
 )
 
 // Producer is an implementation of Producer interface
 type Producer struct {
-	Configuration conf.KafkaConfiguration
+	Configuration kafka.BrokerConfiguration
 	Producer      sarama.SyncProducer
 }
 
@@ -46,14 +44,15 @@ type Producer struct {
 func New(config *conf.ConfigStruct) (*Producer, error) {
 	kafkaConfig := conf.GetKafkaBrokerConfiguration(config)
 
-	saramaConfig, err := saramaConfigFromBrokerConfig(&kafkaConfig)
+	saramaConfig, err := kafka.SaramaConfigFromBrokerConfig(&kafkaConfig)
 	if err != nil {
 		log.Error().Err(err).Msg("Unable to create a valid Kafka configuration")
 	}
+	saramaConfig.Producer.Return.Successes = true
 
-	producer, err := sarama.NewSyncProducer([]string{kafkaConfig.Address}, saramaConfig)
+	producer, err := sarama.NewSyncProducer(strings.Split(kafkaConfig.Addresses, ","), saramaConfig)
 	if err != nil {
-		log.Error().Str("Kafka address", kafkaConfig.Address).Err(err).Msg("unable to start a Kafka producer")
+		log.Error().Str("Kafka address", kafkaConfig.Addresses).Err(err).Msg("Unable to start Kafka producer")
 		return nil, err
 	}
 
@@ -96,38 +95,4 @@ func (producer *Producer) Close() error {
 	}
 
 	return nil
-}
-
-func saramaConfigFromBrokerConfig(cfg *conf.KafkaConfiguration) (*sarama.Config, error) {
-	saramaConfig := sarama.NewConfig()
-	saramaConfig.Version = sarama.V0_10_2_0
-
-	if strings.Contains(cfg.SecurityProtocol, "SSL") {
-		saramaConfig.Net.TLS.Enable = true
-	}
-	if strings.EqualFold(cfg.SecurityProtocol, "SSL") && cfg.CertPath != "" {
-		tlsConfig, err := tlsutils.NewTLSConfig(cfg.CertPath)
-		if err != nil {
-			log.Error().Msgf("Unable to load TLS config for %s cert", cfg.CertPath)
-			return nil, err
-		}
-		saramaConfig.Net.TLS.Config = tlsConfig
-	} else if strings.HasPrefix(cfg.SecurityProtocol, "SASL_") {
-		log.Info().Msg("Configuring SASL authentication")
-		saramaConfig.Net.SASL.Enable = true
-		saramaConfig.Net.SASL.User = cfg.SaslUsername
-		saramaConfig.Net.SASL.Password = cfg.SaslPassword
-		saramaConfig.Net.SASL.Mechanism = sarama.SASLMechanism(cfg.SaslMechanism)
-
-		if strings.EqualFold(cfg.SaslMechanism, sarama.SASLTypeSCRAMSHA512) {
-			log.Info().Msg("Configuring SCRAM-SHA512")
-			saramaConfig.Net.SASL.Handshake = true
-			saramaConfig.Net.SASL.SCRAMClientGeneratorFunc = func() sarama.SCRAMClient {
-				return &SCRAMClient{HashGeneratorFcn: sha512.New}
-			}
-		}
-	}
-
-	saramaConfig.Producer.Return.Successes = true
-	return saramaConfig, nil
 }

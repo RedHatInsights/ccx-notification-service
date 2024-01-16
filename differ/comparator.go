@@ -145,8 +145,7 @@ func IssuesEqual(issue1, issue2 *types.EvaluatedReportItem) bool {
 	/* Removing the Details' comparison as a fix for https://issues.redhat.com/browse/CCXDEV-10817*/
 	if issue1.Type == issue2.Type &&
 		issue1.Module == issue2.Module &&
-		issue1.ErrorKey == issue2.ErrorKey { /* &&
-		bytes.Equal(issue1.Details, issue2.Details) */
+		issue1.ErrorKey == issue2.ErrorKey {
 		return true
 	}
 	return false

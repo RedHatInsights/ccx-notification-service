@@ -54,22 +54,23 @@ func showAuthors() {
 
 // showConfiguration function displays actual configuration.
 func showConfiguration(config *conf.ConfigStruct) {
-	brokerConfig := conf.GetKafkaBrokerConfiguration(config)
+	brokerCfg := conf.GetKafkaBrokerConfiguration(config)
+	notifEventsCfg := conf.GetNotifEventsConfiguration(config)
 	log.Info().
-		Bool("Enabled", brokerConfig.Enabled).
-		Str("Address", brokerConfig.Address).
-		Str("SecurityProtocol", brokerConfig.SecurityProtocol).
-		Str("SaslMechanism", brokerConfig.SaslMechanism).
-		Str("Topic", brokerConfig.Topic).
-		Str("Timeout", brokerConfig.Timeout.String()).
-		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
-		Int("Impact threshold", brokerConfig.ImpactThreshold).
-		Int("Severity threshold", brokerConfig.SeverityThreshold).
-		Int("Total risk threshold", brokerConfig.TotalRiskThreshold).
-		Str("CoolDown", brokerConfig.Cooldown).
-		Str("Event filter", brokerConfig.EventFilter).
-		Bool("Filter by tags", brokerConfig.TagFilterEnabled).
-		Strs("List of tags", brokerConfig.Tags).
+		Bool("Enabled", brokerCfg.Enabled).
+		Str("Addresses", brokerCfg.Addresses).
+		Str("SecurityProtocol", brokerCfg.SecurityProtocol).
+		Str("SaslMechanism", brokerCfg.SaslMechanism).
+		Str("Topic", brokerCfg.Topic).
+		Str("Timeout", brokerCfg.Timeout.String()).
+		Int("Likelihood threshold", notifEventsCfg.LikelihoodThreshold).
+		Int("Impact threshold", notifEventsCfg.ImpactThreshold).
+		Int("Severity threshold", notifEventsCfg.SeverityThreshold).
+		Int("Total risk threshold", notifEventsCfg.TotalRiskThreshold).
+		Str("CoolDown", notifEventsCfg.Cooldown).
+		Str("Event filter", notifEventsCfg.EventFilter).
+		Bool("Filter by tags", notifEventsCfg.TagFilterEnabled).
+		Strs("List of tags", notifEventsCfg.Tags).
 		Msg("Broker configuration")
 
 	serviceLogConfig := conf.GetServiceLogConfiguration(config)
@@ -78,9 +79,9 @@ func showConfiguration(config *conf.ConfigStruct) {
 		Str("ClientID", serviceLogConfig.ClientID).
 		Str("Created by", serviceLogConfig.CreatedBy).
 		Str("Username", serviceLogConfig.Username).
-		Int("Likelihood threshold", brokerConfig.LikelihoodThreshold).
-		Int("Impact threshold", brokerConfig.ImpactThreshold).
-		Int("Severity threshold", brokerConfig.SeverityThreshold).
+		Int("Likelihood threshold", serviceLogConfig.LikelihoodThreshold).
+		Int("Impact threshold", serviceLogConfig.ImpactThreshold).
+		Int("Severity threshold", serviceLogConfig.SeverityThreshold).
 		Int("Total risk threshold", serviceLogConfig.TotalRiskThreshold).
 		Str("CoolDown", serviceLogConfig.Cooldown).
 		Str("Event filter", serviceLogConfig.EventFilter).

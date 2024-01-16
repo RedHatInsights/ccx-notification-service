@@ -1,5 +1,5 @@
 [kafka_broker]
-address = "localhost:9092"
+addresses = "localhost:9092"
 topic = "test_notification_topic"
 
 [dependencies]

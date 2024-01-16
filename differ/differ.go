@@ -242,7 +242,6 @@ func findRuleByNameAndErrorKey(
 // evaluateFilterExpression function tries to evaluate event filter expression
 // based on provided threshold values and actual recommendation values
 func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, eventValue EventValue) (int, error) {
-
 	// values to be passed into expression evaluator
 	values := make(map[string]int)
 	values["likelihoodThreshold"] = thresholds.Likelihood
@@ -937,22 +936,22 @@ func (d *Differ) close() (err error) {
 //  1. filter based on likelihood, impact, severity, and total risk
 //  2. filter based on rule type that's identified by tags
 func (d *Differ) SetupFiltersAndThresholds(config *conf.ConfigStruct) error {
-	kafkaBrokerConfiguration := conf.GetKafkaBrokerConfiguration(config)
-	if kafkaBrokerConfiguration.Enabled {
+	if conf.GetKafkaBrokerConfiguration(config).Enabled {
+		notifEventsCfg := conf.GetNotifEventsConfiguration(config)
 		d.Thresholds = EventThresholds{
-			TotalRisk:  kafkaBrokerConfiguration.TotalRiskThreshold,
-			Likelihood: kafkaBrokerConfiguration.LikelihoodThreshold,
-			Impact:     kafkaBrokerConfiguration.ImpactThreshold,
-			Severity:   kafkaBrokerConfiguration.SeverityThreshold,
+			TotalRisk:  notifEventsCfg.TotalRiskThreshold,
+			Likelihood: notifEventsCfg.LikelihoodThreshold,
+			Impact:     notifEventsCfg.ImpactThreshold,
+			Severity:   notifEventsCfg.SeverityThreshold,
 		}
-		if kafkaBrokerConfiguration.EventFilter == "" {
+		if notifEventsCfg.EventFilter == "" {
 			d.Filter = DefaultEventFilter
 		} else {
-			d.Filter = kafkaBrokerConfiguration.EventFilter
+			d.Filter = notifEventsCfg.EventFilter
 		}
 		// filtering by tags
-		d.FilterByTag = kafkaBrokerConfiguration.TagFilterEnabled
-		d.TagsSet = kafkaBrokerConfiguration.TagsSet
+		d.FilterByTag = notifEventsCfg.TagFilterEnabled
+		d.TagsSet = notifEventsCfg.TagsSet
 
 		// check if tags set is provided via configuration if filtering is enabled
 		if d.FilterByTag && d.TagsSet == nil {
@@ -1049,7 +1048,7 @@ func New(config *conf.ConfigStruct, storage Storage) (*Differ, error) {
 		if err := d.SetupKafkaProducer(config); err != nil {
 			return nil, err
 		}
-		d.CoolDown = conf.GetKafkaBrokerConfiguration(config).Cooldown
+		d.CoolDown = conf.GetNotifEventsConfiguration(config).Cooldown
 	} else if conf.GetServiceLogConfiguration(config).Enabled {
 		d.Target = types.ServiceLogTarget
 		if err := d.setupServiceLogProducer(config); err != nil {
