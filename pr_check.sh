@@ -11,12 +11,13 @@ COMPONENTS_W_RESOURCES="ccx-notification-service"  # component to keep
 CACHE_FROM_LATEST_IMAGE="true"
 
 export IQE_PLUGINS="ccx"
-export IQE_MARKER_EXPRESSION=""
+export IQE_MARKER_EXPRESSION="notifications or servicelog"
 # Workaround: There are no cleaner specific integration tests. Check that the service loads and iqe plugin works.
 export IQE_FILTER_EXPRESSION="test_plugin_accessible"
 export IQE_REQUIREMENTS_PRIORITY=""
 export IQE_TEST_IMPORTANCE=""
 export IQE_CJI_TIMEOUT="30m"
+export IQE_ENV="ephemeral"
 
 
 function build_image() {
