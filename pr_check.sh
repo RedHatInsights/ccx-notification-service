@@ -3,22 +3,23 @@
 # --------------------------------------------
 # Options that must be configured by app owner
 # --------------------------------------------
-APP_NAME="ccx-data-pipeline,notifications"  # name of app-sre "application" folder this component lives in
+APP_NAME="ccx-data-pipeline"  # name of app-sre "application" folder this component lives in
 COMPONENT_NAME="ccx-notification-service"  # name of app-sre "resourceTemplate" in deploy.yaml for this component
 IMAGE="quay.io/cloudservices/ccx-notification-service"
-COMPONENTS="ccx-notification-writer ccx-notification-service ccx-notification-db-cleaner notifications-backend notifications-engine notifications-aggregator notifications-gw"  # space-separated list of components to laod
+COMPONENTS="ccx-notification-service ccx-notification-writer ccx-data-pipeline ccx-insights-results insights-content-service ccx-mock-ams"  # space-separated list of components to laod
 COMPONENTS_W_RESOURCES="ccx-notification-service"  # component to keep
 CACHE_FROM_LATEST_IMAGE="true"
 
+export REF_ENV="insights-production"
 export IQE_PLUGINS="ccx"
 export IQE_MARKER_EXPRESSION="notifications or servicelog"
 # Workaround: There are no cleaner specific integration tests. Check that the service loads and iqe plugin works.
 export IQE_FILTER_EXPRESSION=""
 export IQE_REQUIREMENTS_PRIORITY=""
 export IQE_TEST_IMPORTANCE=""
-export IQE_CJI_TIMEOUT="30m"
+export IQE_CJI_TIMEOUT="60m"
 export IQE_ENV="ephemeral"
-
+DEPLOY_FRONTENDS="true" #service log has a UI test
 
 function build_image() {
     source $CICD_ROOT/build.sh
@@ -29,6 +30,7 @@ function deploy_ephemeral() {
 }
 
 function run_smoke_tests() {
+    RELEASE_NAMESPACE="false"
     source $CICD_ROOT/cji_smoke_test.sh
     source $CICD_ROOT/post_test_results.sh  # publish results in Ibutsu
 }
