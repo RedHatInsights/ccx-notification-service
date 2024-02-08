@@ -55,6 +55,54 @@ func TestAddMetricsWithNamespaceAndSubsystem(t *testing.T) {
 	assert.NotNil(t, differ.NoSeverityTotalRisk)
 }
 
+func TestPushMetricsNoNamespaceConfig(t *testing.T) {
+	var expectedPushes = 0
+	testServer := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", `text/plain; charset=utf-8`)
+			w.WriteHeader(http.StatusOK)
+			expectedPushes++
+		}),
+	)
+	defer testServer.Close()
+
+	metricsConf := conf.MetricsConfiguration{
+		Job:              "ccx_notification_service",
+		GatewayURL:       testServer.URL,
+		GatewayAuthToken: "some token",
+	}
+
+	err := differ.PushMetrics(&metricsConf)
+	assert.Nil(t, err)
+
+	assert.Zero(t, expectedPushes,
+		fmt.Sprintf("expected exactly %d pushes", expectedPushes))
+}
+
+func TestPushMetricsGatewayNoAuthConfig(t *testing.T) {
+	var expectedPushes = 0
+	testServer := httptest.NewServer(
+		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+			w.Header().Set("Content-Type", `text/plain; charset=utf-8`)
+			w.WriteHeader(http.StatusOK)
+			expectedPushes++
+		}),
+	)
+	defer testServer.Close()
+
+	metricsConf := conf.MetricsConfiguration{
+		Job:        "ccx_notification_service",
+		Namespace:  "ccx_notification_service",
+		GatewayURL: testServer.URL,
+	}
+
+	err := differ.PushMetrics(&metricsConf)
+	assert.Nil(t, err)
+
+	assert.Zero(t, expectedPushes,
+		fmt.Sprintf("expected exactly %d pushes", expectedPushes))
+}
+
 func TestPushMetricsGatewayNotFailingWithRetriesThenOk(t *testing.T) {
 	var (
 		pushes             int
@@ -79,11 +127,12 @@ func TestPushMetricsGatewayNotFailingWithRetriesThenOk(t *testing.T) {
 	_, cancel := context.WithTimeout(context.Background(), totalTime)
 
 	metricsConf := conf.MetricsConfiguration{
-		Job:        "ccx_notification_service",
-		Namespace:  "ccx_notification_service",
-		GatewayURL: testServer.URL,
-		RetryAfter: timeBetweenRetries,
-		Retries:    10,
+		Job:              "ccx_notification_service",
+		Namespace:        "ccx_notification_service",
+		GatewayURL:       testServer.URL,
+		GatewayAuthToken: "some_token",
+		RetryAfter:       timeBetweenRetries,
+		Retries:          10,
 	}
 
 	err := differ.PushMetrics(&metricsConf)
@@ -116,11 +165,12 @@ func TestPushMetricsGatewayNotFailingWithRetries(t *testing.T) {
 	_, cancel := context.WithTimeout(context.Background(), totalTime)
 
 	metricsConf := conf.MetricsConfiguration{
-		Job:        "ccx_notification_service",
-		Namespace:  "ccx_notification_service",
-		GatewayURL: testServer.URL,
-		RetryAfter: timeBetweenRetries,
-		Retries:    10,
+		Job:              "ccx_notification_service",
+		Namespace:        "ccx_notification_service",
+		GatewayURL:       testServer.URL,
+		GatewayAuthToken: "some_token",
+		RetryAfter:       timeBetweenRetries,
+		Retries:          10,
 	}
 
 	err := differ.PushMetrics(&metricsConf)
@@ -150,11 +200,12 @@ func TestPushMetricsGatewayFailing(t *testing.T) {
 	_, cancel := context.WithTimeout(context.Background(), totalTime)
 
 	metricsConf := conf.MetricsConfiguration{
-		Job:        "ccx_notification_service",
-		Namespace:  "ccx_notification_service",
-		GatewayURL: testServer.URL,
-		RetryAfter: timeBetweenRetries,
-		Retries:    10,
+		Job:              "ccx_notification_service",
+		Namespace:        "ccx_notification_service",
+		GatewayURL:       testServer.URL,
+		GatewayAuthToken: "some_token",
+		RetryAfter:       timeBetweenRetries,
+		Retries:          10,
 	}
 
 	err := differ.PushMetrics(&metricsConf)
@@ -185,6 +236,7 @@ func TestPushMetricsInLoop(t *testing.T) {
 		Job:                    "ccx_notification_service",
 		Namespace:              "ccx_notification_service",
 		GatewayURL:             pgwOK.URL,
+		GatewayAuthToken:       "some_token",
 		GatewayTimeBetweenPush: timeBetweenPush,
 	}
 

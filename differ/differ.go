@@ -751,12 +751,13 @@ func setupNotificationStates(storage Storage) error {
 
 // registerMetrics registers metrics using the provided namespace, if any
 func registerMetrics(metricsConfig *conf.MetricsConfiguration) {
-	if metricsConfig.Namespace != "" {
-		log.Info().Str("namespace", metricsConfig.Namespace).Msg("Setting metrics namespace")
-		AddMetricsWithNamespaceAndSubsystem(
-			metricsConfig.Namespace,
-			metricsConfig.Subsystem)
+	if metricsConfig.Namespace == "" {
+		return
 	}
+	log.Info().Str("namespace", metricsConfig.Namespace).Msg("Setting metrics namespace")
+	AddMetricsWithNamespaceAndSubsystem(
+		metricsConfig.Namespace,
+		metricsConfig.Subsystem)
 }
 
 func closeStorage(storage Storage) error {
@@ -778,6 +779,10 @@ func closeNotifier(notifier producer.Producer) error {
 }
 
 func pushMetrics(metricsConf *conf.MetricsConfiguration) error {
+	if metricsConf.Namespace == "" || metricsConf.GatewayAuthToken == "" {
+		log.Debug().Msg("No metrics configuration detected. Metrics will not be pushed")
+		return nil
+	}
 	err := PushCollectedMetrics(metricsConf)
 	if err != nil {
 		log.Err(err).Msg(metricsPushFailedMessage)

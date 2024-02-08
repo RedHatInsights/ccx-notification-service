@@ -298,20 +298,22 @@ func PushCollectedMetrics(metricsConf *conf.MetricsConfiguration) error {
 
 // PushMetricsInLoop pushes the metrics in a loop until context is done
 func PushMetricsInLoop(ctx context.Context, metricsConf *conf.MetricsConfiguration) {
-	log.Info().Msgf("Metrics will be pushed in loop each %f seconds", metricsConf.GatewayTimeBetweenPush.Seconds())
+	if metricsConf.Namespace != "" && metricsConf.GatewayAuthToken != "" {
+		log.Info().Msgf("Metrics will be pushed in loop each %f seconds", metricsConf.GatewayTimeBetweenPush.Seconds())
 
-	ticker := time.NewTicker(metricsConf.GatewayTimeBetweenPush)
-	for {
-		select {
-		case <-ticker.C:
-			log.Debug().Msg("Pushing metrics")
-			err := PushCollectedMetrics(metricsConf)
-			if err != nil {
-				log.Error().Err(err).Msg("Error pushing the metrics in loop")
+		ticker := time.NewTicker(metricsConf.GatewayTimeBetweenPush)
+		for {
+			select {
+			case <-ticker.C:
+				log.Debug().Msg("Pushing metrics")
+				err := PushCollectedMetrics(metricsConf)
+				if err != nil {
+					log.Error().Err(err).Msg("Error pushing the metrics in loop")
+				}
+				log.Debug().Msg("Metrics pushed")
+			case <-ctx.Done():
+				return
 			}
-			log.Debug().Msg("Metrics pushed")
-		case <-ctx.Done():
-			return
 		}
 	}
 }
