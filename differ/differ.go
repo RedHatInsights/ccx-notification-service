@@ -859,7 +859,6 @@ func (d *Differ) start(config *conf.ConfigStruct) error {
 	if err := setupNotificationTypes(d.Storage); err != nil {
 		return err
 	}
-	go PushMetricsInLoop(context.Background(), &metricsConfiguration)
 
 	clusters, err := d.Storage.ReadClusterList()
 	if err != nil {
@@ -888,6 +887,9 @@ func (d *Differ) start(config *conf.ConfigStruct) error {
 		return err
 	}
 	log.Info().Msg(separator)
+
+	go PushMetricsInLoop(context.Background(), &metricsConfiguration)
+
 	log.Info().Msg("Checking new issues for all new reports")
 	d.ProcessClusters(config, ruleContent, clusters)
 	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
