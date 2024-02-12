@@ -121,6 +121,7 @@ objects:
               secretKeyRef:
                 key: server
                 name: push-gateway-basic-auth
+                optional: true
           - name: CCX_NOTIFICATION_SERVICE__METRICS__GATEWAY_AUTH_TOKEN
             valueFrom:
               secretKeyRef:
