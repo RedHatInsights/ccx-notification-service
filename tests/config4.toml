@@ -1,5 +1,5 @@
 [kafka_broker]
-address = "localhost:29092"
+addresses = "localhost:29092"
 topic = "ccx_test_notifications"
 timeout = "20s"
 enabled = true

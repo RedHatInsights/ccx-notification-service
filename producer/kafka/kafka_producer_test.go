@@ -36,10 +36,10 @@ import (
 
 var (
 	brokerCfg = conf.KafkaConfiguration{
-		Address: "localhost:9092",
-		Topic:   "platform.notifications.ingress",
-		Timeout: time.Duration(30*10 ^ 9),
-		Enabled: true,
+		Addresses: "localhost:9092",
+		Topic:     "platform.notifications.ingress",
+		Timeout:   time.Duration(30*10 ^ 9),
+		Enabled:   true,
 	}
 )
 
@@ -54,10 +54,10 @@ func TestNewProducerBadBroker(t *testing.T) {
 
 	_, err := New(&conf.ConfigStruct{
 		Kafka: conf.KafkaConfiguration{
-			Address: "",
-			Topic:   "whatever",
-			Timeout: 0,
-			Enabled: true,
+			Addresses: "",
+			Topic:     "whatever",
+			Timeout:   0,
+			Enabled:   true,
 		}})
 	assert.EqualError(t, err, expectedErrorMessage1)
 
@@ -100,9 +100,9 @@ func TestProducerNew(t *testing.T) {
 
 	prod, err := New(&conf.ConfigStruct{
 		Kafka: conf.KafkaConfiguration{
-			Address: mockBroker.Addr(),
-			Topic:   brokerCfg.Topic,
-			Timeout: brokerCfg.Timeout,
+			Addresses: mockBroker.Addr(),
+			Topic:     brokerCfg.Topic,
+			Timeout:   brokerCfg.Timeout,
 		}})
 	helpers.FailOnError(t, err)
 
@@ -114,7 +114,7 @@ func TestProducerNew(t *testing.T) {
 func TestSaramaConfigFromBrokerWithSASLEnabledNoSASLMechanism(t *testing.T) {
 	// valid broker configuration for local Kafka instance
 	var brokerConfiguration = conf.KafkaConfiguration{
-		Address:          "localhost:9092",
+		Addresses:        "localhost:9092",
 		Topic:            "platform.notifications.ingress",
 		Enabled:          true,
 		SecurityProtocol: "SASL_",
@@ -137,7 +137,7 @@ func TestSaramaConfigFromBrokerWithSASLEnabledNoSASLMechanism(t *testing.T) {
 func TestSaramaConfigFromBrokerWithSASLEnabledSCRAMAuth(t *testing.T) {
 	// valid broker configuration for local Kafka instance
 	var brokerConfiguration = conf.KafkaConfiguration{
-		Address:          "localhost:9092",
+		Addresses:        "localhost:9092",
 		Topic:            "platform.notifications.ingress",
 		Enabled:          true,
 		SecurityProtocol: "SASL_",
@@ -160,7 +160,7 @@ func TestSaramaConfigFromBrokerWithSASLEnabledSCRAMAuth(t *testing.T) {
 func TestSaramaConfigFromBrokerWithSASLEnabledUnexpectedAuthMechanism(t *testing.T) {
 	// valid broker configuration for local Kafka instance
 	var brokerConfiguration = conf.KafkaConfiguration{
-		Address:          "localhost:9092",
+		Addresses:        "localhost:9092",
 		Topic:            "platform.notifications.ingress",
 		Enabled:          true,
 		SecurityProtocol: "SASL_",

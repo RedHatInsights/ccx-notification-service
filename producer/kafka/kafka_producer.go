@@ -51,9 +51,9 @@ func New(config *conf.ConfigStruct) (*Producer, error) {
 		log.Error().Err(err).Msg("Unable to create a valid Kafka configuration")
 	}
 
-	producer, err := sarama.NewSyncProducer([]string{kafkaConfig.Address}, saramaConfig)
+	producer, err := sarama.NewSyncProducer(strings.Split(kafkaConfig.Addresses, ","), saramaConfig)
 	if err != nil {
-		log.Error().Str("Kafka address", kafkaConfig.Address).Err(err).Msg("unable to start a Kafka producer")
+		log.Error().Str("Kafka address", kafkaConfig.Addresses).Err(err).Msg("unable to start a Kafka producer")
 		return nil, err
 	}
 

@@ -154,7 +154,7 @@ type CleanerConfiguration struct {
 // KafkaConfiguration represents configuration of Kafka brokers and topics
 type KafkaConfiguration struct {
 	Enabled             bool          `mapstructure:"enabled" toml:"enabled"`
-	Address             string        `mapstructure:"address" toml:"address"`
+	Addresses           string        `mapstructure:"addresses" toml:"addresses"`
 	SecurityProtocol    string        `mapstructure:"security_protocol" toml:"security_protocol"`
 	CertPath            string        `mapstructure:"cert_path" toml:"cert_path"`
 	SaslMechanism       string        `mapstructure:"sasl_mechanism" toml:"sasl_mechanism"`
@@ -373,6 +373,51 @@ func GetProcessingConfiguration(configuration *ConfigStruct) ProcessingConfigura
 	return configuration.Processing
 }
 
+func updateStorageCfgFromClowder(configuration *ConfigStruct) {
+	// get DB configuration from clowder
+	configuration.Storage.PGDBName = clowder.LoadedConfig.Database.Name
+	configuration.Storage.PGHost = clowder.LoadedConfig.Database.Hostname
+	configuration.Storage.PGPort = clowder.LoadedConfig.Database.Port
+	configuration.Storage.PGUsername = clowder.LoadedConfig.Database.Username
+	configuration.Storage.PGPassword = clowder.LoadedConfig.Database.Password
+}
+
+func updateBrokerCfgFromClowder(configuration *ConfigStruct) {
+	// make sure broker(s) are configured in Clowder
+	if len(clowder.LoadedConfig.Kafka.Brokers) > 0 {
+		configuration.Kafka.Addresses = ""
+		for _, broker := range clowder.LoadedConfig.Kafka.Brokers {
+			if broker.Port != nil {
+				configuration.Kafka.Addresses += fmt.Sprintf("%s:%d", broker.Hostname, *broker.Port) + ","
+			} else {
+				configuration.Kafka.Addresses += broker.Hostname + ","
+			}
+		}
+		// remove the extra comma
+		configuration.Kafka.Addresses = configuration.Kafka.Addresses[:len(configuration.Kafka.Addresses)-1]
+
+		// SSL config
+		clowderBrokerCfg := clowder.LoadedConfig.Kafka.Brokers[0]
+		if clowderBrokerCfg.Authtype != nil {
+			fmt.Println("kafka is configured to use authentication")
+			if clowderBrokerCfg.Sasl != nil {
+				configuration.Kafka.SaslUsername = *clowderBrokerCfg.Sasl.Username
+				configuration.Kafka.SaslPassword = *clowderBrokerCfg.Sasl.Password
+				configuration.Kafka.SaslMechanism = *clowderBrokerCfg.Sasl.SaslMechanism
+				configuration.Kafka.SecurityProtocol = *clowderBrokerCfg.Sasl.SecurityProtocol
+				if caPath, err := clowder.LoadedConfig.KafkaCa(clowderBrokerCfg); err == nil {
+					configuration.Kafka.CertPath = caPath
+				}
+			} else {
+				fmt.Println(noSaslConfig)
+			}
+		}
+	} else {
+		fmt.Println(noBrokerConfig)
+	}
+	updateTopicsMapping(configuration)
+}
+
 // updateConfigFromClowder updates the current config with the values defined in clowder
 func updateConfigFromClowder(configuration *ConfigStruct) {
 	if !clowder.IsClowderEnabled() || clowder.LoadedConfig == nil {
@@ -384,48 +429,13 @@ func updateConfigFromClowder(configuration *ConfigStruct) {
 	if clowder.LoadedConfig.Kafka == nil {
 		fmt.Println(noKafkaConfig)
 	} else {
-		// make sure broker(s) are configured in Clowder
-		if len(clowder.LoadedConfig.Kafka.Brokers) > 0 {
-			broker := clowder.LoadedConfig.Kafka.Brokers[0]
-			// port can be empty in clowder, so taking it into account
-			if broker.Port != nil {
-				configuration.Kafka.Address = fmt.Sprintf("%s:%d", broker.Hostname, *broker.Port)
-			} else {
-				configuration.Kafka.Address = broker.Hostname
-			}
-
-			// SSL config
-			if broker.Authtype != nil {
-				fmt.Println("kafka is configured to use authentication")
-				if broker.Sasl != nil {
-					configuration.Kafka.SaslUsername = *broker.Sasl.Username
-					configuration.Kafka.SaslPassword = *broker.Sasl.Password
-					configuration.Kafka.SaslMechanism = *broker.Sasl.SaslMechanism
-					configuration.Kafka.SecurityProtocol = *broker.Sasl.SecurityProtocol
-					if caPath, err := clowder.LoadedConfig.KafkaCa(broker); err == nil {
-						configuration.Kafka.CertPath = caPath
-					}
-				} else {
-					fmt.Println(noSaslConfig)
-				}
-			}
-
-		} else {
-			fmt.Println(noBrokerConfig)
-		}
-
-		updateTopicsMapping(configuration)
+		updateBrokerCfgFromClowder(configuration)
 	}
 
-	if clowder.LoadedConfig.Database != nil {
-		// get DB configuration from clowder
-		configuration.Storage.PGDBName = clowder.LoadedConfig.Database.Name
-		configuration.Storage.PGHost = clowder.LoadedConfig.Database.Hostname
-		configuration.Storage.PGPort = clowder.LoadedConfig.Database.Port
-		configuration.Storage.PGUsername = clowder.LoadedConfig.Database.Username
-		configuration.Storage.PGPassword = clowder.LoadedConfig.Database.Password
-	} else {
+	if clowder.LoadedConfig.Database == nil {
 		fmt.Println(noStorage)
+	} else {
+		updateStorageCfgFromClowder(configuration)
 	}
 }
 
