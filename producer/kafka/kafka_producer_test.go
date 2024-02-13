@@ -50,21 +50,21 @@ func init() {
 
 // Test Producer creation with a non-accessible Kafka broker
 func TestNewProducerBadBroker(t *testing.T) {
-	const expectedErrorMessage1 = "kafka: invalid configuration (You must provide at least one broker address)"
-	const expectedErrorMessage2 = "client has run out of available brokers to talk to"
-
-	_, err := New(&conf.ConfigStruct{
+	const expectedErrorMessage = "client has run out of available brokers to talk to"
+	prod, err := New(&conf.ConfigStruct{
 		Kafka: kafkautils.BrokerConfiguration{
 			Topic:   "whatever",
 			Timeout: 0,
 			Enabled: true,
 		}})
-	assert.EqualError(t, err, expectedErrorMessage1)
+	assert.Nil(t, prod, "producer shouldn't be created with the provided config")
+	assert.NotNil(t, err)
 
-	_, err = New(&conf.ConfigStruct{
+	prod, err = New(&conf.ConfigStruct{
 		Kafka: brokerCfg,
 	})
-	assert.ErrorContains(t, err, expectedErrorMessage2)
+	assert.Nil(t, prod, "producer shouldn't be created if broker can't be reached")
+	assert.ErrorContains(t, err, expectedErrorMessage)
 }
 
 // TestProducerClose makes sure it's possible to close the connection
