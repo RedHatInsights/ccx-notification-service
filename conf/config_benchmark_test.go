@@ -190,8 +190,8 @@ func BenchmarkGetKafkaBrokerConfiguration(b *testing.B) {
 		m := conf.GetKafkaBrokerConfiguration(&configuration)
 
 		b.StopTimer()
-		if m.Address != "localhost:9092" {
-			b.Fatal("Wrong configuration: address = '" + m.Address + "'")
+		if m.Addresses != "localhost:9092" {
+			b.Fatal("Wrong configuration: address = '" + m.Addresses + "'")
 		}
 		if m.Cooldown != "24 hours" {
 			b.Fatal("Wrong configuration: cooldown = '" + m.Cooldown + "'")

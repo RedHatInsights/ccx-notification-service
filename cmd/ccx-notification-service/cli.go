@@ -57,7 +57,7 @@ func showConfiguration(config *conf.ConfigStruct) {
 	brokerConfig := conf.GetKafkaBrokerConfiguration(config)
 	log.Info().
 		Bool("Enabled", brokerConfig.Enabled).
-		Str("Address", brokerConfig.Address).
+		Str("Addresses", brokerConfig.Addresses).
 		Str("SecurityProtocol", brokerConfig.SecurityProtocol).
 		Str("SaslMechanism", brokerConfig.SaslMechanism).
 		Str("Topic", brokerConfig.Topic).

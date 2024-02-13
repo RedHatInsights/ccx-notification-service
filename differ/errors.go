@@ -37,14 +37,14 @@ func (e *StatusMetricsError) Error() string {
 	return "StatusMetricsError"
 }
 
-// StatusConfiguration is related to any storage error
+// StatusConfiguration is related to any configuration error
 type StatusConfiguration struct{}
 
 func (e *StatusConfiguration) Error() string {
 	return "StatusConfiguration"
 }
 
-// StatusEventFilterError is related to any storage error
+// StatusEventFilterError is related to any notification filters configuration error
 type StatusEventFilterError struct {
 	Msg string
 }

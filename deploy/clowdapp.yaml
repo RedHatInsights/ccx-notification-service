@@ -36,7 +36,7 @@ objects:
               cpu: ${CPU_REQUEST}
               memory: ${MEMORY_REQUEST}
           env:
-          - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__ADDRESS
+          - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__ADDRESSES
             value: ${KAFKA_BOOTSTRAP_HOST}:${KAFKA_BOOTSTRAP_PORT}
           - name: CCX_NOTIFICATION_SERVICE__KAFKA_BROKER__TOPIC
             value: ${OUTGOING_TOPIC}

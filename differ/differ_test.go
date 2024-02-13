@@ -44,7 +44,7 @@ import (
 
 var (
 	brokerCfg = conf.KafkaConfiguration{
-		Address:     "localhost:9092",
+		Addresses:   "localhost:9092",
 		Topic:       "platform.notifications.ingress",
 		Timeout:     time.Duration(30*10 ^ 9),
 		Enabled:     true,
@@ -178,7 +178,7 @@ func TestModuleNameToRuleNameValidRuleName(t *testing.T) {
 func TestSetupNotificationProducerInvalidBrokerConf(t *testing.T) {
 	testConfig := conf.ConfigStruct{
 		Kafka: conf.KafkaConfiguration{
-			Address:     "invalid_address",
+			Addresses:   "invalid_address",
 			Topic:       "",
 			Timeout:     0,
 			Enabled:     true,
@@ -231,10 +231,10 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 
 	testConfig := conf.ConfigStruct{
 		Kafka: conf.KafkaConfiguration{
-			Address: mockBroker.Addr(),
-			Topic:   brokerCfg.Topic,
-			Timeout: brokerCfg.Timeout,
-			Enabled: brokerCfg.Enabled,
+			Addresses: mockBroker.Addr(),
+			Topic:     brokerCfg.Topic,
+			Timeout:   brokerCfg.Timeout,
+			Enabled:   brokerCfg.Enabled,
 		},
 	}
 
@@ -250,7 +250,7 @@ func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
 
 	producer := d.Notifier.(*kafka.Producer)
 
-	assert.Equal(t, kafkaProducer.Configuration.Address, producer.Configuration.Address)
+	assert.Equal(t, kafkaProducer.Configuration.Addresses, producer.Configuration.Addresses)
 	assert.Equal(t, kafkaProducer.Configuration.Topic, producer.Configuration.Topic)
 	assert.Equal(t, kafkaProducer.Configuration.Timeout, producer.Configuration.Timeout)
 	assert.Nil(t, kafkaProducer.Producer, "Unexpected behavior: Producer was not set up correctly")
@@ -1345,7 +1345,7 @@ func TestSetupFiltersAndThresholds_Kafka(t *testing.T) {
 
 	testConfig := conf.ConfigStruct{
 		Kafka: conf.KafkaConfiguration{
-			Address:             "localhost:9092",
+			Addresses:           "localhost:9092",
 			Topic:               "platform.notifications.ingress",
 			Enabled:             true,
 			LikelihoodThreshold: 1,
@@ -1380,7 +1380,7 @@ func TestSetupFiltersAndThresholds_Kafka_NonDefaultFilter(t *testing.T) {
 
 	testConfig := conf.ConfigStruct{
 		Kafka: conf.KafkaConfiguration{
-			Address:     "localhost:9092",
+			Addresses:   "localhost:9092",
 			Topic:       "platform.notifications.ingress",
 			Enabled:     true,
 			EventFilter: customFilter,
