@@ -59,7 +59,7 @@ Kafka Broker configuration that is used to communicate with Notification backend
 
 ```
 enabled = true
-address = "kafka:29092" #provide in deployment env or as secret
+addresses = "kafka:29092" #provide in deployment env or as secret
 security_protocol = "PLAINTEXT"
 cert_path = "not-set"
 sasl_mechanism = "PLAIN"
@@ -77,7 +77,7 @@ tags = []
 ```
 
 - `enabled` determines whether the notifications service sends messages to Notification backend via Kafka
-- `address` contains address of Kafka broker
+- `addresses` contains a comma separated list of addresses of Kafka brokers; e.g kafka:9093,localhost:9092,kafka_2:9092
 - `topic` contains Kafka topic to be used
 - `security_protocol` is used by client to connect to Kafka broker by using selected protocol
 - `cert_path`, `sasl_mechanism`, `sasl_username` and `sasl_password` are used to connect to Kafka (these options are not needed for local deployment, for example)
