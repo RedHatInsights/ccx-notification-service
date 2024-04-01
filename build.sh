@@ -23,5 +23,5 @@ commit=$(git rev-parse HEAD)
 
 cmd_dir=./cmd/ccx-notification-service
 
-go build -ldflags="-X 'main.BuildTime=$buildtime' -X 'main.BuildVersion=$version' -X 'main.BuildBranch=$branch' -X 'main.BuildCommit=$commit'" "${cmd_dir}"
+go build -buildvcs=false -ldflags="-X 'main.BuildTime=$buildtime' -X 'main.BuildVersion=$version' -X 'main.BuildBranch=$branch' -X 'main.BuildCommit=$commit'" "${cmd_dir}"
 exit $?
