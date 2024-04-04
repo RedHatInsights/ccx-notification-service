@@ -16,31 +16,14 @@ apiVersion: v1
 data:
   ccx_notification_service_dashboard.json: |
     {
-      "__requires": [
-        {
-          "type": "grafana",
-          "id": "grafana",
-          "name": "Grafana",
-          "version": "8.2.1"
-        },
-        {
-          "type": "datasource",
-          "id": "prometheus",
-          "name": "Prometheus",
-          "version": "1.0.0"
-        },
-        {
-          "type": "panel",
-          "id": "timeseries",
-          "name": "Time series",
-          "version": ""
-        }
-      ],
       "annotations": {
         "list": [
           {
             "builtIn": 1,
-            "datasource": "-- Grafana --",
+            "datasource": {
+              "type": "datasource",
+              "uid": "grafana"
+            },
             "enable": true,
             "hide": true,
             "iconColor": "rgba(0, 211, 255, 1)",
@@ -58,16 +41,16 @@ data:
       "description": "Dashboard for CCX notification services (writer, db-cleaner and notification-service)",
       "editable": true,
       "fiscalYearStartMonth": 0,
-      "gnetId": null,
       "graphTooltip": 0,
-      "id": null,
-      "iteration": 1635422102595,
       "links": [],
       "liveNow": false,
       "panels": [
         {
           "collapsed": false,
-          "datasource": null,
+          "datasource": {
+            "type": "prometheus",
+            "uid": "PD776AFABBE26000A"
+          },
           "gridPos": {
             "h": 1,
             "w": 24,
@@ -77,17 +60,31 @@ data:
           "id": 2,
           "panels": [],
           "repeat": "datasource",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "PD776AFABBE26000A"
+              },
+              "refId": "A"
+            }
+          ],
           "title": "CCX Notification Service",
           "type": "row"
         },
         {
-          "datasource": "${datasource}",
+          "datasource": {
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "color": {
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
@@ -99,6 +96,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -143,14 +141,19 @@ data:
             "legend": {
               "calcs": [],
               "displayMode": "list",
-              "placement": "bottom"
+              "placement": "bottom",
+              "showLegend": true
             },
             "tooltip": {
-              "mode": "single"
+              "mode": "single",
+              "sort": "none"
             }
           },
           "targets": [
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_notification_backend_fetch_content_errors{namespace=\"$namespace\"}[1h]))",
               "interval": "",
@@ -158,6 +161,9 @@ data:
               "refId": "A"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_notification_backend_read_report_for_cluster_errors{namespace=\"$namespace\"}[1h]))",
               "hide": false,
@@ -166,6 +172,9 @@ data:
               "refId": "B"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_notification_backend_producer_setup_errors{namespace=\"$namespace\"}[1h]))",
               "hide": false,
@@ -174,6 +183,9 @@ data:
               "refId": "C"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_notification_backend_read_cluster_list_errors{namespace=\"$namespace\"}[1h]))",
               "hide": false,
@@ -182,6 +194,9 @@ data:
               "refId": "D"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_notification_backend_read_report_for_cluster_errors{namespace=\"$namespace\"}[1h]))",
               "hide": false,
@@ -190,6 +205,9 @@ data:
               "refId": "E"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_notification_backend_storage_setup_errors{namespace=\"$namespace\"}[1h]))",
               "hide": false,
@@ -198,6 +216,9 @@ data:
               "refId": "G"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_service_log_fetch_content_errors{namespace=\"$namespace\"}[1h]))",
               "interval": "",
@@ -205,6 +226,9 @@ data:
               "refId": "H"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_service_log_read_report_for_cluster_errors{namespace=\"$namespace\"}[1h]))",
               "hide": false,
@@ -213,6 +237,9 @@ data:
               "refId": "I"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_service_log_producer_setup_errors{namespace=\"$namespace\"}[1h]))",
               "hide": false,
@@ -221,6 +248,9 @@ data:
               "refId": "J"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_service_log_read_cluster_list_errors{namespace=\"$namespace\"}[1h]))",
               "hide": false,
@@ -229,6 +259,9 @@ data:
               "refId": "K"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_service_log_read_report_for_cluster_errors{namespace=\"$namespace\"}[1h]))",
               "hide": false,
@@ -237,6 +270,9 @@ data:
               "refId": "L"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_service_log_storage_setup_errors{namespace=\"$namespace\"}[1h]))",
               "hide": false,
@@ -249,7 +285,9 @@ data:
           "type": "timeseries"
         },
         {
-          "datasource": "${datasource}",
+          "datasource": {
+            "uid": "${datasource}"
+          },
           "description": "Metrics related with notifications",
           "fieldConfig": {
             "defaults": {
@@ -257,6 +295,9 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
@@ -268,6 +309,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -312,14 +354,19 @@ data:
             "legend": {
               "calcs": [],
               "displayMode": "list",
-              "placement": "bottom"
+              "placement": "bottom",
+              "showLegend": true
             },
             "tooltip": {
-              "mode": "single"
+              "mode": "single",
+              "sort": "none"
             }
           },
           "targets": [
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_notification_backend_notification_sent{namespace=\"$namespace\"}[1h]))",
               "interval": "",
@@ -327,6 +374,9 @@ data:
               "refId": "A"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_service_log_notification_sent{namespace=\"$namespace\"}[1h]))",
               "interval": "",
@@ -338,13 +388,18 @@ data:
           "type": "timeseries"
         },
         {
-          "datasource": "${datasource}",
+          "datasource": {
+            "uid": "${datasource}"
+          },
           "fieldConfig": {
             "defaults": {
               "color": {
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
@@ -356,6 +411,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -400,14 +456,19 @@ data:
             "legend": {
               "calcs": [],
               "displayMode": "list",
-              "placement": "bottom"
+              "placement": "bottom",
+              "showLegend": true
             },
             "tooltip": {
-              "mode": "single"
+              "mode": "single",
+              "sort": "none"
             }
           },
           "targets": [
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_notification_backend_report_with_high_impact{namespace=\"$namespace\"}[1h]))",
               "interval": "",
@@ -415,6 +476,9 @@ data:
               "refId": "A"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_service_log_report_with_high_impact{namespace=\"$namespace\"}[1h]))",
               "interval": "",
@@ -426,7 +490,9 @@ data:
           "type": "timeseries"
         },
         {
-          "datasource": "${datasource}",
+          "datasource": {
+            "uid": "${datasource}"
+          },
           "description": "Notifications not sent due to an error",
           "fieldConfig": {
             "defaults": {
@@ -434,6 +500,9 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
@@ -445,6 +514,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -489,14 +559,19 @@ data:
             "legend": {
               "calcs": [],
               "displayMode": "list",
-              "placement": "bottom"
+              "placement": "bottom",
+              "showLegend": true
             },
             "tooltip": {
-              "mode": "single"
+              "mode": "single",
+              "sort": "none"
             }
           },
           "targets": [
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_notification_backend_notification_not_sent_error_state{namespace=\"$namespace\"}[1h]))",
               "interval": "",
@@ -504,6 +579,9 @@ data:
               "refId": "A"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_service_log_notification_not_sent_error_state{namespace=\"$namespace\"}[1h]))",
               "interval": "",
@@ -515,7 +593,9 @@ data:
           "type": "timeseries"
         },
         {
-          "datasource": "${datasource}",
+          "datasource": {
+            "uid": "${datasource}"
+          },
           "description": "The new reports for given cluster contain issues that were already notified",
           "fieldConfig": {
             "defaults": {
@@ -523,6 +603,9 @@ data:
                 "mode": "palette-classic"
               },
               "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
@@ -534,6 +617,7 @@ data:
                   "tooltip": false,
                   "viz": false
                 },
+                "insertNulls": false,
                 "lineInterpolation": "linear",
                 "lineWidth": 1,
                 "pointSize": 5,
@@ -603,14 +687,19 @@ data:
             "legend": {
               "calcs": [],
               "displayMode": "list",
-              "placement": "bottom"
+              "placement": "bottom",
+              "showLegend": true
             },
             "tooltip": {
-              "mode": "single"
+              "mode": "single",
+              "sort": "none"
             }
           },
           "targets": [
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_notification_backend_notification_not_sent_same_state{namespace=\"$namespace\"}[1h]))",
               "interval": "",
@@ -618,6 +707,9 @@ data:
               "refId": "A"
             },
             {
+              "datasource": {
+                "uid": "${datasource}"
+              },
               "exemplar": true,
               "expr": "sum(rate(ccx_notification_service_service_log_notification_not_sent_same_state{namespace=\"$namespace\"}[1h]))",
               "interval": "",
@@ -630,19 +722,16 @@ data:
         }
       ],
       "refresh": "",
-      "schemaVersion": 31,
-      "style": "dark",
+      "schemaVersion": 39,
       "tags": [],
       "templating": {
         "list": [
           {
             "current": {
-              "selected": false,
-              "text": "app-sre-prod-01-prometheus",
-              "value": "app-sre-prod-01-prometheus"
+              "selected": true,
+              "text": "appsrep07ue1-prometheus",
+              "value": "P7E8E1698DF0AC988"
             },
-            "description": null,
-            "error": null,
             "hide": 0,
             "includeAll": false,
             "label": "datasource",
@@ -652,19 +741,16 @@ data:
             "query": "prometheus",
             "queryValue": "",
             "refresh": 1,
-            "regex": "/.*app-sre-(stage|prod)-01-prometheus.*/",
+            "regex": "(appsrep07ue1|app-sre-stage-01)-prometheus",
             "skipUrlSync": false,
             "type": "datasource"
           },
           {
-            "allValue": null,
             "current": {
-              "selected": true,
+              "selected": false,
               "text": "app-sre-observability-production",
               "value": "app-sre-observability-production"
             },
-            "description": null,
-            "error": null,
             "hide": 0,
             "includeAll": false,
             "label": "namespace",
@@ -697,8 +783,9 @@ data:
       "timezone": "",
       "title": "CCX Notification Services",
       "uid": "ERzLEqdnk",
-      "version": 9
-    }
+      "version": 2,
+      "weekStart": ""
+    } 
 kind: ConfigMap
 metadata:
   name: grafana-dashboard-ccx-notification-service
