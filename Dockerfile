@@ -20,6 +20,7 @@ USER 0
 
 # build the binary
 RUN umask 0022 && \
+    git config --global --add safe.directory /opt/app-root/src && \
     make build && \
     chmod a+x ccx-notification-service
 
