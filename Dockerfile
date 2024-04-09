@@ -21,6 +21,7 @@ USER 0
 # build the binary
 RUN umask 0022 && \
     make build && \
+    git config --global --add safe.directory /opt/app-root/src && \
     chmod a+x ccx-notification-service
 
 FROM registry.access.redhat.com/ubi9/ubi-micro:latest
