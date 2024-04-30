@@ -741,7 +741,7 @@ data:
             "query": "prometheus",
             "queryValue": "",
             "refresh": 1,
-            "regex": "(appsrep07ue1|app-sre-stage-01)-prometheus",
+            "regex": "(appsrep07ue1|appsres07ue1)-prometheus",
             "skipUrlSync": false,
             "type": "datasource"
           },
