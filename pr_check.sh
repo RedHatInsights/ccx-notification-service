@@ -6,17 +6,21 @@
 APP_NAME="ccx-data-pipeline"  # name of app-sre "application" folder this component lives in
 COMPONENT_NAME="ccx-notification-service"  # name of app-sre "resourceTemplate" in deploy.yaml for this component
 IMAGE="quay.io/cloudservices/ccx-notification-service"
-COMPONENTS="ccx-notification-writer ccx-notification-service ccx-notification-db-cleaner"  # space-separated list of components to laod
+COMPONENTS="ccx-data-pipeline ccx-notification-writer ccx-notification-service ccx-notification-db-cleaner notifications-backend notifications-aggregator notifications-engine insights-content-service ccx-mock-ams"  # space-separated list of components to load
 COMPONENTS_W_RESOURCES="ccx-notification-service"  # component to keep
 CACHE_FROM_LATEST_IMAGE="true"
+DEPLOY_FRONTENDS="false"
+
 
 export IQE_PLUGINS="ccx"
-export IQE_MARKER_EXPRESSION=""
-# Workaround: There are no cleaner specific integration tests. Check that the service loads and iqe plugin works.
-export IQE_FILTER_EXPRESSION="test_plugin_accessible"
+export IQE_MARKER_EXPRESSION="notifications"
+export IQE_FILTER_EXPRESSION=""
 export IQE_REQUIREMENTS_PRIORITY=""
 export IQE_TEST_IMPORTANCE=""
 export IQE_CJI_TIMEOUT="30m"
+export IQE_SELENIUM="false"
+export IQE_ENV="ephemeral"
+export IQE_ENV_VARS="DYNACONF_USER_PROVIDER__rbac_enabled=false"
 
 
 function build_image() {
