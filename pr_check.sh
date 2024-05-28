@@ -13,7 +13,7 @@ DEPLOY_FRONTENDS="false"
 
 
 export IQE_PLUGINS="ccx"
-export IQE_MARKER_EXPRESSION="notifications"
+export IQE_MARKER_EXPRESSION="notifications or servicelog"
 export IQE_FILTER_EXPRESSION=""
 export IQE_REQUIREMENTS_PRIORITY=""
 export IQE_TEST_IMPORTANCE=""
