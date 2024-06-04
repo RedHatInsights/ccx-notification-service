@@ -174,6 +174,8 @@ objects:
                 key: ocmclient_secret
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__URL
             value: ${SERVICE_LOG__URL}
+          - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__TOKEN_URL
+            value: ${SERVICE_LOG__TOKEN_URL}
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__TIMEOUT
             value: '10s'
           - name: CCX_NOTIFICATION_SERVICE__SERVICE_LOG__LIKELIHOOD_THRESHOLD
@@ -361,6 +363,8 @@ parameters:
 # Service Log
 - description: URL of the Service Log API
   name: SERVICE_LOG__URL
+- description: URL of SSO for token refreshment
+  name: SERVICE_LOG__TOKEN_URL
 # cloudwatch
 - name: LOGGING_TO_CLOUD_WATCH_ENABLED
   value: "true"
