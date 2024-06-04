@@ -257,11 +257,13 @@ objects:
               secretKeyRef:
                 key: server
                 name: push-gateway-basic-auth
+                optional: true
           - name: CCX_NOTIFICATION_SERVICE__METRICS__GATEWAY_AUTH_TOKEN
             valueFrom:
               secretKeyRef:
                 key: credentials_b64
                 name: push-gateway-basic-auth
+                optional: true
           - name: CCX_NOTIFICATION_SERVICE__METRICS__RETRIES
             value: ${METRICS_PUSH_RETRIES}
           - name: CCX_NOTIFICATION_SERVICE__METRICS__RETRY_AFTER
