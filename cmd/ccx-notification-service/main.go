@@ -84,7 +84,7 @@ func main() {
 		log.Err(err).Msg(loadConfigurationMessage)
 		os.Exit(ExitStatusConfiguration)
 	}
-
+	log.Error().Msg("TEST ERROR FOR NOTIFICATION SERVICE")
 	// configuration is loaded, so it would be possible to display it if
 	// asked by user
 	if cliFlags.ShowConfiguration {
