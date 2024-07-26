@@ -2,6 +2,11 @@
 debug = false
 log_level = "info"
 logging_to_cloud_watch_enabled = false
+logging_to_sentry_enabled = false
+
+[sentry]
+dsn = ""
+environment = "dev"
 
 [kafka_broker]
 enabled = true

@@ -84,7 +84,6 @@ func main() {
 		log.Err(err).Msg(loadConfigurationMessage)
 		os.Exit(ExitStatusConfiguration)
 	}
-
 	// configuration is loaded, so it would be possible to display it if
 	// asked by user
 	if cliFlags.ShowConfiguration {
