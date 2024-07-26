@@ -70,6 +70,8 @@ objects:
             value: ${LOG_LEVEL}
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__LOGGING_TO_CLOUD_WATCH_ENABLED
             value: ${LOGGING_TO_CLOUD_WATCH_ENABLED}
+          - name: CCX_NOTIFICATION_SERVICE__LOGGING__LOGGING_TO_SENTRY_ENABLED
+            value: ${SENTRY_ENABLED}
           - name: CCX_NOTIFICATION_SERVICE__CLOUDWATCH__DEBUG
             value: ${CLOUDWATCH_DEBUG}
           - name: CCX_NOTIFICATION_SERVICE__CLOUDWATCH__STREAM_NAME
@@ -100,6 +102,14 @@ objects:
                 name: cloudwatch
                 key: aws_secret_access_key
                 optional: true
+          - name: CCX_NOTIFICATION_SERVICE__SENTRY__DSN
+            valueFrom:
+              secretKeyRef:
+                key: dsn
+                name: ccx-notification-service-dsn
+                optional: true
+          - name: CCX_NOTIFICATION_SERVICE__SENTRY__ENVIRONMENT
+            value: ${ENV_NAME}
           - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_SERVER
             value: http://ccx-insights-content-service:${CONTENT_SERVICE_PORT}/api/v1/
           - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_ENDPOINT
@@ -204,6 +214,8 @@ objects:
             value: ${LOG_LEVEL}
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__LOGGING_TO_CLOUD_WATCH_ENABLED
             value: ${LOGGING_TO_CLOUD_WATCH_ENABLED}
+          - name: CCX_NOTIFICATION_SERVICE__LOGGING__LOGGING_TO_SENTRY_ENABLED
+            value: ${SENTRY_ENABLED}
           - name: CCX_NOTIFICATION_SERVICE__CLOUDWATCH__DEBUG
             value: ${CLOUDWATCH_DEBUG}
           - name: CCX_NOTIFICATION_SERVICE__CLOUDWATCH__STREAM_NAME
@@ -234,6 +246,14 @@ objects:
                 name: cloudwatch
                 key: aws_secret_access_key
                 optional: true
+          - name: CCX_NOTIFICATION_SERVICE__SENTRY__DSN
+            valueFrom:
+              secretKeyRef:
+                key: dsn
+                name: ccx-notification-service-dsn
+                optional: true
+          - name: CCX_NOTIFICATION_SERVICE__SENTRY__ENVIRONMENT
+            value: ${ENV_NAME}
           - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_SERVER
             value: http://ccx-insights-content-service:${CONTENT_SERVICE_PORT}/api/v1/
           - name: CCX_NOTIFICATION_SERVICE__DEPENDENCIES__CONTENT_ENDPOINT
@@ -360,6 +380,9 @@ parameters:
   value: '8 days'
 - description: Domain name and port of the content template renderer API
   name: TEMPLATE_RENDERER_SERVER
+# Sentry
+- name : SENTRY_ENABLED
+  value: "false"
 # Service Log
 - description: URL of the Service Log API
   name: SERVICE_LOG__URL
