@@ -996,7 +996,6 @@ func Run(config conf.ConfigStruct, cliFlags types.CliFlags) int {
 	if cliFlags.InstantReports {
 		notificationType = types.InstantNotif
 	}
-	log.Error().Msg("TEST ERROR FOR NOTIFICATION SERVICE IN DIFFER")
 
 	// prepare the storage
 	storageConfiguration := conf.GetStorageConfiguration(&config)
