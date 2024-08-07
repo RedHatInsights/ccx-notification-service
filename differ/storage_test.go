@@ -270,7 +270,7 @@ func TestReadErrorExistPositiveResult(t *testing.T) {
 	storage := differ.NewFromConnection(connection, 1)
 
 	// call the tested method
-	exists, err := storage.ReadErrorExists(1, "123", time.Now())
+	exists, err := storage.ReadErrorExists(1, "123", types.Timestamp(time.Now()))
 	assert.NoError(t, err, "error was not expected while querying read_errors table")
 
 	assert.True(t, exists, "True return value is expected")
@@ -302,7 +302,7 @@ func TestReadErrorExistNegativeResult(t *testing.T) {
 	storage := differ.NewFromConnection(connection, 1)
 
 	// call the tested method
-	exists, err := storage.ReadErrorExists(1, "123", time.Now())
+	exists, err := storage.ReadErrorExists(1, "123", types.Timestamp(time.Now()))
 	assert.NoError(t, err, "error was not expected while querying read_errors table")
 
 	assert.False(t, exists, "False return value is expected")
@@ -333,7 +333,7 @@ func TestReadErrorExistNothingFound(t *testing.T) {
 	storage := differ.NewFromConnection(connection, 1)
 
 	// call the tested method
-	exists, err := storage.ReadErrorExists(1, "123", time.Now())
+	exists, err := storage.ReadErrorExists(1, "123", types.Timestamp(time.Now()))
 
 	// error is expected to be returned from called method
 	assert.Error(t, err, "error was expected while querying read_errors table")
@@ -367,7 +367,7 @@ func TestReadErrorOnScanError(t *testing.T) {
 	storage := differ.NewFromConnection(connection, 1)
 
 	// call the tested method
-	_, err := storage.ReadErrorExists(1, "123", time.Now())
+	_, err := storage.ReadErrorExists(1, "123", types.Timestamp(time.Now()))
 
 	// error is expected to be returned from called method
 	assert.Error(t, err, "an error is expected while scanning read_errors table")
@@ -399,7 +399,7 @@ func TestReadErrorOnError(t *testing.T) {
 	storage := differ.NewFromConnection(connection, 1)
 
 	// call the tested method
-	_, err := storage.ReadErrorExists(1, "123", time.Now())
+	_, err := storage.ReadErrorExists(1, "123", types.Timestamp(time.Now()))
 
 	// error is expected to be returned from called method
 	assert.Error(t, err, "an error is expected while querying read_errors table")
