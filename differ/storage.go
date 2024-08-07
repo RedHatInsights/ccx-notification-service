@@ -564,6 +564,10 @@ func (storage DBStorage) ReadErrorExists(
 
 	// check for any error during query
 	if err != nil {
+		// errNoRows is expected
+		if err == sql.ErrNoRows {
+			return false, nil
+		}
 		return false, err
 	}
 

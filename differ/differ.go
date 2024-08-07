@@ -537,7 +537,9 @@ func (d *Differ) produceEntriesToKafka(cluster types.ClusterEntry, ruleContent t
 }
 
 // checkReadError function checks whether reading from read_errors table was
-// successful
+// successful. This log gives important context as the insertion into the
+// read_error will fail if there's already a row but we couldn't read it for
+// whatever reason.
 func checkReadError(err error) {
 	if err != nil {
 		log.Err(err).Msg("read_errors read access error")
