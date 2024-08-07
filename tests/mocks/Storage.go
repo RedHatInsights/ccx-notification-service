@@ -356,7 +356,7 @@ func (_m *Storage) WriteReadError(
 func (_m *Storage) ReadErrorExists(
 	orgID types.OrgID,
 	clusterName types.ClusterName,
-	lastCheckedTime time.Time,
+	updatedAt types.Timestamp,
 ) (bool, error) {
 	return false, nil
 }

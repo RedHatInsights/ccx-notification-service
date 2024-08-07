@@ -93,7 +93,7 @@ type Storage interface {
 	ReadErrorExists(
 		orgID types.OrgID,
 		clusterName types.ClusterName,
-		lastCheckedTime time.Time,
+		updatedAt types.Timestamp,
 	) (bool, error)
 	WriteReadError(
 		orgID types.OrgID,
@@ -557,10 +557,10 @@ func (storage DBStorage) WriteNotificationRecordForCluster(
 func (storage DBStorage) ReadErrorExists(
 	orgID types.OrgID,
 	clusterName types.ClusterName,
-	lastCheckedTime time.Time,
+	updatedAt types.Timestamp,
 ) (bool, error) {
 	// perform query
-	rows, err := storage.connection.Query(QueryRecordExistsInReadErrors, orgID, clusterName, lastCheckedTime)
+	rows, err := storage.connection.Query(QueryRecordExistsInReadErrors, orgID, clusterName, time.Time(updatedAt))
 
 	// check for any error during query
 	if err != nil {

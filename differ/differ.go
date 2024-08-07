@@ -576,7 +576,7 @@ func (d *Differ) processReportsByCluster(config *conf.ConfigStruct, ruleContent 
 		report, err := d.Storage.ReadReportForClusterAtTime(cluster.OrgID, cluster.ClusterName, cluster.UpdatedAt)
 		if err != nil {
 			// is the problem reported already?
-			reportedAlready, readErr := d.Storage.ReadErrorExists(cluster.OrgID, cluster.ClusterName, time.Time(cluster.UpdatedAt))
+			reportedAlready, readErr := d.Storage.ReadErrorExists(cluster.OrgID, cluster.ClusterName, cluster.UpdatedAt)
 			checkReadError(readErr)
 
 			// if the error is reported already, skip to next one
