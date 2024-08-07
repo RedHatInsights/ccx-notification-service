@@ -581,6 +581,11 @@ func (d *Differ) processReportsByCluster(config *conf.ConfigStruct, ruleContent 
 
 			// if the error is reported already, skip to next one
 			if reportedAlready {
+				log.Debug().
+					Int(organizationIDAttribute, int(cluster.OrgID)).
+					Str(clusterAttribute, string(cluster.ClusterName)).
+					Time("since", time.Time(cluster.UpdatedAt)).
+					Msg("Read error already exists")
 				continue
 			}
 			// if not reported, process the error
