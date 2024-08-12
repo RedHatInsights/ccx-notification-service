@@ -42,6 +42,7 @@ import (
 	"github.com/RedHatInsights/ccx-notification-service/producer"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/RedHatInsights/insights-operator-utils/evaluator"
+	"github.com/RedHatInsights/insights-operator-utils/logger"
 )
 
 // Exit codes
@@ -1000,6 +1001,9 @@ func (d *Differ) SetupFiltersAndThresholds(config *conf.ConfigStruct) error {
 
 // Run function is entry point to the differ
 func Run(config conf.ConfigStruct, cliFlags types.CliFlags) int {
+
+	defer logger.CloseZerolog()
+
 	if cliFlags.InstantReports {
 		notificationType = types.InstantNotif
 	}
@@ -1036,7 +1040,6 @@ func Run(config conf.ConfigStruct, cliFlags types.CliFlags) int {
 	}
 
 	err = d.start(&config)
-
 	return selectError(err)
 }
 
