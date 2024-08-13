@@ -30,9 +30,9 @@ import (
 
 	"github.com/RedHatInsights/ccx-notification-service/types"
 
+	"github.com/IBM/sarama"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	tlsutils "github.com/RedHatInsights/insights-operator-utils/tls"
-	"github.com/Shopify/sarama"
 	"github.com/rs/zerolog/log"
 )
 
