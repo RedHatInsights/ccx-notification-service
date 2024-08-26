@@ -83,7 +83,7 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 
 	response, err := client.Do(req)
 	if err != nil {
-		log.Error().Err(err).Msgf("Error making the HTTP request")
+		log.Error().Err(err).Msg("Error making the HTTP request")
 		return -1, -1, err
 	}
 
@@ -112,7 +112,7 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 		return 0, 0, nil
 	default:
 		err = fmt.Errorf("received unexpected response status code - %s", response.Status)
-		log.Error().Err(err).Msgf("Got unexpected response status code")
+		log.Error().Err(err).Msg("Got unexpected response status code")
 		return -1, -1, err
 	}
 }
