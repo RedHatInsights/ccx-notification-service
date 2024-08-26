@@ -611,7 +611,7 @@ func (storage DBStorage) WriteReadError(
 	if err != nil {
 		log.Err(err).
 			Int("org", int(orgID)).
-			Str("cluster", string(clusterName)).
+			Str(clusterStr, string(clusterName)).
 			Str("last checked", lastCheckedTime.String()).
 			Str("created at", createdAt.String()).
 			Str("error text", errorText).

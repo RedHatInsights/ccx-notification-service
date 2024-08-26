@@ -44,13 +44,13 @@ func fetchAllRulesContent(config *conf.DependenciesConfiguration) (rules types.R
 
 	req, err := http.NewRequest("GET", contentURL, http.NoBody)
 	if err != nil {
-		log.Error().Msgf("Got error while setting up HTTP request for content service -  %s", err.Error())
+		log.Error().Err(err).Msg("Got error while setting up HTTP request for content service")
 		return nil, err
 	}
 
 	body, err := httputils.SendRequest(req, 10*time.Second)
 	if err != nil {
-		log.Error().Msgf("Got error while processing HTTP request - %s", err.Error())
+		log.Error().Err(err).Msg("Got error while processing HTTP request")
 		return nil, err
 	}
 
