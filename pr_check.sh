@@ -13,7 +13,10 @@ DEPLOY_FRONTENDS="false"
 # Set the correct images for pull requests.
 # pr_check in pull requests still uses the old cloudservices images
 EXTRA_DEPLOY_ARGS="--set-parameter ccx-notification-service/IMAGE=quay.io/cloudservices/ccx-notification-service"
-
+# notifications-engine needs to be run with the CPU/memory requested in its
+# ClowdApp template and not the default values, so we need to add this extra
+# argument. Otherwise, the test timesout.
+EXTRA_DEPLOY_ARGS="${EXTRA_DEPLOY_ARGS} --no-remove-resources notifications-engine"
 
 export IQE_PLUGINS="ccx"
 export IQE_MARKER_EXPRESSION="notifications or servicelog"
