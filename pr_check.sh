@@ -6,11 +6,17 @@
 APP_NAME="ccx-data-pipeline"  # name of app-sre "application" folder this component lives in
 COMPONENT_NAME="ccx-notification-service"  # name of app-sre "resourceTemplate" in deploy.yaml for this component
 IMAGE="quay.io/cloudservices/ccx-notification-service"
-COMPONENTS="ccx-data-pipeline ccx-insights-results dvo-writer ccx-smart-proxy ccx-notification-writer ccx-notification-service ccx-notification-db-cleaner notifications-backend notifications-aggregator notifications-engine insights-content-service ccx-mock-ams ccx-upgrades-sso-mock insights-content-template-renderer"  # space-separated list of components to load
+COMPONENTS="ccx-data-pipeline ccx-insights-results dvo-writer ccx-smart-proxy ccx-notification-writer ccx-notification-service ccx-notification-db-cleaner notifications-backend notifications-aggregator notifications-engine insights-content-service ccx-mock-ams ccx-upgrades-sso-mock insights-content-template-renderer ccx-redis"  # space-separated list of components to load
 COMPONENTS_W_RESOURCES="ccx-notification-service"  # component to keep
 CACHE_FROM_LATEST_IMAGE="true"
 DEPLOY_FRONTENDS="false"
-
+# Set the correct images for pull requests.
+# pr_check in pull requests still uses the old cloudservices images
+EXTRA_DEPLOY_ARGS="--set-parameter ccx-notification-service/IMAGE=quay.io/cloudservices/ccx-notification-service"
+# notifications-engine needs to be run with the CPU/memory requested in its
+# ClowdApp template and not the default values, so we need to add this extra
+# argument. Otherwise, the test timesout.
+EXTRA_DEPLOY_ARGS="${EXTRA_DEPLOY_ARGS} --no-remove-resources notifications-engine"
 
 export IQE_PLUGINS="ccx"
 export IQE_MARKER_EXPRESSION="notifications or servicelog"

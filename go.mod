@@ -1,18 +1,18 @@
 module github.com/RedHatInsights/ccx-notification-service
 
-go 1.20
+go 1.21
 
 require (
 	github.com/BurntSushi/toml v1.3.2
 	github.com/DATA-DOG/go-sqlmock v1.5.2
 	github.com/RedHatInsights/insights-operator-utils v1.25.10
 	github.com/RedHatInsights/insights-results-aggregator-data v1.3.9
-	github.com/RedHatInsights/insights-results-types v1.23.4
+	github.com/RedHatInsights/insights-results-types v1.23.5
 	github.com/Shopify/sarama v1.38.1
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/openshift-online/ocm-sdk-go v0.1.377
+	github.com/openshift-online/ocm-sdk-go v0.1.448
 	github.com/prometheus/client_golang v1.20.2
 	github.com/redhatinsights/app-common-go v1.6.8
 	github.com/rs/zerolog v1.33.0
@@ -80,6 +80,7 @@ require (
 	github.com/sagikazarmark/locafero v0.4.0 // indirect
 	github.com/sagikazarmark/slog-shim v0.1.0 // indirect
 	github.com/segmentio/kafka-go v0.4.10 // indirect
+	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 // indirect
 	github.com/sourcegraph/conc v0.3.0 // indirect
 	github.com/spf13/afero v1.11.0 // indirect
 	github.com/spf13/cast v1.6.0 // indirect
@@ -93,6 +94,7 @@ require (
 	golang.org/x/crypto v0.24.0 // indirect
 	golang.org/x/exp v0.0.0-20230905200255-921286631fa9 // indirect
 	golang.org/x/net v0.26.0 // indirect
+	golang.org/x/oauth2 v0.21.0 // indirect
 	golang.org/x/sys v0.22.0 // indirect
 	golang.org/x/text v0.16.0 // indirect
 	google.golang.org/protobuf v1.34.2 // indirect
