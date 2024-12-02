@@ -100,7 +100,7 @@ func (producer *Producer) Close() error {
 
 func saramaConfigFromBrokerConfig(cfg *conf.KafkaConfiguration) (*sarama.Config, error) {
 	saramaConfig := sarama.NewConfig()
-	saramaConfig.Version = sarama.V0_10_2_0
+	saramaConfig.Version = sarama.V3_6_0_0
 
 	if strings.Contains(cfg.SecurityProtocol, "SSL") {
 		saramaConfig.Net.TLS.Enable = true
