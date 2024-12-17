@@ -729,7 +729,7 @@ data:
           {
             "current": {
               "selected": true,
-              "text": "appsrep07ue1-prometheus",
+              "text": "appsrep11ue1-prometheus",
               "value": "P7E8E1698DF0AC988"
             },
             "hide": 0,
@@ -741,7 +741,7 @@ data:
             "query": "prometheus",
             "queryValue": "",
             "refresh": 1,
-            "regex": "(appsrep07ue1|appsres07ue1)-prometheus",
+            "regex": "(appsrep11ue1|appsres11ue1)-prometheus",
             "skipUrlSync": false,
             "type": "datasource"
           },
