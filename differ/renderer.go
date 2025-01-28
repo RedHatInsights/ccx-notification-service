@@ -42,8 +42,7 @@ func renderReportsForCluster(
 	clusterName types.ClusterName,
 	reports types.ReportContent,
 	ruleContent types.Rules) ([]types.RenderedReport, error) {
-
-	log.Debug().Str("cluster", string(clusterName)).Msg("RenderReportsForCluster")
+	log.Debug().Str(clusterStr, string(clusterName)).Msg("RenderReportsForCluster")
 
 	req, err := createTemplateRendererRequest(ruleContent, reports, clusterName, config.TemplateRendererURL)
 	if err != nil {
