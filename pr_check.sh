@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# shellcheck disable=SC2317
+
 # --------------------------------------------
 # Options that must be configured by app owner
 # --------------------------------------------
