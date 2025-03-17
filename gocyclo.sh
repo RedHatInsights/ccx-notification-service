@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Copyright 2020, 2021 Red Hat, Inc
+# Copyright 2020, 2021, 2025 Red Hat, Inc
 #
 # Licensed under the Apache License, Version 2.0 (the "License");
 # you may not use this file except in compliance with the License.
@@ -25,7 +25,11 @@ echo -e "${BLUE}Finding functions and methods with high cyclomatic complexity${N
 if ! [ -x "$(command -v gocyclo)" ]
 then
     echo -e "${BLUE}Installing gocyclo${NC}"
-    GO111MODULE=off go get github.com/fzipp/gocyclo/cmd/gocyclo
+    if ! go install github.com/fzipp/gocyclo/cmd/gocyclo@latest; then
+        echo -e "${RED_BG}[FAIL]${NC} Cannot install gocyclo"
+        exit 1
+    fi
+    echo -e "${BLUE}Installed ${NC}"
 fi
 
 if ! gocyclo -over 10 -avg .
