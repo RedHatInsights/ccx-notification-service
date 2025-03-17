@@ -33,11 +33,11 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/IBM/sarama"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/differ"
 	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
 	"github.com/RedHatInsights/ccx-notification-service/types"
-	"github.com/Shopify/sarama"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )
