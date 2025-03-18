@@ -1,6 +1,6 @@
 module github.com/RedHatInsights/ccx-notification-service
 
-go 1.21.0
+go 1.22
 
 toolchain go1.24.1
 
