@@ -2,8 +2,6 @@ module github.com/RedHatInsights/ccx-notification-service
 
 go 1.22
 
-toolchain go1.24.1
-
 require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/DATA-DOG/go-sqlmock v1.5.2
@@ -14,7 +12,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.10.9
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/openshift-online/ocm-sdk-go v0.1.463
+	github.com/openshift-online/ocm-sdk-go v0.1.464
 	github.com/prometheus/client_golang v1.21.1
 	github.com/redhatinsights/app-common-go v1.6.8
 	github.com/rs/zerolog v1.34.0
