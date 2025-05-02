@@ -26,3 +26,6 @@ jobs:
         run: go test -coverprofile coverage.out $(go list ./... | grep -v tests)
       - name: Display code coverage
         run: go tool cover -func=coverage.out
+      - uses: codecov/codecov-action@v4
+        with:
+          token: ${{ secrets.CODECOV_TOKEN }}
