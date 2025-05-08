@@ -15,10 +15,10 @@ version: "2"
 linters:
   enable:
     - errcheck
-    # - goconst
+    - goconst
     - goimports
     - gocyclo
-    # - gosec
+    - gosec
     - gosimple
     - govet
     - ineffassign
@@ -30,6 +30,9 @@ linters:
     - unused
     # - whitespace
     - zerologlint
+  settings:
+    goconst:
+      min-occurrences: 3
 formatters:
   enable:
     - gofmt
