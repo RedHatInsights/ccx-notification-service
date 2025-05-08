@@ -16,10 +16,8 @@ linters:
   enable:
     - errcheck
     - goconst
-    - goimports
     - gocyclo
     - gosec
-    - gosimple
     - govet
     - ineffassign
     - nilerr
