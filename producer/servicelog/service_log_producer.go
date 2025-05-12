@@ -90,10 +90,8 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 	switch response.StatusCode {
 	case http.StatusUnauthorized:
 		err = producer.refreshToken()
-		for {
-			if err == nil {
-				break
-			}
+		for err != nil {
+
 			if producer.TokenRefreshmentDelay >= producer.TokenRefreshmentThreshold {
 				log.Error().Err(err).Msg("Access token could not be refreshed")
 				return -1, -1, err
