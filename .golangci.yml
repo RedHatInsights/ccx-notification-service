@@ -35,5 +35,3 @@ formatters:
   enable:
     - gofmt
     - goimports
-issues:
-    fix: true

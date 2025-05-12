@@ -29,7 +29,7 @@ fmt: install_golangci-lint ## Run go formatting
 
 lint: install_golangci-lint ## Run go liting
 	@echo "Running go linting"
-	golangci-lint run
+	golangci-lint run --fix
 
 shellcheck: ## Run shellcheck
 	./shellcheck.sh
