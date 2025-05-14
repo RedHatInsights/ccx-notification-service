@@ -31,6 +31,14 @@ linters:
   settings:
     goconst:
       min-occurrences: 3
+  exclusions:
+    rules:
+      # Exclude some linters from running on tests files.
+      - path: _test\.go
+        linters:
+          - goconst
+          - gosec
+          - revive
 formatters:
   enable:
     - gofmt
