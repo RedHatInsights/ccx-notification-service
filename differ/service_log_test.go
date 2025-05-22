@@ -173,7 +173,7 @@ func TestProduceEntriesToServiceLog(t *testing.T) {
 			t.Errorf("Expected Content-Type: application/json header, got: %s", r.Header.Get("Accept"))
 		}
 		w.WriteHeader(http.StatusOK)
-		_, err := w.Write([]byte(fmt.Sprintf(`{"clusters":["84f7eedc-0dd8-49cd-9d4d-f6646df3a5bc"],"reports":{"84f7eedc-0dd8-49cd-9d4d-f6646df3a5bc":[{"rule_id":"node_installer_degraded","error_key":"ek1","resolution":"rule 1 resolution","reason":"%s","description":"%s"},{"rule_id":"rule2","error_key":"ek2","resolution":"rule 2 resolution","reason":"rule 2 reason","description":"rule 2 error key description"}, {"rule_id":"rule3","error_key":"ek3","resolution":"rule 3 resolution","reason":"rule 3 reason","description":"rule 3 error key description"}]}}`, reasonTooLong, summary)))
+		_, err := fmt.Fprintf(w, `{"clusters":["84f7eedc-0dd8-49cd-9d4d-f6646df3a5bc"],"reports":{"84f7eedc-0dd8-49cd-9d4d-f6646df3a5bc":[{"rule_id":"node_installer_degraded","error_key":"ek1","resolution":"rule 1 resolution","reason":"%s","description":"%s"},{"rule_id":"rule2","error_key":"ek2","resolution":"rule 2 resolution","reason":"rule 2 reason","description":"rule 2 error key description"}, {"rule_id":"rule3","error_key":"ek3","resolution":"rule 3 resolution","reason":"rule 3 reason","description":"rule 3 error key description"}]}}`, reasonTooLong, summary)
 		if err != nil {
 			log.Fatal().Msg(err.Error())
 		}
