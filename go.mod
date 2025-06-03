@@ -7,7 +7,7 @@ toolchain go1.24.3
 require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/DATA-DOG/go-sqlmock v1.5.2
-	github.com/RedHatInsights/insights-operator-utils v1.25.13
+	github.com/RedHatInsights/insights-operator-utils v1.25.14
 	github.com/RedHatInsights/insights-results-aggregator-data v1.3.9
 	github.com/RedHatInsights/insights-results-types v1.23.5
 	github.com/Shopify/sarama v1.38.1
@@ -39,8 +39,8 @@ require (
 	github.com/eapache/go-xerial-snappy v0.0.0-20230731223053-c322873962e3 // indirect
 	github.com/eapache/queue v1.1.0 // indirect
 	github.com/fsnotify/fsnotify v1.8.0 // indirect
-	github.com/getkin/kin-openapi v0.131.0 // indirect
-	github.com/getsentry/sentry-go v0.32.0 // indirect
+	github.com/getkin/kin-openapi v0.132.0 // indirect
+	github.com/getsentry/sentry-go v0.33.0 // indirect
 	github.com/go-openapi/jsonpointer v0.21.1 // indirect
 	github.com/go-openapi/swag v0.23.1 // indirect
 	github.com/go-viper/mapstructure/v2 v2.2.1 // indirect
