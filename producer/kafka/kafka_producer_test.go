@@ -24,11 +24,11 @@ import (
 	"testing"
 	"time"
 
+	"github.com/IBM/sarama"
+	"github.com/IBM/sarama/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 	"github.com/RedHatInsights/insights-operator-utils/tests/helpers"
-	"github.com/Shopify/sarama"
-	"github.com/Shopify/sarama/mocks"
 	"github.com/stretchr/testify/assert"
 
 	"github.com/rs/zerolog"
@@ -80,6 +80,14 @@ func TestProducerClose(t *testing.T) {
 }
 
 func TestProducerNew(t *testing.T) {
+	// MockBroker does not currently work with newer Kafka versions,
+	// so it has to be set to an older value
+	defaultVersion := SaramaVersion
+	SaramaVersion = sarama.V0_10_2_0
+	defer func() {
+		SaramaVersion = defaultVersion
+	}()
+
 	mockBroker := sarama.NewMockBroker(t, 0)
 	defer mockBroker.Close()
 
