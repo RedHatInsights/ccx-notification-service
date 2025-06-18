@@ -83,6 +83,7 @@ require (
 	github.com/prometheus/common v0.62.0 // indirect
 	github.com/prometheus/procfs v0.15.1 // indirect
 	github.com/rcrowley/go-metrics v0.0.0-20250401214520-65e299d6c5c9 // indirect
+	github.com/rogpeppe/go-internal v1.14.1 // indirect
 	github.com/sagikazarmark/locafero v0.9.0 // indirect
 	github.com/segmentio/kafka-go v0.4.48 // indirect
 	github.com/skratchdot/open-golang v0.0.0-20200116055534-eef842397966 // indirect
@@ -94,12 +95,7 @@ require (
 	github.com/subosito/gotenv v1.6.0 // indirect
 	github.com/verdverm/frisby v0.0.0-20170604211311-b16556248a9a // indirect
 	github.com/xdg/stringprep v1.0.3 // indirect
-<<<<<<< konflux/mintmaker/master/go.uber.org-atomic-1.x
-	go.uber.org/atomic v1.11.0 // indirect
-	go.uber.org/multierr v1.9.0 // indirect
-=======
 	go.uber.org/multierr v1.11.0 // indirect
->>>>>>> master
 	golang.org/x/crypto v0.36.0 // indirect
 	golang.org/x/net v0.38.0 // indirect
 	golang.org/x/oauth2 v0.25.0 // indirect
