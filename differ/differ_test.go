@@ -33,11 +33,11 @@ import (
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/mock"
 
+	"github.com/IBM/sarama"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/differ"
 	"github.com/RedHatInsights/ccx-notification-service/producer/kafka"
 	"github.com/RedHatInsights/ccx-notification-service/types"
-	"github.com/Shopify/sarama"
 	"github.com/rs/zerolog"
 	"github.com/stretchr/testify/assert"
 )
@@ -211,6 +211,12 @@ func TestAssertNotificationDestinationMoreThanOne(t *testing.T) {
 }
 
 func TestSetupNotificationProducerValidBrokerConf(t *testing.T) {
+	defaultVersion := kafka.SaramaVersion
+	kafka.SaramaVersion = sarama.V0_10_2_0
+	defer func() {
+		kafka.SaramaVersion = defaultVersion
+	}()
+
 	mockBroker := sarama.NewMockBroker(t, 0)
 	defer mockBroker.Close()
 

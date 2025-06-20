@@ -30,11 +30,14 @@ import (
 
 	"github.com/RedHatInsights/ccx-notification-service/types"
 
+	"github.com/IBM/sarama"
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	tlsutils "github.com/RedHatInsights/insights-operator-utils/tls"
-	"github.com/Shopify/sarama"
 	"github.com/rs/zerolog/log"
 )
+
+// SaramaVersion is the version of Kafka API used in sarama client
+var SaramaVersion = sarama.V3_8_0_0
 
 // Producer is an implementation of Producer interface
 type Producer struct {
@@ -100,7 +103,7 @@ func (producer *Producer) Close() error {
 
 func saramaConfigFromBrokerConfig(cfg *conf.KafkaConfiguration) (*sarama.Config, error) {
 	saramaConfig := sarama.NewConfig()
-	saramaConfig.Version = sarama.V0_10_2_0
+	saramaConfig.Version = SaramaVersion
 
 	if strings.Contains(cfg.SecurityProtocol, "SSL") {
 		saramaConfig.Net.TLS.Enable = true
