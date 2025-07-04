@@ -39,6 +39,10 @@ linters:
           - goconst
           - gosec
           - revive
+      # Exclude var-naming rule for types package
+      - path: types/types\.go
+        linters:
+          - revive
 formatters:
   enable:
     - gofmt
