@@ -13,20 +13,20 @@ CCX Notification Service
 
 <!-- vim-markdown-toc GFM -->
 
-* [Description](#description)
-    * [Architecture](#architecture)
-* [Building](#building)
-    * [Makefile targets](#makefile-targets)
-* [Configuration](#configuration)
-* [Usage](#usage)
-    * [All command line options](#all-command-line-options)
-* [Database](#database)
-    * [Schema description](#schema-description)
-* [Notification templates](#notification-templates)
-* [Definition of Done for new features and fixes](#definition-of-done-for-new-features-and-fixes)
-* [Testing](#testing)
-* [BDD tests](#bdd-tests)
-* [Package manifest](#package-manifest)
+- [ccx-notification-service](#ccx-notification-service)
+  - [Description](#description)
+    - [Architecture](#architecture)
+  - [Building](#building)
+    - [Makefile targets](#makefile-targets)
+  - [Configuration](#configuration)
+  - [Usage](#usage)
+    - [All command line options](#all-command-line-options)
+  - [Database](#database)
+    - [Schema description](#schema-description)
+  - [Notification templates](#notification-templates)
+  - [Definition of Done for new features and fixes](#definition-of-done-for-new-features-and-fixes)
+  - [Testing](#testing)
+  - [BDD tests](#bdd-tests)
 
 <!-- vim-markdown-toc -->
 
@@ -185,9 +185,3 @@ In order to run these tests, the following steps need to be made:
 
 List of all test scenarios prepared for this service is available at
 <https://redhatinsights.github.io/insights-behavioral-spec/feature_list.html#ccx-notification-service>
-
-
-
-## Package manifest
-
-Package manifest is available at [docs/manifest.txt](docs/manifest.txt).
