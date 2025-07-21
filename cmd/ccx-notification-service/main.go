@@ -78,7 +78,6 @@ func main() {
 		conf.GetLoggingConfiguration(&config),
 		conf.GetCloudWatchConfiguration(&config),
 		conf.GetSentryLoggingConfiguration(&config),
-		conf.GetKafkaZerologConfiguration(&config),
 	)
 	if err != nil {
 		log.Err(err).Msg(loadConfigurationMessage)
