@@ -16,7 +16,7 @@
 #
 
 # Ignore resulting binary file
-ccx-notification-service
+./ccx-notification-service
 
 # Ignore helper scripts
 issues.py

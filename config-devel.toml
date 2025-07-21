@@ -75,12 +75,6 @@ allowed_clusters = ["34c3ecc5-624a-49a5-bab8-4fdc5e51a266", "a7467445-8d6a-43cc-
 filter_blocked_clusters = false
 blocked_clusters = ["bbbbbbbb-0000-0000-0000-000000000000", "bbbbbbbb-1111-1111-1111-111111111111", "bbbbbbbb-2222-2222-2222-222222222222"]
 
-[kafka_zerolog]
-broker = ""
-topic = ""
-cert_path = ""
-level = ""
-
 [cloudwatch]
 aws_access_id = "a key id"
 aws_secret_key = "tshhhh it is a secret"
