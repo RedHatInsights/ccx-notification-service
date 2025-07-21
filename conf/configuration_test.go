@@ -445,23 +445,6 @@ func TestGetSentryLoggingConfiguration(t *testing.T) {
 	}, conf.GetSentryLoggingConfiguration(&cfg))
 }
 
-// TestGetKafkaZerologConfiguration checks the function GetKafkaZeroLogConfiguration
-func TestGetKafkaZerologConfiguration(t *testing.T) {
-	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
-	os.Clearenv()
-	mustSetEnv(t, "ACG_CONFIG", "../tests/kafka_zerolog.json")
-
-	cfg, err := conf.LoadConfiguration(envVar, "../tests/config1")
-	assert.NoError(t, err, "error loading configuration")
-
-	assert.Equal(t, logger.KafkaZerologConfiguration{
-		Broker:   "",
-		Topic:    "",
-		CertPath: "",
-		Level:    "",
-	}, conf.GetKafkaZerologConfiguration(&cfg))
-}
-
 // TestLoadConfigurationNoKafkaBroker test if number of configured brokers are
 // tested properly when no broker config exists
 func TestLoadConfigurationNoKafkaBroker(t *testing.T) {

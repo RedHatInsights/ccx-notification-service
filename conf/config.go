@@ -96,7 +96,6 @@ type ConfigStruct struct {
 	LoggingConf       logger.LoggingConfiguration       `mapstructure:"logging" toml:"logging"`
 	CloudWatchConf    logger.CloudWatchConfiguration    `mapstructure:"cloudwatch" toml:"cloudwatch"`
 	SentryLoggingConf logger.SentryLoggingConfiguration `mapstructure:"sentry" toml:"sentry"`
-	KafkaZerologConf  logger.KafkaZerologConfiguration  `mapstructure:"kafka_zerolog" toml:"kafka_zerolog"`
 	Storage           StorageConfiguration              `mapstructure:"storage" toml:"storage"`
 	Kafka             KafkaConfiguration                `mapstructure:"kafka_broker" toml:"kafka_broker"`
 	ServiceLog        ServiceLogConfiguration           `mapstructure:"service_log" toml:"service_log"`
@@ -331,11 +330,6 @@ func GetCloudWatchConfiguration(configuration *ConfigStruct) logger.CloudWatchCo
 // GetSentryLoggingConfiguration returns sentry logging configuration
 func GetSentryLoggingConfiguration(configuration *ConfigStruct) logger.SentryLoggingConfiguration {
 	return configuration.SentryLoggingConf
-}
-
-// GetKafkaZerologConfiguration returns the kafkazero log configuration
-func GetKafkaZerologConfiguration(configuration *ConfigStruct) logger.KafkaZerologConfiguration {
-	return configuration.KafkaZerologConf
 }
 
 // GetKafkaBrokerConfiguration returns kafka broker configuration
