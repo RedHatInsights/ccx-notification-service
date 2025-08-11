@@ -419,14 +419,13 @@ func TestGetCloudWatchConfiguration(t *testing.T) {
 	assert.NoError(t, err, "error loading configuration")
 
 	assert.Equal(t, logger.CloudWatchConfiguration{
-		AWSAccessID:             "",
-		AWSSecretKey:            "",
-		AWSSessionToken:         "",
-		AWSRegion:               "",
-		LogGroup:                "",
-		StreamName:              "",
-		CreateStreamIfNotExists: false,
-		Debug:                   false,
+		AWSAccessID:     "",
+		AWSSecretKey:    "",
+		AWSSessionToken: "",
+		AWSRegion:       "",
+		LogGroup:        "",
+		StreamName:      "",
+		Debug:           false,
 	}, conf.GetCloudWatchConfiguration(&cfg))
 }
 

@@ -100,4 +100,3 @@ aws_session_token = ""
 aws_region = "us-east-1"
 log_group = "platform-dev"
 debug = false
-create_stream_if_not_exists = true
