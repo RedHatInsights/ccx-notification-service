@@ -52,6 +52,8 @@ const (
 	NotificationNotSentErrorStateName = "notification_not_sent_error_state"
 	NotificationSentName              = "notification_sent"
 	NoSeverityTotalRiskName           = "total_risk_no_severity"
+	OperationDurationName             = "operation_duration_seconds"
+	ServiceStatusName                 = "service_status"
 )
 
 // Metrics helps
@@ -68,6 +70,8 @@ const (
 	NotificationNotSentErrorStateHelp = "The total number of notifications not sent because of a Kafka producer error"
 	NotificationSentHelp              = "The total number of notifications sent"
 	NoSeverityTotalRiskHelp           = "The total number of times we handled a total risk that does not have an equivalent service log severity level"
+	OperationDurationHelp             = "Duration of different operations in the notification service"
+	ServiceStatusHelp                 = "Current status of the notification service (0=inactive, 1=starting, 2=fetching_content, 3=reading_clusters, 4=reading_previously_reported, 5=processing_clusters, 6=finished)"
 )
 
 // PushGatewayClient is a simple wrapper over http.Client so that prometheus
@@ -167,6 +171,41 @@ var NoSeverityTotalRisk = promauto.NewCounter(prometheus.CounterOpts{
 	Help: NoSeverityTotalRiskHelp,
 })
 
+// OperationDuration measures duration of different operations such as reading the database or sending the notifications
+var OperationDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
+	Name:    OperationDurationName,
+	Help:    OperationDurationHelp,
+	Buckets: prometheus.DefBuckets, // Default buckets: .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10
+}, []string{"operation"})
+
+const (
+	// StatusInactive is the status of the cronjob before it starts or after it finishes
+	StatusInactive = 0
+	// StatusStarting is the status of the cronjob when it is collecting configuration and setting things up
+	StatusStarting = 1
+	// StatusFetchingContent is the status of the cronjob when it is fetching rules content
+	StatusFetchingContent = 2
+	// StatusReadingClusters is the status of the cronjob when it is reading the clusters to be notified
+	StatusReadingClusters = 3
+	// StatusReadingPreviouslyReported is the status of the cronjob when it is reading previously notified clusters
+	StatusReadingPreviouslyReported = 4
+	// StatusProcessingClusters is the status of the cronjob when it is processing the clusters to be notified and sending the notifications for each.
+	// This is a process done in loop for each cluster, so we cannot separate the status in reading the clusters and sending the notifications.
+	StatusProcessingClusters = 5
+)
+
+// ServiceStatus shows the current status of the service. It can be any of the following:
+// - 0: inactive
+// - 1: starting
+// - 2: fetching_content
+// - 3: reading_clusters
+// - 4: reading_previously_reported
+// - 5: processing_clusters
+var ServiceStatus = promauto.NewGauge(prometheus.GaugeOpts{
+	Name: ServiceStatusName,
+	Help: ServiceStatusHelp,
+})
+
 // AddMetricsWithNamespaceAndSubsystem register the desired metrics using a given namespace
 func AddMetricsWithNamespaceAndSubsystem(namespace, subsystem string) {
 	// exposed metrics
@@ -183,6 +222,8 @@ func AddMetricsWithNamespaceAndSubsystem(namespace, subsystem string) {
 	prometheus.Unregister(NotificationNotSentErrorState)
 	prometheus.Unregister(NotificationSent)
 	prometheus.Unregister(NoSeverityTotalRisk)
+	prometheus.Unregister(OperationDuration)
+	prometheus.Unregister(ServiceStatus)
 
 	// FetchContentErrors shows number of errors during fetch from content service
 	FetchContentErrors = promauto.NewCounter(prometheus.CounterOpts{
@@ -271,6 +312,23 @@ func AddMetricsWithNamespaceAndSubsystem(namespace, subsystem string) {
 		Name:      NoSeverityTotalRiskName,
 		Help:      NoSeverityTotalRiskHelp,
 	})
+
+	// OperationDuration measures duration of different operations
+	OperationDuration = promauto.NewHistogramVec(prometheus.HistogramOpts{
+		Namespace: namespace,
+		Subsystem: subsystem,
+		Name:      OperationDurationName,
+		Help:      OperationDurationHelp,
+		Buckets:   prometheus.DefBuckets, // Default buckets: .005, .01, .025, .05, .1, .25, .5, 1, 2.5, 5, 10
+	}, []string{"operation"})
+
+	// ServiceStatus shows the current status of the service
+	ServiceStatus = promauto.NewGauge(prometheus.GaugeOpts{
+		Namespace: namespace,
+		Subsystem: subsystem,
+		Name:      ServiceStatusName,
+		Help:      ServiceStatusHelp,
+	})
 }
 
 // PushCollectedMetrics function pushes the metrics to the configured prometheus push
@@ -292,6 +350,8 @@ func PushCollectedMetrics(metricsConf *conf.MetricsConfiguration) error {
 		Collector(NotificationNotSentErrorState).
 		Collector(NotificationSent).
 		Collector(NoSeverityTotalRisk).
+		Collector(OperationDuration).
+		Collector(ServiceStatus).
 		Client(&client).
 		Push()
 }
@@ -316,4 +376,18 @@ func PushMetricsInLoop(ctx context.Context, metricsConf *conf.MetricsConfigurati
 			}
 		}
 	}
+}
+
+// TimeOperation is a helper function to measure operation duration
+func TimeOperation(operation string) func() {
+	start := time.Now()
+	return func() {
+		duration := time.Since(start).Seconds()
+		OperationDuration.WithLabelValues(operation).Observe(duration)
+	}
+}
+
+// SetServiceStatus updates the service status gauge
+func SetServiceStatus(status int) {
+	ServiceStatus.Set(float64(status))
 }

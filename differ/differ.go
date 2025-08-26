@@ -576,7 +576,9 @@ func (d *Differ) processReportsByCluster(config *conf.ConfigStruct, ruleContent 
 			Str(clusterAttribute, string(cluster.ClusterName)).
 			Msg(clusterEntryMessage)
 
+		timer := TimeOperation("read_report_for_cluster")
 		report, err := d.Storage.ReadReportForClusterAtTime(cluster.OrgID, cluster.ClusterName, cluster.UpdatedAt)
+		timer()
 		if err != nil {
 			// is the problem reported already?
 			reportedAlready, readErr := d.Storage.ReadErrorExists(cluster.OrgID, cluster.ClusterName, cluster.UpdatedAt)
@@ -618,15 +620,21 @@ func (d *Differ) processReportsByCluster(config *conf.ConfigStruct, ruleContent 
 
 		if conf.GetServiceLogConfiguration(config).Enabled {
 			notifiedAt := types.Timestamp(time.Now())
+			timer = TimeOperation("send_notification_servicelog")
 			newNotifiedIssues, err := d.ProduceEntriesToServiceLog(config, cluster, rules, ruleContent, deserialized.Reports)
+			timer()
+			timer = TimeOperation("update_notification_record_state_servicelog")
 			updateNotificationRecordState(d.Storage, cluster, report, newNotifiedIssues, notifiedAt, types.ServiceLogTarget, err)
+			timer()
 			notifiedIssues += newNotifiedIssues
 		}
 
 		if !conf.GetKafkaBrokerConfiguration(config).Enabled {
 			continue
 		}
+		timer = TimeOperation("send_notification_kafka")
 		newNotifiedIssues, err := d.produceEntriesToKafka(cluster, ruleContent, deserialized.Reports, report)
+		timer()
 		if err != nil {
 			log.Err(err).
 				Str(clusterAttribute, string(cluster.ClusterName)).
@@ -840,6 +848,9 @@ func (d *Differ) RetrievePreviouslyReportedForEventTarget(cooldown string, targe
 }
 
 func (d *Differ) start(config *conf.ConfigStruct) error {
+	SetServiceStatus(StatusStarting)
+	defer SetServiceStatus(StatusInactive)
+
 	log.Info().Msg("Differ started")
 	log.Info().Msg(separator)
 
@@ -848,8 +859,11 @@ func (d *Differ) start(config *conf.ConfigStruct) error {
 	log.Info().Msg(separator)
 	log.Info().Msg("Getting rule content and impacts from content service")
 
+	SetServiceStatus(StatusFetchingContent)
 	dependenciesConfiguration := conf.GetDependenciesConfiguration(config)
+	timer := TimeOperation("fetch_content")
 	ruleContent, err := fetchAllRulesContent(&dependenciesConfiguration)
+	timer()
 	if err != nil {
 		FetchContentErrors.Inc()
 		return &FetchStatusContentError{}
@@ -869,7 +883,11 @@ func (d *Differ) start(config *conf.ConfigStruct) error {
 	}
 	go PushMetricsInLoop(context.Background(), &metricsConfiguration)
 
+	SetServiceStatus(StatusReadingClusters)
+
+	timer = TimeOperation("read_cluster_list")
 	clusters, err := d.Storage.ReadClusterList()
+	timer()
 	if err != nil {
 		ReadClusterListErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
@@ -892,12 +910,21 @@ func (d *Differ) start(config *conf.ConfigStruct) error {
 	}
 	log.Info().Int(clustersAttribute, entries).Msg("Read cluster list: done")
 	log.Info().Msg(separator)
-	if err := d.RetrievePreviouslyReportedForEventTarget(d.CoolDown, d.Target, clusters); err != nil {
+
+	SetServiceStatus(StatusReadingPreviouslyReported)
+	timer = TimeOperation("read_previously_reported")
+	err = d.RetrievePreviouslyReportedForEventTarget(d.CoolDown, d.Target, clusters)
+	timer()
+	if err != nil {
 		return err
 	}
 	log.Info().Msg(separator)
 	log.Info().Msg("Checking new issues for all new reports")
+
+	SetServiceStatus(StatusProcessingClusters)
+	timer = TimeOperation("process_clusters")
 	d.ProcessClusters(config, ruleContent, clusters)
+	timer()
 	log.Info().Int(clustersAttribute, entries).Msg("Process Clusters Entries: done")
 	if err := d.close(); err != nil {
 		return err
