@@ -42,35 +42,340 @@ data:
       "editable": true,
       "fiscalYearStartMonth": 0,
       "graphTooltip": 0,
+      "id": 1025931,
       "links": [],
-      "liveNow": false,
       "panels": [
         {
-          "collapsed": false,
           "datasource": {
-            "type": "prometheus",
-            "uid": "PD776AFABBE26000A"
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "thresholds"
+              },
+              "custom": {
+                "axisPlacement": "auto",
+                "fillOpacity": 70,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineWidth": 0,
+                "spanNulls": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "super-light-blue",
+                    "value": 0
+                  },
+                  {
+                    "color": "super-light-green",
+                    "value": 1
+                  },
+                  {
+                    "color": "light-green",
+                    "value": 2
+                  },
+                  {
+                    "color": "green",
+                    "value": 3
+                  },
+                  {
+                    "color": "semi-dark-green",
+                    "value": 4
+                  },
+                  {
+                    "color": "dark-green",
+                    "value": 5
+                  },
+                  {
+                    "color": "dark-red",
+                    "value": 6
+                  }
+                ]
+              }
+            },
+            "overrides": []
           },
           "gridPos": {
-            "h": 1,
-            "w": 24,
+            "h": 8,
+            "w": 12,
             "x": 0,
             "y": 0
           },
-          "id": 2,
-          "panels": [],
-          "repeat": "datasource",
+          "id": 15,
+          "options": {
+            "alignValue": "left",
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": true
+            },
+            "mergeValues": true,
+            "rowHeight": 0.9,
+            "showValue": "auto",
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.3",
+          "targets": [
+            {
+              "datasource": {
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "ccx_notification_service_notification_backend_service_status{namespace=\"$namespace\"}",
+              "format": "time_series",
+              "instant": false,
+              "interval": "",
+              "legendFormat": "Notification Backend",
+              "range": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "exemplar": true,
+              "expr": "ccx_notification_service_service_log_service_status{namespace=\"$namespace\"}",
+              "interval": "",
+              "legendFormat": "Service Log",
+              "range": true,
+              "refId": "B"
+            }
+          ],
+          "title": "Service Status",
+          "type": "state-timeline"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "area"
+                }
+              },
+              "fieldMinMax": false,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 300
+                  },
+                  {
+                    "color": "red",
+                    "value": 600
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 12,
+            "y": 0
+          },
+          "id": 18,
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "max",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true,
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
                 "type": "prometheus",
-                "uid": "PD776AFABBE26000A"
+                "uid": "${datasource}"
               },
+              "editorMode": "code",
+              "expr": "sum(ccx_notification_service_notification_backend_operation_duration_seconds_sum) by (operation) / sum(ccx_notification_service_notification_backend_operation_duration_seconds_count) by (operation)",
+              "legendFormat": "{{operation}}",
+              "range": true,
               "refId": "A"
             }
           ],
-          "title": "CCX Notification Service",
-          "type": "row"
+          "title": "Time per operation (Notification Backend)",
+          "type": "timeseries"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "axisBorderShow": false,
+                "axisCenteredZero": false,
+                "axisColorMode": "text",
+                "axisLabel": "",
+                "axisPlacement": "auto",
+                "barAlignment": 0,
+                "barWidthFactor": 0.6,
+                "drawStyle": "line",
+                "fillOpacity": 0,
+                "gradientMode": "none",
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "insertNulls": false,
+                "lineInterpolation": "linear",
+                "lineWidth": 1,
+                "pointSize": 5,
+                "scaleDistribution": {
+                  "type": "linear"
+                },
+                "showPoints": "auto",
+                "spanNulls": false,
+                "stacking": {
+                  "group": "A",
+                  "mode": "none"
+                },
+                "thresholdsStyle": {
+                  "mode": "area"
+                }
+              },
+              "fieldMinMax": false,
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 300
+                  },
+                  {
+                    "color": "red",
+                    "value": 600
+                  }
+                ]
+              },
+              "unit": "s"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 8,
+            "w": 6,
+            "x": 18,
+            "y": 0
+          },
+          "id": 16,
+          "options": {
+            "legend": {
+              "calcs": [
+                "min",
+                "max",
+                "lastNotNull"
+              ],
+              "displayMode": "table",
+              "placement": "bottom",
+              "showLegend": true,
+              "sortBy": "Last *",
+              "sortDesc": true
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "11.6.3",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "${datasource}"
+              },
+              "editorMode": "code",
+              "expr": "sum(ccx_notification_service_service_log_operation_duration_seconds_sum) by (operation) / sum(ccx_notification_service_service_log_operation_duration_seconds_count) by (operation)",
+              "legendFormat": "{{operation}}",
+              "range": true,
+              "refId": "A"
+            }
+          ],
+          "title": "Time per operation (ServiceLog)",
+          "type": "timeseries"
         },
         {
           "datasource": {
@@ -88,6 +393,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -118,8 +424,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -131,153 +436,179 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 8,
+            "h": 7,
             "w": 12,
             "x": 0,
-            "y": 1
+            "y": 8
           },
           "id": 6,
           "options": {
             "legend": {
               "calcs": [],
-              "displayMode": "list",
-              "placement": "bottom",
+              "displayMode": "table",
+              "placement": "right",
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "single",
               "sort": "none"
             }
           },
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_backend_fetch_content_errors{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_notification_backend_fetch_content_errors{namespace=\"$namespace\"}",
               "interval": "",
               "legendFormat": "[Notification Backend] Fetch content",
+              "range": true,
               "refId": "A"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_backend_read_report_for_cluster_errors{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_notification_backend_read_report_for_cluster_errors{namespace=\"$namespace\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "[Notification Backend] Read reported",
+              "range": true,
               "refId": "B"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_backend_producer_setup_errors{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_notification_backend_producer_setup_errors{namespace=\"$namespace\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "[Notification Backend] Producer setup",
+              "range": true,
               "refId": "C"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_backend_read_cluster_list_errors{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_notification_backend_read_cluster_list_errors{namespace=\"$namespace\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "[Notification Backend] Read cluster list",
+              "range": true,
               "refId": "D"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_backend_read_report_for_cluster_errors{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_notification_backend_read_report_for_cluster_errors{namespace=\"$namespace\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "[Notification Backend] Read report for cluster",
+              "range": true,
               "refId": "E"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_backend_storage_setup_errors{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_notification_backend_storage_setup_errors{namespace=\"$namespace\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "[Notification Backend] Storage setup",
+              "range": true,
               "refId": "G"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_service_log_fetch_content_errors{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_service_log_fetch_content_errors{namespace=\"$namespace\"}",
               "interval": "",
               "legendFormat": "[Service Log] Fetch content",
+              "range": true,
               "refId": "H"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_service_log_read_report_for_cluster_errors{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_service_log_read_report_for_cluster_errors{namespace=\"$namespace\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "[Service Log] Read reported",
+              "range": true,
               "refId": "I"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_service_log_producer_setup_errors{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_service_log_producer_setup_errors{namespace=\"$namespace\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "[Service Log] Producer setup",
+              "range": true,
               "refId": "J"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_service_log_read_cluster_list_errors{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_service_log_read_cluster_list_errors{namespace=\"$namespace\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "[Service Log] Read cluster list",
+              "range": true,
               "refId": "K"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_service_log_read_report_for_cluster_errors{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_service_log_read_report_for_cluster_errors{namespace=\"$namespace\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "[Service Log] Read report for cluster",
+              "range": true,
               "refId": "L"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_service_log_storage_setup_errors{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_service_log_storage_setup_errors{namespace=\"$namespace\"}",
               "hide": false,
               "interval": "",
               "legendFormat": "[Service Log] Storage setup",
+              "range": true,
               "refId": "M"
             }
           ],
@@ -301,6 +632,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -331,8 +663,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -344,10 +675,10 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 8,
+            "h": 7,
             "w": 12,
             "x": 12,
-            "y": 1
+            "y": 8
           },
           "id": 8,
           "options": {
@@ -358,29 +689,35 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "single",
               "sort": "none"
             }
           },
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_backend_notification_sent{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_notification_backend_notification_sent{namespace=\"$namespace\"}",
               "interval": "",
               "legendFormat": "Notification Backend",
+              "range": true,
               "refId": "A"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_service_log_notification_sent{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_service_log_notification_sent{namespace=\"$namespace\"}",
               "interval": "",
               "legendFormat": "Service Log",
+              "range": true,
               "refId": "B"
             }
           ],
@@ -403,6 +740,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -433,8 +771,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -446,10 +783,10 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 8,
-            "w": 12,
+            "h": 7,
+            "w": 9,
             "x": 0,
-            "y": 9
+            "y": 15
           },
           "id": 14,
           "options": {
@@ -460,29 +797,35 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "single",
               "sort": "none"
             }
           },
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_backend_report_with_high_impact{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_notification_backend_report_with_high_impact{namespace=\"$namespace\"}",
               "interval": "",
               "legendFormat": "Notification Backend",
+              "range": true,
               "refId": "A"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_service_log_report_with_high_impact{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_service_log_report_with_high_impact{namespace=\"$namespace\"}",
               "interval": "",
               "legendFormat": "Service Log",
+              "range": true,
               "refId": "B"
             }
           ],
@@ -506,6 +849,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -536,8 +880,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -549,10 +892,10 @@ data:
             "overrides": []
           },
           "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 9
+            "h": 7,
+            "w": 7,
+            "x": 9,
+            "y": 15
           },
           "id": 12,
           "options": {
@@ -563,29 +906,35 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "single",
               "sort": "none"
             }
           },
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_backend_notification_not_sent_error_state{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_notification_backend_notification_not_sent_error_state{namespace=\"$namespace\"}",
               "interval": "",
               "legendFormat": "Notification Backend",
+              "range": true,
               "refId": "A"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_service_log_notification_not_sent_error_state{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_service_log_notification_not_sent_error_state{namespace=\"$namespace\"}",
               "interval": "",
               "legendFormat": "Service Log",
+              "range": true,
               "refId": "B"
             }
           ],
@@ -609,6 +958,7 @@ data:
                 "axisLabel": "",
                 "axisPlacement": "auto",
                 "barAlignment": 0,
+                "barWidthFactor": 0.6,
                 "drawStyle": "line",
                 "fillOpacity": 0,
                 "gradientMode": "none",
@@ -639,8 +989,7 @@ data:
                 "mode": "absolute",
                 "steps": [
                   {
-                    "color": "green",
-                    "value": null
+                    "color": "green"
                   },
                   {
                     "color": "red",
@@ -649,38 +998,13 @@ data:
                 ]
               }
             },
-            "overrides": [
-              {
-                "__systemRef": "hideSeriesFrom",
-                "matcher": {
-                  "id": "byNames",
-                  "options": {
-                    "mode": "exclude",
-                    "names": [
-                      "sum(rate(ccx_notification_service_notification_not_sent_same_state{namespace=\"app-sre-observability-production\"}[1h]))"
-                    ],
-                    "prefix": "All except:",
-                    "readOnly": true
-                  }
-                },
-                "properties": [
-                  {
-                    "id": "custom.hideFrom",
-                    "value": {
-                      "legend": false,
-                      "tooltip": false,
-                      "viz": true
-                    }
-                  }
-                ]
-              }
-            ]
+            "overrides": []
           },
           "gridPos": {
-            "h": 8,
-            "w": 12,
-            "x": 12,
-            "y": 17
+            "h": 7,
+            "w": 8,
+            "x": 16,
+            "y": 15
           },
           "id": 10,
           "options": {
@@ -691,70 +1015,83 @@ data:
               "showLegend": true
             },
             "tooltip": {
+              "hideZeros": false,
               "mode": "single",
               "sort": "none"
             }
           },
+          "pluginVersion": "11.6.3",
           "targets": [
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_notification_backend_notification_not_sent_same_state{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_notification_backend_notification_not_sent_same_state{namespace=\"$namespace\"}",
               "interval": "",
               "legendFormat": "Notification Backend",
+              "range": true,
               "refId": "A"
             },
             {
               "datasource": {
                 "uid": "${datasource}"
               },
+              "editorMode": "code",
               "exemplar": true,
-              "expr": "sum(rate(ccx_notification_service_service_log_notification_not_sent_same_state{namespace=\"$namespace\"}[1h]))",
+              "expr": "ccx_notification_service_service_log_notification_not_sent_same_state{namespace=\"$namespace\"}",
               "interval": "",
               "legendFormat": "Service Log",
+              "range": true,
               "refId": "B"
             }
           ],
           "title": "Notifications not sent - cluster same state",
           "type": "timeseries"
+        },
+        {
+          "collapsed": false,
+          "gridPos": {
+            "h": 1,
+            "w": 24,
+            "x": 0,
+            "y": 22
+          },
+          "id": 2,
+          "panels": [],
+          "repeat": "datasource",
+          "title": "CCX Notification Service",
+          "type": "row"
         }
       ],
+      "preload": false,
       "refresh": "",
-      "schemaVersion": 39,
+      "schemaVersion": 41,
       "tags": [],
       "templating": {
         "list": [
           {
             "current": {
-              "selected": true,
               "text": "appsrep11ue1-prometheus",
               "value": "P7E8E1698DF0AC988"
             },
-            "hide": 0,
             "includeAll": false,
             "label": "datasource",
-            "multi": false,
             "name": "datasource",
             "options": [],
             "query": "prometheus",
-            "queryValue": "",
             "refresh": 1,
             "regex": "(appsrep11ue1|appsres11ue1)-prometheus",
-            "skipUrlSync": false,
             "type": "datasource"
           },
           {
             "current": {
-              "selected": false,
               "text": "app-sre-observability-production",
               "value": "app-sre-observability-production"
             },
-            "hide": 0,
             "includeAll": false,
             "label": "namespace",
-            "multi": false,
             "name": "namespace",
             "options": [
               {
@@ -769,8 +1106,6 @@ data:
               }
             ],
             "query": "app-sre-observability-stage,app-sre-observability-production",
-            "queryValue": "",
-            "skipUrlSync": false,
             "type": "custom"
           }
         ]
@@ -783,9 +1118,8 @@ data:
       "timezone": "",
       "title": "CCX Notification Services",
       "uid": "ERzLEqdnk",
-      "version": 2,
-      "weekStart": ""
-    } 
+      "version": 3
+    }
 kind: ConfigMap
 metadata:
   name: grafana-dashboard-ccx-notification-service
