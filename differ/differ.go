@@ -837,7 +837,9 @@ func assertNotificationDestination(config *conf.ConfigStruct) error {
 func (d *Differ) RetrievePreviouslyReportedForEventTarget(cooldown string, target types.EventTarget, clusters []types.ClusterEntry) error {
 	log.Info().Msg("Reading previously reported issues for given cluster list...")
 	var err error
+	timer := TimeOperation("read_last_notified_record_for_cluster_list")
 	d.PreviouslyReported, err = d.Storage.ReadLastNotifiedRecordForClusterList(clusters, cooldown, target)
+	timer()
 	if err != nil {
 		ReadReportedErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
