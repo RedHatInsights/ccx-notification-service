@@ -636,11 +636,14 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(
 	orgIDs := make([]string, len(clusterEntries))
 	clusterIDs := make([]string, len(clusterEntries))
 
+	timer := TimeOperation("read_last_notified_record_for_cluster_list__build_cluster_entries")
 	for idx, entry := range clusterEntries {
 		orgIDs[idx] = strconv.FormatUint(uint64(entry.OrgID), 10)
 		clusterIDs[idx] = string(entry.ClusterName)
 	}
+	timer()
 
+	timer = TimeOperation("read_last_notified_record_for_cluster_list__build_query")
 	selectQuery := `SELECT org_id, cluster, report, notified_at FROM ( SELECT DISTINCT ON (cluster) * FROM reported`
 	whereClause := fmt.Sprintf(` WHERE event_type_id = %v AND state = 1 AND org_id IN (%v) AND cluster IN (%v)`,
 		eventTarget, inClauseFromStringSlice(orgIDs), inClauseFromStringSlice(clusterIDs))
@@ -648,7 +651,11 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(
 	filterByTimeClause := "WHERE notified_at > NOW() - $1::INTERVAL"
 
 	query := strings.Join([]string{selectQuery, whereClause, orderByClause, filterByTimeClause, ";"}, " ")
+	timer()
+
+	timer = TimeOperation("read_last_notified_record_for_cluster_list__execute_query")
 	rows, err := storage.connection.Query(query, timeOffset)
+	timer()
 
 	if err != nil {
 		return nil, err
@@ -660,6 +667,8 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(
 		}
 	}()
 
+	timer = TimeOperation("read_last_notified_record_for_cluster_list__build_notification_records")
+	defer timer()
 	notificationRecords := make(types.NotifiedRecordsPerCluster)
 
 	for rows.Next() {

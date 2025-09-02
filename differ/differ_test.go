@@ -624,8 +624,8 @@ func TestProcessClustersInstantNotifsAndTotalRiskInferiorToThreshold(t *testing.
 
 func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 	buf := new(bytes.Buffer)
-	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	log.Logger = zerolog.New(buf).Level(zerolog.DebugLevel)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
 	mockBroker := sarama.NewMockBroker(t, 0)
 	defer mockBroker.Close()
@@ -782,16 +782,16 @@ func TestProcessClustersInstantNotifsAndTotalRiskImportant(t *testing.T) {
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, differ.ReportWithHighImpactMessage, "processClusters should create a notification for 'first_cluster' with given data")
-	assert.Contains(t, executionLog, "{\"level\":\"info\",\"cluster\":\"first_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
-	assert.Contains(t, executionLog, "{\"level\":\"info\",\"cluster\":\"second_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
+	assert.Contains(t, executionLog, "{\"level\":\"debug\",\"cluster\":\"first_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
+	assert.Contains(t, executionLog, "{\"level\":\"debug\",\"cluster\":\"second_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
 
 	zerolog.SetGlobalLevel(zerolog.WarnLevel)
 }
 
 func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 	buf := new(bytes.Buffer)
-	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	log.Logger = zerolog.New(buf).Level(zerolog.DebugLevel)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
 	mockBroker := sarama.NewMockBroker(t, 0)
 	defer mockBroker.Close()
@@ -926,9 +926,9 @@ func TestProcessClustersInstantNotifsAndTotalRiskCritical(t *testing.T) {
 	d.ProcessClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, clusters)
 
 	executionLog := buf.String()
-	assert.Contains(t, executionLog, fmt.Sprintf("{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"%s\"}\n", differ.ReportWithHighImpactMessage))
-	assert.Contains(t, executionLog, "{\"level\":\"info\",\"cluster\":\"first_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
-	assert.Contains(t, executionLog, "{\"level\":\"info\",\"cluster\":\"second_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
+	assert.Contains(t, executionLog, fmt.Sprintf("{\"level\":\"debug\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"%s\"}\n", differ.ReportWithHighImpactMessage))
+	assert.Contains(t, executionLog, "{\"level\":\"debug\",\"cluster\":\"first_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
+	assert.Contains(t, executionLog, "{\"level\":\"debug\",\"cluster\":\"second_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
 
 }
 
@@ -1049,8 +1049,8 @@ func TestProcessClustersAllIssuesAlreadyNotifiedCooldownNotPassed(t *testing.T) 
 
 func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	buf := new(bytes.Buffer)
-	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	log.Logger = zerolog.New(buf).Level(zerolog.DebugLevel)
+	zerolog.SetGlobalLevel(zerolog.DebugLevel)
 
 	mockBroker := sarama.NewMockBroker(t, 0)
 	defer mockBroker.Close()
@@ -1201,9 +1201,9 @@ func TestProcessClustersNewIssuesNotPreviouslyNotified(t *testing.T) {
 	d.ProcessClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, clusters)
 
 	executionLog := buf.String()
-	assert.Contains(t, executionLog, fmt.Sprintf("{\"level\":\"warn\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"%s\"}\n", differ.ReportWithHighImpactMessage))
-	assert.Contains(t, executionLog, "{\"level\":\"info\",\"cluster\":\"first_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
-	assert.Contains(t, executionLog, "{\"level\":\"info\",\"cluster\":\"second_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'second_cluster' with given data")
+	assert.Contains(t, executionLog, fmt.Sprintf("{\"level\":\"debug\",\"type\":\"rule\",\"rule\":\"rule_1\",\"error key\":\"RULE_1\",\"likelihood\":4,\"impact\":4,\"totalRisk\":4,\"message\":\"%s\"}\n", differ.ReportWithHighImpactMessage))
+	assert.Contains(t, executionLog, "{\"level\":\"debug\",\"cluster\":\"first_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'first_cluster' with given data")
+	assert.Contains(t, executionLog, "{\"level\":\"debug\",\"cluster\":\"second_cluster\",\"number of events\":1,\"message\":\"Producing instant notification\"}", "processClusters should generate one notification for 'second_cluster' with given data")
 }
 
 func TestRetrievePreviouslyReportedForEventTarget(t *testing.T) {

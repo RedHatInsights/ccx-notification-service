@@ -348,7 +348,7 @@ func (d *Differ) getReportsWithIssuesToNotify(reports types.ReportContent, clust
 				NotificationNotSentSameState.Inc()
 				continue
 			}
-			log.Warn().
+			log.Debug().
 				Str(typeAttribute, r.Type).
 				Str(ruleAttribute, string(ruleName)).
 				Str(errorKeyAttribute, string(errorKey)).
@@ -490,7 +490,7 @@ func (d *Differ) produceEntriesToKafka(cluster types.ClusterEntry, ruleContent t
 			if !d.ShouldNotify(cluster, r) {
 				continue
 			}
-			log.Warn().
+			log.Debug().
 				Str(typeAttribute, r.Type).
 				Str(ruleAttribute, string(ruleName)).
 				Str(errorKeyAttribute, string(errorKey)).
@@ -509,7 +509,7 @@ func (d *Differ) produceEntriesToKafka(cluster types.ClusterEntry, ruleContent t
 		return 0, nil
 	}
 
-	log.Info().
+	log.Debug().
 		Str(clusterAttribute, string(cluster.ClusterName)).
 		Int(numberOfEventsAttribute, len(notificationMsg.Events)).
 		Msg("Producing instant notification")
@@ -613,7 +613,7 @@ func (d *Differ) processReportsByCluster(config *conf.ConfigStruct, ruleContent 
 		}
 
 		if len(deserialized.Reports) == 0 {
-			log.Info().Msgf("No reports in notification database for cluster %s", cluster.ClusterName)
+			log.Debug().Msgf("No reports in notification database for cluster %s", cluster.ClusterName)
 			emptyEntries++
 			continue
 		}
@@ -837,7 +837,9 @@ func assertNotificationDestination(config *conf.ConfigStruct) error {
 func (d *Differ) RetrievePreviouslyReportedForEventTarget(cooldown string, target types.EventTarget, clusters []types.ClusterEntry) error {
 	log.Info().Msg("Reading previously reported issues for given cluster list...")
 	var err error
+	timer := TimeOperation("read_last_notified_record_for_cluster_list")
 	d.PreviouslyReported, err = d.Storage.ReadLastNotifiedRecordForClusterList(clusters, cooldown, target)
+	timer()
 	if err != nil {
 		ReadReportedErrors.Inc()
 		log.Err(err).Msg(operationFailedMessage)
