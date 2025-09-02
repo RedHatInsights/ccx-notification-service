@@ -85,7 +85,7 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 	if err != nil {
 		log.Error().Err(err).Msg("failed to produce message to Kafka")
 	} else {
-		log.Info().Int("partition", int(partitionID)).Int("offset", int(offset)).Msg("message sent")
+		log.Debug().Int("partition", int(partitionID)).Int("offset", int(offset)).Msg("message sent")
 	}
 	return
 }

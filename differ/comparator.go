@@ -89,7 +89,7 @@ func (d *Differ) ShouldNotify(cluster types.ClusterEntry, issue *types.Evaluated
 	key := types.ClusterOrgKey{OrgID: cluster.OrgID, ClusterName: cluster.ClusterName}
 	reported, ok := d.PreviouslyReported[key]
 	if !ok {
-		log.Info().Bool(resolutionKey, true).Str(resolutionReason, "report not in cool down").Msg(resolutionMsg)
+		log.Debug().Bool(resolutionKey, true).Str(resolutionReason, "report not in cool down").Msg(resolutionMsg)
 		return true
 	}
 
@@ -162,7 +162,7 @@ func IssueNotInReport(oldReport types.Report, issue *types.EvaluatedReportItem) 
 			return false
 		}
 	}
-	log.Info().Bool(resolutionKey, true).Str(resolutionReason, "issue not found in previously notified report").Msg(resolutionMsg)
+	log.Debug().Bool(resolutionKey, true).Str(resolutionReason, "issue not found in previously notified report").Msg(resolutionMsg)
 	return true
 }
 
