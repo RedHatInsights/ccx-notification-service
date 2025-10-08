@@ -26,6 +26,7 @@ import (
 	"net/http/httptest"
 	"testing"
 	"time"
+	"bytes"
 
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
@@ -183,35 +184,57 @@ func TestPushMetricsGatewayNotFailingWithRetries(t *testing.T) {
 		fmt.Sprintf("expected exactly %d retries, but received %d", expectedPushes, pushes))
 }
 
-func TestPushMetricsGatewayFailing(t *testing.T) {
-	var (
-		timeBetweenRetries = 100 * time.Millisecond // 0.1s
-		totalTime          = 1 * time.Second        // give enough time
-	)
+func TestPushMetricsGatewayFailingWarnings(t *testing.T) {
+	var timeBetweenRetries = 50 * time.Millisecond
 
-	testServer := httptest.NewServer(
-		http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-			w.Header().Set("Content-Type", `text/plain; charset=utf-8`)
-			w.WriteHeader(http.StatusBadGateway)
-		}),
-	)
-	defer testServer.Close()
-
-	_, cancel := context.WithTimeout(context.Background(), totalTime)
-
-	metricsConf := conf.MetricsConfiguration{
-		Job:              "ccx_notification_service",
-		Namespace:        "ccx_notification_service",
-		GatewayURL:       testServer.URL,
-		GatewayAuthToken: "some_token",
-		RetryAfter:       timeBetweenRetries,
-		Retries:          10,
+	testCases := []struct {
+		name           string
+		retries        int
+		expectedLogMsg string
+	}{
+		{
+			name:           "Retries zero, single failure warning",
+			retries:        0,
+			expectedLogMsg: "Metrics push failed, but continuing execution.",
+		},
+		{
+			name:           "Retries non-zero, final failure warning",
+			retries:        10,
+			expectedLogMsg: "All metric push attempts failed, but continuing execution.",
+		},
 	}
 
-	err := differ.PushMetrics(&metricsConf)
-	assert.ErrorIs(t, err, &differ.StatusMetricsError{})
-	cancel()
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			pushes := 0
+
+			testServer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+				pushes++
+				w.WriteHeader(http.StatusBadGateway)
+			}))
+			defer testServer.Close()
+
+			var buf bytes.Buffer
+			log.Logger = log.Output(&buf)
+
+			metricsConf := conf.MetricsConfiguration{
+				Job:              "ccx_notification_service",
+				Namespace:        "ccx_notification_service",
+				GatewayURL:       testServer.URL,
+				GatewayAuthToken: "some_token",
+				RetryAfter:       timeBetweenRetries,
+				Retries:          tc.retries,
+			}
+
+			err := differ.PushMetrics(&metricsConf)
+			assert.Nil(t, err)
+
+			logOutput := buf.String()
+			assert.Contains(t, logOutput, tc.expectedLogMsg)
+		})
+	}
 }
+
 
 func TestPushMetricsInLoop(t *testing.T) {
 	// Fake a Pushgateway that responds with 202 to DELETE and with 200 in
