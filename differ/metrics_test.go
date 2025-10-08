@@ -20,13 +20,13 @@ package differ_test
 // https://redhatinsights.github.io/ccx-notification-writer/packages/differ/metrics_test.html
 
 import (
+	"bytes"
 	"context"
 	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"testing"
 	"time"
-	"bytes"
 
 	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
@@ -234,7 +234,6 @@ func TestPushMetricsGatewayFailingWarnings(t *testing.T) {
 		})
 	}
 }
-
 
 func TestPushMetricsInLoop(t *testing.T) {
 	// Fake a Pushgateway that responds with 202 to DELETE and with 200 in
