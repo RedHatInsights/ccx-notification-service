@@ -815,7 +815,7 @@ func pushMetrics(metricsConf *conf.MetricsConfiguration) error {
 			}
 			log.Err(err).Msg(metricsPushFailedMessage)
 		}
-		return &StatusMetricsError{}
+		return nil
 	}
 	log.Info().Msg("Metrics pushed successfully. Terminating notification service successfully.")
 	return nil
