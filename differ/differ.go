@@ -801,7 +801,7 @@ func pushMetrics(metricsConf *conf.MetricsConfiguration) error {
 	}
 	err := PushCollectedMetrics(metricsConf)
 	if err != nil {
-		log.Err(err).Msg(metricsPushFailedMessage)
+		log.Warn().Err(err).Msg(metricsPushFailedMessage)
 		if metricsConf.RetryAfter == 0 || metricsConf.Retries == 0 {
 			return nil
 		}
