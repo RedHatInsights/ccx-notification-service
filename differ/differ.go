@@ -803,7 +803,7 @@ func pushMetrics(metricsConf *conf.MetricsConfiguration) error {
 	if err != nil {
 		log.Err(err).Msg(metricsPushFailedMessage)
 		if metricsConf.RetryAfter == 0 || metricsConf.Retries == 0 {
-			return &StatusMetricsError{}
+			return nil
 		}
 		for i := metricsConf.Retries; i > 0; i-- {
 			time.Sleep(metricsConf.RetryAfter)
@@ -815,7 +815,7 @@ func pushMetrics(metricsConf *conf.MetricsConfiguration) error {
 			}
 			log.Err(err).Msg(metricsPushFailedMessage)
 		}
-		return &StatusMetricsError{}
+		return nil
 	}
 	log.Info().Msg("Metrics pushed successfully. Terminating notification service successfully.")
 	return nil
