@@ -2,7 +2,6 @@ module github.com/RedHatInsights/ccx-notification-service
 
 go 1.24.0
 
-
 require (
 	github.com/BurntSushi/toml v1.5.0
 	github.com/DATA-DOG/go-sqlmock v1.5.2
