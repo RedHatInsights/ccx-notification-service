@@ -395,7 +395,8 @@ func (d *Differ) createAndSendServiceLogEntry(configuration *conf.ConfigStruct, 
 	_, _, err = d.Notifier.ProduceMessage(msgBytes)
 	if err != nil {
 		NotificationNotSentErrorState.Inc()
-		log.Err(err).
+		log.Warn().
+			Err(err).
 			Str(clusterAttribute, string(cluster.ClusterName)).
 			Str(ruleAttribute, string(renderedReport.RuleID)).
 			Str(errorKeyAttribute, string(renderedReport.ErrorKey)).
