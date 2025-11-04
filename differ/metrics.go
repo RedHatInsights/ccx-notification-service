@@ -368,7 +368,7 @@ func PushMetricsInLoop(ctx context.Context, metricsConf *conf.MetricsConfigurati
 				log.Debug().Msg("Pushing metrics")
 				err := PushCollectedMetrics(metricsConf)
 				if err != nil {
-					log.Error().Err(err).Msg("Error pushing the metrics in loop")
+					log.Warn().Err(err).Msg("Error pushing the metrics in loop")
 				}
 				log.Debug().Msg("Metrics pushed")
 			case <-ctx.Done():
