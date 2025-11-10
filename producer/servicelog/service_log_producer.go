@@ -74,7 +74,7 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 
 	req, err := http.NewRequest(http.MethodPost, serviceLogURL, bytes.NewBuffer(msg))
 	if err != nil {
-		log.Error().Err(err).Str("url", serviceLogURL).Msg("Error setting up HTTP POST request")
+		log.Warn().Err(err).Str("url", serviceLogURL).Msg("Error setting up HTTP POST request")
 		return -1, -1, err
 	}
 
@@ -83,7 +83,7 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 
 	response, err := client.Do(req)
 	if err != nil {
-		log.Error().Err(err).Msg("Error making the HTTP request")
+		log.Warn().Err(err).Msg("Error making the HTTP request")
 		return -1, -1, err
 	}
 
@@ -93,10 +93,10 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 		for err != nil {
 
 			if producer.TokenRefreshmentDelay >= producer.TokenRefreshmentThreshold {
-				log.Error().Err(err).Msg("Access token could not be refreshed")
+				log.Warn().Err(err).Msg("Access token could not be refreshed")
 				return -1, -1, err
 			}
-			log.Error().
+			log.Warn().
 				Err(err).
 				Dur("delay", producer.TokenRefreshmentDelay).
 				Msgf("Could not receive a new access token. Retrying...")
@@ -110,7 +110,7 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 		return 0, 0, nil
 	default:
 		err = fmt.Errorf("received unexpected response status code - %s", response.Status)
-		log.Error().Err(err).Msg("Got unexpected response status code")
+		log.Warn().Err(err).Msg("Got unexpected response status code")
 		return -1, -1, err
 	}
 }
