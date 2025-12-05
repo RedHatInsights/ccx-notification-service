@@ -116,7 +116,7 @@ func updateNotificationRecordSentState(storage Storage, cluster types.ClusterEnt
 }
 
 func updateNotificationRecordErrorState(storage Storage, err error, cluster types.ClusterEntry, report types.ClusterReport, notifiedAt types.Timestamp, eventTarget types.EventTarget) {
-	log.Error().Err(err).Str(clusterStr, string(cluster.ClusterName)).Msg("New issues couldn't be notified")
+	log.Warn().Err(err).Str(clusterStr, string(cluster.ClusterName)).Msg("New issues couldn't be notified")
 	NotificationNotSentErrorState.Inc()
 	err = storage.WriteNotificationRecordForCluster(cluster, notificationTypes.Instant, states.ErrorState, report, notifiedAt, err.Error(), eventTarget)
 	if err != nil {

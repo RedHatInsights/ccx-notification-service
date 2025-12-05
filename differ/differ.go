@@ -422,7 +422,8 @@ func (d *Differ) ProduceEntriesToServiceLog(configuration *conf.ConfigStruct, cl
 			reportsToRender, rules)
 
 		if err != nil {
-			log.Err(err).
+			log.Warn().
+				Err(err).
 				Str("cluster name", string(cluster.ClusterName)).
 				Msg(renderReportsFailedMessage)
 			return totalMessages, err
