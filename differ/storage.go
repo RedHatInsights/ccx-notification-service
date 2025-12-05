@@ -609,8 +609,9 @@ func (storage DBStorage) WriteReadError(
 
 	_, err := storage.connection.Exec(InsertReadErrorsStatement, orgID, clusterName, lastCheckedTime, createdAt, errorText)
 	if err != nil {
-		log.Err(err).
-			Int("org", int(orgID)).
+		log.Warn().
+			Err(err).
+			Int(OrgIDMessage, int(orgID)).
 			Str(clusterStr, string(clusterName)).
 			Str("last checked", lastCheckedTime.String()).
 			Str("created at", createdAt.String()).
