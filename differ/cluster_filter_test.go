@@ -116,7 +116,7 @@ func TestFilterNoFilters(t *testing.T) {
 		FilterAllowedClusters: false,
 		FilterBlockedClusters: false,
 	}
-	var clusters []types.ClusterEntry
+	clusters := make([]types.ClusterEntry, 0, 4)
 
 	// list of clusters at input
 	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
@@ -148,7 +148,7 @@ func TestFilterBlockOneCluster(t *testing.T) {
 		BlockedClusters: []string{
 			string(cluster1.ClusterName)},
 	}
-	var clusters []types.ClusterEntry
+	clusters := make([]types.ClusterEntry, 0, 4)
 
 	// list of clusters at input
 	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
@@ -181,7 +181,7 @@ func TestFilterBlockTwoClusters(t *testing.T) {
 			string(cluster1.ClusterName),
 			string(cluster4.ClusterName)},
 	}
-	var clusters []types.ClusterEntry
+	clusters := make([]types.ClusterEntry, 0, 4)
 
 	// list of clusters at input
 	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
@@ -213,7 +213,7 @@ func TestFilterBlockTwoClustersOneUnknown(t *testing.T) {
 			string(cluster1.ClusterName),
 			"ffffffff-0000-0000-ffffffffffff"},
 	}
-	var clusters []types.ClusterEntry
+	clusters := make([]types.ClusterEntry, 0, 4)
 
 	// list of clusters at input
 	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
@@ -246,7 +246,7 @@ func TestFilterBlockTwoClustersAllUnknown(t *testing.T) {
 			"ffffffff-ffff-ffff-0123456789ab",
 			"ffffffff-0000-0000-ffffffffffff"},
 	}
-	var clusters []types.ClusterEntry
+	clusters := make([]types.ClusterEntry, 0, 4)
 
 	// list of clusters at input
 	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
@@ -277,7 +277,7 @@ func TestFilterAllowNoClusters(t *testing.T) {
 		FilterBlockedClusters: false,
 		AllowedClusters:       []string{}}
 
-	var clusters []types.ClusterEntry
+	clusters := make([]types.ClusterEntry, 0, 4)
 
 	// list of clusters at input
 	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
@@ -304,7 +304,7 @@ func TestFilterAllowOneCluster(t *testing.T) {
 		AllowedClusters: []string{
 			string(cluster1.ClusterName)}}
 
-	var clusters []types.ClusterEntry
+	clusters := make([]types.ClusterEntry, 0, 4)
 
 	// list of clusters at input
 	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
@@ -335,7 +335,7 @@ func TestFilterAllowTwoClusters(t *testing.T) {
 			string(cluster1.ClusterName),
 			string(cluster2.ClusterName)}}
 
-	var clusters []types.ClusterEntry
+	clusters := make([]types.ClusterEntry, 0, 4)
 
 	// list of clusters at input
 	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
@@ -367,7 +367,7 @@ func TestFilterAllowTwoClustersOneUnknown(t *testing.T) {
 			string(cluster1.ClusterName),
 			"ffffffff-ffff-ffff-0123456789ab"}}
 
-	var clusters []types.ClusterEntry
+	clusters := make([]types.ClusterEntry, 0, 4)
 
 	// list of clusters at input
 	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
@@ -397,7 +397,7 @@ func TestFilterAllowTwoClustersAllUnknown(t *testing.T) {
 			"ffffffff-ffff-ffff-0123456789ab",
 			"ffffffff-0000-0000-ffffffffffff"},
 	}
-	var clusters []types.ClusterEntry
+	clusters := make([]types.ClusterEntry, 0, 4)
 
 	// list of clusters at input
 	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
@@ -427,7 +427,7 @@ func TestFilterAllowAndBlock(t *testing.T) {
 			string(cluster3.ClusterName),
 			string(cluster4.ClusterName)}}
 
-	var clusters []types.ClusterEntry
+	clusters := make([]types.ClusterEntry, 0, 4)
 
 	// list of clusters at input
 	clusters = append(clusters, cluster1, cluster2, cluster3, cluster4)
