@@ -589,6 +589,7 @@ func (d *Differ) processReportsByCluster(config *conf.ConfigStruct, ruleContent 
 					Str(clusterAttribute, string(cluster.ClusterName)).
 					Time("since", time.Time(cluster.UpdatedAt)).
 					Msg("No report found for cluster, skipping")
+				skippedEntries++
 				continue
 			}
 			// is the problem reported already?

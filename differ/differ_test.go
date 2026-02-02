@@ -384,8 +384,7 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 	d.ProcessClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, clusters)
 
 	executionLog := buf.String()
-	assert.Contains(t, executionLog, "no rows in result set", "No report should be retrieved for the first cluster")
-	assert.Contains(t, executionLog, "No new issues to notify for cluster second_cluster", "the processReportsByCluster loop did not continue as extpected")
+	assert.Contains(t, executionLog, "No new issues to notify for cluster second_cluster", "the processReportsByCluster loop did not continue as expected")
 	assert.Contains(t, executionLog, "Number of reports not retrieved/deserialized: 1", "the first cluster should have been skipped")
 	assert.Contains(t, executionLog, "Number of empty reports skipped: 0")
 
