@@ -299,6 +299,18 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 			return nil
 		},
 	)
+	storage.On("ReadReportForClusterAtTime",
+		mock.MatchedBy(func(orgID types.OrgID) bool { return orgID == 3 }),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) types.ClusterReport {
+			return ""
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
+			return fmt.Errorf("test error")
+		},
+	)
+
 	storage.On("WriteNotificationRecordForCluster",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("types.NotificationTypeID"),
@@ -308,6 +320,28 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("types.EventTarget")).Return(
 		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string, eventTarget types.EventTarget) error {
+			return nil
+		},
+	)
+
+	storage.On("ReadErrorExists",
+		mock.MatchedBy(func(orgID types.OrgID) bool { return orgID == 3 }),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) bool {
+			return true
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
+			return nil
+		},
+	)
+
+	storage.On("WriteReadError",
+		mock.MatchedBy(func(orgID types.OrgID) bool { return orgID == 3 }),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp"),
+		mock.AnythingOfType("error")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp, e error) error {
 			return nil
 		},
 	)
@@ -370,6 +404,13 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 			KafkaOffset:   100,
 			UpdatedAt:     types.Timestamp(testTimestamp),
 		},
+		{
+			OrgID:         3,
+			AccountNumber: 3,
+			ClusterName:   "third_cluster",
+			KafkaOffset:   200,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
 	}
 
 	buf := new(bytes.Buffer)
@@ -384,8 +425,7 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 	d.ProcessClusters(&conf.ConfigStruct{Kafka: conf.KafkaConfiguration{Enabled: true}}, ruleContent, clusters)
 
 	executionLog := buf.String()
-	assert.Contains(t, executionLog, "no rows in result set", "No report should be retrieved for the first cluster")
-	assert.Contains(t, executionLog, "No new issues to notify for cluster second_cluster", "the processReportsByCluster loop did not continue as extpected")
+	assert.Contains(t, executionLog, "No new issues to notify for cluster second_cluster", "the processReportsByCluster loop did not continue as expected")
 	assert.Contains(t, executionLog, "Number of reports not retrieved/deserialized: 1", "the first cluster should have been skipped")
 	assert.Contains(t, executionLog, "Number of empty reports skipped: 0")
 

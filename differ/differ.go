@@ -26,6 +26,7 @@ package differ
 
 import (
 	"context"
+	"database/sql"
 	"encoding/json"
 	"fmt"
 	"strings"
@@ -582,6 +583,15 @@ func (d *Differ) processReportsByCluster(config *conf.ConfigStruct, ruleContent 
 		report, err := d.Storage.ReadReportForClusterAtTime(cluster.OrgID, cluster.ClusterName, cluster.UpdatedAt)
 		timer()
 		if err != nil {
+			if err == sql.ErrNoRows {
+				log.Warn().
+					Int(organizationIDAttribute, int(cluster.OrgID)).
+					Str(clusterAttribute, string(cluster.ClusterName)).
+					Time("since", time.Time(cluster.UpdatedAt)).
+					Msg("No report found for cluster, skipping")
+				skippedEntries++
+				continue
+			}
 			// is the problem reported already?
 			reportedAlready, readErr := d.Storage.ReadErrorExists(cluster.OrgID, cluster.ClusterName, cluster.UpdatedAt)
 			checkReadError(readErr)
