@@ -299,6 +299,18 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 			return nil
 		},
 	)
+	storage.On("ReadReportForClusterAtTime",
+		mock.MatchedBy(func(orgID types.OrgID) bool { return orgID == 3 }),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) types.ClusterReport {
+			return ""
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
+			return fmt.Errorf("test error")
+		},
+	)
+
 	storage.On("WriteNotificationRecordForCluster",
 		mock.AnythingOfType("types.ClusterEntry"),
 		mock.AnythingOfType("types.NotificationTypeID"),
@@ -308,6 +320,28 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 		mock.AnythingOfType("string"),
 		mock.AnythingOfType("types.EventTarget")).Return(
 		func(clusterEntry types.ClusterEntry, notificationTypeID types.NotificationTypeID, stateID types.StateID, report types.ClusterReport, notifiedAt types.Timestamp, errorLog string, eventTarget types.EventTarget) error {
+			return nil
+		},
+	)
+
+	storage.On("ReadErrorExists",
+		mock.MatchedBy(func(orgID types.OrgID) bool { return orgID == 3 }),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) bool {
+			return true
+		},
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp) error {
+			return nil
+		},
+	)
+
+	storage.On("WriteReadError",
+		mock.MatchedBy(func(orgID types.OrgID) bool { return orgID == 3 }),
+		mock.AnythingOfType("types.ClusterName"),
+		mock.AnythingOfType("types.Timestamp"),
+		mock.AnythingOfType("error")).Return(
+		func(orgID types.OrgID, clusterName types.ClusterName, updatedAt types.Timestamp, e error) error {
 			return nil
 		},
 	)
@@ -368,6 +402,13 @@ func TestProcessClustersNoReportForClusterEntry(t *testing.T) {
 			AccountNumber: 2,
 			ClusterName:   "second_cluster",
 			KafkaOffset:   100,
+			UpdatedAt:     types.Timestamp(testTimestamp),
+		},
+		{
+			OrgID:         3,
+			AccountNumber: 3,
+			ClusterName:   "third_cluster",
+			KafkaOffset:   200,
 			UpdatedAt:     types.Timestamp(testTimestamp),
 		},
 	}
