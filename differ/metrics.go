@@ -77,7 +77,7 @@ const (
 // PushGatewayClient is a simple wrapper over http.Client so that prometheus
 // can do HTTP requests with the given authentication header
 type PushGatewayClient struct {
-	AuthToken string
+	AuthToken string `json:"-"` //nolint:gosec // G117: not serialized to JSON in practice
 
 	httpClient http.Client
 }
@@ -92,7 +92,7 @@ func (pgc *PushGatewayClient) Do(request *http.Request) (*http.Response, error) 
 		log.Debug().Msg("No authorization token provided. Making HTTP request without credentials.")
 	}
 	log.Debug().Str("request", request.URL.String()).Str("method", request.Method).Msg("Pushing metrics to Prometheus push gateway")
-	resp, err := pgc.httpClient.Do(request)
+	resp, err := pgc.httpClient.Do(request) //nolint:gosec // G704: URL comes from configuration, not user input
 	if resp != nil {
 		log.Debug().Int("code", resp.StatusCode).Msg("Returned status code")
 	}
