@@ -80,6 +80,7 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 
 	// now the request has been created, so it's safe to add a header to it
 	req.Header.Add("Authorization", "Bearer "+producer.AccessToken)
+	req.Header.Add("Content-Type", "application/json")
 
 	response, err := client.Do(req) //nolint:gosec // G704: URL comes from configuration, not user input
 	if err != nil {
