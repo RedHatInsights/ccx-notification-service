@@ -22,4 +22,6 @@ jobs:
       - name: Retrieve BDD runner
         run: wget -O bdd_runner.sh https://raw.githubusercontent.com/RedHatInsights/insights-behavioral-spec/main/run_in_docker.sh && chmod +x bdd_runner.sh
       - name: Run BDD
+        env:
+          IMAGE_TAG: 38ff4d8
         run: ./bdd_runner.sh notification-service-tests .
