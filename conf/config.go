@@ -176,7 +176,7 @@ type KafkaConfiguration struct {
 type ServiceLogConfiguration struct {
 	Enabled             bool          `mapstructure:"enabled" toml:"enabled"`
 	ClientID            string        `mapstructure:"client_id" toml:"client_id"`
-	ClientSecret        string        `mapstructure:"client_secret" toml:"client_secret"`
+	ClientSecret        string        `mapstructure:"client_secret" toml:"client_secret" json:"-"` //nolint:gosec // G117: not serialized to JSON in practice
 	CreatedBy           string        `mapstructure:"created_by" toml:"created_by"`
 	Username            string        `mapstructure:"username" toml:"username"`
 	TokenURL            string        `mapstructure:"token_url" toml:"token_url"`
