@@ -41,7 +41,7 @@ import (
 type Producer struct {
 	Configuration              conf.ServiceLogConfiguration
 	OCMClient                  ocmclient.OCMClient
-	AccessToken                string
+	AccessToken                string `json:"-"` //nolint:gosec // G117: not serialized to JSON in practice
 	TokenRefreshmentCounter    int
 	TokenRefreshmentStartDelay time.Duration
 	TokenRefreshmentDelay      time.Duration
@@ -80,8 +80,9 @@ func (producer *Producer) ProduceMessage(msg types.ProducerMessage) (partitionID
 
 	// now the request has been created, so it's safe to add a header to it
 	req.Header.Add("Authorization", "Bearer "+producer.AccessToken)
+	req.Header.Add("Content-Type", "application/json")
 
-	response, err := client.Do(req)
+	response, err := client.Do(req) //nolint:gosec // G704: URL comes from configuration, not user input
 	if err != nil {
 		log.Warn().Err(err).Msg("Error making the HTTP request")
 		return -1, -1, err
