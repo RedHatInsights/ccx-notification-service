@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: default clean build build-tests fmt lint shellcheck abcgo style run test test-postgres cover integration_tests rest_api_tests sqlite_db license before_commit bdd_tests help godoc install_docgo install_addlicense
+.PHONY: default clean build build-cover build-tests fmt lint shellcheck abcgo style run test cover rest_api_tests sqlite_db license before_commit bdd_tests help godoc install_docgo install_addlicense
 
 SOURCES:=$(shell find . -name '*.go')
 BINARY:=ccx-notification-service
@@ -19,10 +19,6 @@ build-cover:	${SOURCES}  ## Build binary with code coverage detection support
 ${BINARY}: ${SOURCES}
 	./build.sh
 
-
-install_golangci-lint:
-	go install github.com/golangci/golangci-lint/v2/cmd/golangci-lint@latest
-
 fmt: install_golangci-lint ## Run go formatting
 	@echo "Running go formatting"
 	golangci-lint fmt
@@ -32,19 +28,19 @@ lint: install_golangci-lint ## Run go liting
 	golangci-lint run --fix
 
 shellcheck: ## Run shellcheck
-	./shellcheck.sh
+	pre-commit run shellcheck --all-files
 
 abcgo: ## Run ABC metrics checker
-	@echo "Run ABC metrics checker"
-	./abcgo.sh ${VERBOSE}
+	pre-commit run abcgo --all-files
 
-style: fmt lint shellcheck abcgo ## Run all the formatting related commands (fmt, vet, lint, cyclo) + check shell scripts
+style: shellcheck abcgo ## Run all the formatting related commands (fmt, vet, lint, cyclo) + check shell scripts
+	pre-commit run golangci-lint-full --all-files
 
 run: ${BINARY} ## Build the project and executes the binary
 	./$^
 
 gen-mocks: ## Generates the mocks using mockery. Needs go >= 1.18
-	go install github.com/vektra/mockery/v2@latest  
+	go install github.com/vektra/mockery/v2@latest
 	mockery --all --output tests/mocks
 
 test: ${BINARY} ## Run the unit tests
@@ -84,7 +80,7 @@ bdd_tests_mock: ## Run BDD tests with mocked dependencies
 	cp ./config-devel.toml bdd_tests/config.toml
 	pushd bdd_tests/ && WITHMOCK=1 ./run_tests.sh && popd
 
-before_commit: style test test-postgres integration_tests license ## Checks done before commit
+before_commit: style test license ## Checks done before commit
 	./check_coverage.sh
 
 help: ## Show this help screen
