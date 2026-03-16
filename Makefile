@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: default clean build build-cover build-tests fmt lint shellcheck abcgo style run test cover rest_api_tests sqlite_db license before_commit bdd_tests help godoc install_docgo install_addlicense
+.PHONY: default clean build build-cover build-test fmt lint shellcheck abcgo style run test cover license before_commit bdd_tests help godoc install_docgo install_addlicense
 
 SOURCES:=$(shell find . -name '*.go')
 BINARY:=ccx-notification-service
@@ -19,11 +19,11 @@ build-cover:	${SOURCES}  ## Build binary with code coverage detection support
 ${BINARY}: ${SOURCES}
 	./build.sh
 
-fmt: install_golangci-lint ## Run go formatting
+fmt: ## Run go formatting
 	@echo "Running go formatting"
 	golangci-lint fmt
 
-lint: install_golangci-lint ## Run go liting
+lint: ## Run go liting
 	@echo "Running go linting"
 	golangci-lint run --fix
 
