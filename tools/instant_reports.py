@@ -55,6 +55,8 @@ def instant_reports(c):
                 c.ret("filtered\\nnew rules")
             with service.prepare_notification_message("filtered new rules"):
                 c.ret("notification\\nmessage")
-            with c.group("New rules were found"):
-                with notifications.notify("notification message"):
-                    c.ret("accepted")
+            with (
+                c.group("New rules were found"),
+                notifications.notify("notification message"),
+            ):
+                c.ret("accepted")

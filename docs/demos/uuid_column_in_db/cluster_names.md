@@ -75,7 +75,7 @@
 
 ## Theory
 
-* `uuid` might be the best option 
+* `uuid` might be the best option
 * `bytea` might be a bit worse
 * `char` on third place
 * `varchar` on the last place

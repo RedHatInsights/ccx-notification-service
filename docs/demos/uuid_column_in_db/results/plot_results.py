@@ -17,7 +17,7 @@
 """Create plots with all benchmark results."""
 
 import csv
-import numpy as np
+
 import matplotlib.pyplot as plt
 
 

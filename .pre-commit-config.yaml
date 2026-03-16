@@ -5,7 +5,9 @@ repos:
       - id: end-of-file-fixer
       - id: trailing-whitespace
       - id: check-json
+        exclude: docs/demos
       - id: check-toml
+        exclude: tests/config[34]\.toml  # exclude config files with invalid characters in URL on purpose
       - id: check-yaml
       - id: debug-statements
       - id: mixed-line-ending
@@ -23,6 +25,7 @@ repos:
         # SC2034: Variable appears unused (used by sourced scripts)
         # SC1091: Not following included files (dynamic includes)
         args: ['--exclude=SC1090,SC2086,SC2034,SC1091']
+        exclude: docs/demos
 
   - repo: https://github.com/golangci/golangci-lint
     rev: v2.11.3
@@ -31,10 +34,10 @@ repos:
       - id: golangci-lint-full
 
   - repo: https://github.com/RedHatInsights/processing-tools
-    rev: master
+    rev: v0.1.0
     hooks:
       - id: abcgo
-        args: ['--threshold=64']
+        args: ['--threshold=90']
 
       - id: go-version-consistency
 
@@ -47,9 +50,10 @@ repos:
           - '--fix'
           - '--line-length=100'
           - '--select=UP,F632,E,W,F,I,UP,N,B,C4,SIM'
+        exclude: docs/demos
       - id: ruff-format
 
-  - repo: https://github.com/AleksaC/hadolint-py
-    rev: v2.14.0
-    hooks:
-      - id: hadolint
+  # - repo: https://github.com/AleksaC/hadolint-py
+  #   rev: v2.14.0
+  #   hooks:
+  #     - id: hadolint

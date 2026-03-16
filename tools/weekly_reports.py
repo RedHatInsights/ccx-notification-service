@@ -46,7 +46,8 @@ def weekly_reports(c):
         with c.loop("iterate over all results"):
             with service.filter("new rules", "total_risk_threshold"):
                 c.note(
-                    "currently any new rule will be reported,\\nbut filtering can be changed in future"
+                    "currently any new rule will be reported,\\n"
+                    "but filtering can be changed in future"
                 )
                 c.ret("filtered\\nrules")
             with c.group("At least one rule was found"):

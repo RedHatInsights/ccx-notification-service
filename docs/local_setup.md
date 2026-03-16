@@ -76,7 +76,7 @@ The idea is:
 3. Start the insights-content-service
 4. Launch the `ccx-notification-service`. It should retrieve the rules content, and the info from the PostgreSQL database, and publish the corresponding notifications to the configured topic.
 
-So it is necessary to clone the rest of the repositories before using the `ccx-notification-service`. 
+So it is necessary to clone the rest of the repositories before using the `ccx-notification-service`.
 
 ### Insights results aggregator data and utils
 
@@ -100,7 +100,7 @@ Clone [insights-content-service](https://github.com/RedHatInsights/insights-cont
 
 ```
 INSIGHTS_CONTENT_SERVICE_CONFIG_FILE=/path/to/insights-content-service/config-devel.toml ./insights-content-service
-``` 
+```
 
 This service will be consumed by `ccx-notification-service` just for getting the templates.
 
@@ -146,7 +146,7 @@ That's it. You will still need the insights-content-service and Kafka to be runn
 
 * Make sure to read the contents of `config-devel.toml` at every repositories as it has all the configuration about the connections to the containers (database access, topics, other services endpoints...).
 
-* If you get stuck, you can always drop the tables from the database using 
+* If you get stuck, you can always drop the tables from the database using
 ```
 CCX_NOTIFICATION_WRITER_CONFIG_FILE=/path/to/ccx-notification-writer/config-devel.toml ./ccx-notification-writer -db-drop-tables
 ```
@@ -159,4 +159,3 @@ When the tests are launched, the `config-devel.toml` file is used. So for the te
 - `insights-content-service` on `localhost:8082`
 - `PostgreSQL` on `localhost:5432` with a database named `notification`
 - `Prometheus Push Gateway` on `localhost:9091`
-
