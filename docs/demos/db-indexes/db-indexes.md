@@ -94,7 +94,7 @@ Dtto for `DELETE` operations
 DELETE
   FROM new_reports
  WHERE org_id = $1
-   AND updated_at < NOW() - $2::INTERVAL 
+   AND updated_at < NOW() - $2::INTERVAL
 ```
 
 ```sql
@@ -114,7 +114,7 @@ DELETE
 
 ```
 notification=# EXPLAIN ANALYZE SELECT org_id, account_number, cluster, kafka_offset, updated_at FROM new_reports ORDER BY updated_at;
-                                                  QUERY PLAN                                                  
+                                                  QUERY PLAN
 --------------------------------------------------------------------------------------------------------------
  Sort  (cost=7.01..7.01 rows=1 width=172) (actual time=0.086..0.089 rows=12 loops=1)
    Sort Key: updated_at
@@ -157,7 +157,7 @@ CREATE INDEX idx_notified_at_desc ON reported USING btree (notified_at DESC);
 
 ```
 SELECT report, updated_at FROM new_reports WHERE org_id = 1 AND cluster = '11111111-1111-1111-1111-111111111111' ORDER BY updated_at DESC LIMIT 1;
-                                                    QUERY PLAN                                                    
+                                                    QUERY PLAN
 ------------------------------------------------------------------------------------------------------------------
  Limit  (cost=7.19..7.19 rows=1 width=40) (actual time=0.061..0.062 rows=1 loops=1)
    ->  Sort  (cost=7.19..7.19 rows=1 width=40) (actual time=0.059..0.059 rows=1 loops=1)
@@ -180,7 +180,7 @@ CREATE INDEX idx_updated_at_desc ON reported USING btree (updated_at ASC);
 ```
 EXPLAIN ANALYZE
 SELECT org_id, account_number, cluster, updated_at, 0 FROM reported WHERE updated_at < NOW() - '0 days'::INTERVAL ORDER BY updated_at;
-                                               QUERY PLAN                                                
+                                               QUERY PLAN
 ---------------------------------------------------------------------------------------------------------
  Sort  (cost=1.08..1.08 rows=3 width=57) (actual time=0.024..0.025 rows=3 loops=1)
    Sort Key: updated_at
@@ -191,4 +191,3 @@ SELECT org_id, account_number, cluster, updated_at, 0 FROM reported WHERE update
  Execution time: 0.045 ms
 (7 rows)
 ```
-

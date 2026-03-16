@@ -116,7 +116,7 @@ Table as live entity in the system
     - well it depends how we look at it
     - each hour, approximately 65000 × 4 = 260000 reports are created/deleted
     - a lot in terms of changed MB/GB
-    - OTOH it is just 0.52% of the whole table 
+    - OTOH it is just 0.52% of the whole table
 
 After one batch run of CCX Notification Service
 -----------------------------------------------
@@ -168,7 +168,7 @@ rows=15677300 loops=3)
                  ^^^^^^^^^^^^
 ```
 
-- one minute just to retrieve number of records!? 
+- one minute just to retrieve number of records!?
 
 After vacuuming
 ---------------

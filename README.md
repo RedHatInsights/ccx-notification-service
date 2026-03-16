@@ -110,7 +110,7 @@ Configuration is described
 
 ## Usage
 
-Provided a valid configuration, you can start the service with `./ccx-notification-service --instant-reports` 
+Provided a valid configuration, you can start the service with `./ccx-notification-service --instant-reports`
 
 ### All command line options
 
