@@ -1,6 +1,6 @@
 SHELL := /bin/bash
 
-.PHONY: default clean build build-cover build-test fmt lint shellcheck abcgo style run test cover license before_commit bdd_tests help godoc install_docgo install_addlicense
+.PHONY: default clean build build-cover lint shellcheck abcgo style run gen-mocks test build-test profiler benchmark cover coverage license bdd_tests bdd_tests_mock before_commit help function_list godoc install_docgo install_addlicense
 
 SOURCES:=$(shell find . -name '*.go')
 BINARY:=ccx-notification-service
@@ -19,13 +19,9 @@ build-cover:	${SOURCES}  ## Build binary with code coverage detection support
 ${BINARY}: ${SOURCES}
 	./build.sh
 
-fmt: ## Run go formatting
-	@echo "Running go formatting"
-	golangci-lint fmt
-
 lint: ## Run go liting
 	@echo "Running go linting"
-	golangci-lint run --fix
+	pre-commit run golangci-lint-full --all-files
 
 shellcheck: ## Run shellcheck
 	pre-commit run shellcheck --all-files
@@ -33,8 +29,7 @@ shellcheck: ## Run shellcheck
 abcgo: ## Run ABC metrics checker
 	pre-commit run abcgo --all-files
 
-style: shellcheck abcgo ## Run all the formatting related commands (fmt, vet, lint, cyclo) + check shell scripts
-	pre-commit run golangci-lint-full --all-files
+style: shellcheck abcgo lint ## Run all the formatting and styling related commands
 
 run: ${BINARY} ## Build the project and executes the binary
 	./$^
