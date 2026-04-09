@@ -30,8 +30,6 @@ def plot_results(filename, title, show_graph):
         # And open this file as CSV
         csv_reader = csv.reader(csv_input)
 
-        rows = 0
-
         # Read all rows from the provided CSV file
         # and transform benchmark name into readable form
         data = [
