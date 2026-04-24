@@ -15,7 +15,7 @@ require (
 	github.com/openshift-online/ocm-sdk-go v0.1.499
 	github.com/prometheus/client_golang v1.23.2
 	github.com/redhatinsights/app-common-go v1.6.9
-	github.com/rs/zerolog v1.35.0
+	github.com/rs/zerolog v1.35.1
 	github.com/spf13/viper v1.21.0
 	github.com/stretchr/testify v1.11.1
 	github.com/xdg/scram v1.0.5
