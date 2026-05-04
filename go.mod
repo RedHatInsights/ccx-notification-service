@@ -12,7 +12,7 @@ require (
 	github.com/google/uuid v1.6.0
 	github.com/lib/pq v1.12.3
 	github.com/mattn/go-sqlite3 v2.0.3+incompatible
-	github.com/openshift-online/ocm-sdk-go v0.1.499
+	github.com/openshift-online/ocm-sdk-go v0.1.500
 	github.com/prometheus/client_golang v1.23.2
 	github.com/redhatinsights/app-common-go v1.6.9
 	github.com/rs/zerolog v1.35.0
@@ -82,8 +82,8 @@ require (
 	github.com/munnerz/goautoneg v0.0.0-20191010083416-a7dc8b61c822 // indirect
 	github.com/oasdiff/yaml v0.0.9 // indirect
 	github.com/oasdiff/yaml3 v0.0.12 // indirect
-	github.com/openshift-online/ocm-api-model/clientapi v0.0.453 // indirect
-	github.com/openshift-online/ocm-api-model/model v0.0.453 // indirect
+	github.com/openshift-online/ocm-api-model/clientapi v0.0.454 // indirect
+	github.com/openshift-online/ocm-api-model/model v0.0.454 // indirect
 	github.com/pelletier/go-toml/v2 v2.3.0 // indirect
 	github.com/perimeterx/marshmallow v1.1.5 // indirect
 	github.com/pierrec/lz4/v4 v4.1.26 // indirect
