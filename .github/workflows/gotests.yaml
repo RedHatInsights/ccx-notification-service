@@ -1,16 +1,8 @@
 name: Go tests
 
 on:
-  push:
-    branches: ["master"]
   pull_request:
-
-permissions:
-  contents: read
 
 jobs:
   gotests:
-    uses: RedHatInsights/processing-tools/.github/workflows/gotests.yaml@master
-    with:
-      coverage_threshold: 0
-    secrets: inherit
+    uses: RedHatInsights/processing-tools/.github/workflows/gotests.yaml@v0.4.1
