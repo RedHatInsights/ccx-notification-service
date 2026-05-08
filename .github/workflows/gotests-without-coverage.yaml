@@ -1,0 +1,17 @@
+name: Go tests
+
+on:
+  pull_request:
+  push:
+    branches: [main, master]
+
+jobs:
+  gotests:
+    uses: RedHatInsights/processing-tools/.github/workflows/gotests.yaml@v0.4.3
+{% if coverage_threshold is defined %}
+    with:
+      coverage_threshold: {{ coverage_threshold }}
+{% endif %}
+    secrets:{% raw %}
+      CODECOV_TOKEN: ${{ secrets.CODECOV_TOKEN }}
+{% endraw %}
