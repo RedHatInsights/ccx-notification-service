@@ -13,7 +13,7 @@ The service reads from the notification database (populated by `ccx-notification
 
 ## Repository Structure
 
-```
+```text
 ccx-notification-service/
 ├── cmd/ccx-notification-service/   # Entry point (main.go) and CLI flag parsing (cli.go)
 ├── conf/                           # Configuration loading, TOML parsing, Clowder integration
