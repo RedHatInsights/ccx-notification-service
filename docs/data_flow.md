@@ -17,8 +17,9 @@ The "end-to-end" data flow is described there (including Notification Writer ser
 1. `ccx-notification-writer` service stores insights results into AWS RDS database into `new_reports` table.
 1. Content of that table is consumed by `ccx-notification-service` periodically.
 1. Newest results from `new_reports` table is compared with results stored in `reported` table. The records used for the comparison depend on the configured cool down time.
-1. If changes (new issues) has been found, notification message is sent into Kafka topic named `platform.notifications.ingress`. The expected format of the message can be found [here](https://github.com/RedHatInsights/insights-schemas-java/blob/master/insights-notification-schemas-java/src/main/resources/schemas/Action.json)
-1. New issues are also sent to Service Log via REST API. Because Service Log accepts description and content to be represented in Markdown, issues are "rendered" first by [Insights Content Template Renderer](https://github.com/RedHatInsights/insights-content-template-renderer). To use the Service Log API, the `ccx-notification-service` uses the credentials stored in [vault](https://vault.devshift.net/ui/vault/secrets/insights/show/secrets/insights-prod/ccx-data-pipeline-prod/ccx-notification-service-auth).
+1. If changes (new issues) have been found, they are sent to one of two targets depending on the deployment configuration (only one can be active at a time):
+   - **Kafka**: a notification message is sent to the `platform.notifications.ingress` topic. The expected format of the message can be found in the [Action schema](https://github.com/RedHatInsights/insights-schemas-java/blob/master/insights-notification-schemas-java/src/main/resources/schemas/Action.json)
+   - **Service Log**: issues are sent via REST API. Because Service Log accepts description and content in Markdown, issues are "rendered" first by [Insights Content Template Renderer](https://github.com/RedHatInsights/insights-content-template-renderer). To use the Service Log API, the `ccx-notification-service` uses the credentials stored in [vault](https://vault.devshift.net/ui/vault/secrets/insights/show/secrets/insights-prod/ccx-data-pipeline-prod/ccx-notification-service-auth).
 1. The newest result is stored into `reported` table to be used in the next `ccx-notification-service` iteration.
 
 ### Remarks
@@ -45,8 +46,9 @@ See steps 9 to 12 of the [data flow section](#data-flow)
 1. The latest entry for each distinct cluster in the `new_reports` table is consumed by the `ccx-notification-service`.
 1. Results stored in `reported` table within the cool down time are retrieved. Therefore all the reported issues that are not older than the configured cool down are cached in a `previouslyReported` map by the service in each iteration.
 1. When checking for new issues in the report, the `ccx-notification-service` looks up each issue in the `previouslyReported` map, and if found, that issue is considered to still be in cool down and is not processed further. If not found, the processing of the issue continues.
-1. If changes (new issues) has been found between the previous report and the new one, a notification message is sent into Kafka topic named `platform.notifications.ingress`. The expected format of the message can be found [here](https://core-platform-apps.pages.redhat.com/notifications-docs/dev/user-guide/send-notification.html#_kafka).
-1. New issues is also sent to Service Log via REST API. To use the Service Log API, the `ccx-notification-service` uses the credentials stored in [vault](https://vault.devshift.net/ui/vault/secrets/insights/show/secrets/insights-prod/ccx-data-pipeline-prod/ccx-notification-service-auth).
+1. If changes (new issues) have been found between the previous report and the new one, they are sent to one of two targets depending on the deployment configuration (only one can be active at a time):
+   - **Kafka**: a notification message is sent to the `platform.notifications.ingress` topic. The expected format of the message can be found in the [Notifications docs](https://inscope.corp.redhat.com/docs/default/component/notifications-app).
+   - **Service Log**: issues are sent via REST API. To use the Service Log API, the `ccx-notification-service` uses the credentials stored in [vault](https://vault.devshift.net/ui/vault/secrets/insights/show/secrets/insights-prod/ccx-data-pipeline-prod/ccx-notification-service-auth).
 1. The newest result is stored into `reported` table to be used in the next `ccx-notification-service` iteration.
 
 ### Configuring the cool down mechanism
@@ -70,19 +72,13 @@ In case new services are supported in the future, the corresponding code would n
 
 ![sequence_diagram_service_log.png](images/sequence_diagram_service_log.png)
 
-[Sequence diagram, full scale](images/sequence_diagram._service_logpng)
+[Sequence diagram, full scale](images/sequence_diagram_service_log.png)
 
 ## Sequence diagram for instant reports
 
 ![instant_reports.png](images/instant_reports.png)
 
 [Full scale](images/instant_reports.png)
-
-## Sequence diagram for weekly reports
-
-![weekly_reports.png](images/weekly_reports.png)
-
-[Full scale](images/weekly_reports.png)
 
 ## Sequence diagram for CCX Notification Writer service
 

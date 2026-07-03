@@ -6,7 +6,7 @@ nav_order: 4
 # Clowder configuration
 
 As the rest of the services deployed in the Console Red Hat platform, the
-CCX Notification Writer should update its configuration using the relevant
+CCX Notification Service should update its configuration using the relevant
 values extracted from the Clowder configuration file.
 
 For a general overview about Clowder configuration file and how it is used

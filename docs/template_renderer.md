@@ -6,14 +6,14 @@ nav_order: 7
 
 # Template renderer
 
-Messages (recommendations) that are send to ServiceLog are based on templates
+Messages (recommendations) that are sent to ServiceLog are based on templates
 read from [Content
 Service](https://github.com/RedHatInsights/insights-content-service) that are
 interpolated by data produced by CCX Data Pipeline (based on OCP rules). The
-interpolation (applying data to template) are done within Template renderer
-service that is accessible via REST API.
+interpolation (applying data to template) is done within the Template renderer
+service that is accessible via REST API. Note that the template renderer is only used for the ServiceLog path, not for Kafka notifications.
 
-The [/rendered-reports](https://github.com/RedHatInsights/insights-content-template-renderer#post-rendered-reports) REST API endpoint is used
+The [rendered_reports](https://github.com/RedHatInsights/insights-content-template-renderer#post-rendered-reports) REST API endpoint is used
 
 Two fields needs to be filled using the data mentioned above:
 

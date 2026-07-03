@@ -109,7 +109,7 @@ to use it.
     last_name       string
     service_name    string
     severity        stringEnum:
-                    [ Debug, Info, Warning, Error, Fatal ]
+                    [ Info, Warning, Major, Critical ]
     subscription_id string
     summary         string
     Timestamp       string($date-time)
@@ -135,7 +135,7 @@ to use it.
   "internal_only": false,
   "last_name": "string",
   "service_name": "string",
-  "severity": "Debug",
+  "severity": "Info",
   "subscription_id": "string",
   "summary": "string",
   "timestamp": "2022-07-11T16:44:27.146Z",
@@ -157,5 +157,8 @@ the following subset of fields (each entry is associated with a single report):
   where more detailed information about the rule can be found.
 - `service_name` is set to `"CCX Notification Service"` for all entries created by this service
 - `cluster_uuid` is set to UUID of the cluster related to the report associated with created entry
+- `created_by` is set to the value of `created_by` from the service_log configuration
+- `username` is set to the value of `username` from the service_log configuration
+- `severity` is mapped from the rule's total risk using the mapping described above (Low=Info, Moderate=Warning, Important=Major, Critical=Critical)
 
 More information about the [template renderer can be found here](template_renderer.md)).
