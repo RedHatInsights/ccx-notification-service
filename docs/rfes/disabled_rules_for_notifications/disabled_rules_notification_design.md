@@ -154,9 +154,9 @@ Both paths share the same filtering pipeline, and the disabled rules check will 
 
 ## 3. Current Flow
 
-![Current Notification Processing Flow](docs/disabled_rules_current_flow.png)
+![Current Notification Processing Flow](./disabled_rules_current_flow.png)
 
-PlantUML source: [docs/disabled_rules_current_flow.puml](docs/disabled_rules_current_flow.puml)
+PlantUML source: [docs/disabled_rules_current_flow.puml](./disabled_rules_current_flow.puml)
 
 ## 4. Proposed Changes
 
@@ -232,9 +232,9 @@ The flag should be checked early in the `start` function (`differ.go:864`). If s
 
 ## 5. Proposed Flow
 
-![Proposed Notification Processing Flow](docs/disabled_rules_proposed_flow.png)
+![Proposed Notification Processing Flow](./disabled_rules_proposed_flow.png)
 
-PlantUML source: [docs/disabled_rules_proposed_flow.puml](docs/disabled_rules_proposed_flow.puml)
+PlantUML source: [docs/disabled_rules_proposed_flow.puml](./disabled_rules_proposed_flow.puml)
 
 ## 6. How Re-enabling Works
 
