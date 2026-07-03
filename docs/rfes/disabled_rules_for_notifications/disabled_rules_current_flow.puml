@@ -1,0 +1,41 @@
+@startuml
+skinparam backgroundColor white
+skinparam sequenceMessageAlign center
+title Current Notification Processing Flow
+
+participant "new_reports" as NR
+participant "NotificationService" as NS
+participant "reported" as R
+participant "Kafka / ServiceLog" as K
+
+== Job Start (--instant-reports) ==
+
+NS -> NR : ReadClusterList()\nSELECT DISTINCT ON (cluster)\nFROM new_reports
+NR --> NS : cluster list
+
+NS -> R : ReadLastNotifiedRecordForClusterList()\nWHERE state=1\nAND notified_at > NOW() - cooldown
+R --> NS : previously reported map\n(state=1 records only)
+
+== Per-Cluster Processing ==
+
+loop For each cluster
+    NS -> NR : ReadReportForClusterAtTime()
+    NR --> NS : full JSON report
+
+    note over NS
+      For each rule in report:
+      1. Total risk filter
+      2. ShouldNotify (cooldown vs state=1)
+      3. If passes, add to events
+    end note
+
+    alt Events > 0
+        NS -> K : Send notification
+        NS -> R : INSERT state=1\nfull original report (unfiltered)
+    else Events = 0
+        NS -> R : INSERT state=2\nfull original report (unfiltered)
+    end
+end
+
+== Job End ==
+@enduml
