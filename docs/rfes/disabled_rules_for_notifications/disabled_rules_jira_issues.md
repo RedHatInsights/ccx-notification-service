@@ -105,8 +105,8 @@ A reusable agentic workflow for implementing Python BDD step definitions in insi
 
 **Phase 1: Implement.** Agent reads the Jira issue, the feature files that use the new steps, and existing step definitions for patterns. Writes the new step definitions in Python.
 
-**Phase 2: Verify.** Independent agent checks that step names match exactly what the feature files expect, runs `make code-style` and `make ruff`, and verifies the steps are importable (no syntax errors or missing imports).  
-  
+**Phase 2: Verify.** Independent agent checks that step names match exactly what the feature files expect, runs `make code-style` and `make ruff`, and verifies the steps are importable (no syntax errors or missing imports).
+
 **Phase 3: Run the tests.** After all the verifying steps, the tests are run for the final time and reports the changes in a human-friendly way.
 
 **Failure handling:**
@@ -719,8 +719,8 @@ No technical internals, no code references, no database schemas. Write it from t
 
 **Labels**: `obsint-processing`, `repo:iqe-ccx-plugin`
 
-###   
-  
+###
+
 Goal
 
 This is a planning and research task. The goal is to figure out what IQE integration tests we need for the disabled rules feature and create Jira issues for each one.
@@ -747,7 +747,7 @@ Feel free to adapt it to whatever works best for you.
     * The design doc: `TBD`
     * The BDD feature files: `<your-local-path>/insights-behavioral-spec/features/ccx-notification-service/notifications_disabled_rules.feature` and `service_log_disabled_rules.feature`
     * The existing IQE notification tests: `iqe_ccx/tests/test_notifications.py`
-    
+
 5. Ask Claude to propose which IQE tests should be added or modified, and go through its suggestions together. Some BDD scenarios will map directly to IQE tests, while others might need a different approach because of how the real environments work.
 6. Once you're happy with the first draft (it’s expected there will be multiple revisions, so let’s start and iterate), you can create follow-up Jira issues for the actual test implementations. Each issue might reference any relevant BDD scenarios or design doc sections so that whoever picks it up has the full context.
 
