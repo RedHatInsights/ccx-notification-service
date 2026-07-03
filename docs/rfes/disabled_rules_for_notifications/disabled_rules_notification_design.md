@@ -108,7 +108,7 @@ CREATE TABLE rule_disable (
 
 The core logic lives in `processReportsByCluster` (`differ.go:561`). Simplified:
 
-```
+```text
 For each cluster from ReadClusterList() (reads from new_reports):
     1. Read report from new_reports (ReadReportForClusterAtTime)
     2. Deserialize JSON into individual rule items
@@ -181,7 +181,7 @@ We only need the key columns for lookups. Timestamps, user IDs, and justificatio
 
 In the per-rule processing loop, add a disabled check **before** the total risk filter:
 
-```
+```text
 For each rule:
     1. Is this rule disabled? (check in-memory maps for cluster_rule_toggle AND rule_disable)
        If yes, skip entirely
