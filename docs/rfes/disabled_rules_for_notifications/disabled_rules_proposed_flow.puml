@@ -1,0 +1,64 @@
+@startuml
+skinparam backgroundColor white
+skinparam sequenceMessageAlign center
+title Proposed Notification Processing Flow (with Disabled Rules)
+
+participant "new_reports" as NR
+participant "NotificationService" as NS
+participant "Aggregator DB" as AGG
+participant "reported" as R
+participant "Kafka / ServiceLog" as K
+
+== Job Start (--instant-reports) ==
+
+group Aggregator DB (short-lived, blocking)
+    NS -> AGG : Connect (read-only)
+    NS -> AGG : SELECT cluster_id, rule_id, error_key\nFROM cluster_rule_toggle\nWHERE disabled = 1
+    AGG --> NS : per-cluster disabled rules
+    NS -> AGG : SELECT org_id, rule_id, error_key\nFROM rule_disable
+    AGG --> NS : org-wide acked rules
+    NS -> AGG : Disconnect
+end
+
+note over NS
+  Store disabled rules
+  in hash maps (in-memory)
+end note
+
+NS -> NR : ReadClusterList()
+NR --> NS : cluster list
+
+NS -> R : ReadLastNotifiedRecordForClusterList()\nWHERE state=1\nAND notified_at > NOW() - cooldown
+R --> NS : previously reported map\n(state=1 records only)
+
+== Per-Cluster Processing ==
+
+loop For each cluster
+    NS -> NR : ReadReportForClusterAtTime()
+    NR --> NS : full JSON report
+
+    note over NS
+      For each rule in report:
+      1. Check disabled rules map (NEW)
+         If disabled, skip entirely
+      2. Total risk filter
+      3. ShouldNotify (cooldown vs state=1)
+      4. If passes, add to events
+    end note
+
+    note over NS
+      Build filtered report (NEW)
+      Remove disabled rules from
+      the report JSON before storing
+    end note
+
+    alt Events > 0
+        NS -> K : Send notification
+        NS -> R : INSERT state=1\nfiltered report
+    else Events = 0
+        NS -> R : INSERT state=2\nfiltered report
+    end
+end
+
+== Job End ==
+@enduml
