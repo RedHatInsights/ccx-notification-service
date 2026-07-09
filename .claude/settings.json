@@ -10,21 +10,17 @@
 
       "mcp__atlassian__getJiraIssue",
 
-      "Bash(make *)",
-      "Bash(go *)",
       "Bash(git diff*)",
       "Bash(git status*)",
       "Bash(git log*)",
       "Bash(git rev-parse*)",
       "Bash(git branch*)",
-      "Bash(git show*)",
-
-      "Bash(./ccx-notification-service *)"
+      "Bash(git show*)"
     ]
   },
   "sandbox": {
     "enabled": false,
-    "autoAllow": true,
+    "autoAllowBashIfSandboxed": true,
     "failIfUnavailable": false,
     "allowUnsandboxedCommands": false,
     "filesystem": {
