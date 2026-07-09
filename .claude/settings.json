@@ -1,0 +1,66 @@
+{
+  "permissions": {
+    "deny": [
+      "Bash(sudo *)",
+      "Bash(rm -rf *)",
+      "Bash(rm -fr *)"
+    ],
+    "allow": [
+      "Read",
+      "Edit",
+      "Write",
+
+      "mcp__atlassian__getJiraIssue",
+
+      "Bash(make *)",
+      "Bash(go *)",
+      "Bash(git diff*)",
+      "Bash(git status*)",
+      "Bash(git log*)",
+      "Bash(git rev-parse*)",
+      "Bash(git branch*)",
+      "Bash(git show*)",
+      
+      "Bash(./ccx-notification-service *)"
+    ]
+  },
+  "sandbox": {
+    "enabled": false,
+    "autoAllow": true,
+    "failIfUnavailable": false,
+    "allowUnsandboxedCommands": false,
+    "filesystem": {
+      "allowWrite": [
+        "~/go",
+        "~/.cache"
+      ],
+      "denyRead": [
+        "~/.ssh",
+        "~/.gnupg",
+        "~/.aws",
+        "~/.config/gh",
+        "~/.git-credentials"
+      ]
+    },
+    "credentials": {
+      "envVars": [
+        { "name": "GITHUB_TOKEN", "mode": "deny" },
+        { "name": "GH_TOKEN", "mode": "deny" },
+        { "name": "GITLAB_TOKEN", "mode": "deny" },
+        { "name": "AWS_ACCESS_KEY_ID", "mode": "deny" },
+        { "name": "AWS_SECRET_ACCESS_KEY", "mode": "deny" },
+        { "name": "SSH_AUTH_SOCK", "mode": "deny" },
+        { "name": "KUBECONFIG", "mode": "deny" }
+      ]
+    },
+    "network": {
+      "allowedDomains": [
+        "proxy.golang.org",
+        "sum.golang.org",
+        "storage.googleapis.com",
+        "github.com",
+        "objects.githubusercontent.com"
+      ]
+    }
+  }
+}
