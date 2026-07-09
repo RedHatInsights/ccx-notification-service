@@ -1,9 +1,7 @@
 {
   "permissions": {
     "deny": [
-      "Bash(sudo *)",
-      "Bash(rm -rf *)",
-      "Bash(rm -fr *)"
+      "Bash(sudo *)"
     ],
     "allow": [
       "Read",
@@ -20,7 +18,7 @@
       "Bash(git rev-parse*)",
       "Bash(git branch*)",
       "Bash(git show*)",
-      
+
       "Bash(./ccx-notification-service *)"
     ]
   },
