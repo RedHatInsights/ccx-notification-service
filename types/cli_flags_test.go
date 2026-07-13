@@ -1,4 +1,4 @@
-// Copyright 2024, 2025 Red Hat, Inc
+// Copyright 2024, 2025, 2026 Red Hat, Inc
 //
 // Licensed under the Apache License, Version 2.0 (the "License");
 // you may not use this file except in compliance with the License.
@@ -21,24 +21,18 @@ import (
 	"github.com/stretchr/testify/assert"
 )
 
-/*
-TestCliFlagsIgnoreDisabledRulesDefaultValue checks that the default value
-
-	of IgnoreDisabledRules in a zero-value CliFlags is false, matching the
-	spec requirement that the flag defaults to false.
-*/
+// TestCliFlagsIgnoreDisabledRulesDefaultValue checks that the default value
+// of IgnoreDisabledRules in a zero-value CliFlags is false, matching the
+// spec requirement that the flag defaults to false.
 func TestCliFlagsIgnoreDisabledRulesDefaultValue(t *testing.T) {
 	var cliFlags types.CliFlags
 	assert.False(t, cliFlags.IgnoreDisabledRules,
 		"IgnoreDisabledRules should default to false when CliFlags is zero-initialized")
 }
 
-/*
-TestCliFlagsIgnoreDisabledRulesCanBeEnabled checks that IgnoreDisabledRules
-
-	can be set to true, as required when the flag is passed on the command
-	line.
-*/
+// TestCliFlagsIgnoreDisabledRulesCanBeEnabled checks that IgnoreDisabledRules
+// can be set to true, as required when the flag is passed on the command
+// line.
 func TestCliFlagsIgnoreDisabledRulesCanBeEnabled(t *testing.T) {
 	cliFlags := types.CliFlags{
 		IgnoreDisabledRules: true,
@@ -47,11 +41,8 @@ func TestCliFlagsIgnoreDisabledRulesCanBeEnabled(t *testing.T) {
 		"IgnoreDisabledRules should be true when explicitly set")
 }
 
-/*
-TestCliFlagsIgnoreDisabledRulesDoesNotAffectOtherFlags checks that
-
-	setting IgnoreDisabledRules does not interfere with other CLI flags.
-*/
+// TestCliFlagsIgnoreDisabledRulesDoesNotAffectOtherFlags checks that
+// setting IgnoreDisabledRules does not interfere with other CLI flags.
 func TestCliFlagsIgnoreDisabledRulesDoesNotAffectOtherFlags(t *testing.T) {
 	cliFlags := types.CliFlags{
 		InstantReports:      true,

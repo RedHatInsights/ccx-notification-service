@@ -25,12 +25,9 @@ import (
 	"github.com/stretchr/testify/require"
 )
 
-/*
-TestSetupCliFlagsIgnoreDisabledRulesRegistered checks that the
-
-	--ignore-disabled-rules flag is registered and its default value is
-	false.
-*/
+// TestSetupCliFlagsIgnoreDisabledRulesRegistered checks that the
+// --ignore-disabled-rules flag is registered and its default value is
+// false.
 func TestSetupCliFlagsIgnoreDisabledRulesRegistered(t *testing.T) {
 	// Reset global flag.CommandLine so that setupCliFlags can register
 	// flags cleanly without conflicting with previously registered flags
@@ -42,11 +39,8 @@ func TestSetupCliFlagsIgnoreDisabledRulesRegistered(t *testing.T) {
 		"IgnoreDisabledRules should default to false")
 }
 
-/*
-TestSetupCliFlagsIgnoreDisabledRulesSetTrue checks that passing
-
-	--ignore-disabled-rules on the command line sets the flag to true.
-*/
+// TestSetupCliFlagsIgnoreDisabledRulesSetTrue checks that passing
+// --ignore-disabled-rules on the command line sets the flag to true.
 func TestSetupCliFlagsIgnoreDisabledRulesSetTrue(t *testing.T) {
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
@@ -60,11 +54,8 @@ func TestSetupCliFlagsIgnoreDisabledRulesSetTrue(t *testing.T) {
 		"IgnoreDisabledRules should be true when --ignore-disabled-rules is passed")
 }
 
-/*
-TestSetupCliFlagsIgnoreDisabledRulesDescription checks that the
-
-	--ignore-disabled-rules flag has the expected usage description.
-*/
+// TestSetupCliFlagsIgnoreDisabledRulesDescription checks that the
+// --ignore-disabled-rules flag has the expected usage description.
 func TestSetupCliFlagsIgnoreDisabledRulesDescription(t *testing.T) {
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
@@ -82,12 +73,9 @@ func TestSetupCliFlagsIgnoreDisabledRulesDescription(t *testing.T) {
 		"Flag description should match the spec")
 }
 
-/*
-TestSetupCliFlagsIgnoreDisabledRulesVisibleInHelp checks that the
-
-	--ignore-disabled-rules flag is visible when iterating over all
-	registered flags (as --help does).
-*/
+// TestSetupCliFlagsIgnoreDisabledRulesVisibleInHelp checks that the
+// --ignore-disabled-rules flag is visible when iterating over all
+// registered flags (as --help does).
 func TestSetupCliFlagsIgnoreDisabledRulesVisibleInHelp(t *testing.T) {
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
@@ -107,11 +95,8 @@ func TestSetupCliFlagsIgnoreDisabledRulesVisibleInHelp(t *testing.T) {
 		"--ignore-disabled-rules should be visible in --help output (registered flags)")
 }
 
-/*
-TestSetupCliFlagsAllExistingFlagsStillRegistered checks that adding
-
-	the new flag did not remove any previously existing flags.
-*/
+// TestSetupCliFlagsAllExistingFlagsStillRegistered checks that adding
+// the new flag did not remove any previously existing flags.
 func TestSetupCliFlagsAllExistingFlagsStillRegistered(t *testing.T) {
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
@@ -142,11 +127,8 @@ func TestSetupCliFlagsAllExistingFlagsStillRegistered(t *testing.T) {
 	}
 }
 
-/*
-TestSetupCliFlagsIgnoreDisabledRulesDefaultFalseExplicit checks that
-
-	explicitly passing --ignore-disabled-rules=false keeps the value false.
-*/
+// TestSetupCliFlagsIgnoreDisabledRulesDefaultFalseExplicit checks that
+// explicitly passing --ignore-disabled-rules=false keeps the value false.
 func TestSetupCliFlagsIgnoreDisabledRulesDefaultFalseExplicit(t *testing.T) {
 	flag.CommandLine = flag.NewFlagSet(os.Args[0], flag.ContinueOnError)
 
