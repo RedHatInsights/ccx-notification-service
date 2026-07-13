@@ -1,11 +1,11 @@
-// Test script for specContext construction from go-implement.js lines 321-344.
+// Test script for specContext construction from go-implement.js
 //
 // The production code uses a specSections array with conditional .push() calls
 // and .join('\n\n') to assemble the specification context injected into every
 // agent prompt.
 
 /**
- * Extracted from go-implement.js lines 321-344.
+ * Extracted from go-implement.js
  * Builds the spec context markdown string that gets injected into every agent prompt.
  *
  * @param {string} issueKey - Jira issue key, e.g. "CCXDEV-12345"

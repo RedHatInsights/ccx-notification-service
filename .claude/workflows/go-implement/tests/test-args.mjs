@@ -1,4 +1,4 @@
-// Test script for the args parsing logic from go-implement.js lines 260-282.
+// Test script for the args parsing logic from go-implement.js.
 //
 // Extracts the guard logic into a parseArgs() function, mocks log(),
 // and tests 12 input scenarios.
@@ -8,7 +8,7 @@
 // ---------------------------------------------------------------------------
 
 /**
- * Extracted args-parsing logic from go-implement.js lines 266-282.
+ * Extracted args-parsing logic from go-implement.js/
  * Variable names match the workflow exactly: issueKey, designDocPath,
  * bddPathsRaw, bddPaths.
  *
@@ -19,7 +19,6 @@
  *   returned - the early-return value ({ error }) if the function bailed out, else null
  */
 function parseArgs(args, log) {
-  // --- lines 266-272 ---
   let parsed
   try {
     parsed = typeof args === 'string' ? JSON.parse(args) : args
@@ -28,13 +27,11 @@ function parseArgs(args, log) {
     return { result: null, returned: { error: 'Invalid JSON args: ' + e.message } }
   }
 
-  // --- lines 274-277 ---
   if (!parsed || !parsed.issue) {
     log('Error: args.issue is required. Pass a Jira issue key (e.g., { "issue": "CCXDEV-12345" }).')
     return { result: null, returned: { error: 'args.issue is required - pass a Jira issue key like "CCXDEV-12345"' } }
   }
 
-  // --- lines 279-282 ---
   const issueKey = parsed.issue
   const designDocPath = parsed.designDoc || ''
   const bddPathsRaw = parsed.bddPaths || []
@@ -83,7 +80,7 @@ function runTest(testNum, description, testFn) {
 // Test cases
 // ---------------------------------------------------------------------------
 
-console.log('=== Testing go-implement.js args parsing (lines 260-282) ===')
+console.log('=== Testing go-implement.js args parsing ===')
 console.log('')
 
 // 1. args=undefined
