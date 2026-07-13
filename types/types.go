@@ -149,6 +149,7 @@ type CliFlags struct {
 	PerformOldReportsCleanup  bool
 	CleanupOnStartup          bool
 	Verbose                   bool
+	IgnoreDisabledRules       bool
 	MaxAge                    string
 }
 
