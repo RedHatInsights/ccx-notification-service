@@ -97,6 +97,7 @@ type ConfigStruct struct {
 	CloudWatchConf    logger.CloudWatchConfiguration    `mapstructure:"cloudwatch" toml:"cloudwatch"`
 	SentryLoggingConf logger.SentryLoggingConfiguration `mapstructure:"sentry" toml:"sentry"`
 	Storage           StorageConfiguration              `mapstructure:"storage" toml:"storage"`
+	AggregatorStorage StorageConfiguration              `mapstructure:"aggregator_storage" toml:"aggregator_storage"`
 	Kafka             KafkaConfiguration                `mapstructure:"kafka_broker" toml:"kafka_broker"`
 	ServiceLog        ServiceLogConfiguration           `mapstructure:"service_log" toml:"service_log"`
 	Dependencies      DependenciesConfiguration         `mapstructure:"dependencies" toml:"dependencies"`
@@ -315,6 +316,11 @@ func createURL(server, endpoint string) (string, error) {
 // GetStorageConfiguration returns storage configuration
 func GetStorageConfiguration(configuration *ConfigStruct) StorageConfiguration {
 	return configuration.Storage
+}
+
+// GetAggregatorStorageConfiguration returns aggregator storage configuration
+func GetAggregatorStorageConfiguration(configuration *ConfigStruct) StorageConfiguration {
+	return configuration.AggregatorStorage
 }
 
 // GetLoggingConfiguration returns logging configuration
