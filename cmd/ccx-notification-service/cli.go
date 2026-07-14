@@ -117,6 +117,17 @@ func showConfiguration(config *conf.ConfigStruct) {
 		Str("Parameters", storageConfig.PGParams).
 		Msg("Storage configuration")
 
+	aggregatorStorageConfig := conf.GetAggregatorStorageConfiguration(config)
+	log.Info().
+		Str("Driver", aggregatorStorageConfig.Driver).
+		Str("DB Name", aggregatorStorageConfig.PGDBName).
+		Str("Username", aggregatorStorageConfig.PGUsername). // password is omitted on purpose
+		Str("Host", aggregatorStorageConfig.PGHost).
+		Int("Port", aggregatorStorageConfig.PGPort).
+		Bool("LogSQLQueries", aggregatorStorageConfig.LogSQLQueries).
+		Str("Parameters", aggregatorStorageConfig.PGParams).
+		Msg("Aggregator storage configuration")
+
 	dependenciesConfig := conf.GetDependenciesConfiguration(config)
 	log.Info().
 		Str("Content server", dependenciesConfig.ContentServiceServer).
