@@ -40,6 +40,16 @@ pg_db_name = "notifications"
 pg_params = ""
 log_sql_queries = true
 
+[aggregator_storage]
+db_driver = "postgres"
+pg_username = "agg_user"
+pg_password = "agg_password"
+pg_host = "agg-host"
+pg_port = 5433
+pg_db_name = "aggregator"
+pg_params = "sslmode=require"
+log_sql_queries = false
+
 [logging]
 debug = true
 log_level = ""

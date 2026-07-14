@@ -60,6 +60,16 @@ pg_db_name = "notification" #provide in deployment env or as secret
 pg_params = "sslmode=disable"
 log_sql_queries = true
 
+[aggregator_storage]
+db_driver = "postgres"
+pg_username = "postgres" #provide in deployment env or as secret
+pg_password = "postgres" #provide in deployment env or as secret
+pg_host = "localhost" #provide in deployment env or as secret
+pg_port = 5432 #provide in deployment env or as secret
+pg_db_name = "aggregator" #provide in deployment env or as secret
+pg_params = "sslmode=disable"
+log_sql_queries = true
+
 [dependencies]
 content_server = "localhost:8082" #provide in deployment env or as secret
 content_endpoint = "/api/v1/content" #provide in deployment env or as secret
