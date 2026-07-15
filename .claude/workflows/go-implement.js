@@ -562,7 +562,7 @@ ${specContext}
 7. If a test fails, you may fix the test code. After 3 edit-and-rerun cycles on the same failing test, stop and add a description of what failed and why to the failures list. Keep the failing test in the file (do not delete it).
 8. If some tests pass and others could not be fixed, keep all tests, both passing and failing.
 9. Run \`make coverage\` to test the coverage. You should maintain or improve the coverage, but there might be uncoverable statements, check whether other test cases cover these scenarios or not.
-10. Run \`make license\` to add license headers to any new \`.go\` files. This must be last because earlier steps (gen-mocks, style fixes) may create new files.
+10. Ensure allowed test and mock files have license headers. Do not modify production files; report any missing production-file headers for Phase 1 to address.
 
 ## Constraints
 
