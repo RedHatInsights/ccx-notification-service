@@ -48,6 +48,7 @@ export const meta = {
     { title: 'Verify', detail: 'Adversarial review of the full diff against the specification' },
   ],
 }
+
 // ---------------------------------------------------------------------------
 // Cost estimation
 // ---------------------------------------------------------------------------
@@ -88,23 +89,23 @@ function formatCost(usd) {
 // ---------------------------------------------------------------------------
 // Agent feedback
 // ---------------------------------------------------------------------------
-// Collect and log feedback from all phases that returned results.
-// Each phase is instructed to give a `feedback` array with agent commentary
-// on the workflow / spec instructions themselves.
-function logFeedback(phases) {
-  // Object.entries converts { implement: ..., tests: ..., verify: ... } into
-  // an array of [name, result] pairs. flatMap collects feedback from each phase
-  // into a single list, prefixed with the phase name.
-  const feedbackLines = Object.entries(phases)
+// Collects feedback from all phases, logs it to the workflow progress output,
+// and returns a markdown section for displaySummary. Returns empty string if
+// no feedback was reported by any phase.
+function collectFeedback(phases) {
+  const items = Object.entries(phases)
     .flatMap(([phaseName, result]) => {
-      const items = (result && result.feedback) || []
-      return items.map(f => `[${phaseName}] ${f}`)
+      const feedback = (result && result.feedback) || []
+      return feedback.map(f => ({ phaseName, text: f }))
     })
-  if (feedbackLines.length) {
+  if (items.length) {
     log('')
     log('Agent feedback on workflow instructions:')
-    feedbackLines.forEach(f => log('  ' + f))
+    items.forEach(f => log('  [' + f.phaseName + '] ' + f.text))
   }
+  return items.length
+    ? '\n\n### Agent feedback on workflow instructions\n\n' + items.map(f => '- **[' + f.phaseName + ']** ' + f.text).join('\n')
+    : ''
 }
 
 // ---------------------------------------------------------------------------
@@ -181,6 +182,79 @@ const IMPLEMENT_SCHEMA = {
   },
 }
 
+// Phase 2 result: test files written, pass/fail status, and any failures that couldn't be fixed.
+// Example: { testFiles: ["differ/storage_test.go"], testsWritten: 5, testsPassed: true, summary: "Added 5 tests for ReadAggregatorReport", failures: [] }
+const UNIT_TEST_SCHEMA = {
+  type: 'object',
+  required: ['testFiles', 'testsWritten', 'testsPassed', 'summary'],
+  properties: {
+    testFiles: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'Test files created or modified',
+    },
+    testsWritten: {
+      type: 'integer',
+      description: 'Number of test functions written',
+    },
+    testsPassed: {
+      type: 'boolean',
+      description: 'Whether all tests passed on the final run',
+    },
+    testOutput: {
+      type: 'string',
+      description: 'Last go test output (abbreviated if long)',
+    },
+    summary: {
+      type: 'string',
+      description: 'Brief description of what was tested',
+    },
+    failures: {
+      type: 'array',
+      items: { type: 'string' },
+      description: 'Descriptions of any test failures that could not be fixed',
+    },
+    feedback: FEEDBACK_FIELD,
+  },
+}
+
+// Phase 3 result: independent review verdict, findings by severity, and make before_commit output.
+// make before_commit runs: style (shellcheck + abcgo + golangci-lint), unit tests, license headers, and coverage check.
+// Example: { verdict: "pass_with_notes", deviations: [{issue: "missing nil check", severity: "minor"}], beforeCommitPassed: true, report: "..." }
+const VERIFICATION_SCHEMA = {
+  type: 'object',
+  required: ['verdict', 'deviations', 'beforeCommitPassed', 'report'],
+  properties: {
+    verdict: {
+      type: 'string',
+      enum: ['pass', 'fail', 'pass_with_notes'],
+    },
+    deviations: {
+      type: 'array',
+      items: {
+        type: 'object',
+        required: ['issue', 'severity'],
+        properties: {
+          issue: { type: 'string' },
+          severity: { type: 'string', enum: ['critical', 'major', 'minor', 'note'] },
+          detail: { type: 'string' },
+        },
+      },
+    },
+    beforeCommitPassed: { type: 'boolean', description: 'Whether make before_commit passed (style + tests + license + coverage)' },
+    beforeCommitOutput: {
+      type: 'string',
+      description: 'Output of make before_commit (abbreviated if long)',
+    },
+    report: {
+      type: 'string',
+      description: 'Full verification report text',
+    },
+    feedback: FEEDBACK_FIELD,
+  },
+}
+
+// snapshot token count before any agents run, used to calculate per-phase costs
 const tokensBeforeSetup = budget.spent()
 
 // ---------------------------------------------------------------------------
@@ -404,6 +478,7 @@ ${FEEDBACK_PROMPT}`,
   { label: 'implement', schema: IMPLEMENT_SCHEMA }
 )
 
+// Return results early and end the workflow here if implementation phase failed or was skipped.
 if (!impl) {
   log('Phase 1 failed or was skipped.')
   return {
@@ -427,9 +502,10 @@ if (impl.warnings && impl.warnings.length) {
   impl.warnings.forEach(w => log('  warning: ' + w))
 }
 
-// Gate: termination check to prevent the following phases from running
+// Return results early and end the workflow here if implementation phase produced no results.
 if (!filesModified.length) {
   log('Phase 1 produced no file changes. Nothing to test or verify.')
+
   return {
     error: 'No files modified',
     displaySummary: `## Workflow stopped
@@ -452,18 +528,76 @@ if (!filesModified.length) {
   }
 }
 
-// TODO: Phase 2 (Unit Tests) and Phase 3 (Verify) will be added in follow-up commits.
-log('Phase 1 complete. Phases 2 and 3 not yet implemented.')
-logFeedback({ implement: impl })
+// ---------------------------------------------------------------------------
+// Phase 2: Unit Tests
+// ---------------------------------------------------------------------------
+// Writes tests with assertions derived from the spec, but reads the implementation
+// for function signatures, types, and mock setup. Can only modify test files,
+// export_test.go, and regenerated mocks.
 
-return {
-  displaySummary: `## Workflow results (Phase 1 only)
+phase('Unit Tests')
+log('Phase 2: Writing unit tests...')
 
-**${impl.summary}**
+const tokensBeforeTests = budget.spent()
+const tests = await agent(
+  `You are writing unit tests for a Go code change that was just implemented in this repository. The project conventions from AGENTS.md are already in your context.
 
-| Phase | Result |
-|-------|--------|
-| Implement | ${filesModified.length} file(s) |
+${specContext}
+
+## How to approach testing
+
+- Derive your **test scenarios and expected values** from the issue specification, acceptance criteria, design document (if provided), and BDD feature files (if provided). Together these define what the code should do.
+- You must also read the implementation code to understand function signatures, types, package structure, SQL queries, and mock setup. You need this to write tests that compile and follow the repo's patterns.
+- The distinction: assert against spec-defined behavior, but use implementation knowledge for test structure and setup.
+- If a test correctly asserts spec behavior but the test still fails, that likely means the implementation does not match the spec. In that case, report it as a failure with "implementation may not match spec". Do not modify production code and do not weaken the assertion to make it pass.
+
+## Instructions
+
+1. Run \`git diff ${baseSha}\` to see what was implemented and which files changed (these are uncommitted working tree changes).
+2. Read one or two existing test files in the same packages to learn the patterns (assertion libraries, mock setup, test naming, comment style). Match the style you find.
+3. If the diff shows a new or changed interface, run \`make gen-mocks\` to ensure mocks are up to date before writing tests.
+4. Write unit tests that verify each acceptance criteria from the issue specification. If BDD feature files are provided, use them as additional source of expected behavior. They describe expected user-facing behavior and edge cases that the acceptance criteria may not cover explicitly. Follow the \`export_test.go\` and mock patterns from AGENTS.md.
+5. Run \`make style\` to check linting. Fix any issues it reports and re-run until it passes. If you cannot resolve an issue after 3 attempts, stop and describe it in the failures list.
+6. Run \`go test\` for the affected packages. Capture the output.
+7. If a test fails, you may fix the test code. After 3 edit-and-rerun cycles on the same failing test, stop and add a description of what failed and why to the failures list. Keep the failing test in the file (do not delete it).
+8. If some tests pass and others could not be fixed, keep all tests, both passing and failing.
+9. Run \`make coverage\` to test the coverage. You should maintain or improve the coverage, but there might be uncoverable statements, check whether other test cases cover these scenarios or not.
+10. Ensure allowed test and mock files have license headers. Do not modify production files; report any missing production-file headers for Phase 1 to address.
+
+## Constraints
+
+- Do not create any git commits. Leave all changes in the working tree.
+- Do not modify production code (non-test files). You may only change test files, \`export_test.go\`, and regenerated mock files.
+- Do not silently skip or delete a failing test.
+- Focus on the packages that appear in the diff. Do not explore unrelated packages.
+
+## Before finishing, verify
+
+1. Every acceptance criteria from the specification has at least one corresponding test.
+2. \`make style\` passes with no errors.
+3. \`go test\` passes for all affected packages (or every failure is documented in the failures list with a description).
+4. \`make coverage\` passes, or explains why it didn't pass (uncoverable statements, non-existing mocks).
+5. \`make license\` was run after all other steps.
+6. Test assertions check spec-defined expected values, not values copied from the implementation output.
+7. No production code was modified. Only test files, \`export_test.go\`, and mock files were changed.
+8. No git commits were created.
+
+${FEEDBACK_PROMPT}`,
+  { label: 'unit-tests', schema: UNIT_TEST_SCHEMA }
+)
+
+// Calculate cost even if the agent failed (tokens were still spent).
+const testsCost = estimateCost(budget.spent() - tokensBeforeTests)
+
+if (!tests) {
+  log('Phase 2 failed or was skipped.')
+  return {
+    error: 'Unit test phase failed',
+    displaySummary: `## Workflow stopped
+
+**Error:** Phase 2 (Unit Tests) agent did not return a result. Phase 1 completed: ${filesModified.length} file(s) modified.
+
+**Summary:** ${impl.summary}${collectFeedback({ implement: impl })}
 
 ### Estimated costs
 
@@ -471,12 +605,256 @@ return {
 |-------|------|
 | Setup | ${formatCost(setupCost)} |
 | Implement | ${formatCost(implCost)} |
-| **Total** | **${formatCost(setupCost + implCost)}** |
+| Tests | ${formatCost(testsCost)} |
+| **Total** | **${formatCost(setupCost + implCost + testsCost)}** |
+
+*Estimates based on output tokens. Run \`/usage\` for actuals.*`,
+    implement: { ...impl, costUsd: implCost }, tests: null, verify: null,
+    setupCostUsd: setupCost, totalCostUsd: setupCost + implCost + testsCost,
+  }
+}
+log(
+  'Phase 2 complete: ' +
+    tests.testsWritten +
+    ' test(s), passed: ' +
+    tests.testsPassed +
+    ' | cost~' + formatCost(testsCost)
+)
+if (tests.testFiles && tests.testFiles.length) {
+  log('  test files: ' + tests.testFiles.join(', '))
+}
+
+// Gate: skip the verification phase if tests failed return early. Running make before_commit
+// on broken code wastes an entire agent's budget discovering known failures.
+if (!tests.testsPassed) {
+  if (tests.failures && tests.failures.length) {
+    tests.failures.forEach(f => log('  failure: ' + f))
+  }
+  if (tests.testOutput) {
+    log('  go test output:')
+    log(tests.testOutput)
+  }
+  log('Tests did not pass. Skipping verification to save cost.')
+  const failureList = (tests.failures && tests.failures.length)
+    ? '\n\n### Test failures\n\n' + tests.failures.map(f => '- ' + f).join('\n')
+    : ''
+  return {
+    aborted: 'Tests did not pass, verification skipped',
+    displaySummary: `## Workflow stopped
+
+**Tests did not pass. Verification was skipped.**
+
+| Phase | Result |
+|-------|--------|
+| Implement | ${filesModified.length} file(s) |
+| Tests | ${tests.testsWritten} test(s), FAILED |
+
+**Summary:** ${impl.summary}${failureList}${collectFeedback({ implement: impl, tests })}
+
+### Estimated costs
+
+| Phase | Cost |
+|-------|------|
+| Setup | ${formatCost(setupCost)} |
+| Implement | ${formatCost(implCost)} |
+| Tests | ${formatCost(testsCost)} |
+| **Total** | **${formatCost(setupCost + implCost + testsCost)}** |
+
+*Estimates based on output tokens. Run \`/usage\` for actuals.*`,
+    implement: { ...impl, costUsd: implCost },
+    tests: { ...tests, costUsd: testsCost },
+    verify: null,
+    setupCostUsd: setupCost, totalCostUsd: setupCost + implCost + testsCost,
+  }
+}
+
+// ---------------------------------------------------------------------------
+// Phase 3: Verify
+// ---------------------------------------------------------------------------
+// Read-only code review. Does not modify any files. Runs make before_commit
+// as an independent check and produces a pass/fail verdict with findings.
+
+phase('Verify')
+log('Phase 3: Adversarial verification...')
+
+const tokensBeforeVerify = budget.spent()
+const verify = await agent(
+  `You are an independent reviewer. Your job is to find problems, not to confirm everything is fine. Be skeptical. Default to flagging concerns rather than assuming correctness. The project conventions from AGENTS.md are already in your context.
+
+${specContext}
+
+## Context
+
+A previous agent reported: tests passed=${tests.testsPassed}, testsWritten=${tests.testsWritten}. Verify this independently, do not assume it is accurate. All changes are in the working tree, not committed.
+
+${tests.failures && tests.failures.length ? 'The following test failures were already identified before your review. If \`make before_commit\` fails on any of these, treat them as known issues rather than new findings:\n' + tests.failures.map(f => '- ' + f).join('\n') : ''}
+
+## Severity definitions
+
+- **critical**: bug or correctness issue that must be fixed before merge
+- **major**: significant concern (missing edge case, weak test, spec gap)
+- **minor**: style issue or minor improvement
+- **note**: observation, no action required
+
+## Instructions
+
+1. Run \`git diff ${baseSha}\` to see the full diff (these are uncommitted working tree changes, implementation + tests).
+2. Walk through each acceptance criteria from the specification, the design document (if provided) and BDD scenarios (if provided). Check whether all the criteria are met by the code AND covered by a test. Flag any unmet criteria.
+3. Look for missing edge cases, especially scenarios from the specification, design document, or BDD feature files that the code does not handle.
+4. Look for bugs: logic errors, off-by-one mistakes, nil pointer risks, race conditions, resource leaks, or security issues.
+5. Check test quality: do the test assertions check spec-defined expected values, or do they just mirror what the implementation returns? Flag assertions that would pass even if the code were broken (e.g., asserting the return value matches whatever the function happens to return, rather than what the spec says it should return). If the spec does not define exact expected values, note this limitation.
+6. Run \`make before_commit\` to check style, tests, license headers, and coverage. Report the output and whether it passed or failed (for beforeCommitPassed).
+7. If \`make before_commit\` fails, check whether the failing test or file appears in the diff (\`git diff ${baseSha}\`). If it does not, the failure is likely pre-existing. Also check whether the failure could be caused by a changed dependency (e.g., a modified interface that an existing test relies on). Note the distinction between new and pre-existing failures in your report.
+
+## Constraints
+
+- Do not fix any code. This is a read-only review.
+- Do not silently skip a failing check.
+- Do not create any git commits.
+
+## Before finishing, verify
+
+1. You checked every acceptance criteria against the Jira issue, the implementation and the respective tests, as well as the design doc (if provided) and BDD specs (if provided).
+2. You ran \`make before_commit\` and reported the full output.
+3. Every finding has a severity (critical, major, minor, or note).
+4. Your verdict is one of: pass, fail, or pass_with_notes.
+
+${FEEDBACK_PROMPT}`,
+  { label: 'verify', schema: VERIFICATION_SCHEMA }
+)
+
+// Calculate cost even if the agent failed (tokens were still spent).
+const verifyCost = estimateCost(budget.spent() - tokensBeforeVerify)
+
+if (!verify) {
+  log('Phase 3 failed or was skipped.')
+  const testResult = tests.testsPassed ? 'passed' : 'FAILED'
+  return {
+    error: 'Verification phase failed',
+    displaySummary: `## Workflow stopped
+
+**Error:** Phase 3 (Verify) agent did not return a result. Phases 1 and 2 completed.
+
+| Phase | Result |
+|-------|--------|
+| Implement | ${filesModified.length} file(s) |
+| Tests | ${tests.testsWritten} test(s), ${testResult} |
+
+**Summary:** ${impl.summary}${collectFeedback({ implement: impl, tests })}
+
+### Estimated costs
+
+| Phase | Cost |
+|-------|------|
+| Setup | ${formatCost(setupCost)} |
+| Implement | ${formatCost(implCost)} |
+| Tests | ${formatCost(testsCost)} |
+| Verify | ${formatCost(verifyCost)} |
+| **Total** | **${formatCost(setupCost + implCost + testsCost + verifyCost)}** |
+
+*Estimates based on output tokens. Run \`/usage\` for actuals.*`,
+    implement: { ...impl, costUsd: implCost },
+    tests: { ...tests, costUsd: testsCost },
+    verify: null,
+    setupCostUsd: setupCost, totalCostUsd: setupCost + implCost + testsCost + verifyCost,
+  }
+}
+
+log('Phase 3 complete. Verdict: ' + verify.verdict + ', make before_commit: ' + (verify.beforeCommitPassed ? 'passed' : 'FAILED') + ' | cost~' + formatCost(verifyCost))
+if (verify.deviations && verify.deviations.length) {
+  verify.deviations.forEach(d => log('  [' + d.severity + '] ' + d.issue))
+}
+
+// ---------------------------------------------------------------------------
+// Summary
+// ---------------------------------------------------------------------------
+// The workflow logs a summary and returns structured results to the main
+// Claude Code session. The user sees something like:
+//
+//   ## Workflow results
+//
+//   **Added aggregator DB connection to the differ package**
+//
+//   | Phase | Result |
+//   |-------|--------|
+//   | Implement | 3 file(s) |
+//   | Tests | 5 test(s), passed |
+//   | Verify | pass_with_notes, before_commit: passed |
+//
+//   ### Verification report
+//
+//   <full review with findings by severity>
+//
+//   ### Estimated costs
+//
+//   | Phase | Cost |
+//   |-------|------|
+//   | Setup | $0.0475 |
+//   | Implement | $0.4275 |
+//   | Tests | $0.6650 |
+//   | Verify | $0.5700 |
+//   | **Total** | **$1.7100** |
+
+const totalCost = setupCost + implCost + testsCost + verifyCost
+
+log('---')
+log('Workflow complete.')
+log('')
+log('Summary: ' + impl.summary)
+log('')
+log('  Implement: ' + filesModified.length + ' file(s)')
+log('  Tests:     ' + tests.testsWritten + ' test(s), ' + (tests.testsPassed ? 'passed' : 'FAILED'))
+log('  Verify:    ' + verify.verdict + ', before_commit: ' + (verify.beforeCommitPassed ? 'passed' : 'FAILED'))
+log('')
+log('Verification report:')
+log(verify.report)
+
+log('')
+log('Estimated costs (check /usage for actuals):')
+log('  Setup:     ' + formatCost(setupCost))
+log('  Implement: ' + formatCost(implCost))
+log('  Tests:     ' + formatCost(testsCost))
+log('  Verify:    ' + formatCost(verifyCost))
+log('  Total:     ' + formatCost(totalCost))
+
+const testResult = tests.testsPassed ? 'passed' : 'FAILED'
+const beforeCommitResult = verify.beforeCommitPassed ? 'passed' : 'FAILED'
+const feedbackSection = collectFeedback({ implement: impl, tests, verify })
+
+// This is the final return statement that the main Claude session receives back
+// if the workflow finishes successfully.
+// Claude is instructed to always display the full `displaySummary`, but it also
+// returns the full responses from each agent (...impl, ...tests, ...verify),
+// so Claude can access all the data it needs after the workflow finishes.
+return {
+  displaySummary: `## Workflow results
+
+**${impl.summary}**
+
+| Phase | Result |
+|-------|--------|
+| Implement | ${filesModified.length} file(s) |
+| Tests | ${tests.testsWritten} test(s), ${testResult} |
+| Verify | ${verify.verdict}, before_commit: ${beforeCommitResult} |
+
+### Verification report
+
+${verify.report}${feedbackSection}
+
+### Estimated costs
+
+| Phase | Cost |
+|-------|------|
+| Setup | ${formatCost(setupCost)} |
+| Implement | ${formatCost(implCost)} |
+| Tests | ${formatCost(testsCost)} |
+| Verify | ${formatCost(verifyCost)} |
+| **Total** | **${formatCost(totalCost)}** |
 
 *Estimates based on output tokens. Run \`/usage\` for actuals.*`,
   implement: { ...impl, costUsd: implCost },
-  tests: null,
-  verify: null,
+  tests: { ...tests, costUsd: testsCost },
+  verify: { ...verify, costUsd: verifyCost },
   setupCostUsd: setupCost,
-  totalCostUsd: setupCost + implCost,
+  totalCostUsd: totalCost,
 }
