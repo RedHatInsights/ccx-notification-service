@@ -89,23 +89,23 @@ function formatCost(usd) {
 // ---------------------------------------------------------------------------
 // Agent feedback
 // ---------------------------------------------------------------------------
-// Collect and log feedback from all phases that returned results.
-// Each phase is instructed to give a `feedback` array with agent commentary
-// on the workflow / spec instructions themselves.
-function logFeedback(phases) {
-  // Object.entries converts { implement: ..., tests: ..., verify: ... } into
-  // an array of [name, result] pairs. flatMap collects feedback from each phase
-  // into a single list, prefixed with the phase name.
-  const feedbackLines = Object.entries(phases)
+// Collects feedback from all phases, logs it to the workflow progress output,
+// and returns a markdown section for displaySummary. Returns empty string if
+// no feedback was reported by any phase.
+function collectFeedback(phases) {
+  const items = Object.entries(phases)
     .flatMap(([phaseName, result]) => {
-      const items = (result && result.feedback) || []
-      return items.map(f => `[${phaseName}] ${f}`)
+      const feedback = (result && result.feedback) || []
+      return feedback.map(f => ({ phaseName, text: f }))
     })
-  if (feedbackLines.length) {
+  if (items.length) {
     log('')
     log('Agent feedback on workflow instructions:')
-    feedbackLines.forEach(f => log('  ' + f))
+    items.forEach(f => log('  [' + f.phaseName + '] ' + f.text))
   }
+  return items.length
+    ? '\n\n### Agent feedback on workflow instructions\n\n' + items.map(f => '- **[' + f.phaseName + ']** ' + f.text).join('\n')
+    : ''
 }
 
 // ---------------------------------------------------------------------------
@@ -586,7 +586,9 @@ ${FEEDBACK_PROMPT}`,
   { label: 'unit-tests', schema: UNIT_TEST_SCHEMA }
 )
 
-// Return results early and end the workflow here if testing phase failed or was skipped.
+// Calculate cost even if the agent failed (tokens were still spent).
+const testsCost = estimateCost(budget.spent() - tokensBeforeTests)
+
 if (!tests) {
   log('Phase 2 failed or was skipped.')
   return {
@@ -595,7 +597,7 @@ if (!tests) {
 
 **Error:** Phase 2 (Unit Tests) agent did not return a result. Phase 1 completed: ${filesModified.length} file(s) modified.
 
-**Summary:** ${impl.summary}
+**Summary:** ${impl.summary}${collectFeedback({ implement: impl })}
 
 ### Estimated costs
 
@@ -603,15 +605,14 @@ if (!tests) {
 |-------|------|
 | Setup | ${formatCost(setupCost)} |
 | Implement | ${formatCost(implCost)} |
-| **Total** | **${formatCost(setupCost + implCost)}** |
+| Tests | ${formatCost(testsCost)} |
+| **Total** | **${formatCost(setupCost + implCost + testsCost)}** |
 
 *Estimates based on output tokens. Run \`/usage\` for actuals.*`,
     implement: { ...impl, costUsd: implCost }, tests: null, verify: null,
-    setupCostUsd: setupCost, totalCostUsd: setupCost + implCost,
+    setupCostUsd: setupCost, totalCostUsd: setupCost + implCost + testsCost,
   }
 }
-
-const testsCost = estimateCost(budget.spent() - tokensBeforeTests)
 log(
   'Phase 2 complete: ' +
     tests.testsWritten +
@@ -634,7 +635,6 @@ if (!tests.testsPassed) {
     log(tests.testOutput)
   }
   log('Tests did not pass. Skipping verification to save cost.')
-  logFeedback({ implement: impl, tests })
   const failureList = (tests.failures && tests.failures.length)
     ? '\n\n### Test failures\n\n' + tests.failures.map(f => '- ' + f).join('\n')
     : ''
@@ -649,7 +649,7 @@ if (!tests.testsPassed) {
 | Implement | ${filesModified.length} file(s) |
 | Tests | ${tests.testsWritten} test(s), FAILED |
 
-**Summary:** ${impl.summary}${failureList}
+**Summary:** ${impl.summary}${failureList}${collectFeedback({ implement: impl, tests })}
 
 ### Estimated costs
 
@@ -723,7 +723,9 @@ ${FEEDBACK_PROMPT}`,
   { label: 'verify', schema: VERIFICATION_SCHEMA }
 )
 
-// Return results early and end the workflow here if the verification phase failed or was skipped.
+// Calculate cost even if the agent failed (tokens were still spent).
+const verifyCost = estimateCost(budget.spent() - tokensBeforeVerify)
+
 if (!verify) {
   log('Phase 3 failed or was skipped.')
   const testResult = tests.testsPassed ? 'passed' : 'FAILED'
@@ -738,7 +740,7 @@ if (!verify) {
 | Implement | ${filesModified.length} file(s) |
 | Tests | ${tests.testsWritten} test(s), ${testResult} |
 
-**Summary:** ${impl.summary}
+**Summary:** ${impl.summary}${collectFeedback({ implement: impl, tests })}
 
 ### Estimated costs
 
@@ -747,17 +749,16 @@ if (!verify) {
 | Setup | ${formatCost(setupCost)} |
 | Implement | ${formatCost(implCost)} |
 | Tests | ${formatCost(testsCost)} |
-| **Total** | **${formatCost(setupCost + implCost + testsCost)}** |
+| Verify | ${formatCost(verifyCost)} |
+| **Total** | **${formatCost(setupCost + implCost + testsCost + verifyCost)}** |
 
 *Estimates based on output tokens. Run \`/usage\` for actuals.*`,
     implement: { ...impl, costUsd: implCost },
     tests: { ...tests, costUsd: testsCost },
     verify: null,
-    setupCostUsd: setupCost, totalCostUsd: setupCost + implCost + testsCost,
+    setupCostUsd: setupCost, totalCostUsd: setupCost + implCost + testsCost + verifyCost,
   }
 }
-
-const verifyCost = estimateCost(budget.spent() - tokensBeforeVerify)
 
 log('Phase 3 complete. Verdict: ' + verify.verdict + ', make before_commit: ' + (verify.beforeCommitPassed ? 'passed' : 'FAILED') + ' | cost~' + formatCost(verifyCost))
 if (verify.deviations && verify.deviations.length) {
@@ -808,8 +809,6 @@ log('')
 log('Verification report:')
 log(verify.report)
 
-logFeedback({ implement: impl, tests, verify })
-
 log('')
 log('Estimated costs (check /usage for actuals):')
 log('  Setup:     ' + formatCost(setupCost))
@@ -820,17 +819,7 @@ log('  Total:     ' + formatCost(totalCost))
 
 const testResult = tests.testsPassed ? 'passed' : 'FAILED'
 const beforeCommitResult = verify.beforeCommitPassed ? 'passed' : 'FAILED'
-
-// Collect feedback for the markdown summary
-const feedbackItems = Object.entries({ implement: impl, tests, verify })
-  .flatMap(([phaseName, result]) => {
-    const items = (result && result.feedback) || []
-    return items.map(f => '- **[' + phaseName + ']** ' + f)
-  })
-
-const feedbackSection = feedbackItems.length
-  ? '\n\n### Agent feedback on workflow instructions\n\n' + feedbackItems.join('\n')
-  : ''
+const feedbackSection = collectFeedback({ implement: impl, tests, verify })
 
 // This is the final return statement that the main Claude session receives back
 // if the workflow finishes successfully.
