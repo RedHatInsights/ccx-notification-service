@@ -17,10 +17,14 @@ limitations under the License.
 package main
 
 import (
+	"bytes"
 	"flag"
 	"os"
 	"testing"
 
+	"github.com/RedHatInsights/ccx-notification-service/conf"
+	"github.com/rs/zerolog"
+	"github.com/rs/zerolog/log"
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/require"
 )
@@ -139,4 +143,98 @@ func TestSetupCliFlagsIgnoreDisabledRulesDefaultFalseExplicit(t *testing.T) {
 	cliFlags := setupCliFlags()
 	assert.False(t, cliFlags.IgnoreDisabledRules,
 		"IgnoreDisabledRules should be false when --ignore-disabled-rules=false is passed")
+}
+
+// TestShowConfigurationPrintsAggregatorStorage checks that showConfiguration
+// prints the aggregator storage configuration section.
+func TestShowConfigurationPrintsAggregatorStorage(t *testing.T) {
+	// capture zerolog output into a buffer
+	var buf bytes.Buffer
+	origLogger := log.Logger
+	defer func() { log.Logger = origLogger }()
+	log.Logger = zerolog.New(&buf)
+
+	config := conf.ConfigStruct{
+		AggregatorStorage: conf.StorageConfiguration{
+			Driver:        "postgres",
+			PGUsername:    "agg_test_user",
+			PGHost:        "agg-test-host",
+			PGPort:        5433,
+			PGDBName:      "aggregator_test",
+			PGParams:      "sslmode=require",
+			LogSQLQueries: true,
+		},
+	}
+
+	showConfiguration(&config)
+
+	output := buf.String()
+	assert.Contains(t, output, "Aggregator storage configuration",
+		"showConfiguration should print 'Aggregator storage configuration' message")
+	assert.Contains(t, output, "agg_test_user",
+		"showConfiguration should print aggregator storage username")
+	assert.Contains(t, output, "agg-test-host",
+		"showConfiguration should print aggregator storage host")
+	assert.Contains(t, output, "aggregator_test",
+		"showConfiguration should print aggregator storage database name")
+}
+
+// TestShowConfigurationAggregatorStorageDoesNotLeakPassword checks that
+// showConfiguration does not print the aggregator storage password.
+func TestShowConfigurationAggregatorStorageDoesNotLeakPassword(t *testing.T) {
+	var buf bytes.Buffer
+	origLogger := log.Logger
+	defer func() { log.Logger = origLogger }()
+	log.Logger = zerolog.New(&buf)
+
+	config := conf.ConfigStruct{
+		AggregatorStorage: conf.StorageConfiguration{
+			Driver:     "postgres",
+			PGUsername: "agg_user",
+			PGPassword: "super_secret_password_12345",
+			PGHost:     "agg-host",
+			PGPort:     5433,
+			PGDBName:   "aggregator",
+		},
+	}
+
+	showConfiguration(&config)
+
+	output := buf.String()
+	assert.NotContains(t, output, "super_secret_password_12345",
+		"showConfiguration must not print the aggregator storage password")
+}
+
+// TestShowConfigurationPrintsAggregatorAndNotificationStorage checks that
+// showConfiguration prints both storage sections separately.
+func TestShowConfigurationPrintsAggregatorAndNotificationStorage(t *testing.T) {
+	var buf bytes.Buffer
+	origLogger := log.Logger
+	defer func() { log.Logger = origLogger }()
+	log.Logger = zerolog.New(&buf)
+
+	config := conf.ConfigStruct{
+		Storage: conf.StorageConfiguration{
+			Driver:   "postgres",
+			PGDBName: "notification_db",
+			PGHost:   "notification-host",
+		},
+		AggregatorStorage: conf.StorageConfiguration{
+			Driver:   "postgres",
+			PGDBName: "aggregator_db",
+			PGHost:   "aggregator-host",
+		},
+	}
+
+	showConfiguration(&config)
+
+	output := buf.String()
+	assert.Contains(t, output, "Storage configuration",
+		"showConfiguration should print 'Storage configuration' message")
+	assert.Contains(t, output, "Aggregator storage configuration",
+		"showConfiguration should print 'Aggregator storage configuration' message")
+	assert.Contains(t, output, "notification_db",
+		"showConfiguration should print the notification storage DB name")
+	assert.Contains(t, output, "aggregator_db",
+		"showConfiguration should print the aggregator storage DB name")
 }

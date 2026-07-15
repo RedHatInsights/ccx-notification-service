@@ -199,6 +199,108 @@ func TestLoadStorageConfiguration(t *testing.T) {
 	assert.Equal(t, true, storageCfg.LogSQLQueries)
 }
 
+// TestLoadAggregatorStorageConfiguration tests loading the aggregator storage
+// configuration sub-tree
+func TestLoadAggregatorStorageConfiguration(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "../tests/config2")
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	aggStorageCfg := conf.GetAggregatorStorageConfiguration(&config)
+
+	assert.Equal(t, "postgres", aggStorageCfg.Driver)
+	assert.Equal(t, "agg_user", aggStorageCfg.PGUsername)
+	assert.Equal(t, "agg_password", aggStorageCfg.PGPassword)
+	assert.Equal(t, "agg-host", aggStorageCfg.PGHost)
+	assert.Equal(t, 5433, aggStorageCfg.PGPort)
+	assert.Equal(t, "aggregator", aggStorageCfg.PGDBName)
+	assert.Equal(t, "sslmode=require", aggStorageCfg.PGParams)
+	assert.Equal(t, false, aggStorageCfg.LogSQLQueries)
+}
+
+// TestLoadAggregatorStorageConfigurationMissing tests that when the aggregator
+// storage section is missing from the config file, all fields have their zero values
+func TestLoadAggregatorStorageConfigurationMissing(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	// config1 does not contain [aggregator_storage]
+	mustSetEnv(t, envVar, "../tests/config1")
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	aggStorageCfg := conf.GetAggregatorStorageConfiguration(&config)
+
+	assert.Equal(t, "", aggStorageCfg.Driver)
+	assert.Equal(t, "", aggStorageCfg.PGUsername)
+	assert.Equal(t, "", aggStorageCfg.PGPassword)
+	assert.Equal(t, "", aggStorageCfg.PGHost)
+	assert.Equal(t, 0, aggStorageCfg.PGPort)
+	assert.Equal(t, "", aggStorageCfg.PGDBName)
+	assert.Equal(t, "", aggStorageCfg.PGParams)
+	assert.Equal(t, false, aggStorageCfg.LogSQLQueries)
+}
+
+// TestAggregatorStorageConfigurationIndependentFromStorage tests that
+// aggregator storage and notification storage configurations are independent
+func TestAggregatorStorageConfigurationIndependentFromStorage(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "../tests/config2")
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	storageCfg := conf.GetStorageConfiguration(&config)
+	aggStorageCfg := conf.GetAggregatorStorageConfiguration(&config)
+
+	// the two configurations should have different values as defined in config2.toml
+	assert.NotEqual(t, storageCfg.Driver, aggStorageCfg.Driver)
+	assert.NotEqual(t, storageCfg.PGUsername, aggStorageCfg.PGUsername)
+	assert.NotEqual(t, storageCfg.PGHost, aggStorageCfg.PGHost)
+	assert.NotEqual(t, storageCfg.PGPort, aggStorageCfg.PGPort)
+	assert.NotEqual(t, storageCfg.PGDBName, aggStorageCfg.PGDBName)
+}
+
+// TestGetAggregatorStorageConfigurationIsImmutable checks if function
+// GetAggregatorStorageConfiguration is not mutable
+func TestGetAggregatorStorageConfigurationIsImmutable(t *testing.T) {
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "tests/config2")
+
+	// load configuration with check if loading was ok
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	// clone the configuration
+	origConfig := config
+
+	// call the tested function
+	conf.GetAggregatorStorageConfiguration(&config)
+
+	// and compare original configuration with possibly mutated one
+	assert.Equal(t, config, origConfig, "GetAggregatorStorageConfiguration must not be mutable")
+}
+
+// TestAggregatorStorageEnvVarOverride tests that environment variables with the
+// CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__ prefix override the config file values
+func TestAggregatorStorageEnvVarOverride(t *testing.T) {
+	os.Clearenv()
+	envVar := "CCX_NOTIFICATION_SERVICE_CONFIG_FILE"
+	mustSetEnv(t, envVar, "../tests/config2")
+
+	// override the aggregator storage host via environment variable
+	mustSetEnv(t, "CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_HOST", "overridden-host")
+
+	config, err := conf.LoadConfiguration(envVar, "")
+	assert.Nil(t, err, "Failed loading configuration file from env var!")
+
+	aggStorageCfg := conf.GetAggregatorStorageConfiguration(&config)
+
+	// the host should be overridden by the environment variable
+	assert.Equal(t, "overridden-host", aggStorageCfg.PGHost)
+	// other fields should remain as defined in the config file
+	assert.Equal(t, "postgres", aggStorageCfg.Driver)
+	assert.Equal(t, "agg_user", aggStorageCfg.PGUsername)
+}
+
 // TestLoadProcessingConfiguration3AllowedClusters tests loading the processing
 // configuration sub-tree
 func TestLoadProcessingConfiguration3AllowedClusters(t *testing.T) {
