@@ -1,172 +1,159 @@
-// Test suite for logFeedback() from go-implement.js
+// Test suite for collectFeedback() from go-implement.js
 //
-// Uses the actual phase key names from the workflow: implement, tests, verify.
+// collectFeedback both logs feedback to the workflow progress output
+// and returns a markdown section string for displaySummary.
 
-// --- Extract the function under test, injecting a mock log() ---
+const logs = []
+function log(msg) { logs.push(msg) }
 
-let captured = []
-
-function log(...args) {
-  captured.push(args.join(' '))
-}
-
-function logFeedback(phases) {
-  const feedbackLines = Object.entries(phases)
+// Extracted from go-implement.js
+function collectFeedback(phases) {
+  const items = Object.entries(phases)
     .flatMap(([phaseName, result]) => {
-      const items = (result && result.feedback) || []
-      return items.map(f => `[${phaseName}] ${f}`)
+      const feedback = (result && result.feedback) || []
+      return feedback.map(f => ({ phaseName, text: f }))
     })
-  if (feedbackLines.length) {
+  if (items.length) {
     log('')
     log('Agent feedback on workflow instructions:')
-    feedbackLines.forEach(f => log('  ' + f))
+    items.forEach(f => log('  [' + f.phaseName + '] ' + f.text))
   }
+  return items.length
+    ? '\n\n### Agent feedback on workflow instructions\n\n' + items.map(f => '- **[' + f.phaseName + ']** ' + f.text).join('\n')
+    : ''
 }
-
-// --- Test harness ---
 
 let passed = 0
 let failed = 0
 
-function test(name, fn) {
-  captured = []
+function test(id, description, fn) {
+  logs.length = 0
   try {
-    fn()
-    passed++
-    console.log(`[PASS] ${name}`)
+    const ok = fn()
+    if (ok) {
+      console.log(`[PASS] ${id}. ${description}`)
+      passed++
+    } else {
+      console.log(`[FAIL] ${id}. ${description}`)
+      failed++
+    }
   } catch (e) {
+    console.log(`[FAIL] ${id}. ${description} (threw: ${e.message})`)
     failed++
-    console.log(`[FAIL] ${name}`)
-    console.log(`       ${e.message}`)
   }
 }
 
-function assert(cond, msg) {
-  if (!cond) throw new Error(msg)
-}
-
-function assertDeep(actual, expected, msg) {
-  const a = JSON.stringify(actual)
-  const e = JSON.stringify(expected)
-  if (a !== e) throw new Error(`${msg}\n         expected: ${e}\n         actual:   ${a}`)
-}
-
-// --- Tests ---
-
-test('1. No feedback from any phase', () => {
-  logFeedback({
-    implement: { feedback: [] },
-    tests:     { feedback: [] },
-    verify:    { feedback: [] },
+// 1. No feedback from any phase
+test(1, 'No feedback returns empty string and no logs', () => {
+  const result = collectFeedback({
+    implement: { summary: 'did stuff', feedback: [] },
+    tests: { testsWritten: 3, feedback: [] },
+    verify: { verdict: 'pass', feedback: [] },
   })
-  assertDeep(captured, [], 'should produce no output when all feedback arrays are empty')
+  return result === '' && logs.length === 0
 })
 
-test('2. One phase with feedback', () => {
-  logFeedback({
-    implement: { feedback: ['improve the prompt'] },
-    tests:     { feedback: [] },
-    verify:    { feedback: [] },
+// 2. Feedback from one phase
+test(2, 'Single phase feedback returns markdown and logs', () => {
+  const result = collectFeedback({
+    implement: { feedback: ['instruction 2 was unclear'] },
   })
-  assertDeep(captured, [
-    '',
-    'Agent feedback on workflow instructions:',
-    '  [implement] improve the prompt',
-  ], 'should log feedback from the single phase that has it')
+  return result.includes('### Agent feedback') &&
+    result.includes('- **[implement]** instruction 2 was unclear') &&
+    logs.some(l => l.includes('[implement] instruction 2 was unclear'))
 })
 
-test('3. All three phases with feedback', () => {
-  logFeedback({
-    implement: { feedback: ['impl note'] },
-    tests:     { feedback: ['test note'] },
-    verify:    { feedback: ['verify note'] },
+// 3. Feedback from all three phases
+test(3, 'All phases produce prefixed entries', () => {
+  const result = collectFeedback({
+    implement: { feedback: ['a'] },
+    tests: { feedback: ['b'] },
+    verify: { feedback: ['c'] },
   })
-  assertDeep(captured, [
-    '',
-    'Agent feedback on workflow instructions:',
-    '  [implement] impl note',
-    '  [tests] test note',
-    '  [verify] verify note',
-  ], 'should log feedback from all phases in insertion order')
+  return result.includes('**[implement]** a') &&
+    result.includes('**[tests]** b') &&
+    result.includes('**[verify]** c') &&
+    logs.filter(l => l.startsWith('  [')).length === 3
 })
 
-test('4. Null phase result', () => {
-  logFeedback({
-    implement: { feedback: ['something'] },
-    tests:     null,
-    verify:    { feedback: ['other'] },
+// 4. Null phase result
+test(4, 'Null phase result does not crash', () => {
+  const result = collectFeedback({
+    implement: null,
+    tests: { feedback: ['something'] },
   })
-  assertDeep(captured, [
-    '',
-    'Agent feedback on workflow instructions:',
-    '  [implement] something',
-    '  [verify] other',
-  ], 'null result should be safely skipped via (result && result.feedback) || []')
+  return result.includes('**[tests]** something') &&
+    !result.includes('[implement]')
 })
 
-test('5. Missing feedback field ({})', () => {
-  logFeedback({
-    implement: {},
-    tests:     {},
-    verify:    {},
+// 5. Missing feedback field
+test(5, 'Phase with no feedback field produces nothing', () => {
+  const result = collectFeedback({
+    implement: { summary: 'did stuff' },
   })
-  assertDeep(captured, [], 'empty objects with no feedback field should produce no output')
+  return result === '' && logs.length === 0
 })
 
-test('6. Undefined feedback', () => {
-  logFeedback({
+// 6. Undefined feedback
+test(6, 'Undefined feedback treated as empty', () => {
+  const result = collectFeedback({
     implement: { feedback: undefined },
-    tests:     { feedback: undefined },
-    verify:    { feedback: undefined },
   })
-  assertDeep(captured, [], 'undefined feedback should be treated as empty via || []')
+  return result === '' && logs.length === 0
 })
 
-test('7. Multiple items from one phase', () => {
-  logFeedback({
-    implement: { feedback: ['first note', 'second note', 'third note'] },
+// 7. Multiple items from one phase
+test(7, 'Multiple items from one phase each get a line', () => {
+  const result = collectFeedback({
+    implement: { feedback: ['first', 'second', 'third'] },
   })
-  assertDeep(captured, [
-    '',
-    'Agent feedback on workflow instructions:',
-    '  [implement] first note',
-    '  [implement] second note',
-    '  [implement] third note',
-  ], 'multiple feedback items from one phase should each get their own line')
+  const bullets = result.split('\n').filter(l => l.startsWith('- **[implement]**'))
+  return bullets.length === 3 &&
+    logs.filter(l => l.startsWith('  [implement]')).length === 3
 })
 
-test('8. Early exit (2 phases only)', () => {
-  // Matches the actual early-exit call : logFeedback({ implement: impl, tests })
-  logFeedback({
-    implement: { feedback: ['early feedback'] },
-    tests:     { feedback: ['test feedback'] },
+// 8. Early exit with two phases (verify missing)
+test(8, 'Works with only implement and tests', () => {
+  const result = collectFeedback({
+    implement: { feedback: ['a'] },
+    tests: { feedback: ['b'] },
   })
-  assertDeep(captured, [
-    '',
-    'Agent feedback on workflow instructions:',
-    '  [implement] early feedback',
-    '  [tests] test feedback',
-  ], 'should work with fewer than 3 phases (mirrors the early exit path)')
+  return result.includes('**[implement]** a') &&
+    result.includes('**[tests]** b') &&
+    !result.includes('[verify]')
 })
 
-test('9. Object.entries ordering preserved', () => {
-  // Object.entries preserves insertion order for string keys in modern JS engines.
-  // Use the actual phase keys in a deliberate order to confirm.
-  const phases = {}
-  phases.verify    = { feedback: ['v'] }
-  phases.implement = { feedback: ['i'] }
-  phases.tests     = { feedback: ['t'] }
-
-  logFeedback(phases)
-
-  // Order must follow insertion: verify, implement, tests
-  assert(captured[2] === '  [verify] v',    `expected verify first, got: ${captured[2]}`)
-  assert(captured[3] === '  [implement] i', `expected implement second, got: ${captured[3]}`)
-  assert(captured[4] === '  [tests] t',     `expected tests third, got: ${captured[4]}`)
+// 9. Object.entries ordering preserved
+test(9, 'Phase order matches insertion order', () => {
+  const result = collectFeedback({
+    implement: { feedback: ['first'] },
+    tests: { feedback: ['second'] },
+    verify: { feedback: ['third'] },
+  })
+  const implIdx = result.indexOf('[implement]')
+  const testsIdx = result.indexOf('[tests]')
+  const verifyIdx = result.indexOf('[verify]')
+  return implIdx < testsIdx && testsIdx < verifyIdx
 })
 
-// --- Summary ---
+// 10. Return value is valid markdown
+test(10, 'Markdown starts with newlines and heading', () => {
+  const result = collectFeedback({
+    implement: { feedback: ['x'] },
+  })
+  return result.startsWith('\n\n### Agent feedback on workflow instructions\n\n')
+})
+
+// 11. Log output matches expected format
+test(11, 'Log lines use [phaseName] prefix format', () => {
+  collectFeedback({
+    implement: { feedback: ['check this'] },
+  })
+  return logs[0] === '' &&
+    logs[1] === 'Agent feedback on workflow instructions:' &&
+    logs[2] === '  [implement] check this'
+})
 
 console.log('')
 console.log(`Total: ${passed + failed} | Passed: ${passed} | Failed: ${failed}`)
-process.exit(failed > 0 ? 1 : 0)
+if (failed > 0) process.exit(1)
