@@ -43,7 +43,7 @@ function phase1Gate(impl, setupCost, implCost) {
     }
   }
 
-  
+
   const filesModified = impl.filesModified || []
 
   if (!filesModified.length) {

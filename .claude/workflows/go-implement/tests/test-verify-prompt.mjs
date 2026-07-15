@@ -1,5 +1,5 @@
 // Test script for Phase 3 verify agent prompt construction
-// Extracted from go-implement.js 
+// Extracted from go-implement.js
 
 // ---------------------------------------------------------------------------
 // Extract the FEEDBACK_PROMPT (verbatim from go-implement.js )
