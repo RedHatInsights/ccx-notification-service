@@ -58,19 +58,24 @@ var (
 	DeleteOperationSpecified       = deleteOperationSpecified
 	CloseStorage                   = closeStorage
 	PrintNewReportsForCleanup      = printNewReportsForCleanup
+
+	ConnectAndCloseAggregatorDB = (*Differ).connectAndCloseAggregatorDB
 )
 
 const (
-	NotificationTypeInstant     = notificationTypeInstant
-	NotificationBundleName      = notificationBundleName
-	NotificationApplicationName = notificationApplicationName
-	NotificationPayloadRuleURL  = notificationPayloadRuleURL
-	NotificationStateSent       = notificationStateSent
-	NotificationStateSame       = notificationStateSame
-	NotificationStateLower      = notificationStateLower
-	NotificationStateError      = notificationStateError
-	ReportWithHighImpactMessage = reportWithHighImpactMessage
-	NoEquivalentSeverityMessage = noEquivalentSeverityMessage
+	NotificationTypeInstant       = notificationTypeInstant
+	NotificationBundleName        = notificationBundleName
+	NotificationApplicationName   = notificationApplicationName
+	NotificationPayloadRuleURL    = notificationPayloadRuleURL
+	NotificationStateSent         = notificationStateSent
+	NotificationStateSame         = notificationStateSame
+	NotificationStateLower        = notificationStateLower
+	NotificationStateError        = notificationStateError
+	ReportWithHighImpactMessage   = reportWithHighImpactMessage
+	NoEquivalentSeverityMessage   = noEquivalentSeverityMessage
+	AggregatorDBConnectionMessage = aggregatorDBConnectionMessage
+	AggregatorDBClosedMessage     = aggregatorDBClosedMessage
+	AggregatorDBSkippedMessage    = aggregatorDBSkippedMessage
 )
 
 func InClauseFromStringSlice(slice []string) string {
