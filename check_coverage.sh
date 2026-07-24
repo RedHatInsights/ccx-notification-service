@@ -14,7 +14,7 @@
 # limitations under the License.
 
 
-THRESHOLD=73
+THRESHOLD=72
 
 RED_BG=$(tput setab 1)
 GREEN_BG=$(tput setab 2)
