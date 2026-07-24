@@ -72,6 +72,8 @@ const (
 	ExitStatusEventFilterError
 	// ExitStatusServiceLogError is raised when Service Log notifier cannot be initialized
 	ExitStatusServiceLogError
+	// ExitStatusAggregatorStorageError is raised when the aggregator DB connection fails
+	ExitStatusAggregatorStorageError
 )
 
 // Total risk values
@@ -92,34 +94,37 @@ const (
 
 // Messages
 const (
-	serviceName                 = "CCX Notification Service"
-	separator                   = "------------------------------------------------------------"
-	operationFailedMessage      = "Operation failed"
-	clusterEntryMessage         = "cluster entry"
-	organizationIDAttribute     = "org id"
-	AccountNumberAttribute      = "account number"
-	typeAttribute               = "type"
-	clusterAttribute            = "cluster"
-	ruleAttribute               = "rule"
-	likelihoodAttribute         = "likelihood"
-	impactAttribute             = "impact"
-	errorKeyAttribute           = "error key"
-	numberOfEventsAttribute     = "number of events"
-	clustersAttribute           = "clusters"
-	totalRiskAttribute          = "totalRisk"
-	errorStr                    = "Error:"
-	reportWithHighImpactMessage = "Report with impact higher than configured threshold detected"
-	invalidJSONContent          = "The provided content cannot be encoded as JSON."
-	metricsPushFailedMessage    = "Couldn't push prometheus metrics"
-	tagsNotSetMessage           = "Tags for tag filter not set"
-	evaluationErrorMessage      = "Evaluation error"
-	serviceLogSendErrorMessage  = "Sending entry to service log failed for this report"
-	renderReportsFailedMessage  = "Rendering reports failed for this cluster"
-	ReportNotFoundError         = "report for rule ID %v and error key %v has not been found"
-	destinationNotSet           = "No known event destination configured. Aborting."
-	onlyOneDestinationAllowed   = "Only one integration should be enabled (Kafka / Service log. Review your config."
-	configurationProblem        = "Configuration problem"
-	noEquivalentSeverityMessage = "No Service log severity defined for given total risk. Creating event with Info severity"
+	serviceName                   = "CCX Notification Service"
+	separator                     = "------------------------------------------------------------"
+	operationFailedMessage        = "Operation failed"
+	clusterEntryMessage           = "cluster entry"
+	organizationIDAttribute       = "org id"
+	AccountNumberAttribute        = "account number"
+	typeAttribute                 = "type"
+	clusterAttribute              = "cluster"
+	ruleAttribute                 = "rule"
+	likelihoodAttribute           = "likelihood"
+	impactAttribute               = "impact"
+	errorKeyAttribute             = "error key"
+	numberOfEventsAttribute       = "number of events"
+	clustersAttribute             = "clusters"
+	totalRiskAttribute            = "totalRisk"
+	errorStr                      = "Error:"
+	reportWithHighImpactMessage   = "Report with impact higher than configured threshold detected"
+	invalidJSONContent            = "The provided content cannot be encoded as JSON."
+	metricsPushFailedMessage      = "Couldn't push prometheus metrics"
+	tagsNotSetMessage             = "Tags for tag filter not set"
+	evaluationErrorMessage        = "Evaluation error"
+	serviceLogSendErrorMessage    = "Sending entry to service log failed for this report"
+	renderReportsFailedMessage    = "Rendering reports failed for this cluster"
+	ReportNotFoundError           = "report for rule ID %v and error key %v has not been found"
+	destinationNotSet             = "No known event destination configured. Aborting."
+	onlyOneDestinationAllowed     = "Only one integration should be enabled (Kafka / Service log. Review your config."
+	configurationProblem          = "Configuration problem"
+	noEquivalentSeverityMessage   = "No Service log severity defined for given total risk. Creating event with Info severity"
+	aggregatorDBConnectionMessage = "Connecting to aggregator database to fetch disabled rules"
+	aggregatorDBClosedMessage     = "Aggregator database connection closed"
+	aggregatorDBSkippedMessage    = "Skipping aggregator DB connection (--ignore-disabled-rules is set)"
 )
 
 // Constants for notification message top level fields
@@ -187,16 +192,18 @@ type NotificationURLs struct {
 
 // Differ is the struct that holds all the dependencies and configuration of this service
 type Differ struct {
-	Storage            Storage
-	Notifier           producer.Producer
-	NotificationType   types.EventType
-	Target             types.EventTarget
-	PreviouslyReported types.NotifiedRecordsPerCluster
-	CoolDown           string
-	Thresholds         EventThresholds
-	Filter             string
-	FilterByTag        bool
-	TagsSet            types.TagsSet
+	Storage             Storage
+	Notifier            producer.Producer
+	NotificationType    types.EventType
+	Target              types.EventTarget
+	PreviouslyReported  types.NotifiedRecordsPerCluster
+	CoolDown            string
+	Thresholds          EventThresholds
+	Filter              string
+	FilterByTag         bool
+	TagsSet             types.TagsSet
+	IgnoreDisabledRules bool
+	AggregatorStorage   Storage
 }
 
 // TODO: same way we have a Differ struct now, we should have a struct
@@ -861,6 +868,40 @@ func (d *Differ) RetrievePreviouslyReportedForEventTarget(cooldown string, targe
 	return nil
 }
 
+// connectAndCloseAggregatorDB establishes a short-lived read-only connection
+// to the aggregator database, executes any required startup queries (disabled
+// rules fetching will be added in CCXDEV-16564 and CCXDEV-16565), and closes
+// the connection immediately. The aggregator DB is not kept open during
+// per-cluster processing.
+func (d *Differ) connectAndCloseAggregatorDB(config *conf.ConfigStruct) error {
+	log.Info().Msg(aggregatorDBConnectionMessage)
+
+	aggregatorStorageConfig := conf.GetAggregatorStorageConfiguration(config)
+	aggregatorStorage, err := NewStorage(&aggregatorStorageConfig)
+	if err != nil {
+		log.Error().Err(err).Msg("Cannot connect to the aggregator database")
+		return &AggregatorStorageError{}
+	}
+
+	d.AggregatorStorage = aggregatorStorage
+
+	// TODO: Fetch disabled rules here (CCXDEV-16564, CCXDEV-16565)
+	// Rename the function to match the new behavior.
+	// The queries will populate in-memory maps in Differ for:
+	// - cluster_rule_toggle (per-cluster disables)
+	// - rule_disable (org-wide acks)
+
+	err = closeStorage(aggregatorStorage)
+	if err != nil {
+		log.Error().Err(err).Msg("Cannot close the aggregator database connection")
+		return &AggregatorStorageError{}
+	}
+
+	d.AggregatorStorage = nil
+	log.Info().Msg(aggregatorDBClosedMessage)
+	return nil
+}
+
 func (d *Differ) start(config *conf.ConfigStruct) error {
 	SetServiceStatus(StatusStarting)
 	defer SetServiceStatus(StatusInactive)
@@ -870,6 +911,20 @@ func (d *Differ) start(config *conf.ConfigStruct) error {
 
 	metricsConfiguration := conf.GetMetricsConfiguration(config)
 	registerMetrics(&metricsConfiguration)
+
+	// Establish and close the aggregator DB connection before any other
+	// startup work. This is a blocking operation: if the aggregator DB is
+	// unavailable the job fails fast without having consumed any other
+	// resources. Skipped entirely when --ignore-disabled-rules is set.
+	if d.IgnoreDisabledRules {
+		log.Info().Msg(aggregatorDBSkippedMessage)
+	} else {
+		err := d.connectAndCloseAggregatorDB(config)
+		if err != nil {
+			return err
+		}
+	}
+
 	log.Info().Msg(separator)
 	log.Info().Msg("Getting rule content and impacts from content service")
 
@@ -1080,6 +1135,8 @@ func Run(config conf.ConfigStruct, cliFlags types.CliFlags) int {
 		return selectError(err)
 	}
 
+	d.IgnoreDisabledRules = cliFlags.IgnoreDisabledRules
+
 	err = d.start(&config)
 	return selectError(err)
 }
@@ -1136,6 +1193,8 @@ func selectError(err error) int {
 		return ExitStatusConfiguration
 	case *StatusEventFilterError:
 		return ExitStatusEventFilterError
+	case *AggregatorStorageError:
+		return ExitStatusAggregatorStorageError
 	}
 
 	return ExitStatusOK
