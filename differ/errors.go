@@ -52,3 +52,10 @@ type StatusEventFilterError struct {
 func (e *StatusEventFilterError) Error() string {
 	return e.Msg
 }
+
+// AggregatorStorageError is related to any aggregator DB connection or query error
+type AggregatorStorageError struct{}
+
+func (e *AggregatorStorageError) Error() string {
+	return "AggregatorStorageError"
+}
