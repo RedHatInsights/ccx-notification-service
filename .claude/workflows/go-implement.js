@@ -465,6 +465,7 @@ ${specContext}
 - Do not create any git commits. Leave all changes in the working tree.
 - If the specification is ambiguous on any point, note it in warnings rather than guessing.
 - If a dependency from another issue is not yet merged or available, stop and include an explanation in warnings. Report whatever files you did manage to create in filesModified.
+- If a function would start with a boolean guard that skips the entire body, place the check at the call site instead. The function should do one thing; the caller decides whether to call it.
 
 ## Before finishing, verify
 
@@ -549,6 +550,7 @@ ${specContext}
 - Derive your **test scenarios and expected values** from the issue specification, acceptance criteria, design document (if provided), and BDD feature files (if provided). Together these define what the code should do.
 - You must also read the implementation code to understand function signatures, types, package structure, SQL queries, and mock setup. You need this to write tests that compile and follow the repo's patterns.
 - The distinction: assert against spec-defined behavior, but use implementation knowledge for test structure and setup.
+- Reference the **Unit tests** section loaded as part of the AGENTS.md which describes how to run the tests.
 - If a test correctly asserts spec behavior but the test still fails, that likely means the implementation does not match the spec. In that case, report it as a failure with "implementation may not match spec". Do not modify production code and do not weaken the assertion to make it pass.
 
 ## Instructions
@@ -561,15 +563,19 @@ ${specContext}
 6. Run \`go test\` for the affected packages. Capture the output.
 7. If a test fails, you may fix the test code. After 3 edit-and-rerun cycles on the same failing test, stop and add a description of what failed and why to the failures list. Keep the failing test in the file (do not delete it).
 8. If some tests pass and others could not be fixed, keep all tests, both passing and failing.
-9. Run \`make coverage\` to test the coverage. You should maintain or improve the coverage, but there might be uncoverable statements, check whether other test cases cover these scenarios or not.
-10. Ensure allowed test and mock files have license headers. Do not modify production files; report any missing production-file headers for Phase 1 to address.
+9. Run \`make test\` to run the full test suite.
+10. Run \`make coverage\` to test the coverage. You should maintain or improve the coverage, but there might be uncoverable statements, check whether other test cases cover these scenarios or not.
+11. Ensure allowed test and mock files have license headers. Do not modify production files; report any missing production-file headers for Phase 1 to address.
 
 ## Constraints
 
 - Do not create any git commits. Leave all changes in the working tree.
-- Do not modify production code (non-test files). You may only change test files, \`export_test.go\`, and regenerated mock files.
+- Do not run \`git stash\`, \`git checkout\`, \`git reset\`, \`git restore\`, \`git clean\`, or any other command that modifies or reverts tracked files. The implementation code exists only as uncommitted working tree modifications.
+- Do not modify production code (non-test files). You may only change test files, regenerated mock files, or \`export_test.go\` for testing unexported functions.
 - Do not silently skip or delete a failing test.
 - Focus on the packages that appear in the diff. Do not explore unrelated packages.
+- Do not explicitly initialize struct fields to their Go zero values (\`false\`, \`nil\`, \`0\`, \`""\`) in test setup. Write \`d := differ.Differ{}\` not \`d := differ.Differ{SomeFlag: false, Storage: nil}\`.
+- Do not write tests that are subsets of other tests. If one test already exercises the same code path with the same assertions, a second test covering a subset adds no value.
 
 ## Before finishing, verify
 
@@ -579,7 +585,7 @@ ${specContext}
 4. \`make coverage\` passes, or explains why it didn't pass (uncoverable statements, non-existing mocks).
 5. \`make license\` was run after all other steps.
 6. Test assertions check spec-defined expected values, not values copied from the implementation output.
-7. No production code was modified. Only test files, \`export_test.go\`, and mock files were changed.
+7. No production code was modified.
 8. No git commits were created.
 
 ${FEEDBACK_PROMPT}`,
@@ -685,7 +691,9 @@ ${specContext}
 
 ## Context
 
-A previous agent reported: tests passed=${tests.testsPassed}, testsWritten=${tests.testsWritten}. Verify this independently, do not assume it is accurate. All changes are in the working tree, not committed.
+The working tree should contain ${tests.testsWritten} test function(s) that ${tests.testsPassed ? 'passed' : 'failed'} when last run. Verify this independently — do not assume it is accurate.
+
+All changes exist only as **uncommitted working tree modifications** — there is no commit, no stash, no backup. Any git command that modifies tracked files (\`git stash\`, \`git checkout\`, \`git reset\`, \`git restore\`, \`git clean\`) will **permanently destroy** the implementation code with no way to recover it.
 
 ${tests.failures && tests.failures.length ? 'The following test failures were already identified before your review. If \`make before_commit\` fails on any of these, treat them as known issues rather than new findings:\n' + tests.failures.map(f => '- ' + f).join('\n') : ''}
 
@@ -704,13 +712,14 @@ ${tests.failures && tests.failures.length ? 'The following test failures were al
 4. Look for bugs: logic errors, off-by-one mistakes, nil pointer risks, race conditions, resource leaks, or security issues.
 5. Check test quality: do the test assertions check spec-defined expected values, or do they just mirror what the implementation returns? Flag assertions that would pass even if the code were broken (e.g., asserting the return value matches whatever the function happens to return, rather than what the spec says it should return). If the spec does not define exact expected values, note this limitation.
 6. Run \`make before_commit\` to check style, tests, license headers, and coverage. Report the output and whether it passed or failed (for beforeCommitPassed).
-7. If \`make before_commit\` fails, check whether the failing test or file appears in the diff (\`git diff ${baseSha}\`). If it does not, the failure is likely pre-existing. Also check whether the failure could be caused by a changed dependency (e.g., a modified interface that an existing test relies on). Note the distinction between new and pre-existing failures in your report.
+7. If \`make before_commit\` fails, determine whether the failure is pre-existing or caused by this change by using **read-only** methods only: check whether the failing file appears in \`git diff ${baseSha}\`, inspect the error message, or use \`git show ${baseSha}:<file>\` to view the original file content. Never checkout, stash, or revert files to test the baseline. Note the distinction between new and pre-existing failures in your report.
 
 ## Constraints
 
 - Do not fix any code. This is a read-only review.
 - Do not silently skip a failing check.
 - Do not create any git commits.
+- Do not run \`git stash\`, \`git checkout\`, \`git reset\`, \`git restore\`, \`git clean\`, or any other command that modifies or reverts tracked files. Use only read-only git commands (\`git diff\`, \`git status\`, \`git log\`, \`git show\`).
 
 ## Before finishing, verify
 
