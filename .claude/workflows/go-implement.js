@@ -60,16 +60,17 @@ export const meta = {
 //
 // Why the need for an INPUT_RATIO:
 // Claude Code agents read a lot of context (AGENTS.md, source files, diffs)
-// but produce relatively little output. The 50:1 ratio was calibrated from
-// /usage data across a few real issues (Opus 4 on Vertex AI). Cache reads
-// dominate input costs. If estimates drift from /usage actuals, re-calibrate
-// by comparing estimated vs actual costs.
+// but produce relatively little output. Cache reads dominate input volume
+// but cost only $0.50/MTok (vs $5/MTok uncached, $6.25/MTok cache write).
+// The ratio is calibrated so that (output * INPUT_RATIO * USD_PER_INPUT_MTOK)
+// approximates the real blended input cost. Re-calibrate by comparing
+// estimated vs actual costs from /usage.
 //
 // Pricing (as of 2026-07, Claude Opus 4 on Vertex AI):
 // $5/MTok input, $25/MTok output (same as the Anthropic API).
 const USD_PER_OUTPUT_MTOK = 25
 const USD_PER_INPUT_MTOK = 5
-const INPUT_RATIO = 50
+const INPUT_RATIO = 35
 
 // Estimate the dollar cost for a given number of output tokens.
 // Input tokens are not tracked by the runtime, so they are estimated
@@ -456,7 +457,6 @@ ${specContext}
 3. If you added new imports or dependencies, run \`go mod tidy\`.
 4. If you added or modified any interface, run \`make gen-mocks\` (see AGENTS.md for details).
 5. Run \`make style\` to check linting. Fix any issues it reports and re-run \`make style\` until it passes. If you cannot resolve an issue after 3 attempts, stop and describe the issue and the \`make style\` error output in warnings.
-6. Run \`make license\` to add license headers to any new \`.go\` files. This must be last because earlier steps (gen-mocks, style fixes) may create new files.
 
 ## Constraints
 
@@ -471,9 +471,8 @@ ${specContext}
 
 1. If you changed an interface, mocks are regenerated (you ran \`make gen-mocks\`).
 2. \`make style\` passes with no errors.
-3. \`make license\` was run after all other steps.
-4. Every acceptance criteria from the specification has a corresponding code change.
-5. No git commits were created. All changes are in the working tree only.
+3. Every acceptance criteria from the specification has a corresponding code change.
+4. No git commits were created. All changes are in the working tree only.
 
 ${FEEDBACK_PROMPT}`,
   { label: 'implement', schema: IMPLEMENT_SCHEMA }
@@ -583,10 +582,9 @@ ${specContext}
 2. \`make style\` passes with no errors.
 3. \`go test\` passes for all affected packages (or every failure is documented in the failures list with a description).
 4. \`make coverage\` passes, or explains why it didn't pass (uncoverable statements, non-existing mocks).
-5. \`make license\` was run after all other steps.
-6. Test assertions check spec-defined expected values, not values copied from the implementation output.
-7. No production code was modified.
-8. No git commits were created.
+5. Test assertions check spec-defined expected values, not values copied from the implementation output.
+6. No production code was modified.
+7. No git commits were created.
 
 ${FEEDBACK_PROMPT}`,
   { label: 'unit-tests', schema: UNIT_TEST_SCHEMA }
