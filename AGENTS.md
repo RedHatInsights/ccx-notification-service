@@ -105,9 +105,9 @@ make coverage       # displays coverage on terminal
 make benchmark      # runs benchmark tests
 ```
 
-When adding new unit tests or modifying existing ones, first verify the test by running it individually using `go test` to avoid wasting resources by running the whole test suite. If you're writing multiple unit test cases, run the full test suite using `make test` at the end. Do not run the full `make test` for each individual test.
+When adding new unit tests or modifying existing ones, first verify the test by running it individually using `go test -run '^TestName$' ./path/to/package` to avoid wasting resources by running the whole test suite. If you're writing multiple unit test cases, run the full test suite using `make test` at the end. Do not run the full `make test` for each individual test.
 
-Do not run the benchmarks using `make benchmark`, they will be run by a human reviewer if needed. `make coverage` runs the full test suite, same as `make test`, but also checks the coverage percentage. If you're planning on running both the full test suite and the coverage check, you should save resources by only running the `make coverage` as it does both things.
+Do not run the benchmarks using `make benchmark`, they will be run by a human reviewer if needed.
 
 The unit tests use `stretchr/testify` for assertions and `DATA-DOG/go-sqlmock` for database mocking. Generated mocks (via `mockery`) are in `tests/mocks/`. To regenerate mocks after interface changes:
 
