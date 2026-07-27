@@ -141,7 +141,7 @@ objects:
           command:
             - /bin/sh
             - -c
-            - ./ccx-notification-service --instant-reports --verbose
+            - ./ccx-notification-service --instant-reports --verbose --ignore-disabled-rules
       - name: to-service-log
         schedule: ${JOB_SCHEDULE__SERVICE_LOG}
         restartPolicy: Never
@@ -289,7 +289,7 @@ objects:
           command:
             - /bin/sh
             - -c
-            - ./ccx-notification-service --instant-reports --verbose
+            - ./ccx-notification-service --instant-reports --verbose --ignore-disabled-rules
 
     kafkaTopics:
       - topicName: ${OUTGOING_TOPIC}
