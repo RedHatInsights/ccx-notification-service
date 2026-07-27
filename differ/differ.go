@@ -891,13 +891,16 @@ func (d *Differ) connectAndCloseAggregatorDB(config *conf.ConfigStruct) error {
 	// - cluster_rule_toggle (per-cluster disables)
 	// - rule_disable (org-wide acks)
 
+	// close storage and remove reference to the DB in Differ
 	err = closeStorage(aggregatorStorage)
+
+	d.AggregatorStorage = nil
+
 	if err != nil {
 		log.Error().Err(err).Msg("Cannot close the aggregator database connection")
 		return &AggregatorStorageError{}
 	}
 
-	d.AggregatorStorage = nil
 	log.Info().Msg(aggregatorDBClosedMessage)
 	return nil
 }
