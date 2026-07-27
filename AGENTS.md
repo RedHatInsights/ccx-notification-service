@@ -105,13 +105,15 @@ make coverage       # displays coverage on terminal
 make benchmark      # runs benchmark tests
 ```
 
+When adding new unit tests or modifying existing ones, first verify the test by running it individually using `go test -run '^TestName$' ./path/to/package` to avoid wasting resources by running the whole test suite. If you're writing multiple unit test cases, run the full test suite using `make test` at the end. Do not run the full `make test` for each individual test.
+
+Do not run the benchmarks using `make benchmark`, they will be run by a human reviewer if needed.
+
 The unit tests use `stretchr/testify` for assertions and `DATA-DOG/go-sqlmock` for database mocking. Generated mocks (via `mockery`) are in `tests/mocks/`. To regenerate mocks after interface changes:
 
 ```bash
 make gen-mocks
 ```
-
-Coverage threshold is 73%, enforced in CI.
 
 ### BDD tests
 
@@ -191,12 +193,12 @@ Both run `./ccx-notification-service --instant-reports --verbose` with different
 
 ## Code Conventions
 
-- Always reference the existing code style
+- Always reference the existing code style, especially when creating new files.
 - Standard Go project layout with `cmd/` for the entry point
 - All database queries in `differ/storage.go`
 - Configuration via Viper with TOML files and environment variable overrides
 - Zerolog for structured logging
-- `export_test.go` files exist as a Go workaround to allow test files (which use the external `package differ_test`) to access unexported functions. They create public aliases for private symbols. If you add a new unexported function that needs testing, add an alias to the corresponding `export_test.go`.
+- `export_test.go` files exist as a Go workaround to allow test files to access unexported functions purely for testing purposes. They create public aliases for private symbols. If you add a new unexported function that needs testing, add an alias to the corresponding `export_test.go` instead of making the function globally exported. Always use the existing `var (...)` block pattern: `ExportedName = unexportedName` for standalone functions, and `ExportedName = (*ExportedType).unexportedMethod` (method expression) for methods on exported types. Do not create standalone wrapper functions.
 - Generated mocks in `tests/mocks/` via `mockery` (do not edit manually)
 - Pre-commit hooks enforce style on every commit. Run `make before_commit` before pushing.
 
