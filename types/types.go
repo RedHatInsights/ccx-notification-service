@@ -266,6 +266,19 @@ type ClusterOrgKey struct {
 	ClusterName ClusterName
 }
 
+// ClusterRuleKey is a composite key identifying a specific rule on a specific
+// cluster. It is used as the map key for cluster-level disabled rules loaded
+// from the aggregator DB's cluster_rule_toggle table.
+type ClusterRuleKey struct {
+	ClusterID ClusterName
+	RuleID    RuleID
+	ErrorKey  ErrorKey
+}
+
+// ClusterDisabledRules is a set of per-cluster disabled rules. The map value
+// is an empty struct because only presence matters (O(1) lookup).
+type ClusterDisabledRules map[ClusterRuleKey]struct{}
+
 // NotifiedRecordsPerCluster maps a string representation of ClusterOrgKey to a NotificationRecord
 type NotifiedRecordsPerCluster map[ClusterOrgKey]NotificationRecord
 
