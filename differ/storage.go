@@ -112,6 +112,7 @@ type Storage interface {
 	CleanupNewReports(maxAge string) (int, error)
 	PrintOldReportsForCleanup(maxAge string) error
 	CleanupOldReports(maxAge string) (int, error)
+	ReadClusterRuleToggles() (types.ClusterDisabledRules, error)
 }
 
 // DBStorage is an implementation of Storage interface that use selected SQL like database
@@ -217,6 +218,15 @@ const (
 		SELECT report
 		   FROM new_reports
 		  WHERE org_id = $1 AND cluster = $2 AND updated_at = $3;
+       `
+
+	// ReadClusterRuleTogglesQuery selects all per-cluster disabled rules from
+	// the aggregator DB. Only rows with disabled = 1 are returned; re-enabled
+	// rows (disabled = 0) are excluded.
+	ReadClusterRuleTogglesQuery = `
+		SELECT cluster_id, rule_id, error_key
+		  FROM cluster_rule_toggle
+		 WHERE disabled = 1
        `
 )
 
@@ -697,6 +707,49 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(
 	}
 
 	return notificationRecords, nil
+}
+
+// ReadClusterRuleToggles reads all per-cluster disabled rules from the
+// cluster_rule_toggle table in the aggregator database. Only rows where
+// disabled = 1 are returned. The result is a hash map keyed by
+// (cluster_id, rule_id, error_key) for O(1) lookups during per-rule
+// processing.
+func (storage DBStorage) ReadClusterRuleToggles() (types.ClusterDisabledRules, error) {
+	disabledRules := make(types.ClusterDisabledRules)
+
+	rows, err := storage.connection.Query(ReadClusterRuleTogglesQuery)
+	if err != nil {
+		return disabledRules, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			log.Error().Err(err).Msg(unableToCloseDBRowsHandle)
+		}
+	}()
+
+	for rows.Next() {
+		var (
+			clusterID types.ClusterName
+			ruleID    types.RuleID
+			errorKey  types.ErrorKey
+		)
+
+		if err := rows.Scan(&clusterID, &ruleID, &errorKey); err != nil {
+			return disabledRules, err
+		}
+		key := types.ClusterRuleKey{
+			ClusterID: clusterID,
+			RuleID:    ruleID,
+			ErrorKey:  errorKey,
+		}
+
+		// empty struct because we just need to check for the map key presence
+		disabledRules[key] = struct{}{}
+	}
+
+	return disabledRules, nil
 }
 
 // DeleteRowFromNewReports deletes one selected row from `new_reports` table.
