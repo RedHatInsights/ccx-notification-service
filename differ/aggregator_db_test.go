@@ -314,4 +314,3 @@ func TestNewInitializesClusterDisabledRulesMap(t *testing.T) {
 	assert.NotNil(t, d.ClusterDisabledRules, "ClusterDisabledRules should be initialized by New()")
 	assert.Empty(t, d.ClusterDisabledRules, "ClusterDisabledRules should be empty after construction")
 }
-
