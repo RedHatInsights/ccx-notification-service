@@ -248,8 +248,8 @@ func NewStorage(configuration *conf.StorageConfiguration) (*DBStorage, error) {
 	}
 
 	log.Info().Msgf(
-		"Making connection to data storage, driver=%s datasource=%s",
-		driverName, dataSource,
+		"Making connection to data storage, driver=%s, host=%s, database=%s",
+		driverName, configuration.PGHost, configuration.PGDBName,
 	)
 
 	connection, err := sql.Open(driverName, dataSource)
