@@ -2483,3 +2483,233 @@ func TestWriteNotificationRecordForClusterWrongDriver(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestReadClusterRuleTogglesPopulatesMap checks that
+// ReadClusterRuleToggles returns a correctly populated map when the
+// cluster_rule_toggle table contains rows with disabled = 1.
+// This is the acceptance criteria: "Unit test with a mock DB verifying
+// the map is populated correctly."
+func TestReadClusterRuleTogglesPopulatesMap(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"cluster_id", "rule_id", "error_key"})
+
+	// these rows represent disabled rules from the aggregator DB
+	rows.AddRow("5d5892d4-2g85-4ccf-02bg-548dfc9767aa", "test_rule", "TEST_RULE_CRITICAL_IMPACT")
+	rows.AddRow("7e6903e5-3h96-5ddf-13ch-659efd8878bb", "test_rule", "TEST_RULE_IMPORTANT_IMPACT")
+
+	// expected query performed by tested function
+	expectedQuery := regexp.QuoteMeta(differ.ReadClusterRuleTogglesQuery)
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	disabledRules, err := storage.ReadClusterRuleToggles()
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying cluster_rule_toggle table")
+
+	// exactly two disabled rules should be returned
+	assert.Len(t, disabledRules, 2, "Exactly 2 disabled rules should be returned")
+
+	// check that the expected keys are present in the map
+	key1 := types.ClusterRuleKey{
+		ClusterID: "5d5892d4-2g85-4ccf-02bg-548dfc9767aa",
+		RuleID:    "test_rule",
+		ErrorKey:  "TEST_RULE_CRITICAL_IMPACT",
+	}
+	_, exists := disabledRules[key1]
+	assert.True(t, exists, "First disabled rule should be present in the map")
+
+	key2 := types.ClusterRuleKey{
+		ClusterID: "7e6903e5-3h96-5ddf-13ch-659efd8878bb",
+		RuleID:    "test_rule",
+		ErrorKey:  "TEST_RULE_IMPORTANT_IMPACT",
+	}
+	_, exists = disabledRules[key2]
+	assert.True(t, exists, "Second disabled rule should be present in the map")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadClusterRuleTogglesEmptyTable checks that ReadClusterRuleToggles
+// returns an empty (not nil) map when the cluster_rule_toggle table has
+// no rows with disabled = 1.
+// This is the acceptance criteria: "Unit test verifying an empty table
+// results in an empty map."
+func TestReadClusterRuleTogglesEmptyTable(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query - empty result set
+	rows := sqlmock.NewRows([]string{"cluster_id", "rule_id", "error_key"})
+
+	// expected query performed by tested function
+	expectedQuery := regexp.QuoteMeta(differ.ReadClusterRuleTogglesQuery)
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	disabledRules, err := storage.ReadClusterRuleToggles()
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying empty cluster_rule_toggle table")
+
+	// map should be empty but not nil
+	assert.NotNil(t, disabledRules, "Returned map should not be nil")
+	assert.Empty(t, disabledRules, "Map should be empty for an empty table")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadClusterRuleTogglesOnQueryError checks that ReadClusterRuleToggles
+// returns an error when the SQL query fails.
+func TestReadClusterRuleTogglesOnQueryError(t *testing.T) {
+	// error to be thrown
+	mockedError := errors.New("mocked error")
+
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// expected query performed by tested function
+	expectedQuery := regexp.QuoteMeta(differ.ReadClusterRuleTogglesQuery)
+
+	// let's raise an error!
+	mock.ExpectQuery(expectedQuery).WillReturnError(mockedError)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	disabledRules, err := storage.ReadClusterRuleToggles()
+
+	// tested method SHOULD return an error
+	assert.Error(t, err, "an error is expected while querying cluster_rule_toggle table")
+
+	// map should still be initialized (not nil) even on error
+	assert.NotNil(t, disabledRules, "Returned map should not be nil even on error")
+	assert.Empty(t, disabledRules, "Map should be empty on query error")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadClusterRuleTogglesOnScanError checks that ReadClusterRuleToggles
+// returns an error when row scanning fails due to invalid data types.
+func TestReadClusterRuleTogglesOnScanError(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query with invalid data
+	// use a column type mismatch to trigger a scan error;
+	// also set a close error to exercise the deferred rows.Close() error branch
+	// (CloseError only fires when rows.Next() has not reached EOF)
+	rows := sqlmock.NewRows([]string{"cluster_id", "rule_id", "error_key"})
+	rows.AddRow("valid_cluster", "test_rule", nil)
+	rows.CloseError(fmt.Errorf("close failed"))
+
+	// expected query performed by tested function
+	expectedQuery := regexp.QuoteMeta(differ.ReadClusterRuleTogglesQuery)
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	disabledRules, err := storage.ReadClusterRuleToggles()
+
+	// tested method SHOULD return the scan error (not the close error)
+	assert.Error(t, err, "an error is expected while scanning cluster_rule_toggle rows")
+
+	// map should be empty on scan error
+	assert.Empty(t, disabledRules, "Map should be empty on scan error")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadClusterRuleTogglesSameClusterMultipleRules checks that multiple
+// disabled rules for the same cluster are stored as separate entries in
+// the map. This aligns with the BDD scenario "Check that only the
+// re-enabled rule is notified when other rules are in cooldown" which
+// expects per-rule granularity.
+func TestReadClusterRuleTogglesSameClusterMultipleRules(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"cluster_id", "rule_id", "error_key"})
+
+	// same cluster, two different disabled rules
+	clusterID := "5d5892d4-2g85-4ccf-02bg-548dfc9767aa"
+	rows.AddRow(clusterID, "test_rule", "TEST_RULE_CRITICAL_IMPACT")
+	rows.AddRow(clusterID, "test_rule", "TEST_RULE_IMPORTANT_IMPACT")
+
+	// expected query performed by tested function
+	expectedQuery := regexp.QuoteMeta(differ.ReadClusterRuleTogglesQuery)
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	disabledRules, err := storage.ReadClusterRuleToggles()
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying cluster_rule_toggle table")
+
+	// both rules should be present as separate entries
+	assert.Len(t, disabledRules, 2, "Two disabled rules for the same cluster should result in 2 map entries")
+
+	// verify both keys exist
+	key1 := types.ClusterRuleKey{
+		ClusterID: types.ClusterName(clusterID),
+		RuleID:    "test_rule",
+		ErrorKey:  "TEST_RULE_CRITICAL_IMPACT",
+	}
+	_, exists := disabledRules[key1]
+	assert.True(t, exists, "Critical impact rule should be present")
+
+	key2 := types.ClusterRuleKey{
+		ClusterID: types.ClusterName(clusterID),
+		RuleID:    "test_rule",
+		ErrorKey:  "TEST_RULE_IMPORTANT_IMPACT",
+	}
+	_, exists = disabledRules[key2]
+	assert.True(t, exists, "Important impact rule should be present")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
