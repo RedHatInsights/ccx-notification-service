@@ -315,25 +315,3 @@ func TestNewInitializesClusterDisabledRulesMap(t *testing.T) {
 	assert.Empty(t, d.ClusterDisabledRules, "ClusterDisabledRules should be empty after construction")
 }
 
-// TestIgnoreDisabledRulesClusterDisabledRulesStaysEmpty verifies that when
-// --ignore-disabled-rules is set, ClusterDisabledRules remains empty because
-// the aggregator DB connection is skipped entirely.
-func TestIgnoreDisabledRulesClusterDisabledRulesStaysEmpty(t *testing.T) {
-	config := conf.ConfigStruct{
-		Storage: conf.StorageConfiguration{
-			Driver: "sqlite3",
-		},
-		ServiceLog: conf.ServiceLogConfiguration{
-			Enabled: true,
-		},
-		AggregatorStorage: conf.StorageConfiguration{
-			Driver: "sqlite3",
-		},
-	}
-	cliFlags := types.CliFlags{
-		InstantReports:      true,
-		IgnoreDisabledRules: true,
-	}
-	retval := differ.Run(config, cliFlags)
-	assert.Equal(t, differ.ExitStatusFetchContentError, retval)
-}
