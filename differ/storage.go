@@ -113,6 +113,7 @@ type Storage interface {
 	PrintOldReportsForCleanup(maxAge string) error
 	CleanupOldReports(maxAge string) (int, error)
 	ReadClusterRuleToggles() (types.ClusterDisabledRules, error)
+	ReadOrgRuleDisables() (types.OrgDisabledRules, error)
 }
 
 // DBStorage is an implementation of Storage interface that use selected SQL like database
@@ -227,6 +228,15 @@ const (
 		SELECT cluster_id, rule_id, error_key
 		  FROM cluster_rule_toggle
 		 WHERE disabled = 1
+       `
+
+	// ReadOrgRuleDisablesQuery selects all org-wide disabled (acked) rules
+	// from the aggregator DB's rule_disable table. The presence of a row
+	// means the rule is disabled; re-enabling deletes the row, so all rows
+	// are fetched.
+	ReadOrgRuleDisablesQuery = `
+		SELECT org_id, rule_id, error_key
+		  FROM rule_disable
        `
 )
 
@@ -743,6 +753,48 @@ func (storage DBStorage) ReadClusterRuleToggles() (types.ClusterDisabledRules, e
 			ClusterID: clusterID,
 			RuleID:    ruleID,
 			ErrorKey:  errorKey,
+		}
+
+		// empty struct because we just need to check for the map key presence
+		disabledRules[key] = struct{}{}
+	}
+
+	return disabledRules, nil
+}
+
+// ReadOrgRuleDisables reads all org-wide disabled (acked) rules from the
+// rule_disable table in the aggregator database. Every row present in the
+// table represents a disabled rule. The result is a hash map keyed by
+// (org_id, rule_id, error_key) for O(1) lookups during per-rule processing.
+func (storage DBStorage) ReadOrgRuleDisables() (types.OrgDisabledRules, error) {
+	disabledRules := make(types.OrgDisabledRules)
+
+	rows, err := storage.connection.Query(ReadOrgRuleDisablesQuery)
+	if err != nil {
+		return disabledRules, err
+	}
+
+	defer func() {
+		err := rows.Close()
+		if err != nil {
+			log.Error().Err(err).Msg(unableToCloseDBRowsHandle)
+		}
+	}()
+
+	for rows.Next() {
+		var (
+			orgID    string
+			ruleID   types.RuleID
+			errorKey types.ErrorKey
+		)
+
+		if err := rows.Scan(&orgID, &ruleID, &errorKey); err != nil {
+			return disabledRules, err
+		}
+		key := types.OrgRuleKey{
+			OrgID:    orgID,
+			RuleID:   ruleID,
+			ErrorKey: errorKey,
 		}
 
 		// empty struct because we just need to check for the map key presence

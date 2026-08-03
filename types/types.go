@@ -279,6 +279,20 @@ type ClusterRuleKey struct {
 // is an empty struct because only presence matters (O(1) lookup).
 type ClusterDisabledRules map[ClusterRuleKey]struct{}
 
+// OrgRuleKey is a composite key identifying a specific rule acked across all
+// clusters in an organization. It is used as the map key for org-wide disabled
+// rules loaded from the aggregator DB's rule_disable table. OrgID is a string
+// because the aggregator DB stores it as VARCHAR.
+type OrgRuleKey struct {
+	OrgID    string
+	RuleID   RuleID
+	ErrorKey ErrorKey
+}
+
+// OrgDisabledRules is a set of org-wide disabled (acked) rules. The map value
+// is an empty struct because only presence matters (O(1) lookup).
+type OrgDisabledRules map[OrgRuleKey]struct{}
+
 // NotifiedRecordsPerCluster maps a string representation of ClusterOrgKey to a NotificationRecord
 type NotifiedRecordsPerCluster map[ClusterOrgKey]NotificationRecord
 
