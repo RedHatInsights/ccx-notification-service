@@ -801,6 +801,10 @@ func (storage DBStorage) ReadOrgRuleDisables() (types.OrgDisabledRules, error) {
 		disabledRules[key] = struct{}{}
 	}
 
+	if err := rows.Err(); err != nil {
+		return disabledRules, err
+	}
+
 	return disabledRules, nil
 }
 
