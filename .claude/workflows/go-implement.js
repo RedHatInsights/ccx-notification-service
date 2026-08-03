@@ -453,7 +453,7 @@ ${specContext}
 ## Instructions
 
 1. Read the files you are going to modify in full before writing anything. Also read any files referenced in the issue specification. You may explore other files if you have a specific reason (understanding a type, checking an interface, reading a dependency), but stay focused on the task.
-2. Implement the production code changes described in the acceptance criteria. If a design document is provided above, use it as the primary guide for architecture and approach. Follow the existing code style and patterns in the repo.
+2. Implement the production code changes described in the scope and the acceptance criteria. If a design document is provided above, use it as the primary guide for architecture and approach. Follow the existing code style and patterns in the repo. Before introducing a new pattern (e.g., for dependency injection or testability), check how similar problems are solved in the same package and follow those conventions.
 3. If you added new imports or dependencies, run \`go mod tidy\`.
 4. If you added or modified any interface, run \`make gen-mocks\` (see AGENTS.md for details).
 5. Run \`make style\` to check linting. Fix any issues it reports and re-run \`make style\` until it passes. If you cannot resolve an issue after 3 attempts, stop and describe the issue and the \`make style\` error output in warnings.
@@ -563,7 +563,7 @@ ${specContext}
 7. If a test fails, you may fix the test code. After 3 edit-and-rerun cycles on the same failing test, stop and add a description of what failed and why to the failures list. Keep the failing test in the file (do not delete it).
 8. If some tests pass and others could not be fixed, keep all tests, both passing and failing.
 9. Run \`make test\` to run the full test suite.
-10. Run \`make coverage\` to test the coverage. You should maintain or improve the coverage, but there might be uncoverable statements, check whether other test cases cover these scenarios or not.
+10. Run \`make coverage\` to test the coverage. You should maintain or improve the coverage. Some functions are structurally uncoverable in unit tests — for example, orchestrator functions that create their own database connections internally. This is acceptable when the underlying methods they call are independently covered. Do not refactor production code for testability; report the coverage gap in feedback instead.
 11. Ensure allowed test and mock files have license headers. Do not modify production files; report any missing production-file headers for Phase 1 to address.
 
 ## Constraints
@@ -571,6 +571,7 @@ ${specContext}
 - Do not create any git commits. Leave all changes in the working tree.
 - Do not run \`git stash\`, \`git checkout\`, \`git reset\`, \`git restore\`, \`git clean\`, or any other command that modifies or reverts tracked files. The implementation code exists only as uncommitted working tree modifications.
 - Do not modify production code (non-test files). You may only change test files, regenerated mock files, or \`export_test.go\` for testing unexported functions.
+- If an existing test fails because the implementation changed the behavior of a previously-tested function, first verify that the failure is caused by the new code and not a bug in the implementation. Only once you have verified this, update the test to match the new behavior.
 - Do not silently skip or delete a failing test.
 - Focus on the packages that appear in the diff. Do not explore unrelated packages.
 - Do not explicitly initialize struct fields to their Go zero values (\`false\`, \`nil\`, \`0\`, \`""\`) in test setup. Write \`d := differ.Differ{}\` not \`d := differ.Differ{SomeFlag: false, Storage: nil}\`.
@@ -689,7 +690,7 @@ ${specContext}
 
 ## Context
 
-The working tree should contain ${tests.testsWritten} test function(s) that ${tests.testsPassed ? 'passed' : 'failed'} when last run. Verify this independently — do not assume it is accurate.
+The diff should contain ${tests.testsWritten} new or modified test function(s) that ${tests.testsPassed ? 'passed' : 'failed'} when last run. Verify this independently by counting test functions that appear in the diff (added or modified, not unchanged).
 
 All changes exist only as **uncommitted working tree modifications** — there is no commit, no stash, no backup. Any git command that modifies tracked files (\`git stash\`, \`git checkout\`, \`git reset\`, \`git restore\`, \`git clean\`) will **permanently destroy** the implementation code with no way to recover it.
 
