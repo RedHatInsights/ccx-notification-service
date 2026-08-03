@@ -554,7 +554,7 @@ ${specContext}
 
 ## Instructions
 
-1. Run \`git diff ${baseSha}\` to see what was implemented and which files changed (these are uncommitted working tree changes).
+1. Run \`git diff ${baseSha}\` and \`git ls-files --others --exclude-standard '*.go'\` to see what was implemented and which files changed (these are uncommitted working tree changes).
 2. Read one or two existing test files in the same packages to learn the patterns (assertion libraries, mock setup, test naming, comment style). Match the style you find.
 3. If the diff shows a new or changed interface, run \`make gen-mocks\` to ensure mocks are up to date before writing tests.
 4. Write unit tests that verify each acceptance criteria from the issue specification. If BDD feature files are provided, use them as additional source of expected behavior. They describe expected user-facing behavior and edge cases that the acceptance criteria may not cover explicitly. Follow the \`export_test.go\` and mock patterns from AGENTS.md.
@@ -705,7 +705,7 @@ ${tests.failures && tests.failures.length ? 'The following test failures were al
 
 ## Instructions
 
-1. Run \`git diff ${baseSha}\` to see the full diff (these are uncommitted working tree changes, implementation + tests).
+1. Run \`git diff ${baseSha}\` and \`git ls-files --others --exclude-standard '*.go'\` to see the full diff including newly created files (these are uncommitted working tree changes, implementation + tests).
 2. Walk through each acceptance criteria from the specification, the design document (if provided) and BDD scenarios (if provided). Check whether all the criteria are met by the code AND covered by a test. Flag any unmet criteria.
 3. Look for missing edge cases, especially scenarios from the specification, design document, or BDD feature files that the code does not handle.
 4. Look for bugs: logic errors, off-by-one mistakes, nil pointer risks, race conditions, resource leaks, or security issues.
