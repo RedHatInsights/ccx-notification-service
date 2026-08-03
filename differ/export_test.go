@@ -59,7 +59,8 @@ var (
 	CloseStorage                   = closeStorage
 	PrintNewReportsForCleanup      = printNewReportsForCleanup
 
-	ConnectAndCloseAggregatorDB = (*Differ).connectAndCloseAggregatorDB
+	LoadDisabledRules                  = (*Differ).loadDisabledRules
+	FetchDisabledRulesFromAggregatorDB = (*Differ).fetchDisabledRulesFromAggregatorDB
 )
 
 const (

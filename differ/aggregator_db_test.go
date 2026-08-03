@@ -18,6 +18,7 @@ package differ_test
 
 import (
 	"bytes"
+	"fmt"
 	"testing"
 
 	"github.com/rs/zerolog"
@@ -26,6 +27,7 @@ import (
 
 	"github.com/RedHatInsights/ccx-notification-service/conf"
 	"github.com/RedHatInsights/ccx-notification-service/differ"
+	"github.com/RedHatInsights/ccx-notification-service/tests/mocks"
 	"github.com/RedHatInsights/ccx-notification-service/types"
 )
 
@@ -36,56 +38,114 @@ func TestAggregatorStorageErrorMessage(t *testing.T) {
 	assert.Equal(t, "AggregatorStorageError", err.Error())
 }
 
-// TestConnectAndCloseAggregatorDBSuccess tests the happy path where the
-// aggregator DB connection is established and closed successfully. This
-// covers the acceptance criteria: "Aggregator DB connection is established
-// before any other startup work" and "Connection is closed after disabled
-// rules are fetched."
-func TestConnectAndCloseAggregatorDBSuccess(t *testing.T) {
-	buf := new(bytes.Buffer)
-	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
-	zerolog.SetGlobalLevel(zerolog.InfoLevel)
-	defer zerolog.SetGlobalLevel(zerolog.WarnLevel)
+// --- loadDisabledRules tests (unit, with mock storage) ---
 
-	config := conf.ConfigStruct{
-		AggregatorStorage: conf.StorageConfiguration{
-			Driver: "sqlite3",
-		},
+// TestLoadDisabledRulesPopulatesMap verifies the happy path: when
+// ReadClusterRuleToggles returns data, loadDisabledRules populates
+// ClusterDisabledRules on the Differ struct.
+func TestLoadDisabledRulesPopulatesMap(t *testing.T) {
+	expected := types.ClusterDisabledRules{
+		{ClusterID: "cluster-1", RuleID: "rule.module.1", ErrorKey: "ek1"}: {},
+		{ClusterID: "cluster-2", RuleID: "rule.module.2", ErrorKey: "ek2"}: {},
 	}
 
-	d := differ.Differ{}
-	err := differ.ConnectAndCloseAggregatorDB(&d, &config)
-	assert.Nil(t, err)
+	storage := mocks.Storage{}
+	storage.On("ReadClusterRuleToggles").Return(expected, nil)
 
-	// After successful connect-and-close, AggregatorStorage should be nil
-	// (connection was cleaned up).
-	assert.Nil(t, d.AggregatorStorage)
+	d := differ.Differ{
+		AggregatorStorage:    &storage,
+		ClusterDisabledRules: make(types.ClusterDisabledRules),
+	}
+	err := differ.LoadDisabledRules(&d)
 
-	executionLog := buf.String()
-	assert.Contains(t, executionLog, differ.AggregatorDBConnectionMessage)
-	assert.Contains(t, executionLog, differ.AggregatorDBClosedMessage)
+	assert.NoError(t, err)
+	assert.Len(t, d.ClusterDisabledRules, 2)
+	for key := range expected {
+		_, ok := d.ClusterDisabledRules[key]
+		assert.True(t, ok, "expected key %v in ClusterDisabledRules", key)
+	}
+	storage.AssertExpectations(t)
 }
 
-// TestConnectAndCloseAggregatorDBConnectionFailure tests that when the
-// aggregator DB connection fails, the method returns an AggregatorStorageError.
-// This covers: "If the aggregator DB is unreachable, the service exits with
-// an appropriate error."
-func TestConnectAndCloseAggregatorDBConnectionFailure(t *testing.T) {
-	config := conf.ConfigStruct{
-		AggregatorStorage: conf.StorageConfiguration{
-			Driver: "unsupported-driver",
-		},
-	}
+// TestLoadDisabledRulesEmptyTable verifies that when the aggregator
+// table has no disabled rules, the map stays empty.
+func TestLoadDisabledRulesEmptyTable(t *testing.T) {
+	storage := mocks.Storage{}
+	storage.On("ReadClusterRuleToggles").Return(make(types.ClusterDisabledRules), nil)
 
-	d := differ.Differ{}
-	err := differ.ConnectAndCloseAggregatorDB(&d, &config)
+	d := differ.Differ{
+		AggregatorStorage:    &storage,
+		ClusterDisabledRules: make(types.ClusterDisabledRules),
+	}
+	err := differ.LoadDisabledRules(&d)
+
+	assert.NoError(t, err)
+	assert.NotNil(t, d.ClusterDisabledRules)
+	assert.Empty(t, d.ClusterDisabledRules)
+	storage.AssertExpectations(t)
+}
+
+// TestLoadDisabledRulesQueryError verifies that when ReadClusterRuleToggles
+// fails, loadDisabledRules returns an AggregatorStorageError.
+func TestLoadDisabledRulesQueryError(t *testing.T) {
+	storage := mocks.Storage{}
+	storage.On("ReadClusterRuleToggles").Return(types.ClusterDisabledRules(nil), fmt.Errorf("query failed"))
+
+	d := differ.Differ{
+		AggregatorStorage:    &storage,
+		ClusterDisabledRules: make(types.ClusterDisabledRules),
+	}
+	err := differ.LoadDisabledRules(&d)
+
 	assert.ErrorIs(t, err, &differ.AggregatorStorageError{})
-	assert.Nil(t, d.AggregatorStorage)
+	assert.Empty(t, d.ClusterDisabledRules, "map should not be modified on error")
+	storage.AssertExpectations(t)
 }
 
-// TestConnectAndCloseAggregatorDBLogsConnectionMessage verifies that the
+// TestLoadDisabledRulesLogsCount verifies that the info log with the
+// disabled rules count is emitted on success.
+func TestLoadDisabledRulesLogsCount(t *testing.T) {
+	buf := new(bytes.Buffer)
+	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	defer zerolog.SetGlobalLevel(zerolog.WarnLevel)
+
+	expected := types.ClusterDisabledRules{
+		{ClusterID: "c1", RuleID: "r1", ErrorKey: "ek1"}: {},
+	}
+
+	storage := mocks.Storage{}
+	storage.On("ReadClusterRuleToggles").Return(expected, nil)
+
+	d := differ.Differ{
+		AggregatorStorage:    &storage,
+		ClusterDisabledRules: make(types.ClusterDisabledRules),
+	}
+	_ = differ.LoadDisabledRules(&d)
+
+	executionLog := buf.String()
+	assert.Contains(t, executionLog, "Loaded per-cluster disabled rules from cluster_rule_toggle")
+}
+
+// --- fetchDisabledRulesFromAggregatorDB tests (real DB, same pattern as Run) ---
+
+// TestFetchDisabledRulesFromAggregatorDBConnectionFailure tests that when the
+// aggregator DB connection fails, the method returns an AggregatorStorageError.
+func TestFetchDisabledRulesFromAggregatorDBConnectionFailure(t *testing.T) {
+	config := conf.ConfigStruct{
+		AggregatorStorage: conf.StorageConfiguration{
+			Driver: "unsupported-driver",
+		},
+	}
+
+	d := differ.Differ{}
+	err := differ.FetchDisabledRulesFromAggregatorDB(&d, &config)
+	assert.ErrorIs(t, err, &differ.AggregatorStorageError{})
+}
+
+// TestFetchDisabledRulesFromAggregatorDBLogsConnectionMessage verifies that the
 // connection attempt log message is produced.
-func TestConnectAndCloseAggregatorDBLogsConnectionMessage(t *testing.T) {
+func TestFetchDisabledRulesFromAggregatorDBLogsConnectionMessage(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
@@ -98,15 +158,15 @@ func TestConnectAndCloseAggregatorDBLogsConnectionMessage(t *testing.T) {
 	}
 
 	d := differ.Differ{}
-	_ = differ.ConnectAndCloseAggregatorDB(&d, &config)
+	_ = differ.FetchDisabledRulesFromAggregatorDB(&d, &config)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, differ.AggregatorDBConnectionMessage)
 }
 
-// TestConnectAndCloseAggregatorDBLogsOnConnectionFailure verifies the error
+// TestFetchDisabledRulesFromAggregatorDBLogsOnConnectionFailure verifies the error
 // log message when the aggregator DB connection fails.
-func TestConnectAndCloseAggregatorDBLogsOnConnectionFailure(t *testing.T) {
+func TestFetchDisabledRulesFromAggregatorDBLogsOnConnectionFailure(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.Logger = zerolog.New(buf).Level(zerolog.ErrorLevel)
 	zerolog.SetGlobalLevel(zerolog.ErrorLevel)
@@ -119,16 +179,15 @@ func TestConnectAndCloseAggregatorDBLogsOnConnectionFailure(t *testing.T) {
 	}
 
 	d := differ.Differ{}
-	_ = differ.ConnectAndCloseAggregatorDB(&d, &config)
+	_ = differ.FetchDisabledRulesFromAggregatorDB(&d, &config)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "Cannot connect to the aggregator database")
 }
 
-// TestConnectAndCloseAggregatorDBFailureDoesNotLogClose verifies that when
-// connection fails, the close log message is NOT produced. This demonstrates
-// the fail-fast behavior: the method returns immediately on connection error.
-func TestConnectAndCloseAggregatorDBFailureDoesNotLogClose(t *testing.T) {
+// TestFetchDisabledRulesFromAggregatorDBFailureDoesNotLogClose verifies that when
+// connection fails, the close log message is NOT produced.
+func TestFetchDisabledRulesFromAggregatorDBFailureDoesNotLogClose(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
 	zerolog.SetGlobalLevel(zerolog.InfoLevel)
@@ -141,21 +200,40 @@ func TestConnectAndCloseAggregatorDBFailureDoesNotLogClose(t *testing.T) {
 	}
 
 	d := differ.Differ{}
-	_ = differ.ConnectAndCloseAggregatorDB(&d, &config)
+	_ = differ.FetchDisabledRulesFromAggregatorDB(&d, &config)
 
 	executionLog := buf.String()
 	assert.NotContains(t, executionLog, differ.AggregatorDBClosedMessage)
 }
 
+// TestFetchDisabledRulesFromAggregatorDBReadTogglesFailure tests that when the
+// aggregator DB connection succeeds but cluster_rule_toggle does not exist,
+// the method returns an AggregatorStorageError.
+func TestFetchDisabledRulesFromAggregatorDBReadTogglesFailure(t *testing.T) {
+	buf := new(bytes.Buffer)
+	log.Logger = zerolog.New(buf).Level(zerolog.ErrorLevel)
+	zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	defer zerolog.SetGlobalLevel(zerolog.WarnLevel)
+
+	config := conf.ConfigStruct{
+		AggregatorStorage: conf.StorageConfiguration{
+			Driver: "sqlite3",
+		},
+	}
+
+	d := differ.Differ{}
+	err := differ.FetchDisabledRulesFromAggregatorDB(&d, &config)
+
+	assert.ErrorIs(t, err, &differ.AggregatorStorageError{})
+
+	executionLog := buf.String()
+	assert.Contains(t, executionLog, "Cannot read cluster rule toggles from the aggregator database")
+}
+
+// --- Run-level integration tests ---
+
 // TestRunIgnoreDisabledRulesSkipsAggregatorDB verifies that when
 // --ignore-disabled-rules is set, no aggregator DB connection attempt is made.
-// This is the acceptance criteria: "If --ignore-disabled-rules is set, no
-// connection attempt is made."
-// The aggregator storage is configured with an invalid driver so that any
-// connection attempt would fail. If the skip logic works, the service proceeds
-// past the aggregator DB step and fails later (content fetch), proving no
-// connection was attempted.
-// Uses ServiceLog path to avoid mock Kafka broker overhead.
 func TestRunIgnoreDisabledRulesSkipsAggregatorDB(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
@@ -170,7 +248,7 @@ func TestRunIgnoreDisabledRulesSkipsAggregatorDB(t *testing.T) {
 			Enabled: true,
 		},
 		AggregatorStorage: conf.StorageConfiguration{
-			Driver: "invalid-driver-should-never-be-used",
+			Driver: "sqlite3",
 		},
 	}
 	cliFlags := types.CliFlags{
@@ -178,10 +256,6 @@ func TestRunIgnoreDisabledRulesSkipsAggregatorDB(t *testing.T) {
 		IgnoreDisabledRules: true,
 	}
 	retval := differ.Run(config, cliFlags)
-	// The service should skip the aggregator DB connection entirely and
-	// proceed to the next step (fetching content), which will fail because
-	// no content service is running. FetchContentError means we got past
-	// the aggregator DB step successfully.
 	assert.Equal(t, differ.ExitStatusFetchContentError, retval)
 
 	executionLog := buf.String()
@@ -191,9 +265,6 @@ func TestRunIgnoreDisabledRulesSkipsAggregatorDB(t *testing.T) {
 
 // TestRunAggregatorDBFailureExitCode verifies that Run returns
 // ExitStatusAggregatorStorageError when the aggregator DB is unreachable.
-// This tests the full integration path through Run -> start ->
-// connectAndCloseAggregatorDB -> selectError.
-// Uses ServiceLog path to avoid mock Kafka broker overhead.
 func TestRunAggregatorDBFailureExitCode(t *testing.T) {
 	config := conf.ConfigStruct{
 		Storage: conf.StorageConfiguration{
@@ -213,17 +284,33 @@ func TestRunAggregatorDBFailureExitCode(t *testing.T) {
 	assert.Equal(t, differ.ExitStatusAggregatorStorageError, retval)
 }
 
+// --- Constants and error type tests ---
+
 // TestExitStatusAggregatorStorageErrorValue checks that
-// ExitStatusAggregatorStorageError has the expected value (one past
-// ExitStatusServiceLogError).
+// ExitStatusAggregatorStorageError has the expected value.
 func TestExitStatusAggregatorStorageErrorValue(t *testing.T) {
 	assert.Equal(t, differ.ExitStatusServiceLogError+1, differ.ExitStatusAggregatorStorageError)
 }
 
 // TestExportedAggregatorDBConstants checks that the exported message constants
-// have the expected values from the spec.
+// have the expected values.
 func TestExportedAggregatorDBConstants(t *testing.T) {
 	assert.Equal(t, "Connecting to aggregator database to fetch disabled rules", differ.AggregatorDBConnectionMessage)
 	assert.Equal(t, "Aggregator database connection closed", differ.AggregatorDBClosedMessage)
 	assert.Equal(t, "Skipping aggregator DB connection (--ignore-disabled-rules is set)", differ.AggregatorDBSkippedMessage)
+}
+
+// TestNewInitializesClusterDisabledRulesMap checks that New() initializes
+// ClusterDisabledRules as an empty (not nil) map.
+func TestNewInitializesClusterDisabledRulesMap(t *testing.T) {
+	config := conf.ConfigStruct{
+		ServiceLog: conf.ServiceLogConfiguration{
+			Enabled: true,
+		},
+	}
+	d, err := differ.New(&config, nil)
+	assert.NoError(t, err)
+
+	assert.NotNil(t, d.ClusterDisabledRules, "ClusterDisabledRules should be initialized by New()")
+	assert.Empty(t, d.ClusterDisabledRules, "ClusterDisabledRules should be empty after construction")
 }

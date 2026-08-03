@@ -192,18 +192,19 @@ type NotificationURLs struct {
 
 // Differ is the struct that holds all the dependencies and configuration of this service
 type Differ struct {
-	Storage             Storage
-	Notifier            producer.Producer
-	NotificationType    types.EventType
-	Target              types.EventTarget
-	PreviouslyReported  types.NotifiedRecordsPerCluster
-	CoolDown            string
-	Thresholds          EventThresholds
-	Filter              string
-	FilterByTag         bool
-	TagsSet             types.TagsSet
-	IgnoreDisabledRules bool
-	AggregatorStorage   Storage
+	Storage              Storage
+	Notifier             producer.Producer
+	NotificationType     types.EventType
+	Target               types.EventTarget
+	PreviouslyReported   types.NotifiedRecordsPerCluster
+	CoolDown             string
+	Thresholds           EventThresholds
+	Filter               string
+	FilterByTag          bool
+	TagsSet              types.TagsSet
+	IgnoreDisabledRules  bool
+	AggregatorStorage    Storage
+	ClusterDisabledRules types.ClusterDisabledRules
 }
 
 // TODO: same way we have a Differ struct now, we should have a struct
@@ -868,12 +869,28 @@ func (d *Differ) RetrievePreviouslyReportedForEventTarget(cooldown string, targe
 	return nil
 }
 
-// connectAndCloseAggregatorDB establishes a short-lived read-only connection
-// to the aggregator database, executes any required startup queries (disabled
-// rules fetching will be added in CCXDEV-16564 and CCXDEV-16565), and closes
-// the connection immediately. The aggregator DB is not kept open during
+// loadDisabledRules fetches disabled-rule data from d.AggregatorStorage
+// and populates the corresponding maps on the Differ struct. The caller is
+// responsible for setting d.AggregatorStorage before calling this method.
+func (d *Differ) loadDisabledRules() error {
+	clusterDisabled, err := d.AggregatorStorage.ReadClusterRuleToggles()
+	if err != nil {
+		log.Error().Err(err).Msg("Cannot read cluster rule toggles from the aggregator database")
+		return &AggregatorStorageError{}
+	}
+	d.ClusterDisabledRules = clusterDisabled
+	log.Info().Int("disabled_rules", len(clusterDisabled)).Msg("Loaded per-cluster disabled rules from cluster_rule_toggle")
+
+	// TODO: Fetch org-wide disabled rules here (CCXDEV-16565)
+
+	return nil
+}
+
+// fetchDisabledRulesFromAggregatorDB establishes a short-lived connection to the
+// aggregator database, loads disabled-rule data via loadDisabledRules, and
+// closes the connection immediately. The aggregator DB is not kept open during
 // per-cluster processing.
-func (d *Differ) connectAndCloseAggregatorDB(config *conf.ConfigStruct) error {
+func (d *Differ) fetchDisabledRulesFromAggregatorDB(config *conf.ConfigStruct) error {
 	log.Info().Msg(aggregatorDBConnectionMessage)
 
 	aggregatorStorageConfig := conf.GetAggregatorStorageConfiguration(config)
@@ -885,21 +902,22 @@ func (d *Differ) connectAndCloseAggregatorDB(config *conf.ConfigStruct) error {
 
 	d.AggregatorStorage = aggregatorStorage
 
-	// TODO: Fetch disabled rules here (CCXDEV-16564, CCXDEV-16565)
-	// Rename the function to match the new behavior.
-	// The queries will populate in-memory maps in Differ for:
-	// - cluster_rule_toggle (per-cluster disables)
-	// - rule_disable (org-wide acks)
+	if err := d.loadDisabledRules(); err != nil {
+		closeErr := closeStorage(aggregatorStorage)
+		if closeErr != nil {
+			log.Error().Err(closeErr).Msg("Cannot close the aggregator database connection")
+		}
+		d.AggregatorStorage = nil
+		return err
+	}
 
-	// close storage and remove reference to the DB in Differ
-	err = closeStorage(aggregatorStorage)
-
-	d.AggregatorStorage = nil
-
-	if err != nil {
+	if err := closeStorage(aggregatorStorage); err != nil {
 		log.Error().Err(err).Msg("Cannot close the aggregator database connection")
+		d.AggregatorStorage = nil
 		return &AggregatorStorageError{}
 	}
+
+	d.AggregatorStorage = nil
 
 	log.Info().Msg(aggregatorDBClosedMessage)
 	return nil
@@ -922,7 +940,7 @@ func (d *Differ) start(config *conf.ConfigStruct) error {
 	if d.IgnoreDisabledRules {
 		log.Info().Msg(aggregatorDBSkippedMessage)
 	} else {
-		err := d.connectAndCloseAggregatorDB(config)
+		err := d.fetchDisabledRulesFromAggregatorDB(config)
 		if err != nil {
 			return err
 		}
@@ -1150,10 +1168,11 @@ func New(config *conf.ConfigStruct, storage Storage) (*Differ, error) {
 		return nil, err
 	}
 	d := Differ{
-		Storage:            storage,
-		NotificationType:   notificationType,
-		PreviouslyReported: make(types.NotifiedRecordsPerCluster),
-		Thresholds:         EventThresholds{},
+		Storage:              storage,
+		NotificationType:     notificationType,
+		PreviouslyReported:   make(types.NotifiedRecordsPerCluster),
+		Thresholds:           EventThresholds{},
+		ClusterDisabledRules: make(types.ClusterDisabledRules),
 	}
 	if conf.GetKafkaBrokerConfiguration(config).Enabled {
 		d.Target = types.NotificationBackendTarget
