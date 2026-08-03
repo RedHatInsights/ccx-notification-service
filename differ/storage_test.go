@@ -2770,6 +2770,46 @@ func TestReadOrgRuleDisablesAckDoesNotAffectOtherOrgs(t *testing.T) {
 	checkAllExpectations(t, mock)
 }
 
+// TestReadOrgRuleDisablesOnRowIterationError checks that ReadOrgRuleDisables
+// returns an error when the row iterator fails mid-stream (rows.Err()).
+func TestReadOrgRuleDisablesOnRowIterationError(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query;
+	// two valid rows, but a row error on the second causes rows.Next()
+	// to return false and rows.Err() to report the failure
+	rows := sqlmock.NewRows([]string{"org_id", "rule_id", "error_key"})
+	rows.AddRow("1", "test_rule", "TEST_ERROR_KEY")
+	rows.AddRow("1", "another_rule", "ANOTHER_KEY")
+	rows.RowError(1, fmt.Errorf("connection reset"))
+
+	// expected query performed by tested function
+	expectedQuery := regexp.QuoteMeta(differ.ReadOrgRuleDisablesQuery)
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	disabledRules, err := storage.ReadOrgRuleDisables()
+
+	// tested method SHOULD return the iteration error
+	assert.Error(t, err, "an error is expected on row iteration failure")
+	assert.Contains(t, err.Error(), "connection reset")
+
+	// the first row was read successfully, so the map contains it
+	assert.Len(t, disabledRules, 1, "Map should contain the one successfully read row")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
 // --- ReadClusterRuleToggles tests (CCXDEV-16564) ---
 
 // TestReadClusterRuleTogglesPopulatesMap checks that
