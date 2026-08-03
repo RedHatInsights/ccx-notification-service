@@ -51,10 +51,12 @@ func TestLoadDisabledRulesPopulatesMap(t *testing.T) {
 
 	storage := mocks.Storage{}
 	storage.On("ReadClusterRuleToggles").Return(expected, nil)
+	storage.On("ReadOrgRuleDisables").Return(make(types.OrgDisabledRules), nil)
 
 	d := differ.Differ{
 		AggregatorStorage:    &storage,
 		ClusterDisabledRules: make(types.ClusterDisabledRules),
+		OrgDisabledRules:     make(types.OrgDisabledRules),
 	}
 	err := differ.LoadDisabledRules(&d)
 
@@ -68,20 +70,24 @@ func TestLoadDisabledRulesPopulatesMap(t *testing.T) {
 }
 
 // TestLoadDisabledRulesEmptyTable verifies that when the aggregator
-// table has no disabled rules, the map stays empty.
+// tables have no disabled rules, both maps stay empty.
 func TestLoadDisabledRulesEmptyTable(t *testing.T) {
 	storage := mocks.Storage{}
 	storage.On("ReadClusterRuleToggles").Return(make(types.ClusterDisabledRules), nil)
+	storage.On("ReadOrgRuleDisables").Return(make(types.OrgDisabledRules), nil)
 
 	d := differ.Differ{
 		AggregatorStorage:    &storage,
 		ClusterDisabledRules: make(types.ClusterDisabledRules),
+		OrgDisabledRules:     make(types.OrgDisabledRules),
 	}
 	err := differ.LoadDisabledRules(&d)
 
 	assert.NoError(t, err)
 	assert.NotNil(t, d.ClusterDisabledRules)
 	assert.Empty(t, d.ClusterDisabledRules)
+	assert.NotNil(t, d.OrgDisabledRules)
+	assert.Empty(t, d.OrgDisabledRules)
 	storage.AssertExpectations(t)
 }
 
@@ -116,15 +122,116 @@ func TestLoadDisabledRulesLogsCount(t *testing.T) {
 
 	storage := mocks.Storage{}
 	storage.On("ReadClusterRuleToggles").Return(expected, nil)
+	storage.On("ReadOrgRuleDisables").Return(make(types.OrgDisabledRules), nil)
 
 	d := differ.Differ{
 		AggregatorStorage:    &storage,
 		ClusterDisabledRules: make(types.ClusterDisabledRules),
+		OrgDisabledRules:     make(types.OrgDisabledRules),
 	}
 	_ = differ.LoadDisabledRules(&d)
 
 	executionLog := buf.String()
 	assert.Contains(t, executionLog, "Loaded per-cluster disabled rules from cluster_rule_toggle")
+}
+
+// --- loadDisabledRules tests: org-wide disabled rules (CCXDEV-16565) ---
+
+// TestLoadDisabledRulesPopulatesOrgMap verifies the happy path: when
+// ReadOrgRuleDisables returns data, loadDisabledRules populates
+// OrgDisabledRules on the Differ struct.
+func TestLoadDisabledRulesPopulatesOrgMap(t *testing.T) {
+	expectedOrg := types.OrgDisabledRules{
+		{OrgID: "1", RuleID: "test_rule", ErrorKey: "TEST_RULE_CRITICAL_IMPACT"}:  {},
+		{OrgID: "2", RuleID: "test_rule", ErrorKey: "TEST_RULE_IMPORTANT_IMPACT"}: {},
+	}
+
+	storage := mocks.Storage{}
+	storage.On("ReadClusterRuleToggles").Return(make(types.ClusterDisabledRules), nil)
+	storage.On("ReadOrgRuleDisables").Return(expectedOrg, nil)
+
+	d := differ.Differ{
+		AggregatorStorage:    &storage,
+		ClusterDisabledRules: make(types.ClusterDisabledRules),
+		OrgDisabledRules:     make(types.OrgDisabledRules),
+	}
+	err := differ.LoadDisabledRules(&d)
+
+	assert.NoError(t, err)
+	assert.Len(t, d.OrgDisabledRules, 2)
+	for key := range expectedOrg {
+		_, ok := d.OrgDisabledRules[key]
+		assert.True(t, ok, "expected key %v in OrgDisabledRules", key)
+	}
+	storage.AssertExpectations(t)
+}
+
+// TestLoadDisabledRulesOrgQueryError verifies that when ReadOrgRuleDisables
+// fails, loadDisabledRules returns an AggregatorStorageError.
+func TestLoadDisabledRulesOrgQueryError(t *testing.T) {
+	storage := mocks.Storage{}
+	storage.On("ReadClusterRuleToggles").Return(make(types.ClusterDisabledRules), nil)
+	storage.On("ReadOrgRuleDisables").Return(types.OrgDisabledRules(nil), fmt.Errorf("query failed"))
+
+	d := differ.Differ{
+		AggregatorStorage:    &storage,
+		ClusterDisabledRules: make(types.ClusterDisabledRules),
+		OrgDisabledRules:     make(types.OrgDisabledRules),
+	}
+	err := differ.LoadDisabledRules(&d)
+
+	assert.ErrorIs(t, err, &differ.AggregatorStorageError{})
+	storage.AssertExpectations(t)
+}
+
+// TestLoadDisabledRulesOrgQueryErrorLogsMessage verifies that the error log
+// message is produced when ReadOrgRuleDisables fails.
+func TestLoadDisabledRulesOrgQueryErrorLogsMessage(t *testing.T) {
+	buf := new(bytes.Buffer)
+	log.Logger = zerolog.New(buf).Level(zerolog.ErrorLevel)
+	zerolog.SetGlobalLevel(zerolog.ErrorLevel)
+	defer zerolog.SetGlobalLevel(zerolog.WarnLevel)
+
+	storage := mocks.Storage{}
+	storage.On("ReadClusterRuleToggles").Return(make(types.ClusterDisabledRules), nil)
+	storage.On("ReadOrgRuleDisables").Return(types.OrgDisabledRules(nil), fmt.Errorf("query failed"))
+
+	d := differ.Differ{
+		AggregatorStorage:    &storage,
+		ClusterDisabledRules: make(types.ClusterDisabledRules),
+		OrgDisabledRules:     make(types.OrgDisabledRules),
+	}
+	_ = differ.LoadDisabledRules(&d)
+
+	executionLog := buf.String()
+	assert.Contains(t, executionLog, "Cannot read org-wide rule disables from the aggregator database")
+}
+
+// TestLoadDisabledRulesLogsOrgCount verifies that the info log with the
+// org-wide disabled rules count is emitted on success.
+func TestLoadDisabledRulesLogsOrgCount(t *testing.T) {
+	buf := new(bytes.Buffer)
+	log.Logger = zerolog.New(buf).Level(zerolog.InfoLevel)
+	zerolog.SetGlobalLevel(zerolog.InfoLevel)
+	defer zerolog.SetGlobalLevel(zerolog.WarnLevel)
+
+	expectedOrg := types.OrgDisabledRules{
+		{OrgID: "1", RuleID: "test_rule", ErrorKey: "TEST_RULE_CRITICAL_IMPACT"}: {},
+	}
+
+	storage := mocks.Storage{}
+	storage.On("ReadClusterRuleToggles").Return(make(types.ClusterDisabledRules), nil)
+	storage.On("ReadOrgRuleDisables").Return(expectedOrg, nil)
+
+	d := differ.Differ{
+		AggregatorStorage:    &storage,
+		ClusterDisabledRules: make(types.ClusterDisabledRules),
+		OrgDisabledRules:     make(types.OrgDisabledRules),
+	}
+	_ = differ.LoadDisabledRules(&d)
+
+	executionLog := buf.String()
+	assert.Contains(t, executionLog, "Loaded org-wide disabled rules from rule_disable")
 }
 
 // --- fetchDisabledRulesFromAggregatorDB tests (real DB, same pattern as Run) ---
@@ -313,4 +420,19 @@ func TestNewInitializesClusterDisabledRulesMap(t *testing.T) {
 
 	assert.NotNil(t, d.ClusterDisabledRules, "ClusterDisabledRules should be initialized by New()")
 	assert.Empty(t, d.ClusterDisabledRules, "ClusterDisabledRules should be empty after construction")
+}
+
+// TestNewInitializesOrgDisabledRulesMap checks that New() initializes
+// OrgDisabledRules as an empty (not nil) map.
+func TestNewInitializesOrgDisabledRulesMap(t *testing.T) {
+	config := conf.ConfigStruct{
+		ServiceLog: conf.ServiceLogConfiguration{
+			Enabled: true,
+		},
+	}
+	d, err := differ.New(&config, nil)
+	assert.NoError(t, err)
+
+	assert.NotNil(t, d.OrgDisabledRules, "OrgDisabledRules should be initialized by New()")
+	assert.Empty(t, d.OrgDisabledRules, "OrgDisabledRules should be empty after construction")
 }
