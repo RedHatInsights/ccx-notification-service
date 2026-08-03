@@ -563,7 +563,7 @@ ${specContext}
 7. If a test fails, you may fix the test code. After 3 edit-and-rerun cycles on the same failing test, stop and add a description of what failed and why to the failures list. Keep the failing test in the file (do not delete it).
 8. If some tests pass and others could not be fixed, keep all tests, both passing and failing.
 9. Run \`make test\` to run the full test suite.
-10. Run \`make coverage\` to test the coverage. You should maintain or improve the coverage. Some functions are structurally uncoverable in unit tests — for example, orchestrator functions that create their own database connections internally. This is acceptable when the underlying methods they call are independently covered. Do not refactor production code for testability; report the coverage gap in feedback instead.
+10. Run \`make coverage\` to display per-function coverage. The project's \`check_coverage.sh\` (called by \`make before_commit\`) enforces a fixed threshold — if coverage was already below that threshold before your changes, treat it as baseline debt, not a new issue. Only flag coverage regressions or newly uncovered lines introduced by the patch. Some functions are structurally uncoverable in unit tests — for example, orchestrator functions that create their own database connections internally. This is acceptable when the underlying methods they call are independently covered. Do not refactor production code for testability; report the coverage gap in feedback instead.
 11. Ensure allowed test and mock files have license headers. Do not modify production files; report any missing production-file headers for Phase 1 to address.
 
 ## Constraints
@@ -690,7 +690,7 @@ ${specContext}
 
 ## Context
 
-The diff should contain ${tests.testsWritten} new or modified test function(s) that ${tests.testsPassed ? 'passed' : 'failed'} when last run. Verify this independently by counting test functions that appear in the diff (added or modified, not unchanged).
+The diff should contain ${tests.testsWritten} new or modified test function(s) that ${tests.testsPassed ? 'passed' : 'failed'} when last run. Verify this independently by counting test functions in the diff (\`git diff ${baseSha}\`) and in untracked test files (\`git ls-files --others --exclude-standard '*.go'\`).
 
 All changes exist only as **uncommitted working tree modifications** — there is no commit, no stash, no backup. Any git command that modifies tracked files (\`git stash\`, \`git checkout\`, \`git reset\`, \`git restore\`, \`git clean\`) will **permanently destroy** the implementation code with no way to recover it.
 
