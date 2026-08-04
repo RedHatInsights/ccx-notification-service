@@ -102,7 +102,6 @@ The binary is placed in the current directory as `ccx-notification-service`.
 ```bash
 make test           # runs unit tests via unit-tests.sh with coverage
 make coverage       # displays coverage on terminal
-make benchmark      # runs benchmark tests
 ```
 
 When adding new unit tests or modifying existing ones, first verify the test by running it individually using `go test -run '^TestName$' ./path/to/package` to avoid wasting resources by running the whole test suite. If you're writing multiple unit test cases, run the full test suite using `make test` at the end. Do not run the full `make test` for each individual test.
