@@ -205,6 +205,7 @@ type Differ struct {
 	IgnoreDisabledRules  bool
 	AggregatorStorage    Storage
 	ClusterDisabledRules types.ClusterDisabledRules
+	OrgDisabledRules     types.OrgDisabledRules
 }
 
 // TODO: same way we have a Differ struct now, we should have a struct
@@ -881,7 +882,13 @@ func (d *Differ) loadDisabledRules() error {
 	d.ClusterDisabledRules = clusterDisabled
 	log.Info().Int("disabled_rules", len(clusterDisabled)).Msg("Loaded per-cluster disabled rules from cluster_rule_toggle")
 
-	// TODO: Fetch org-wide disabled rules here (CCXDEV-16565)
+	orgDisabled, err := d.AggregatorStorage.ReadOrgRuleDisables()
+	if err != nil {
+		log.Error().Err(err).Msg("Cannot read org-wide rule disables from the aggregator database")
+		return &AggregatorStorageError{}
+	}
+	d.OrgDisabledRules = orgDisabled
+	log.Info().Int("disabled_rules", len(orgDisabled)).Msg("Loaded org-wide disabled rules from rule_disable")
 
 	return nil
 }
@@ -1173,6 +1180,7 @@ func New(config *conf.ConfigStruct, storage Storage) (*Differ, error) {
 		PreviouslyReported:   make(types.NotifiedRecordsPerCluster),
 		Thresholds:           EventThresholds{},
 		ClusterDisabledRules: make(types.ClusterDisabledRules),
+		OrgDisabledRules:     make(types.OrgDisabledRules),
 	}
 	if conf.GetKafkaBrokerConfiguration(config).Enabled {
 		d.Target = types.NotificationBackendTarget

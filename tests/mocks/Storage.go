@@ -329,6 +329,36 @@ func (_m *Storage) ReadNotificationTypes() ([]types.NotificationType, error) {
 	return r0, r1
 }
 
+// ReadOrgRuleDisables provides a mock function with no fields
+func (_m *Storage) ReadOrgRuleDisables() (types.OrgDisabledRules, error) {
+	ret := _m.Called()
+
+	if len(ret) == 0 {
+		panic("no return value specified for ReadOrgRuleDisables")
+	}
+
+	var r0 types.OrgDisabledRules
+	var r1 error
+	if rf, ok := ret.Get(0).(func() (types.OrgDisabledRules, error)); ok {
+		return rf()
+	}
+	if rf, ok := ret.Get(0).(func() types.OrgDisabledRules); ok {
+		r0 = rf()
+	} else {
+		if ret.Get(0) != nil {
+			r0 = ret.Get(0).(types.OrgDisabledRules)
+		}
+	}
+
+	if rf, ok := ret.Get(1).(func() error); ok {
+		r1 = rf()
+	} else {
+		r1 = ret.Error(1)
+	}
+
+	return r0, r1
+}
+
 // ReadReportForCluster provides a mock function with given fields: orgID, clusterName
 func (_m *Storage) ReadReportForCluster(orgID types.OrgID, clusterName types.ClusterName) (types.ClusterReport, types.Timestamp, error) {
 	ret := _m.Called(orgID, clusterName)
