@@ -171,7 +171,7 @@ objects:
           command:
             - /bin/sh
             - -c
-            - ./ccx-notification-service --instant-reports --verbose --ignore-disabled-rules
+            - ./ccx-notification-service --instant-reports --verbose ${EXTRA_ARGS}
       - name: to-service-log
         schedule: ${JOB_SCHEDULE__SERVICE_LOG}
         restartPolicy: Never
@@ -348,7 +348,7 @@ objects:
           command:
             - /bin/sh
             - -c
-            - ./ccx-notification-service --instant-reports --verbose --ignore-disabled-rules
+            - ./ccx-notification-service --instant-reports --verbose ${EXTRA_ARGS}
 
     kafkaTopics:
       - topicName: ${OUTGOING_TOPIC}
@@ -414,9 +414,12 @@ parameters:
   value: ccx-notification-db
 - name: PG_PARAMS
   value: sslmode=require
-- description: Name of the Kubernetes secret containing aggregator database credentials (Clowder-managed)
+- description: Name of the Kubernetes secret containing aggregator database credentials (ccx-insights-results-db in ephemeral, ccx-data-pipeline-db in stage/prod)
   name: AGGREGATOR_DB_SECRET_NAME
-  value: ccx-data-pipeline-db
+  value: ccx-insights-results-db
+- description: Additional CLI flags appended to the service command (e.g. --ignore-disabled-rules)
+  name: EXTRA_ARGS
+  value: "--ignore-disabled-rules"
 - name: PLATFORM_UI_HOSTNAME
 - name: CONTENT_SERVICE_PORT
 - name: NOTIFICATION_RESEND_COOLDOWN_NOTIFICATION_BACKEND
