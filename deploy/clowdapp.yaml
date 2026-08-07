@@ -13,6 +13,7 @@ objects:
     envName: ${ENV_NAME}
     dependencies:
       - ccx-notification-writer
+      - ccx-insights-results
     database:
       sharedDbAppName: ccx-notification-writer
     testing:
@@ -64,6 +65,35 @@ objects:
             value: ${PG_PARAMS}
           - name: CCX_NOTIFICATION_SERVICE__STORAGE__LOG_SQL_QUERIES
             value: 'true'
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__DB_DRIVER
+            value: postgres
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_HOST
+            valueFrom:
+              secretKeyRef:
+                name: ${AGGREGATOR_DB_SECRET_NAME}
+                key: db.host
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_PORT
+            valueFrom:
+              secretKeyRef:
+                name: ${AGGREGATOR_DB_SECRET_NAME}
+                key: db.port
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: ${AGGREGATOR_DB_SECRET_NAME}
+                key: db.name
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: ${AGGREGATOR_DB_SECRET_NAME}
+                key: db.user
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: ${AGGREGATOR_DB_SECRET_NAME}
+                key: db.password
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_PARAMS
+            value: ${PG_PARAMS}
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__DEBUG
             value: 'false'
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__LOG_LEVEL
@@ -204,6 +234,35 @@ objects:
             value: ${PG_PARAMS}
           - name: CCX_NOTIFICATION_SERVICE__STORAGE__LOG_SQL_QUERIES
             value: 'true'
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__DB_DRIVER
+            value: postgres
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_HOST
+            valueFrom:
+              secretKeyRef:
+                name: ${AGGREGATOR_DB_SECRET_NAME}
+                key: db.host
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_PORT
+            valueFrom:
+              secretKeyRef:
+                name: ${AGGREGATOR_DB_SECRET_NAME}
+                key: db.port
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_DB_NAME
+            valueFrom:
+              secretKeyRef:
+                name: ${AGGREGATOR_DB_SECRET_NAME}
+                key: db.name
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_USERNAME
+            valueFrom:
+              secretKeyRef:
+                name: ${AGGREGATOR_DB_SECRET_NAME}
+                key: db.user
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_PASSWORD
+            valueFrom:
+              secretKeyRef:
+                name: ${AGGREGATOR_DB_SECRET_NAME}
+                key: db.password
+          - name: CCX_NOTIFICATION_SERVICE__AGGREGATOR_STORAGE__PG_PARAMS
+            value: ${PG_PARAMS}
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__DEBUG
             value: 'false'
           - name: CCX_NOTIFICATION_SERVICE__LOGGING__LOG_LEVEL
@@ -355,6 +414,9 @@ parameters:
   value: ccx-notification-db
 - name: PG_PARAMS
   value: sslmode=require
+- description: Name of the Kubernetes secret containing aggregator database credentials (Clowder-managed)
+  name: AGGREGATOR_DB_SECRET_NAME
+  value: ccx-data-pipeline-db
 - name: PLATFORM_UI_HOSTNAME
 - name: CONTENT_SERVICE_PORT
 - name: NOTIFICATION_RESEND_COOLDOWN_NOTIFICATION_BACKEND
