@@ -60,9 +60,9 @@ func TestSetServiceLogSeverityMap(t *testing.T) {
 	// set by init
 	assert.NotEmpty(t, differ.ServiceLogSeverityMap)
 	expected := map[int]string{
-		differ.TotalRiskLow:       differ.ServiceLogSeverityInfo,
-		differ.TotalRiskModerate:  differ.ServiceLogSeverityWarning,
-		differ.TotalRiskImportant: differ.ServiceLogSeverityMajor,
+		differ.TotalRiskLow:       differ.ServiceLogSeverityLow,
+		differ.TotalRiskModerate:  differ.ServiceLogSeverityModerate,
+		differ.TotalRiskImportant: differ.ServiceLogSeverityImportant,
 		differ.TotalRiskCritical:  differ.ServiceLogSeverityCritical,
 	}
 	assert.Equal(t, differ.ServiceLogSeverityMap, &expected)
@@ -85,7 +85,7 @@ func TestCreateServiceLogEntrySummaryAndDescriptionLengthOverMax(t *testing.T) {
 		UpdatedAt:     types.Timestamp(testTimestamp),
 	}
 
-	res := differ.CreateServiceLogEntry(&report, cluster, "test_created_by", "test_username", "Info")
+	res := differ.CreateServiceLogEntry(&report, cluster, "test_created_by", "test_username", "Low")
 	assert.Equal(t, res.CreatedBy, "test_created_by")
 	assert.Equal(t, res.Username, "test_username")
 	assert.Equal(t, res.ClusterUUID, types.ClusterName("first_cluster"))
@@ -110,7 +110,7 @@ func TestCreateServiceLogEntrySummaryLengthOverMax(t *testing.T) {
 		UpdatedAt:     types.Timestamp(testTimestamp),
 	}
 
-	res := differ.CreateServiceLogEntry(&report, cluster, "test_created_by", "test_username", "Info")
+	res := differ.CreateServiceLogEntry(&report, cluster, "test_created_by", "test_username", "Low")
 	assert.Equal(t, res.CreatedBy, "test_created_by")
 	assert.Equal(t, res.Username, "test_username")
 	assert.Equal(t, res.ClusterUUID, types.ClusterName("first_cluster"))
@@ -134,7 +134,7 @@ func TestCreateServiceLogEntryDescriptionLengthOverMax(t *testing.T) {
 		UpdatedAt:     types.Timestamp(testTimestamp),
 	}
 
-	res := differ.CreateServiceLogEntry(&report, cluster, "test_created_by", "test_username", "Info")
+	res := differ.CreateServiceLogEntry(&report, cluster, "test_created_by", "test_username", "Low")
 	assert.Equal(t, res.CreatedBy, "test_created_by")
 	assert.Equal(t, res.Username, "test_username")
 	assert.Equal(t, res.ClusterUUID, types.ClusterName("first_cluster"))
@@ -145,21 +145,21 @@ func TestCreateServiceLogEntryDescriptionLengthOverMax(t *testing.T) {
 func TestGetServiceLogSeverityValidTotalRisk(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.Logger = zerolog.New(buf).Level(zerolog.WarnLevel)
-	assert.Equal(t, differ.GetServiceLogSeverity(differ.TotalRiskLow), differ.ServiceLogSeverityInfo)
-	assert.Equal(t, differ.GetServiceLogSeverity(differ.TotalRiskModerate), differ.ServiceLogSeverityWarning)
-	assert.Equal(t, differ.GetServiceLogSeverity(differ.TotalRiskImportant), differ.ServiceLogSeverityMajor)
+	assert.Equal(t, differ.GetServiceLogSeverity(differ.TotalRiskLow), differ.ServiceLogSeverityLow)
+	assert.Equal(t, differ.GetServiceLogSeverity(differ.TotalRiskModerate), differ.ServiceLogSeverityModerate)
+	assert.Equal(t, differ.GetServiceLogSeverity(differ.TotalRiskImportant), differ.ServiceLogSeverityImportant)
 	assert.Equal(t, differ.GetServiceLogSeverity(differ.TotalRiskCritical), differ.ServiceLogSeverityCritical)
 	assert.NotContains(t, buf.String(), differ.NoEquivalentSeverityMessage)
 }
 
-func TestGetServiceLogSeverityInvalidTotalRiskIsSetToInfo(t *testing.T) {
+func TestGetServiceLogSeverityInvalidTotalRiskIsSetToLow(t *testing.T) {
 	buf := new(bytes.Buffer)
 	log.Logger = zerolog.New(buf).Level(zerolog.WarnLevel)
 
-	assert.Equal(t, differ.GetServiceLogSeverity(0), differ.ServiceLogSeverityInfo)
+	assert.Equal(t, differ.GetServiceLogSeverity(0), differ.ServiceLogSeverityLow)
 	assert.Contains(t, buf.String(), differ.NoEquivalentSeverityMessage)
 	buf.Reset()
-	assert.Equal(t, differ.GetServiceLogSeverity(rand.Intn(math.MaxInt64)+differ.TotalRiskMax), differ.ServiceLogSeverityInfo)
+	assert.Equal(t, differ.GetServiceLogSeverity(rand.Intn(math.MaxInt64)+differ.TotalRiskMax), differ.ServiceLogSeverityLow)
 	assert.Contains(t, buf.String(), differ.NoEquivalentSeverityMessage)
 }
 
