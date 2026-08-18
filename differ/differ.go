@@ -160,10 +160,10 @@ const (
 	serviceLogSummaryMaxLength     = 255
 	serviceLogDescriptionMaxLength = 4000
 
-	ServiceLogSeverityInfo     = "Info"
-	ServiceLogSeverityWarning  = "Warning"
-	ServiceLogSeverityMajor    = "Major"
-	ServiceLogSeverityCritical = "Critical"
+	ServiceLogSeverityLow       = "Low"
+	ServiceLogSeverityModerate  = "Moderate"
+	ServiceLogSeverityImportant = "Important"
+	ServiceLogSeverityCritical  = "Critical"
 )
 
 // EventThresholds structure contains all threshold values for event filter
@@ -271,9 +271,9 @@ func evaluateFilterExpression(eventFilter string, thresholds EventThresholds, ev
 
 func setServiceLogSeverityMap() {
 	serviceLogSeverityMap = make(map[int]string, 4)
-	serviceLogSeverityMap[TotalRiskLow] = ServiceLogSeverityInfo
-	serviceLogSeverityMap[TotalRiskModerate] = ServiceLogSeverityWarning
-	serviceLogSeverityMap[TotalRiskImportant] = ServiceLogSeverityMajor
+	serviceLogSeverityMap[TotalRiskLow] = ServiceLogSeverityLow
+	serviceLogSeverityMap[TotalRiskModerate] = ServiceLogSeverityModerate
+	serviceLogSeverityMap[TotalRiskImportant] = ServiceLogSeverityImportant
 	serviceLogSeverityMap[TotalRiskCritical] = ServiceLogSeverityCritical
 }
 
@@ -379,7 +379,7 @@ func getServiceLogSeverity(totalRisk int) string {
 		return serviceLogSeverityMap[totalRisk]
 	}
 	log.Warn().Int("total_risk", totalRisk).Msg(noEquivalentSeverityMessage)
-	return ServiceLogSeverityInfo
+	return ServiceLogSeverityLow
 }
 
 func (d *Differ) createAndSendServiceLogEntry(configuration *conf.ConfigStruct, renderedReport *types.RenderedReport,
