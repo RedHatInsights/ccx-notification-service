@@ -125,6 +125,7 @@ const (
 	aggregatorDBConnectionMessage = "Connecting to aggregator database to fetch disabled rules"
 	aggregatorDBClosedMessage     = "Aggregator database connection closed"
 	aggregatorDBSkippedMessage    = "Skipping aggregator DB connection (--ignore-disabled-rules is set)"
+	disabledRuleSkippedMessage    = "Skipping rule disabled by the customer"
 )
 
 // Constants for notification message top level fields
@@ -326,6 +327,42 @@ func evaluateTagFilter(filterEnabled bool, tagsSet, reportItemTags types.TagsSet
 	return true
 }
 
+// isRuleDisabled reports whether the given rule (identified by its rule name and
+// error key) has been disabled by the customer for the given cluster. Both
+// disabled-rule sources loaded from the aggregator database at startup are
+// consulted: the per-cluster cluster_rule_toggle map keyed by
+// (cluster_id, rule_id, error_key) and the org-wide rule_disable map keyed by
+// (org_id, rule_id, error_key). A match in either one means the rule is disabled
+// and must be skipped. Both lookups are O(1). When --ignore-disabled-rules is
+// set both maps are empty, so every rule is treated as enabled.
+//
+// The aggregator tables store rule_id as the plain rule name (e.g. "test_rule"),
+// which is what moduleToRuleName yields from the report's fully qualified
+// component, so the RuleName is converted to a RuleID for the lookup.
+func (d *Differ) isRuleDisabled(cluster types.ClusterEntry, ruleName types.RuleName, errorKey types.ErrorKey) bool {
+	ruleID := types.RuleID(ruleName)
+
+	clusterKey := types.ClusterRuleKey{
+		ClusterID: cluster.ClusterName,
+		RuleID:    ruleID,
+		ErrorKey:  errorKey,
+	}
+	if _, disabledForCluster := d.ClusterDisabledRules[clusterKey]; disabledForCluster {
+		return true
+	}
+
+	orgKey := types.OrgRuleKey{
+		OrgID:    fmt.Sprint(cluster.OrgID),
+		RuleID:   ruleID,
+		ErrorKey: errorKey,
+	}
+	if _, ackedForOrg := d.OrgDisabledRules[orgKey]; ackedForOrg {
+		return true
+	}
+
+	return false
+}
+
 func (d *Differ) getReportsWithIssuesToNotify(reports types.ReportContent, cluster types.ClusterEntry, ruleContent types.RulesMap) (reportsWithIssues types.ReportContent) {
 	reportsWithIssues = make(types.ReportContent, 0, len(reports))
 
@@ -479,6 +516,20 @@ func (d *Differ) produceEntriesToKafka(cluster types.ClusterEntry, ruleContent t
 		module := r.Module
 		ruleName := moduleToRuleName(module)
 		errorKey := r.ErrorKey
+
+		// Skip rules the customer has disabled before anything else, so a
+		// disabled rule never reaches the total risk filter or ShouldNotify.
+		// Both the per-cluster (cluster_rule_toggle) and org-wide (rule_disable)
+		// maps are consulted.
+		if d.isRuleDisabled(cluster, ruleName, errorKey) {
+			log.Debug().
+				Str(clusterAttribute, string(cluster.ClusterName)).
+				Str(ruleAttribute, string(ruleName)).
+				Str(errorKeyAttribute, string(errorKey)).
+				Msg(disabledRuleSkippedMessage)
+			continue
+		}
+
 		likelihood, impact, totalRisk, description, tags := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
 		eventValue := EventValue{
 			Likelihood: likelihood,
