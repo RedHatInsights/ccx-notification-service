@@ -3041,3 +3041,47 @@ func TestReadClusterRuleTogglesSameClusterMultipleRules(t *testing.T) {
 	// check if all expectations were met
 	checkAllExpectations(t, mock)
 }
+
+// TestReadClusterRuleTogglesOnRowIterationError checks that
+// ReadClusterRuleToggles returns an error when the row iterator fails
+// mid-stream (rows.Err()). Without that check the caller would receive a
+// silently truncated map and no error, so rules the customer disabled for a
+// cluster would still be notified about.
+func TestReadClusterRuleTogglesOnRowIterationError(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// prepare mocked result for SQL query;
+	// two valid rows, but a row error on the second causes rows.Next()
+	// to return false and rows.Err() to report the failure
+	clusterID := "5d5892d4-2g85-4ccf-02bg-548dfc9767aa"
+	rows := sqlmock.NewRows([]string{"cluster_id", "rule_id", "error_key"})
+	rows.AddRow(clusterID, "test_rule", "TEST_RULE_CRITICAL_IMPACT")
+	rows.AddRow(clusterID, "another_rule", "ANOTHER_KEY")
+	rows.RowError(1, fmt.Errorf("connection reset"))
+
+	// expected query performed by tested function
+	expectedQuery := regexp.QuoteMeta(differ.ReadClusterRuleTogglesQuery)
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	disabledRules, err := storage.ReadClusterRuleToggles()
+
+	// tested method SHOULD return the iteration error
+	assert.Error(t, err, "an error is expected on row iteration failure")
+	assert.Contains(t, err.Error(), "connection reset")
+
+	// the first row was read successfully, so the map contains it
+	assert.Len(t, disabledRules, 1, "Map should contain the one successfully read row")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}

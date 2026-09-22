@@ -363,12 +363,32 @@ func (d *Differ) isRuleDisabled(cluster types.ClusterEntry, ruleName types.RuleN
 	return false
 }
 
+// logDisabledRuleSkip logs that a rule was skipped.
+// Shared by both filtering loops (Kafka and ServiceLog)
+func logDisabledRuleSkip(cluster types.ClusterEntry, ruleName types.RuleName, errorKey types.ErrorKey) {
+	log.Debug().
+		Str(clusterAttribute, string(cluster.ClusterName)).
+		Str(ruleAttribute, string(ruleName)).
+		Str(errorKeyAttribute, string(errorKey)).
+		Msg(disabledRuleSkippedMessage)
+}
+
 func (d *Differ) getReportsWithIssuesToNotify(reports types.ReportContent, cluster types.ClusterEntry, ruleContent types.RulesMap) (reportsWithIssues types.ReportContent) {
 	reportsWithIssues = make(types.ReportContent, 0, len(reports))
 
 	for _, r := range reports {
 		ruleName := moduleToRuleName(r.Module)
 		errorKey := r.ErrorKey
+
+		// TODO: Duplicated - the rest of this loop body mirrors
+		// produceEntriesToKafka: Only the skip logging (logDisabledRuleSkip) is shared.
+
+		// Skip disabled rules before anything else, so a disabled rule never reaches ShouldNotify.
+		// Both the per-cluster and org-wide disabled are taken into account
+		if d.isRuleDisabled(cluster, ruleName, errorKey) {
+			logDisabledRuleSkip(cluster, ruleName, errorKey)
+			continue
+		}
 
 		likelihood, impact, totalRisk, _, tags := findRuleByNameAndErrorKey(ruleContent, ruleName, errorKey)
 		eventValue := EventValue{
@@ -377,7 +397,6 @@ func (d *Differ) getReportsWithIssuesToNotify(reports types.ReportContent, clust
 			TotalRisk:  totalRisk,
 		}
 
-		//TODO: Duplicated
 		// try to evaluate event filter expression
 		result, err := evaluateFilterExpression(d.Filter,
 			d.Thresholds, eventValue)
@@ -517,16 +536,14 @@ func (d *Differ) produceEntriesToKafka(cluster types.ClusterEntry, ruleContent t
 		ruleName := moduleToRuleName(module)
 		errorKey := r.ErrorKey
 
+		//TODO: Duplicated - see getReportsWithIssuesToNotify.
+
 		// Skip rules the customer has disabled before anything else, so a
 		// disabled rule never reaches the total risk filter or ShouldNotify.
 		// Both the per-cluster (cluster_rule_toggle) and org-wide (rule_disable)
 		// maps are consulted.
 		if d.isRuleDisabled(cluster, ruleName, errorKey) {
-			log.Debug().
-				Str(clusterAttribute, string(cluster.ClusterName)).
-				Str(ruleAttribute, string(ruleName)).
-				Str(errorKeyAttribute, string(errorKey)).
-				Msg(disabledRuleSkippedMessage)
+			logDisabledRuleSkip(cluster, ruleName, errorKey)
 			continue
 		}
 

@@ -63,6 +63,7 @@ var (
 	FetchDisabledRulesFromAggregatorDB = (*Differ).fetchDisabledRulesFromAggregatorDB
 	IsRuleDisabled                     = (*Differ).isRuleDisabled
 	ProduceEntriesToKafka              = (*Differ).produceEntriesToKafka
+	GetReportsWithIssuesToNotify       = (*Differ).getReportsWithIssuesToNotify
 )
 
 const (
