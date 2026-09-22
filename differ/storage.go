@@ -759,6 +759,10 @@ func (storage DBStorage) ReadClusterRuleToggles() (types.ClusterDisabledRules, e
 		disabledRules[key] = struct{}{}
 	}
 
+	if err := rows.Err(); err != nil {
+		return disabledRules, err
+	}
+
 	return disabledRules, nil
 }
 
