@@ -15,4 +15,4 @@ jobs:
       service: notification-service
       use_kafka: true
       use_postgres: true
-      go_version: '1.25'
+      go_version: '1.26'
