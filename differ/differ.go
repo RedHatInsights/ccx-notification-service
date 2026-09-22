@@ -363,9 +363,8 @@ func (d *Differ) isRuleDisabled(cluster types.ClusterEntry, ruleName types.RuleN
 	return false
 }
 
-// logDisabledRuleSkip logs that a rule was skipped because the customer has
-// disabled it. It is shared by the Kafka and the Service Log filtering loops so
-// that both report the skip in exactly the same way.
+// logDisabledRuleSkip logs that a rule was skipped.
+// Shared by both filtering loops (Kafka and ServiceLog)
 func logDisabledRuleSkip(cluster types.ClusterEntry, ruleName types.RuleName, errorKey types.ErrorKey) {
 	log.Debug().
 		Str(clusterAttribute, string(cluster.ClusterName)).
@@ -381,15 +380,11 @@ func (d *Differ) getReportsWithIssuesToNotify(reports types.ReportContent, clust
 		ruleName := moduleToRuleName(r.Module)
 		errorKey := r.ErrorKey
 
-		//TODO: Duplicated - the rest of this loop body mirrors
-		// produceEntriesToKafka: the disabled-rule check, the event filter
-		// evaluation, the tag filter and the ShouldNotify call are all
-		// copy-pasted. Only the skip logging (logDisabledRuleSkip) is shared.
+		// TODO: Duplicated - the rest of this loop body mirrors
+		// produceEntriesToKafka: Only the skip logging (logDisabledRuleSkip) is shared.
 
-		// Skip rules the customer has disabled before anything else, so a
-		// disabled rule never reaches the total risk filter or ShouldNotify.
-		// Both the per-cluster (cluster_rule_toggle) and org-wide (rule_disable)
-		// maps are consulted.
+		// Skip disabled rules before anything else, so a disabled rule never reaches ShouldNotify.
+		// Both the per-cluster and org-wide disabled are taken into account
 		if d.isRuleDisabled(cluster, ruleName, errorKey) {
 			logDisabledRuleSkip(cluster, ruleName, errorKey)
 			continue
