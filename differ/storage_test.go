@@ -25,6 +25,7 @@ import (
 	"fmt"
 	"regexp"
 	"strconv"
+	"strings"
 	"testing"
 	"time"
 
@@ -2810,7 +2811,65 @@ func TestReadOrgRuleDisablesOnRowIterationError(t *testing.T) {
 	checkAllExpectations(t, mock)
 }
 
+// TestReadOrgRuleDisablesKeepsRuleIDVerbatim checks that the rule_id of every
+// rule_disable row ends up in the map key exactly as it is stored, without
+// any normalization.
+func TestReadOrgRuleDisablesKeepsRuleIDVerbatim(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	// the form the aggregator stores, followed by other forms, all for the
+	// same organization and error key
+	ruleIDs := []string{
+		"ccx_rules_ocp.external.rules.test_rule",
+		"ccx_rules_ocp.external.rules.test_rule.report",
+		"test_rule",
+	}
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows([]string{"org_id", "rule_id", "error_key"})
+	for _, ruleID := range ruleIDs {
+		rows.AddRow("1", ruleID, "TEST_RULE_CRITICAL_IMPACT")
+	}
+
+	// expected query performed by tested function
+	expectedQuery := regexp.QuoteMeta(differ.ReadOrgRuleDisablesQuery)
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	disabledRules, err := storage.ReadOrgRuleDisables()
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying rule_disable table")
+
+	// every rule_id form is a separate entry keyed by the value as it is stored
+	assert.Len(t, disabledRules, len(ruleIDs), "Rows differing in rule_id only should not be merged")
+	for _, ruleID := range ruleIDs {
+		key := types.OrgRuleKey{
+			OrgID:    "1",
+			RuleID:   types.RuleID(ruleID),
+			ErrorKey: "TEST_RULE_CRITICAL_IMPACT",
+		}
+		assert.Contains(t, disabledRules, key, "rule_id %q should be stored as it is", ruleID)
+	}
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
 // --- ReadClusterRuleToggles tests (CCXDEV-16564) ---
+
+// clusterRuleToggleColumns are the columns ReadClusterRuleTogglesQuery
+// selects from the cluster_rule_toggle table, in the order they are scanned.
+var clusterRuleToggleColumns = []string{"org_id", "cluster_id", "rule_id", "error_key"}
 
 // TestReadClusterRuleTogglesPopulatesMap checks that
 // ReadClusterRuleToggles returns a correctly populated map when the
@@ -2822,11 +2881,11 @@ func TestReadClusterRuleTogglesPopulatesMap(t *testing.T) {
 	connection, mock := mustCreateMockConnection(t)
 
 	// prepare mocked result for SQL query
-	rows := sqlmock.NewRows([]string{"cluster_id", "rule_id", "error_key"})
+	rows := sqlmock.NewRows(clusterRuleToggleColumns)
 
 	// these rows represent disabled rules from the aggregator DB
-	rows.AddRow("5d5892d4-2g85-4ccf-02bg-548dfc9767aa", "test_rule", "TEST_RULE_CRITICAL_IMPACT")
-	rows.AddRow("7e6903e5-3h96-5ddf-13ch-659efd8878bb", "test_rule", "TEST_RULE_IMPORTANT_IMPACT")
+	rows.AddRow("1", "5d5892d4-2g85-4ccf-02bg-548dfc9767aa", "test_rule", "TEST_RULE_CRITICAL_IMPACT")
+	rows.AddRow("2", "7e6903e5-3h96-5ddf-13ch-659efd8878bb", "test_rule", "TEST_RULE_IMPORTANT_IMPACT")
 
 	// expected query performed by tested function
 	expectedQuery := regexp.QuoteMeta(differ.ReadClusterRuleTogglesQuery)
@@ -2848,6 +2907,7 @@ func TestReadClusterRuleTogglesPopulatesMap(t *testing.T) {
 
 	// check that the expected keys are present in the map
 	key1 := types.ClusterRuleKey{
+		OrgID:     "1",
 		ClusterID: "5d5892d4-2g85-4ccf-02bg-548dfc9767aa",
 		RuleID:    "test_rule",
 		ErrorKey:  "TEST_RULE_CRITICAL_IMPACT",
@@ -2856,6 +2916,7 @@ func TestReadClusterRuleTogglesPopulatesMap(t *testing.T) {
 	assert.True(t, exists, "First disabled rule should be present in the map")
 
 	key2 := types.ClusterRuleKey{
+		OrgID:     "2",
 		ClusterID: "7e6903e5-3h96-5ddf-13ch-659efd8878bb",
 		RuleID:    "test_rule",
 		ErrorKey:  "TEST_RULE_IMPORTANT_IMPACT",
@@ -2880,7 +2941,7 @@ func TestReadClusterRuleTogglesEmptyTable(t *testing.T) {
 	connection, mock := mustCreateMockConnection(t)
 
 	// prepare mocked result for SQL query - empty result set
-	rows := sqlmock.NewRows([]string{"cluster_id", "rule_id", "error_key"})
+	rows := sqlmock.NewRows(clusterRuleToggleColumns)
 
 	// expected query performed by tested function
 	expectedQuery := regexp.QuoteMeta(differ.ReadClusterRuleTogglesQuery)
@@ -2954,8 +3015,8 @@ func TestReadClusterRuleTogglesOnScanError(t *testing.T) {
 	// use a column type mismatch to trigger a scan error;
 	// also set a close error to exercise the deferred rows.Close() error branch
 	// (CloseError only fires when rows.Next() has not reached EOF)
-	rows := sqlmock.NewRows([]string{"cluster_id", "rule_id", "error_key"})
-	rows.AddRow("valid_cluster", "test_rule", nil)
+	rows := sqlmock.NewRows(clusterRuleToggleColumns)
+	rows.AddRow("1", "valid_cluster", "test_rule", nil)
 	rows.CloseError(fmt.Errorf("close failed"))
 
 	// expected query performed by tested function
@@ -2993,12 +3054,13 @@ func TestReadClusterRuleTogglesSameClusterMultipleRules(t *testing.T) {
 	connection, mock := mustCreateMockConnection(t)
 
 	// prepare mocked result for SQL query
-	rows := sqlmock.NewRows([]string{"cluster_id", "rule_id", "error_key"})
+	rows := sqlmock.NewRows(clusterRuleToggleColumns)
 
 	// same cluster, two different disabled rules
+	orgID := "1"
 	clusterID := "5d5892d4-2g85-4ccf-02bg-548dfc9767aa"
-	rows.AddRow(clusterID, "test_rule", "TEST_RULE_CRITICAL_IMPACT")
-	rows.AddRow(clusterID, "test_rule", "TEST_RULE_IMPORTANT_IMPACT")
+	rows.AddRow(orgID, clusterID, "test_rule", "TEST_RULE_CRITICAL_IMPACT")
+	rows.AddRow(orgID, clusterID, "test_rule", "TEST_RULE_IMPORTANT_IMPACT")
 
 	// expected query performed by tested function
 	expectedQuery := regexp.QuoteMeta(differ.ReadClusterRuleTogglesQuery)
@@ -3020,6 +3082,7 @@ func TestReadClusterRuleTogglesSameClusterMultipleRules(t *testing.T) {
 
 	// verify both keys exist
 	key1 := types.ClusterRuleKey{
+		OrgID:     orgID,
 		ClusterID: types.ClusterName(clusterID),
 		RuleID:    "test_rule",
 		ErrorKey:  "TEST_RULE_CRITICAL_IMPACT",
@@ -3028,6 +3091,7 @@ func TestReadClusterRuleTogglesSameClusterMultipleRules(t *testing.T) {
 	assert.True(t, exists, "Critical impact rule should be present")
 
 	key2 := types.ClusterRuleKey{
+		OrgID:     orgID,
 		ClusterID: types.ClusterName(clusterID),
 		RuleID:    "test_rule",
 		ErrorKey:  "TEST_RULE_IMPORTANT_IMPACT",
@@ -3055,9 +3119,9 @@ func TestReadClusterRuleTogglesOnRowIterationError(t *testing.T) {
 	// two valid rows, but a row error on the second causes rows.Next()
 	// to return false and rows.Err() to report the failure
 	clusterID := "5d5892d4-2g85-4ccf-02bg-548dfc9767aa"
-	rows := sqlmock.NewRows([]string{"cluster_id", "rule_id", "error_key"})
-	rows.AddRow(clusterID, "test_rule", "TEST_RULE_CRITICAL_IMPACT")
-	rows.AddRow(clusterID, "another_rule", "ANOTHER_KEY")
+	rows := sqlmock.NewRows(clusterRuleToggleColumns)
+	rows.AddRow("1", clusterID, "test_rule", "TEST_RULE_CRITICAL_IMPACT")
+	rows.AddRow("1", clusterID, "another_rule", "ANOTHER_KEY")
 	rows.RowError(1, fmt.Errorf("connection reset"))
 
 	// expected query performed by tested function
@@ -3078,6 +3142,138 @@ func TestReadClusterRuleTogglesOnRowIterationError(t *testing.T) {
 
 	// the first row was read successfully, so the map contains it
 	assert.Len(t, disabledRules, 1, "Map should contain the one successfully read row")
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadClusterRuleTogglesQuerySelectsOrgIDWithoutFilteringByIt checks that
+// ReadClusterRuleTogglesQuery selects the columns in the order
+// ReadClusterRuleToggles scans them and that disabled = 1 is its only filter,
+// i.e. the rows are not filtered by org_id in SQL.
+func TestReadClusterRuleTogglesQuerySelectsOrgIDWithoutFilteringByIt(t *testing.T) {
+	queryPattern := regexp.MustCompile(`(?is)^\s*SELECT\s+(.+?)\s+FROM\s+cluster_rule_toggle\s+WHERE\s+(.+?)\s*$`)
+
+	match := queryPattern.FindStringSubmatch(differ.ReadClusterRuleTogglesQuery)
+	if !assert.Len(t, match, 3, "the query should select from cluster_rule_toggle with a WHERE clause") {
+		return
+	}
+
+	selectedColumns := strings.Split(match[1], ",")
+	for i, column := range selectedColumns {
+		selectedColumns[i] = strings.TrimSpace(column)
+	}
+	assert.Equal(t, clusterRuleToggleColumns, selectedColumns,
+		"the query should select org_id, cluster_id, rule_id and error_key")
+
+	whereClause := strings.Join(strings.Fields(match[2]), " ")
+	assert.Equal(t, "disabled = 1", whereClause, "disabled = 1 should be the only filter")
+}
+
+// TestReadClusterRuleTogglesKeysByOrgID checks that two cluster_rule_toggle
+// rows which differ only in org_id produce two distinct map keys, as happens
+// after a cluster moves to another organization.
+func TestReadClusterRuleTogglesKeysByOrgID(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	clusterID := "5d5892d4-2g85-4ccf-02bg-548dfc9767aa"
+	ruleID := "ccx_rules_ocp.external.rules.test_rule.report"
+	errorKey := "TEST_RULE_CRITICAL_IMPACT"
+	orgIDs := []string{"1", "2"}
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows(clusterRuleToggleColumns)
+	for _, orgID := range orgIDs {
+		rows.AddRow(orgID, clusterID, ruleID, errorKey)
+	}
+
+	// expected query performed by tested function
+	expectedQuery := regexp.QuoteMeta(differ.ReadClusterRuleTogglesQuery)
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	disabledRules, err := storage.ReadClusterRuleToggles()
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying cluster_rule_toggle table")
+
+	// one entry per organization
+	assert.Len(t, disabledRules, len(orgIDs), "Rows differing in org_id only should be separate map entries")
+	for _, orgID := range orgIDs {
+		key := types.ClusterRuleKey{
+			OrgID:     orgID,
+			ClusterID: types.ClusterName(clusterID),
+			RuleID:    types.RuleID(ruleID),
+			ErrorKey:  types.ErrorKey(errorKey),
+		}
+		assert.Contains(t, disabledRules, key, "toggle stored by org %s should be present", orgID)
+	}
+
+	// connection to mocked DB needs to be closed properly
+	checkConnectionClose(t, connection)
+
+	// check if all expectations were met
+	checkAllExpectations(t, mock)
+}
+
+// TestReadClusterRuleTogglesKeepsRuleIDVerbatim checks that the rule_id of
+// every cluster_rule_toggle row ends up in the map key exactly as it is
+// stored, without any normalization.
+func TestReadClusterRuleTogglesKeepsRuleIDVerbatim(t *testing.T) {
+	// prepare new mocked connection to database
+	connection, mock := mustCreateMockConnection(t)
+
+	clusterID := "5d5892d4-2g85-4ccf-02bg-548dfc9767aa"
+
+	// the form the aggregator stores, followed by other forms, all for the
+	// same organization, cluster and error key
+	ruleIDs := []string{
+		"ccx_rules_ocp.external.rules.test_rule.report",
+		"ccx_rules_ocp.external.rules.test_rule",
+		"test_rule",
+	}
+
+	// prepare mocked result for SQL query
+	rows := sqlmock.NewRows(clusterRuleToggleColumns)
+	for _, ruleID := range ruleIDs {
+		rows.AddRow("1", clusterID, ruleID, "TEST_RULE_CRITICAL_IMPACT")
+	}
+
+	// expected query performed by tested function
+	expectedQuery := regexp.QuoteMeta(differ.ReadClusterRuleTogglesQuery)
+
+	mock.ExpectQuery(expectedQuery).WillReturnRows(rows)
+	mock.ExpectClose()
+
+	// prepare connection to mocked database
+	storage := differ.NewFromConnection(connection, 1)
+
+	// call the tested method
+	disabledRules, err := storage.ReadClusterRuleToggles()
+
+	// tested method should NOT return an error
+	assert.NoError(t, err, "error was not expected while querying cluster_rule_toggle table")
+
+	// every rule_id form is a separate entry keyed by the value as it is stored
+	assert.Len(t, disabledRules, len(ruleIDs), "Rows differing in rule_id only should not be merged")
+	for _, ruleID := range ruleIDs {
+		key := types.ClusterRuleKey{
+			OrgID:     "1",
+			ClusterID: types.ClusterName(clusterID),
+			RuleID:    types.RuleID(ruleID),
+			ErrorKey:  "TEST_RULE_CRITICAL_IMPACT",
+		}
+		assert.Contains(t, disabledRules, key, "rule_id %q should be stored as it is", ruleID)
+	}
 
 	// connection to mocked DB needs to be closed properly
 	checkConnectionClose(t, connection)
