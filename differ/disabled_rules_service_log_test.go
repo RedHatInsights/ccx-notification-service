@@ -55,11 +55,10 @@ const (
 
 	// serviceLogDisabledRulesReportJSON is a report as it is stored in the
 	// database, where a rule carries the composite "rule_id|error_key" value
-	// next to the fully qualified component and the error key. The aggregator
-	// tables, in contrast, store rule_id ("test_rule") and error_key in
-	// separate columns. Note that types.ReportItem has no field mapped to the
-	// "rule_id" JSON key, so encoding/json discards it: matching runs off
-	// "component" (via moduleToRuleName) and "key" instead.
+	// next to the fully qualified component and the error key. Note that
+	// types.ReportItem has no field mapped to the "rule_id" JSON key, so
+	// encoding/json discards it: matching runs off "component" and "key"
+	// instead.
 	serviceLogDisabledRulesReportJSON = `{
 		"reports": [
 			{
@@ -104,7 +103,7 @@ func newServiceLogDisabledRulesDiffer(
 // with an error key whose total risk is below the default threshold.
 func serviceLogTestRuleContentWithLowRisk() types.RulesMap {
 	ruleContent := disabledRulesTestRuleContent()
-	ruleContent[string(disabledRulesTestRuleID)].ErrorKeys[string(lowImpactErrorKey)] = utypes.RuleErrorKeyContent{
+	ruleContent[string(disabledRulesTestRuleName)].ErrorKeys[string(lowImpactErrorKey)] = utypes.RuleErrorKeyContent{
 		Metadata: utypes.ErrorKeyMetadata{
 			Description: lowRuleDescription,
 			Impact:      utypes.Impact{Name: "low_impact", Impact: 1},
@@ -124,7 +123,7 @@ func TestGetReportsWithIssuesToNotifySkipsClusterDisabledRule(t *testing.T) {
 
 	d := newServiceLogDisabledRulesDiffer(
 		types.ClusterDisabledRules{
-			{ClusterID: cluster.ClusterName, RuleID: disabledRulesTestRuleID, ErrorKey: criticalImpactErrorKey}: {},
+			{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: disabledRulesTestToggleRuleID, ErrorKey: criticalImpactErrorKey}: {},
 		},
 		nil)
 
@@ -150,7 +149,7 @@ func TestGetReportsWithIssuesToNotifySkipsOrgDisabledRule(t *testing.T) {
 	d := newServiceLogDisabledRulesDiffer(
 		nil,
 		types.OrgDisabledRules{
-			{OrgID: "1", RuleID: disabledRulesTestRuleID, ErrorKey: criticalImpactErrorKey}: {},
+			{OrgID: disabledRulesTestOrgID, RuleID: disabledRulesTestAckRuleID, ErrorKey: criticalImpactErrorKey}: {},
 		})
 
 	reports := types.ReportContent{disabledRulesTestReportItem(criticalImpactErrorKey)}
@@ -167,18 +166,19 @@ func TestGetReportsWithIssuesToNotifySkipsOrgDisabledRule(t *testing.T) {
 // TestGetReportsWithIssuesToNotifyIncludesRuleNotDisabled verifies that a rule
 // that matches neither disabled-rule map is returned with its total risk set.
 // The maps contain near misses only: the same rule with another error key for
-// this cluster and the very same rule acked for a different organization,
-// neither of which may cause the rule to be skipped.
+// this cluster, the very same rule toggled for this cluster by another
+// organization, and the very same rule acked for another organization.
 func TestGetReportsWithIssuesToNotifyIncludesRuleNotDisabled(t *testing.T) {
 	buf := setupDisabledRulesLogCapture(t)
 	cluster := disabledRulesTestClusterEntry()
 
 	d := newServiceLogDisabledRulesDiffer(
 		types.ClusterDisabledRules{
-			{ClusterID: cluster.ClusterName, RuleID: disabledRulesTestRuleID, ErrorKey: importantImpactErrorKey}: {},
+			{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: disabledRulesTestToggleRuleID, ErrorKey: importantImpactErrorKey}: {},
+			{OrgID: "999", ClusterID: cluster.ClusterName, RuleID: disabledRulesTestToggleRuleID, ErrorKey: criticalImpactErrorKey}:                   {},
 		},
 		types.OrgDisabledRules{
-			{OrgID: "999", RuleID: disabledRulesTestRuleID, ErrorKey: criticalImpactErrorKey}: {},
+			{OrgID: "999", RuleID: disabledRulesTestAckRuleID, ErrorKey: criticalImpactErrorKey}: {},
 		})
 
 	reports := types.ReportContent{disabledRulesTestReportItem(criticalImpactErrorKey)}
@@ -206,7 +206,7 @@ func TestGetReportsWithIssuesToNotifySkipsOnlyDisabledRuleAmongMany(t *testing.T
 
 	d := newServiceLogDisabledRulesDiffer(
 		types.ClusterDisabledRules{
-			{ClusterID: cluster.ClusterName, RuleID: disabledRulesTestRuleID, ErrorKey: criticalImpactErrorKey}: {},
+			{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: disabledRulesTestToggleRuleID, ErrorKey: criticalImpactErrorKey}: {},
 		},
 		nil)
 
@@ -226,11 +226,9 @@ func TestGetReportsWithIssuesToNotifySkipsOnlyDisabledRuleAmongMany(t *testing.T
 
 // TestGetReportsWithIssuesToNotifyMatchesRulesFromStoredReportJSON verifies
 // that rules deserialized from a report as it is stored in the database are
-// matched against the aggregator maps, which hold the plain rule id and the
-// error key in separate columns. The report's composite "rule_id|error_key"
-// field plays no part in this: types.ReportItem has no field mapped to it, so
-// encoding/json discards it and matching runs off "component" (via
-// moduleToRuleName) and "key".
+// matched against the aggregator maps. The report's composite
+// "rule_id|error_key" field plays no part in this: types.ReportItem has no
+// field mapped to it, so encoding/json discards it.
 func TestGetReportsWithIssuesToNotifyMatchesRulesFromStoredReportJSON(t *testing.T) {
 	cluster := disabledRulesTestClusterEntry()
 
@@ -260,7 +258,7 @@ func TestGetReportsWithIssuesToNotifyMatchesRulesFromStoredReportJSON(t *testing
 
 			d := newServiceLogDisabledRulesDiffer(
 				types.ClusterDisabledRules{
-					{ClusterID: cluster.ClusterName, RuleID: disabledRulesTestRuleID, ErrorKey: criticalImpactErrorKey}: {},
+					{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: disabledRulesTestToggleRuleID, ErrorKey: criticalImpactErrorKey}: {},
 				},
 				nil)
 
@@ -348,7 +346,7 @@ func TestGetReportsWithIssuesToNotifyDisabledRuleSkippedBeforeCooldownCheck(t *t
 		{
 			name: "disabled rule is skipped before the cooldown check",
 			clusterDisabledRules: types.ClusterDisabledRules{
-				{ClusterID: cluster.ClusterName, RuleID: disabledRulesTestRuleID, ErrorKey: criticalImpactErrorKey}: {},
+				{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: disabledRulesTestToggleRuleID, ErrorKey: criticalImpactErrorKey}: {},
 			},
 			expectedSameStateDiff: 0,
 			expectDisabledLog:     true,
