@@ -351,11 +351,11 @@ func evaluateTagFilter(filterEnabled bool, tagsSet, reportItemTags types.TagsSet
 // aggregator database at startup are consulted, and a match in either one means
 // the rule is disabled and must be skipped:
 //
-//   - per-cluster disable, the `cluster_rule_toggle“ map keyed by
+//   - per-cluster disable, the `cluster_rule_toggle` map keyed by
 //     (org_id, cluster_id, rule_id, error_key). The aggregator stores the module
 //     as it is in the rule_id column, including the ".report" suffix.
 //
-//   - org-wide ack, the `rule_disable“ map keyed by (org_id, rule_id, error_key).
+//   - org-wide ack, the `rule_disable` map keyed by (org_id, rule_id, error_key).
 //     The aggregator stores the module without its ".report" suffix in rule_id.
 //
 // Matching is exact on purpose and mirrors how insights-results-smart-proxy

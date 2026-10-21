@@ -152,7 +152,8 @@ The service is invoked with CLI flags defined in `cmd/ccx-notification-service/c
 | `--max-age` | `""` | Max age threshold for cleanup operations (PostgreSQL interval format) |
 | `--ignore-disabled-rules` | `false` | Skip disabled rules check, process all rules as if none are disabled |
 
-In production, the service runs as `./ccx-notification-service --instant-reports --verbose`.
+In production, the service runs as a CronJob defined in `deploy/clowdapp.yaml`
+(currently `--instant-reports --verbose --ignore-disabled-rules`).
 
 ## Configuration
 
