@@ -157,6 +157,11 @@ const (
 	// reportsJSONField is the name of the top level key holding the list of
 	// rule hits in the report JSON document
 	reportsJSONField = "reports"
+
+	// ruleModuleSuffix is the suffix of the fully qualified rule module
+	// stored in the "component" field of each rule hit, e.g.
+	// ccx_rules_ocp.external.rules.nodes_requirements_check.report
+	ruleModuleSuffix = ".report"
 )
 
 // Constants used to filter events
@@ -235,8 +240,11 @@ func calculateTotalRisk(impact, likelihood int) int {
 // ccx_rules_ocp.external.rules.cluster_wide_proxy_auth_check.report
 // ->
 // cluster_wide_proxy_auth_check
+//
+// The plain rule name is what the rule content is keyed by. It must not be
+// used to match disabled rules, see isRuleDisabled.
 func moduleToRuleName(module types.ModuleName) types.RuleName {
-	result := strings.TrimSuffix(string(module), ".report")
+	result := strings.TrimSuffix(string(module), ruleModuleSuffix)
 	return ruleIDToRuleName(types.RuleID(result))
 }
 
@@ -337,33 +345,43 @@ func evaluateTagFilter(filterEnabled bool, tagsSet, reportItemTags types.TagsSet
 	return true
 }
 
-// isRuleDisabled reports whether the given rule (identified by its rule name and
-// error key) has been disabled by the customer for the given cluster. Both
-// disabled-rule sources loaded from the aggregator database at startup are
-// consulted: the per-cluster cluster_rule_toggle map keyed by
-// (cluster_id, rule_id, error_key) and the org-wide rule_disable map keyed by
-// (org_id, rule_id, error_key). A match in either one means the rule is disabled
-// and must be skipped. Both lookups are O(1). When --ignore-disabled-rules is
-// set both maps are empty, so every rule is treated as enabled.
+// isRuleDisabled reports whether the given rule hit, identified by its module
+// (the "component" field of the report hit) and error key, has been disabled by
+// the customer for the given cluster. Both disabled-rule sources loaded from the
+// aggregator database at startup are consulted, and a match in either one means
+// the rule is disabled and must be skipped:
 //
-// The aggregator tables store rule_id as the plain rule name (e.g. "test_rule"),
-// which is what moduleToRuleName yields from the report's fully qualified
-// component, so the RuleName is converted to a RuleID for the lookup.
-func (d *Differ) isRuleDisabled(cluster types.ClusterEntry, ruleName types.RuleName, errorKey types.ErrorKey) bool {
-	ruleID := types.RuleID(ruleName)
+//   - per-cluster disable, the `cluster_rule_toggle“ map keyed by
+//     (org_id, cluster_id, rule_id, error_key). The aggregator stores the module
+//     as it is in the rule_id column, including the ".report" suffix.
+//
+//   - org-wide ack, the `rule_disable“ map keyed by (org_id, rule_id, error_key).
+//     The aggregator stores the module without its ".report" suffix in rule_id.
+//
+// Matching is exact on purpose and mirrors how insights-results-smart-proxy
+// decides whether a rule is shown as disabled. No other rule_id format is tried
+// in order to mimic the behavior of smart-proxy and aggregator.
+//
+// Both lookups are O(1). When --ignore-disabled-rules is set both maps are
+// empty, so every rule is treated as enabled.
+func (d *Differ) isRuleDisabled(cluster types.ClusterEntry, module types.ModuleName, errorKey types.ErrorKey) bool {
+	orgID := fmt.Sprint(cluster.OrgID)
 
+	// cluster_rule_toggle keeps the ".report" suffix in rule_id
 	clusterKey := types.ClusterRuleKey{
+		OrgID:     orgID,
 		ClusterID: cluster.ClusterName,
-		RuleID:    ruleID,
+		RuleID:    types.RuleID(module),
 		ErrorKey:  errorKey,
 	}
 	if _, disabledForCluster := d.ClusterDisabledRules[clusterKey]; disabledForCluster {
 		return true
 	}
 
+	// rule_disable stores rule_id without the ".report" suffix
 	orgKey := types.OrgRuleKey{
-		OrgID:    fmt.Sprint(cluster.OrgID),
-		RuleID:   ruleID,
+		OrgID:    orgID,
+		RuleID:   types.RuleID(strings.TrimSuffix(string(module), ruleModuleSuffix)),
 		ErrorKey: errorKey,
 	}
 	if _, ackedForOrg := d.OrgDisabledRules[orgKey]; ackedForOrg {
@@ -420,15 +438,17 @@ func (d *Differ) filterDisabledRulesFromReport(cluster types.ClusterEntry, repor
 	// not as null
 	activeReportItems := make([]json.RawMessage, 0, len(reportItems))
 	for _, rawReportItem := range reportItems {
-		// the report item is deserialized only to identify the rule hit, the
-		// raw JSON is what ends up in the filtered report
+		// the report item is deserialized only to identify the rule hit by its
+		// module ("component") and error key ("key"), the same way the Kafka
+		// and ServiceLog filters do. The raw JSON is what ends up in the
+		// filtered report
 		var reportItem types.ReportItem
 		if err := json.Unmarshal(rawReportItem, &reportItem); err != nil {
 			logFilteringError(err)
 			return report
 		}
 
-		if d.isRuleDisabled(cluster, moduleToRuleName(reportItem.Module), reportItem.ErrorKey) {
+		if d.isRuleDisabled(cluster, reportItem.Module, reportItem.ErrorKey) {
 			continue
 		}
 
@@ -482,8 +502,9 @@ func (d *Differ) getReportsWithIssuesToNotify(reports types.ReportContent, clust
 		// produceEntriesToKafka: Only the skip logging (logDisabledRuleSkip) is shared.
 
 		// Skip disabled rules before anything else, so a disabled rule never reaches ShouldNotify.
-		// Both the per-cluster and org-wide disabled are taken into account
-		if d.isRuleDisabled(cluster, ruleName, errorKey) {
+		// Both the per-cluster and org-wide disabled rules are taken into account.
+		// They are matched by the module, not by the plain rule name.
+		if d.isRuleDisabled(cluster, r.Module, errorKey) {
 			logDisabledRuleSkip(cluster, ruleName, errorKey)
 			continue
 		}
@@ -645,8 +666,9 @@ func (d *Differ) produceEntriesToKafka(cluster types.ClusterEntry, ruleContent t
 		// Skip rules the customer has disabled before anything else, so a
 		// disabled rule never reaches the total risk filter or ShouldNotify.
 		// Both the per-cluster (cluster_rule_toggle) and org-wide (rule_disable)
-		// maps are consulted.
-		if d.isRuleDisabled(cluster, ruleName, errorKey) {
+		// maps are consulted. They are matched by the module, not by the plain
+		// rule name.
+		if d.isRuleDisabled(cluster, module, errorKey) {
 			logDisabledRuleSkip(cluster, ruleName, errorKey)
 			continue
 		}

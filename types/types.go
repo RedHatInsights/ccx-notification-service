@@ -269,10 +269,21 @@ type ClusterOrgKey struct {
 // ClusterRuleKey is a composite key identifying a specific rule on a specific
 // cluster. It is used as the map key for cluster-level disabled rules loaded
 // from the aggregator DB's cluster_rule_toggle table.
+//
+// The key is scoped to the organization that disabled the rule, because a
+// cluster_rule_toggle row applies only to a single organization. Whenever
+// a cluster moves to another organization, its old rows keep the previous
+// org_id until the rule is toggled again. The new organization's Advisor UI
+// shows the rule as enabled, so the notifications must not be suppressed for
+// it either.
 type ClusterRuleKey struct {
+	// OrgID is the organization that toggled the rule. It is a string
+	// because the aggregator DB stores it as VARCHAR.
+	OrgID     string
 	ClusterID ClusterName
-	RuleID    RuleID
-	ErrorKey  ErrorKey
+	// RuleID is the fully qualified rule module including the ".report" suffix
+	RuleID   RuleID
+	ErrorKey ErrorKey
 }
 
 // ClusterDisabledRules is a set of per-cluster disabled rules. The map value
@@ -284,7 +295,8 @@ type ClusterDisabledRules map[ClusterRuleKey]struct{}
 // rules loaded from the aggregator DB's rule_disable table. OrgID is a string
 // because the aggregator DB stores it as VARCHAR.
 type OrgRuleKey struct {
-	OrgID    string
+	OrgID string
+	// RuleID is the fully qualified rule module without the ".report" suffix
 	RuleID   RuleID
 	ErrorKey ErrorKey
 }
