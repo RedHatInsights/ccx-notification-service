@@ -56,7 +56,7 @@ This is where most of the business logic lives. Key files and their responsibili
 
 ### Key concepts in the `differ` package
 
-**Single database connection.** The service currently connects to a single database: the notification DB (shared with `ccx-notification-writer`). It does not connect to the aggregator database or any other database. All tables it reads from and writes to (`new_reports`, `reported`, `states`, `notification_types`, `read_errors`) are in this one database.
+**Database connections.** The service's main database is the notification DB (shared with `ccx-notification-writer`). All tables it reads from and writes to during processing (`new_reports`, `reported`, `states`, `notification_types`, `read_errors`) are in this one database. In addition, unless `--ignore-disabled-rules` is set, the service opens a short-lived read-only connection to the aggregator database (configured in `[aggregator_storage]`) at startup, reads the rules customers disabled from `cluster_rule_toggle` and `rule_disable`, and closes the connection before processing any cluster.
 
 **The `new_reports` table.** This is the input queue for the service, populated by `ccx-notification-writer` consuming from Kafka. Each row contains `org_id`, `account_number`, `cluster` (UUID), `report` (full JSON with all rule hits), `updated_at`, and `kafka_offset`. When the service reads from this table, `ReadClusterList()` uses `SELECT DISTINCT ON (cluster) ... ORDER BY cluster, updated_at DESC`, which means only the most recent report per cluster is processed. Older entries for the same cluster are ignored. The table is not cleaned up during normal processing — cleanup is done by running the service with the `--new-reports-cleanup` flag (or `--cleanup-on-startup` to clean both `new_reports` and `reported` before processing).
 
@@ -73,7 +73,7 @@ The `event_type_id` column tracks the notification target (1 = Kafka, 2 = Servic
 
 **The cooldown mechanism.** The service prevents notification spam by checking whether the customer was recently notified about the same issue. At startup, `ReadLastNotifiedRecordForClusterList()` loads the most recent **state=1 ("sent") only** record per cluster within the configured cooldown window. State=2/3/4 records are completely invisible to this query. For each rule in a new report, `ShouldNotify()` is called per-rule (not per-cluster). It deserializes the stored report from the last state=1 record and calls `IssueNotInReport()` to check if the rule (by Type, Module, and ErrorKey) was already reported. If found, the rule is skipped (still in cooldown). If not found or no state=1 record exists within the cooldown window, the rule is treated as new and the customer gets notified.
 
-**The `report` column and its JSON format.** The `reported` table has a `report` column (varchar) that stores the full JSON report from `new_reports`. Currently this is always the unfiltered original report. `ShouldNotify()` uses this column for its per-rule comparison, which is why what gets stored here matters for future cooldown decisions. The report JSON uses a composite `rule_id|error_key` pipe-delimited format inside `reports[].rule_id` and a fully qualified module name in `reports[].component` (e.g., `ccx_rules_ocp.external.rules.test_rule.report`). However, the `rule_id` JSON field is **not deserialized** into the Go `ReportItem` struct — it is silently discarded during unmarshal. The Go struct uses `Module` (mapped from the `component` JSON field) and `ErrorKey` (mapped from the `key` JSON field) instead. The code derives rule names from the module using `moduleToRuleName()` and `ruleIDToRuleName()` helper functions in `differ.go`. Note that the aggregator database tables (`cluster_rule_toggle`, `rule_disable`) store `rule_id` and `error_key` as separate columns, so any code matching report rules against disabled rules needs to handle this format difference.
+**The `report` column and its JSON format.** The `reported` table has a `report` column (varchar) that stores the full JSON report from `new_reports`, except that the rule hits the customer disabled are omitted from it (CCXDEV-16569), so a disabled rule never becomes part of the cooldown baseline. `ShouldNotify()` uses this column for its per-rule comparison, which is why what gets stored here matters for future cooldown decisions. The report JSON uses a composite `rule_id|error_key` pipe-delimited format inside `reports[].rule_id` and a fully qualified module name in `reports[].component` (e.g., `ccx_rules_ocp.external.rules.test_rule.report`). However, the `rule_id` JSON field is **not deserialized** into the Go `ReportItem` struct — it is silently discarded during unmarshal. The Go struct uses `Module` (mapped from the `component` JSON field) and `ErrorKey` (mapped from the `key` JSON field) instead. The code derives rule names from the module using `moduleToRuleName()` and `ruleIDToRuleName()` helper functions in `differ.go`. The aggregator database tables store `rule_id` and `error_key` as separate columns, and their `rule_id` is derived from the module, not the plain rule name. For a report hit with `component = ccx_rules_ocp.external.rules.nodes_requirements_check.report` and `key = NODES_MINIMUM_REQUIREMENTS_NOT_MET`, `cluster_rule_toggle` (per-cluster disable, scoped to the organization in its `org_id`) stores `rule_id = ccx_rules_ocp.external.rules.nodes_requirements_check.report` (the component as is), and `rule_disable` (org-wide ack) stores `rule_id = ccx_rules_ocp.external.rules.nodes_requirements_check` (the component without `.report`). Both store `error_key = NODES_MINIMUM_REQUIREMENTS_NOT_MET`. Disabled-rule matching (`isRuleDisabled()`) therefore uses the module (`component`) and matches exactly, while `moduleToRuleName()` is for rule content lookups.
 
 ### `conf/`
 
@@ -150,8 +150,10 @@ The service is invoked with CLI flags defined in `cmd/ccx-notification-service/c
 | `--old-reports-cleanup` | `false` | Delete old records from `reported` |
 | `--cleanup-on-startup` | `false` | Run both cleanups before starting the differ |
 | `--max-age` | `""` | Max age threshold for cleanup operations (PostgreSQL interval format) |
+| `--ignore-disabled-rules` | `false` | Skip disabled rules check, process all rules as if none are disabled |
 
-In production, the service runs as `./ccx-notification-service --instant-reports --verbose`.
+In production, the service runs as a CronJob defined in `deploy/clowdapp.yaml`
+(currently `--instant-reports --verbose --ignore-disabled-rules`).
 
 ## Configuration
 
@@ -162,6 +164,7 @@ Key sections in the config file:
 | Section | What it configures |
 |---------|-------------------|
 | `[storage]` | PostgreSQL connection (notification database) |
+| `[aggregator_storage]` | PostgreSQL connection (aggregator database, read-only, used at startup to read disabled rules) |
 | `[kafka_broker]` | Kafka producer settings, topic, thresholds, cooldown, event filter, tag filter |
 | `[service_log]` | ServiceLog/OCM API settings, thresholds, cooldown, event filter, tag filter |
 | `[dependencies]` | Content service and template renderer URLs |

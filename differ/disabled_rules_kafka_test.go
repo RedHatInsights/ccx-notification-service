@@ -40,10 +40,22 @@ import (
 
 const (
 	// disabledRulesTestModule is the fully qualified component as it appears in
-	// the report JSON. moduleToRuleName turns it into the plain rule name
-	// "test_rule" that the aggregator tables store as rule_id.
+	// the report JSON.
 	disabledRulesTestModule types.ModuleName = "ccx_rules_ocp.external.rules.test_rule.report"
-	disabledRulesTestRuleID types.RuleID     = "test_rule"
+
+	// disabledRulesTestRuleName is the plain rule name the rule content is
+	// keyed by.
+	disabledRulesTestRuleName types.RuleName = "test_rule"
+
+	// disabledRulesTestToggleRuleID and disabledRulesTestAckRuleID are the
+	// rule_id values the aggregator stores for test_rule: the component as it
+	// is in cluster_rule_toggle, without ".report" in rule_disable.
+	disabledRulesTestToggleRuleID types.RuleID = "ccx_rules_ocp.external.rules.test_rule.report"
+	disabledRulesTestAckRuleID    types.RuleID = "ccx_rules_ocp.external.rules.test_rule"
+
+	// disabledRulesTestOrgID is the organization of the cluster returned by
+	// disabledRulesTestClusterEntry.
+	disabledRulesTestOrgID = "1"
 
 	criticalImpactErrorKey  types.ErrorKey = "TEST_RULE_CRITICAL_IMPACT"
 	importantImpactErrorKey types.ErrorKey = "TEST_RULE_IMPORTANT_IMPACT"
@@ -72,7 +84,7 @@ func disabledRulesTestClusterEntry() types.ClusterEntry {
 // critical (total risk 4) and an important (total risk 3) error key.
 func disabledRulesTestRuleContent() types.RulesMap {
 	return types.RulesMap{
-		string(disabledRulesTestRuleID): {
+		string(disabledRulesTestRuleName): {
 			ErrorKeys: map[string]utypes.RuleErrorKeyContent{
 				string(criticalImpactErrorKey): {
 					Metadata: utypes.ErrorKeyMetadata{
@@ -132,22 +144,22 @@ func setupDisabledRulesLogCapture(t *testing.T) *bytes.Buffer {
 }
 
 // TestIsRuleDisabled verifies that isRuleDisabled consults both the per-cluster
-// (cluster_rule_toggle) and org-wide (rule_disable) maps and matches on every
-// component of the composite key: cluster/org id, rule id (derived from the
-// module) and error key.
+// (cluster_rule_toggle) and org-wide (rule_disable) maps and matches exactly on
+// every component of the composite keys. Any rule_id form other than the one
+// the aggregator stores must not disable the rule.
 func TestIsRuleDisabled(t *testing.T) {
 	cluster := disabledRulesTestClusterEntry()
-	const ruleName = types.RuleName("test_rule")
 	errorKey := criticalImpactErrorKey
 
 	clusterKey := types.ClusterRuleKey{
+		OrgID:     disabledRulesTestOrgID,
 		ClusterID: cluster.ClusterName,
-		RuleID:    disabledRulesTestRuleID,
+		RuleID:    disabledRulesTestToggleRuleID,
 		ErrorKey:  errorKey,
 	}
 	orgKey := types.OrgRuleKey{
-		OrgID:    "1",
-		RuleID:   disabledRulesTestRuleID,
+		OrgID:    disabledRulesTestOrgID,
+		RuleID:   disabledRulesTestAckRuleID,
 		ErrorKey: errorKey,
 	}
 
@@ -174,28 +186,83 @@ func TestIsRuleDisabled(t *testing.T) {
 		{
 			name: "cluster map entry has a different error key",
 			cluster: types.ClusterDisabledRules{
-				{ClusterID: cluster.ClusterName, RuleID: disabledRulesTestRuleID, ErrorKey: "OTHER_ERROR_KEY"}: {},
+				{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: disabledRulesTestToggleRuleID, ErrorKey: "OTHER_ERROR_KEY"}: {},
 			},
 			expected: false,
 		},
 		{
 			name: "cluster map entry has a different rule id",
 			cluster: types.ClusterDisabledRules{
-				{ClusterID: cluster.ClusterName, RuleID: "other_rule", ErrorKey: errorKey}: {},
+				{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: "ccx_rules_ocp.external.rules.other_rule.report", ErrorKey: errorKey}: {},
 			},
 			expected: false,
 		},
 		{
 			name: "cluster map entry is for a different cluster",
 			cluster: types.ClusterDisabledRules{
-				{ClusterID: "other-cluster", RuleID: disabledRulesTestRuleID, ErrorKey: errorKey}: {},
+				{OrgID: disabledRulesTestOrgID, ClusterID: "other-cluster", RuleID: disabledRulesTestToggleRuleID, ErrorKey: errorKey}: {},
+			},
+			expected: false,
+		},
+		{
+			name: "org map entry has a different error key",
+			org: types.OrgDisabledRules{
+				{OrgID: disabledRulesTestOrgID, RuleID: disabledRulesTestAckRuleID, ErrorKey: "OTHER_ERROR_KEY"}: {},
 			},
 			expected: false,
 		},
 		{
 			name: "org map entry is for a different org",
 			org: types.OrgDisabledRules{
-				{OrgID: "999", RuleID: disabledRulesTestRuleID, ErrorKey: errorKey}: {},
+				{OrgID: "999", RuleID: disabledRulesTestAckRuleID, ErrorKey: errorKey}: {},
+			},
+			expected: false,
+		},
+		{
+			// the format the previous implementation wrongly assumed
+			name: "cluster map entry keyed by the plain rule name",
+			cluster: types.ClusterDisabledRules{
+				{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: types.RuleID(disabledRulesTestRuleName), ErrorKey: errorKey}: {},
+			},
+			expected: false,
+		},
+		{
+			name: "cluster map entry keyed by the module without .report",
+			cluster: types.ClusterDisabledRules{
+				{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: disabledRulesTestAckRuleID, ErrorKey: errorKey}: {},
+			},
+			expected: false,
+		},
+		{
+			name: "org map entry keyed by the plain rule name",
+			org: types.OrgDisabledRules{
+				{OrgID: disabledRulesTestOrgID, RuleID: types.RuleID(disabledRulesTestRuleName), ErrorKey: errorKey}: {},
+			},
+			expected: false,
+		},
+		{
+			name: "org map entry keyed by the module with .report",
+			org: types.OrgDisabledRules{
+				{OrgID: disabledRulesTestOrgID, RuleID: disabledRulesTestToggleRuleID, ErrorKey: errorKey}: {},
+			},
+			expected: false,
+		},
+		{
+			// the cluster moved from org 999 to org 1, the old toggle row
+			// keeps the previous org_id
+			name: "cluster map entry toggled by a previous owner of the cluster",
+			cluster: types.ClusterDisabledRules{
+				{OrgID: "999", ClusterID: cluster.ClusterName, RuleID: disabledRulesTestToggleRuleID, ErrorKey: errorKey}: {},
+			},
+			expected: false,
+		},
+		{
+			name: "map entries for a rule with the same plain name in another namespace",
+			cluster: types.ClusterDisabledRules{
+				{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: "ccx_rules_ocp.internal.rules.test_rule.report", ErrorKey: errorKey}: {},
+			},
+			org: types.OrgDisabledRules{
+				{OrgID: disabledRulesTestOrgID, RuleID: "ccx_rules_ocp.internal.rules.test_rule", ErrorKey: errorKey}: {},
 			},
 			expected: false,
 		},
@@ -207,8 +274,62 @@ func TestIsRuleDisabled(t *testing.T) {
 				ClusterDisabledRules: tc.cluster,
 				OrgDisabledRules:     tc.org,
 			}
-			result := differ.IsRuleDisabled(&d, cluster, ruleName, errorKey)
+			result := differ.IsRuleDisabled(&d, cluster, disabledRulesTestModule, errorKey)
 			assert.Equal(t, tc.expected, result)
+		})
+	}
+}
+
+// TestIsRuleDisabledTrimsOnlyTrailingReportSuffix verifies the keys derived
+// from a module without the ".report" suffix and from a module containing
+// "report" elsewhere.
+func TestIsRuleDisabledTrimsOnlyTrailingReportSuffix(t *testing.T) {
+	cluster := disabledRulesTestClusterEntry()
+	errorKey := criticalImpactErrorKey
+
+	const (
+		// no ".report" suffix, so trimming leaves it unchanged
+		suffixlessModule types.ModuleName = "ccx_rules_ocp.external.rules.suffixless_rule"
+		// "report" in the rule name must survive the trimming
+		reportInNameModule types.ModuleName = "ccx_rules_ocp.external.rules.report_check.report"
+	)
+
+	testCases := []struct {
+		name    string
+		module  types.ModuleName
+		cluster types.ClusterDisabledRules
+		org     types.OrgDisabledRules
+	}{
+		{
+			name:   "per-cluster key of a module without .report is the module as it is",
+			module: suffixlessModule,
+			cluster: types.ClusterDisabledRules{
+				{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: types.RuleID(suffixlessModule), ErrorKey: errorKey}: {},
+			},
+		},
+		{
+			name:   "org-wide key of a module without .report is the module as it is",
+			module: suffixlessModule,
+			org: types.OrgDisabledRules{
+				{OrgID: disabledRulesTestOrgID, RuleID: types.RuleID(suffixlessModule), ErrorKey: errorKey}: {},
+			},
+		},
+		{
+			name:   "org-wide key strips only the trailing .report",
+			module: reportInNameModule,
+			org: types.OrgDisabledRules{
+				{OrgID: disabledRulesTestOrgID, RuleID: "ccx_rules_ocp.external.rules.report_check", ErrorKey: errorKey}: {},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			d := differ.Differ{
+				ClusterDisabledRules: tc.cluster,
+				OrgDisabledRules:     tc.org,
+			}
+			assert.True(t, differ.IsRuleDisabled(&d, cluster, tc.module, errorKey))
 		})
 	}
 }
@@ -234,7 +355,7 @@ func TestProduceEntriesToKafkaSkipsClusterDisabledRule(t *testing.T) {
 			TotalRisk: differ.DefaultTotalRiskThreshold,
 		},
 		ClusterDisabledRules: types.ClusterDisabledRules{
-			{ClusterID: cluster.ClusterName, RuleID: disabledRulesTestRuleID, ErrorKey: criticalImpactErrorKey}: {},
+			{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: disabledRulesTestToggleRuleID, ErrorKey: criticalImpactErrorKey}: {},
 		},
 	}
 
@@ -272,7 +393,7 @@ func TestProduceEntriesToKafkaSkipsOrgDisabledRule(t *testing.T) {
 			TotalRisk: differ.DefaultTotalRiskThreshold,
 		},
 		OrgDisabledRules: types.OrgDisabledRules{
-			{OrgID: "1", RuleID: disabledRulesTestRuleID, ErrorKey: criticalImpactErrorKey}: {},
+			{OrgID: disabledRulesTestOrgID, RuleID: disabledRulesTestAckRuleID, ErrorKey: criticalImpactErrorKey}: {},
 		},
 	}
 
@@ -349,7 +470,7 @@ func TestProduceEntriesToKafkaSkipsOnlyDisabledRuleAmongMany(t *testing.T) {
 			TotalRisk: differ.DefaultTotalRiskThreshold,
 		},
 		ClusterDisabledRules: types.ClusterDisabledRules{
-			{ClusterID: cluster.ClusterName, RuleID: disabledRulesTestRuleID, ErrorKey: criticalImpactErrorKey}: {},
+			{OrgID: disabledRulesTestOrgID, ClusterID: cluster.ClusterName, RuleID: disabledRulesTestToggleRuleID, ErrorKey: criticalImpactErrorKey}: {},
 		},
 	}
 

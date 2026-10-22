@@ -225,7 +225,7 @@ const (
 	// the aggregator DB. Only rows with disabled = 1 are returned; re-enabled
 	// rows (disabled = 0) are excluded.
 	ReadClusterRuleTogglesQuery = `
-		SELECT cluster_id, rule_id, error_key
+		SELECT org_id, cluster_id, rule_id, error_key
 		  FROM cluster_rule_toggle
 		 WHERE disabled = 1
        `
@@ -722,8 +722,12 @@ func (storage DBStorage) ReadLastNotifiedRecordForClusterList(
 // ReadClusterRuleToggles reads all per-cluster disabled rules from the
 // cluster_rule_toggle table in the aggregator database. Only rows where
 // disabled = 1 are returned. The result is a hash map keyed by
-// (cluster_id, rule_id, error_key) for O(1) lookups during per-rule
+// (org_id, cluster_id, rule_id, error_key) for O(1) lookups during per-rule
 // processing.
+//
+// The org_id is part of the key because a toggle applies only to the
+// organization that created it, see types.ClusterRuleKey. All the columns are
+// stored verbatim, so rule_id keeps the ".report" suffix.
 func (storage DBStorage) ReadClusterRuleToggles() (types.ClusterDisabledRules, error) {
 	disabledRules := make(types.ClusterDisabledRules)
 
@@ -741,15 +745,17 @@ func (storage DBStorage) ReadClusterRuleToggles() (types.ClusterDisabledRules, e
 
 	for rows.Next() {
 		var (
+			orgID     string
 			clusterID types.ClusterName
 			ruleID    types.RuleID
 			errorKey  types.ErrorKey
 		)
 
-		if err := rows.Scan(&clusterID, &ruleID, &errorKey); err != nil {
+		if err := rows.Scan(&orgID, &clusterID, &ruleID, &errorKey); err != nil {
 			return disabledRules, err
 		}
 		key := types.ClusterRuleKey{
+			OrgID:     orgID,
 			ClusterID: clusterID,
 			RuleID:    ruleID,
 			ErrorKey:  errorKey,

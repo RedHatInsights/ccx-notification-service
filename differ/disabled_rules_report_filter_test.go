@@ -44,26 +44,21 @@ import (
 
 const (
 	// criticalCompositeRuleID and importantCompositeRuleID are the composite
-	// "rule_id|error_key" values carried by the report JSON. The aggregator
-	// tables store the rule id and the error key in two separate columns
-	// instead, and types.ReportItem has no field mapped to "rule_id", so this
-	// value is never read: it only has to survive the filtering untouched.
+	// "rule_id|error_key" values carried by the report JSON. types.ReportItem
+	// has no field mapped to "rule_id", so this value is never read: it only
+	// has to survive the filtering untouched.
 	criticalCompositeRuleID  = "test_rule|TEST_RULE_CRITICAL_IMPACT"
 	importantCompositeRuleID = "test_rule|TEST_RULE_IMPORTANT_IMPACT"
 
 	// otherRuleModule is a fully qualified component of a rule that is not the
 	// one registered in the disabled rules maps by these tests.
 	otherRuleModule types.ModuleName = "ccx_rules_ocp.external.rules.other_rule.report"
-
-	// reportFilterTestOrgID is the organization of the cluster returned by
-	// disabledRulesTestClusterEntry, as the org-wide rule_disable map keys it.
-	reportFilterTestOrgID = "1"
 )
 
 var (
 	// reportFilterCriticalRuleHit and reportFilterImportantRuleHit are the two
 	// rule hits of the report used throughout these tests. Both belong to
-	// test_rule, which is what moduleToRuleName derives from their component.
+	// test_rule.
 	reportFilterCriticalRuleHit  = reportFilterRuleHit(disabledRulesTestModule, criticalCompositeRuleID, criticalImpactErrorKey)
 	reportFilterImportantRuleHit = reportFilterRuleHit(disabledRulesTestModule, importantCompositeRuleID, importantImpactErrorKey)
 )
@@ -99,10 +94,10 @@ func reportFilterDocument(ruleHits ...string) types.ClusterReport {
 }
 
 // clusterDisabledRule returns a cluster_rule_toggle map disabling the given rule
-// and error key for the given cluster.
-func clusterDisabledRule(clusterName types.ClusterName, ruleID types.RuleID, errorKey types.ErrorKey) types.ClusterDisabledRules {
+// and error key for the given cluster, toggled by the given organization.
+func clusterDisabledRule(orgID string, clusterName types.ClusterName, ruleID types.RuleID, errorKey types.ErrorKey) types.ClusterDisabledRules {
 	return types.ClusterDisabledRules{
-		{ClusterID: clusterName, RuleID: ruleID, ErrorKey: errorKey}: {},
+		{OrgID: orgID, ClusterID: clusterName, RuleID: ruleID, ErrorKey: errorKey}: {},
 	}
 }
 
@@ -119,8 +114,7 @@ func orgDisabledRule(orgID string, ruleID types.RuleID, errorKey types.ErrorKey)
 // ones removed from the stored report, and that everything else in the document
 // (the other rule hits with their composite rule_id, tags and links, and the top
 // level keys besides "reports") is left as it is. A rule hit is identified the
-// same way the Kafka and the Service Log filters identify it: the rule name
-// derived from "component" plus the error key taken from "key". Any other
+// same way the Kafka and the Service Log filters identify it. Any other
 // (cluster, org, rule, error key) combination in the maps is a miss and must
 // leave the report unchanged.
 func TestFilterDisabledRulesFromReport(t *testing.T) {
@@ -135,12 +129,12 @@ func TestFilterDisabledRulesFromReport(t *testing.T) {
 	}{
 		{
 			name:           "rule disabled for this cluster is omitted",
-			clusterRules:   clusterDisabledRule(cluster.ClusterName, disabledRulesTestRuleID, criticalImpactErrorKey),
+			clusterRules:   clusterDisabledRule(disabledRulesTestOrgID, cluster.ClusterName, disabledRulesTestToggleRuleID, criticalImpactErrorKey),
 			expectedReport: reportFilterDocument(reportFilterImportantRuleHit),
 		},
 		{
 			name:           "rule acked for this organization is omitted",
-			orgRules:       orgDisabledRule(reportFilterTestOrgID, disabledRulesTestRuleID, criticalImpactErrorKey),
+			orgRules:       orgDisabledRule(disabledRulesTestOrgID, disabledRulesTestAckRuleID, criticalImpactErrorKey),
 			expectedReport: reportFilterDocument(reportFilterImportantRuleHit),
 		},
 		{
@@ -151,22 +145,27 @@ func TestFilterDisabledRulesFromReport(t *testing.T) {
 		},
 		{
 			name:           "the same rule is disabled for another cluster",
-			clusterRules:   clusterDisabledRule("00000000-0000-0000-0000-000000000000", disabledRulesTestRuleID, criticalImpactErrorKey),
+			clusterRules:   clusterDisabledRule(disabledRulesTestOrgID, "00000000-0000-0000-0000-000000000000", disabledRulesTestToggleRuleID, criticalImpactErrorKey),
+			expectedReport: report,
+		},
+		{
+			name:           "the same rule is disabled for this cluster by its previous organization",
+			clusterRules:   clusterDisabledRule("999", cluster.ClusterName, disabledRulesTestToggleRuleID, criticalImpactErrorKey),
 			expectedReport: report,
 		},
 		{
 			name:           "the same rule is acked for another organization",
-			orgRules:       orgDisabledRule("999", disabledRulesTestRuleID, criticalImpactErrorKey),
+			orgRules:       orgDisabledRule("999", disabledRulesTestAckRuleID, criticalImpactErrorKey),
 			expectedReport: report,
 		},
 		{
 			name:           "another error key of the same rule is disabled",
-			clusterRules:   clusterDisabledRule(cluster.ClusterName, disabledRulesTestRuleID, "TEST_RULE_OTHER_IMPACT"),
+			clusterRules:   clusterDisabledRule(disabledRulesTestOrgID, cluster.ClusterName, disabledRulesTestToggleRuleID, "TEST_RULE_OTHER_IMPACT"),
 			expectedReport: report,
 		},
 		{
 			name:           "another rule with the same error key is disabled",
-			clusterRules:   clusterDisabledRule(cluster.ClusterName, "other_rule", criticalImpactErrorKey),
+			clusterRules:   clusterDisabledRule(disabledRulesTestOrgID, cluster.ClusterName, types.RuleID(otherRuleModule), criticalImpactErrorKey),
 			expectedReport: report,
 		},
 	}
@@ -208,8 +207,8 @@ func TestFilterDisabledRulesFromReportWithEveryRuleDisabled(t *testing.T) {
 	report := reportFilterDocument(reportFilterCriticalRuleHit, reportFilterImportantRuleHit)
 
 	d := differ.Differ{
-		ClusterDisabledRules: clusterDisabledRule(cluster.ClusterName, disabledRulesTestRuleID, criticalImpactErrorKey),
-		OrgDisabledRules:     orgDisabledRule(reportFilterTestOrgID, disabledRulesTestRuleID, importantImpactErrorKey),
+		ClusterDisabledRules: clusterDisabledRule(disabledRulesTestOrgID, cluster.ClusterName, disabledRulesTestToggleRuleID, criticalImpactErrorKey),
+		OrgDisabledRules:     orgDisabledRule(disabledRulesTestOrgID, disabledRulesTestAckRuleID, importantImpactErrorKey),
 	}
 
 	filtered := differ.FilterDisabledRulesFromReport(&d, cluster, report)
@@ -225,8 +224,8 @@ func TestFilterDisabledRulesFromReportWithEveryRuleDisabled(t *testing.T) {
 }
 
 // TestFilterDisabledRulesFromReportIdentifiesRuleHitsByComponentAndKey verifies
-// that a rule hit is matched against the aggregator maps through the rule name
-// derived from its "component" and the error key taken from its "key", exactly
+// that a rule hit is matched against the aggregator maps through the module
+// taken from its "component" and the error key taken from its "key", exactly
 // like the Kafka and the Service Log filters do it. The composite "rule_id" of
 // the report plays no part: types.ReportItem has no field mapped to it, so
 // encoding/json discards it.
@@ -235,7 +234,7 @@ func TestFilterDisabledRulesFromReportIdentifiesRuleHitsByComponentAndKey(t *tes
 
 	// test_rule is disabled for this cluster with the critical error key
 	d := differ.Differ{
-		ClusterDisabledRules: clusterDisabledRule(cluster.ClusterName, disabledRulesTestRuleID, criticalImpactErrorKey),
+		ClusterDisabledRules: clusterDisabledRule(disabledRulesTestOrgID, cluster.ClusterName, disabledRulesTestToggleRuleID, criticalImpactErrorKey),
 	}
 
 	t.Run("a composite rule_id contradicting the component is ignored", func(t *testing.T) {
@@ -251,8 +250,9 @@ func TestFilterDisabledRulesFromReportIdentifiesRuleHitsByComponentAndKey(t *tes
 
 	t.Run("a composite rule_id of a disabled rule does not disable the hit", func(t *testing.T) {
 		// the component says other_rule, which is not disabled, so the hit stays
-		// even though its composite rule_id is the disabled one
-		hit := reportFilterRuleHit(otherRuleModule, criticalCompositeRuleID, criticalImpactErrorKey)
+		// even though its composite rule_id names the disabled toggle exactly
+		disabledCompositeRuleID := fmt.Sprintf("%s|%s", disabledRulesTestToggleRuleID, criticalImpactErrorKey)
+		hit := reportFilterRuleHit(otherRuleModule, disabledCompositeRuleID, criticalImpactErrorKey)
 		report := reportFilterDocument(hit, reportFilterImportantRuleHit)
 
 		filtered := differ.FilterDisabledRulesFromReport(&d, cluster, report)
@@ -299,7 +299,7 @@ func TestFilterDisabledRulesFromReportWithUnusableReport(t *testing.T) {
 			buf := setupDisabledRulesLogCapture(t)
 
 			d := differ.Differ{
-				ClusterDisabledRules: clusterDisabledRule(cluster.ClusterName, disabledRulesTestRuleID, criticalImpactErrorKey),
+				ClusterDisabledRules: clusterDisabledRule(disabledRulesTestOrgID, cluster.ClusterName, disabledRulesTestToggleRuleID, criticalImpactErrorKey),
 			}
 
 			filtered := differ.FilterDisabledRulesFromReport(&d, cluster, tc.report)
@@ -341,7 +341,7 @@ func TestFilterDisabledRulesFromReportWithoutDisabledRulesSkipsParsing(t *testin
 		buf := setupDisabledRulesLogCapture(t)
 
 		d := differ.Differ{
-			ClusterDisabledRules: clusterDisabledRule(cluster.ClusterName, disabledRulesTestRuleID, criticalImpactErrorKey),
+			ClusterDisabledRules: clusterDisabledRule(disabledRulesTestOrgID, cluster.ClusterName, disabledRulesTestToggleRuleID, criticalImpactErrorKey),
 		}
 
 		filtered := differ.FilterDisabledRulesFromReport(&d, cluster, report)
@@ -478,7 +478,7 @@ func TestProduceEntriesToKafkaStoresReportWithoutDisabledRules(t *testing.T) {
 				Thresholds: differ.EventThresholds{
 					TotalRisk: differ.DefaultTotalRiskThreshold,
 				},
-				ClusterDisabledRules: clusterDisabledRule(cluster.ClusterName, disabledRulesTestRuleID, criticalImpactErrorKey),
+				ClusterDisabledRules: clusterDisabledRule(disabledRulesTestOrgID, cluster.ClusterName, disabledRulesTestToggleRuleID, criticalImpactErrorKey),
 				PreviouslyReported:   tc.previouslyReported,
 			}
 
@@ -515,11 +515,13 @@ func TestProcessClustersServiceLogStoresReportWithoutDisabledRules(t *testing.T)
 	report := reportFilterDocument(reportFilterCriticalRuleHit, reportFilterImportantRuleHit)
 	expectedStoredReport := reportFilterDocument(reportFilterImportantRuleHit)
 
+	// the renderer returns the plain rule name as rule_id, not the toggle's
+	// rule_id, which findRenderedReport would not match
 	renderer := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusOK)
 		_, err := fmt.Fprintf(w,
 			`{"clusters":[%q],"reports":{%q:[{"rule_id":%q,"error_key":%q,"resolution":"resolution","reason":"reason","description":"description"}]}}`,
-			cluster.ClusterName, cluster.ClusterName, disabledRulesTestRuleID, importantImpactErrorKey)
+			cluster.ClusterName, cluster.ClusterName, disabledRulesTestRuleName, importantImpactErrorKey)
 		assert.NoError(t, err)
 	}))
 	defer renderer.Close()
@@ -557,7 +559,7 @@ func TestProcessClustersServiceLogStoresReportWithoutDisabledRules(t *testing.T)
 		Thresholds: differ.EventThresholds{
 			TotalRisk: differ.DefaultTotalRiskThreshold,
 		},
-		ClusterDisabledRules: clusterDisabledRule(cluster.ClusterName, disabledRulesTestRuleID, criticalImpactErrorKey),
+		ClusterDisabledRules: clusterDisabledRule(disabledRulesTestOrgID, cluster.ClusterName, disabledRulesTestToggleRuleID, criticalImpactErrorKey),
 	}
 
 	d.ProcessClusters(&config, disabledRulesTestRuleContent(), []types.ClusterEntry{cluster})
